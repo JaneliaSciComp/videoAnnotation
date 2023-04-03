@@ -14,6 +14,11 @@
 
 .canvas {
   border: solid;
+  /* width: 600px;
+  height: 450px; */
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .footer {
@@ -23,6 +28,11 @@
   border-top: 1px solid #eaeaea;
   justify-content: center;
   align-items: center;
+}
+
+.image {
+  border:solid;
+  border-color: red;
 }
 
 

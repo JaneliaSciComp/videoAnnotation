@@ -1,6 +1,5 @@
 import Head from 'next/head';
 import React, {useState, useEffect, useRef} from 'react';
-import Canvas from '../components/Canvas';
 import styles from '../styles/Home.module.css';
 
 
@@ -76,10 +75,9 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        {/* <canvas ref={canvasRef} className={styles.canvas} width="600" height="450" onClick={drawClickPoint}>
+        <canvas ref={canvasRef} className={styles.canvas} width="600" height="450" onClick={drawClickPoint}>
           <img ref={imgRef} width="600" height="450" alt="img"/>
-        </canvas> */}
-        <Canvas img='/fly.png'></Canvas>
+        </canvas>
       </main>
 
       <footer className={styles.footer}>
