@@ -12,20 +12,16 @@ export default function Home() {
   const canvasRef = useRef(null);
 
 
-  //console.log(canvasRef.current); //print out null
   
   useEffect(() => {
-      //console.log(canvasRef.current); //print out canvas
+      // if (canvasRef.current && imgRef.current) {
+      //   //when img loaded, display image on canvas
+      //   imgRef.current.onload = () => {
+      //     canvasRef.current.getContext('2d').drawImage(imgRef.current, 0, 0);
+      //   }
 
-      
-      if (canvasRef.current && imgRef.current) {
-        //when img loaded, display image on canvas
-        imgRef.current.onload = () => {
-          canvasRef.current.getContext('2d').drawImage(imgRef.current, 0, 0);
-        }
-
-        imgRef.current.src = '/fly.png';
-      }
+      //   imgRef.current.src = '/fly.png';
+      // }
     }
   )
 
@@ -76,9 +72,6 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        {/* <canvas ref={canvasRef} className={styles.canvas} width="600" height="450" onClick={drawClickPoint}>
-          <img ref={imgRef} width="600" height="450" alt="img"/>
-        </canvas> */}
         <Canvas img='/fly.png'></Canvas>
       </main>
 
