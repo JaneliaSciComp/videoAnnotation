@@ -18,25 +18,28 @@ export default function Canvas(props) {
 
 
     function recBtnHandler() {
-        console.log('add rec', canvasObjRef.current);
-        const rec_obj = new fabric.Rect({
+        const recObj = new fabric.Rect({
             width: 50,
             height:50,
             stroke: 'red',
-            strokeWidth: 2,
+            strokeWidth: 1,
             fill: null,
+            lockRotation: true,
+            lockScalingFlip: true,
+            lockSkewingX: true,
+            lockSkewingY: true,
         });
-        canvasObjRef.current.add(rec_obj).setActiveObject(rec_obj).renderAll();
-        // canvasObjRef.current.add(rec_obj);
-        // canvasObjRef.current.renderAll();
-        console.log(canvasObjRef.current);
+        // console.log(recObj);
+        canvasObjRef.current.add(recObj).setActiveObject(recObj);
       }
     
     useEffect(() => {
+        //console.log(fabric.Object.prototype);
+
         if (!canvasObjRef.current && !imageObjRef.current) {
             const canvasObj = new fabric.Canvas('canvas', {
-                width: 650,
-                height: 500,
+                width: 1200,
+                height: 1200,
             });
             const imageObj = new fabric.Image('image', {
                 selectable: false,
@@ -61,7 +64,19 @@ export default function Canvas(props) {
                 mouseUpHandler(canvasObj);
             });
             // console.log('before move', canvas_obj.viewportTransform);
+            canvasObj.on('key:down', (opt) => {
+                console.log(opt.e.key);
+            })
 
+            // add delete key event listener
+            document.onkeydown = (e) => {
+                if ((e.key === 'Backspace' || e.key === 'Delete') && canvasObj.getActiveObject()) {
+                    canvasObj.remove(canvasObj.getActiveObject());
+                }
+                // console.log(e.key); // Backspace
+                // console.log(e.keyCode); // 8
+            }
+            
             // setImage(image_obj);
             // setCanvas(canvas_obj);
             canvasObjRef.current = canvasObj;
@@ -83,6 +98,8 @@ export default function Canvas(props) {
         } else {
             image.set({top: offsetY});
         }
+        console.log('scaled: ', image.getScaledWidth(), image.getScaledHeight());
+        console.log('original: ', image.get('width'), image.get('height'));
     }
 
     function wheelHandler(e, canvas) {
@@ -113,10 +130,10 @@ export default function Canvas(props) {
     function mouseMoveHandler(e, canvas) {
         if (canvas.isDragging) {
             let vpt = canvas.viewportTransform;
-            // vpt[4] += e.clientX - canvas.lastPosX;
-            let tempX = vpt[4] + e.clientX - canvas.lastPosX;
-            tempX = Math.max(0, tempX);
-            vpt[4] = Math.min(tempX, 650);
+            vpt[4] += e.clientX - canvas.lastPosX;
+            // let tempX = vpt[4] + e.clientX - canvas.lastPosX;
+            // tempX = Math.max(0, tempX);
+            // vpt[4] = Math.min(tempX, 650);
             vpt[5] += e.clientY - canvas.lastPosY;
             // console.log('dragging', e.clientX - canvas.lastPosX, e.clientY - canvas.lastPosY, vpt);
             canvas.requestRenderAll();
@@ -132,6 +149,11 @@ export default function Canvas(props) {
         canvas.isDragging = false;
         canvas.selection = true;
     }
+
+    
+
+
+
 
     // ref={canvasRef} ref={imgRef} 
 
