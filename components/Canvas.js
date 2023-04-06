@@ -2,6 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import {fabric, useCanvas} from 'fabric';
 import {Button} from 'react-bootstrap';
 import styles from '../styles/Home.module.css';
+import { NodeNextRequest } from 'next/dist/server/base-http/node';
 
 
 const WHEEL_SENSITIVITY = 10;
@@ -18,52 +19,53 @@ export default function Canvas(props) {
 
     function recBtnHandler() {
         console.log('add rec', canvasObjRef.current);
-        let rec_obj = new fabric.Rect({
-            fill: 'red',
+        const rec_obj = new fabric.Rect({
+            width: 50,
+            height:50,
+            stroke: 'red',
+            strokeWidth: 2,
+            fill: null,
         });
-        canvasObjRef.current.add(rec_obj);
-        canvasObjRef.current.renderAll();
+        canvasObjRef.current.add(rec_obj).setActiveObject(rec_obj).renderAll();
+        // canvasObjRef.current.add(rec_obj);
+        // canvasObjRef.current.renderAll();
         console.log(canvasObjRef.current);
       }
     
     useEffect(() => {
         if (!canvasObjRef.current && !imageObjRef.current) {
-            const canvas_obj = new fabric.Canvas('canvas', {
+            const canvasObj = new fabric.Canvas('canvas', {
                 width: 650,
                 height: 500,
             });
-            const image_obj = new fabric.Image('image', {
+            const imageObj = new fabric.Image('image', {
                 selectable: false,
             });
 
-            scaleImage(canvas_obj, image_obj);
-            canvas_obj.add(image_obj);
+            scaleImage(canvasObj, imageObj);
+            canvasObj.add(imageObj);
 
             // zoom in/out
-            canvas_obj.on('mouse:wheel', (opt) => {
-                wheelHandler(opt.e, canvas_obj);
+            canvasObj.on('mouse:wheel', (opt) => {
+                wheelHandler(opt.e, canvasObj);
             })
 
             // drag image (mouse down + alt/option key down)
-            canvas_obj.on('mouse:down', (opt) => {
-                mouseDownHandler(opt.e, canvas_obj);
+            canvasObj.on('mouse:down', (opt) => {
+                mouseDownHandler(opt.e, canvasObj);
             });
-            canvas_obj.on('mouse:move', (opt) => {
-                mouseMoveHandler(opt.e, canvas_obj);
+            canvasObj.on('mouse:move', (opt) => {
+                mouseMoveHandler(opt.e, canvasObj);
             });
-            canvas_obj.on('mouse:up', () => {
-                mouseUpHandler(canvas_obj);
+            canvasObj.on('mouse:up', () => {
+                mouseUpHandler(canvasObj);
             });
             // console.log('before move', canvas_obj.viewportTransform);
 
             // setImage(image_obj);
             // setCanvas(canvas_obj);
-            const rec_obj = new fabric.Rect({
-                stroke: 'red',
-            });
-            canvas_obj.add(rec_obj).renderAll();
-            canvasObjRef.current = canvas_obj;
-            imageObjRef.current = image_obj;
+            canvasObjRef.current = canvasObj;
+            imageObjRef.current = imageObj;
         }
       }
       //, [props]
