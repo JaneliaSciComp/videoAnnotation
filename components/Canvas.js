@@ -1,5 +1,6 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {fabric, useCanvas} from 'fabric';
+import {Button} from 'react-bootstrap';
 import styles from '../styles/Home.module.css';
 
 
@@ -9,52 +10,24 @@ const WHEEL_SENSITIVITY = 10;
 export default function Canvas(props) {
     // const imgRef = useRef(null);
     // const canvasRef = useRef(null);
-    const [canvas, setCanvas] = useState(null);
-    const [image, setImage] = useState(null);
-
-    // if (canvas && image) {
-    //     // console.log('here');
-    //     // console.log(canvas);
-    //     initialize(canvas, image);
-    // }
+    // const [canvas, setCanvas] = useState(null);
+    // const [image, setImage] = useState(null);
+    const canvasObjRef = useRef(null);
+    const imageObjRef = useRef(null);
 
 
-    // function initialize(canvas, image) {
-    //     console.log('init');
-    //     scaleImage(image, canvas);
-    //     canvas.add(image);
-        
-    //     console.log(canvas);
-    //     console.log(image);
-    //     // canvas.on('mouse:wheel', (opt) => {
-    //     //     console.log('wheel');
-    //     //     let zoom = canvas.getZoom();
-    //     //     // zoom *= 0.999 ** (-opt.e.deltaY);
-    //     //     zoom += opt.e.deltaY * WHEEL_SENSITIVITY /10000;
-    //     //     zoom = Math.max(1, zoom);
-    //     //     canvas.zoomToPoint({x: opt.e.offsetX, y: opt.e.offsetY}, zoom);
-    //     //     opt.e.preventDefault();
-    //     //     opt.e.stopPropagation();
-    //     // })
-
-    //     canvas.on('mouse:down', function(opt) {
-    //         console.log('mouse down');
-    //         var evt = opt.e;
-            
-    //         if (evt.altKey === true) {
-    //           this.isDragging = true;
-    //           this.selection = false;
-    //           this.lastPosX = evt.clientX;
-    //           this.lastPosY = evt.clientY;
-    //         }
-    //         console.log(evt);
-    //       });
-        
-    //     setCanvas(canvas);
-    // }
+    function recBtnHandler() {
+        console.log('add rec', canvasObjRef.current);
+        let rec_obj = new fabric.Rect({
+            fill: 'red',
+        });
+        canvasObjRef.current.add(rec_obj);
+        canvasObjRef.current.renderAll();
+        console.log(canvasObjRef.current);
+      }
     
     useEffect(() => {
-        if (!canvas && !image) {
+        if (!canvasObjRef.current && !imageObjRef.current) {
             const canvas_obj = new fabric.Canvas('canvas', {
                 width: 650,
                 height: 500,
@@ -81,12 +54,19 @@ export default function Canvas(props) {
             canvas_obj.on('mouse:up', () => {
                 mouseUpHandler(canvas_obj);
             });
-            console.log('before move', canvas_obj.viewportTransform);
+            // console.log('before move', canvas_obj.viewportTransform);
 
-            setImage(image_obj);
-            setCanvas(canvas_obj);
+            // setImage(image_obj);
+            // setCanvas(canvas_obj);
+            const rec_obj = new fabric.Rect({
+                stroke: 'red',
+            });
+            canvas_obj.add(rec_obj).renderAll();
+            canvasObjRef.current = canvas_obj;
+            imageObjRef.current = image_obj;
         }
-      }, [props]
+      }
+      //, [props]
     )
     
     function scaleImage(canvas, image) { //image, canvas
@@ -101,7 +81,6 @@ export default function Canvas(props) {
         } else {
             image.set({top: offsetY});
         }
-        setImage(image);
     }
 
     function wheelHandler(e, canvas) {
@@ -109,17 +88,17 @@ export default function Canvas(props) {
         // zoom *= 0.999 ** (-opt.e.deltaY);
         zoom += e.deltaY * WHEEL_SENSITIVITY /10000;
         zoom = Math.max(1, zoom);
-        console.log('before zoom', canvas.viewportTransform);
-        console.log(canvas);
+        // console.log('before zoom', canvas.viewportTransform);
+        // console.log(canvas);
         canvas.zoomToPoint({x: e.offsetX, y: e.offsetY}, zoom);
-        console.log('after zoom', canvas.viewportTransform);
-        console.log(canvas);
+        // console.log('after zoom', canvas.viewportTransform);
+        // console.log(canvas);
         e.preventDefault();
         e.stopPropagation();
     }
 
     function mouseDownHandler(e, canvas) {
-        console.log('mouse down');
+        // console.log('mouse down');
         if (e.altKey === true) {
             canvas.isDragging = true;
             canvas.selection = false;
@@ -137,7 +116,7 @@ export default function Canvas(props) {
             tempX = Math.max(0, tempX);
             vpt[4] = Math.min(tempX, 650);
             vpt[5] += e.clientY - canvas.lastPosY;
-            console.log('dragging', e.clientX - canvas.lastPosX, e.clientY - canvas.lastPosY, vpt);
+            // console.log('dragging', e.clientX - canvas.lastPosX, e.clientY - canvas.lastPosY, vpt);
             canvas.requestRenderAll();
             canvas.lastPosX = e.clientX;
             canvas.lastPosY = e.clientY;
@@ -156,6 +135,9 @@ export default function Canvas(props) {
 
     return (
         <div>
+            <div className='tool-bar my-3 d-flex '>
+                <Button onClick={recBtnHandler}>Rectangle</Button>
+            </div>
             <canvas id='canvas' className={styles.canvas} >
                 <img id='image' src={props.img} className={styles.image} alt="img"/>
             </canvas>

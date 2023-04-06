@@ -2,29 +2,18 @@ import Head from 'next/head';
 import React, {useState, useEffect, useRef} from 'react';
 import Canvas from '../components/Canvas';
 import styles from '../styles/Home.module.css';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import {fabric} from 'fabric';
 
 
 const POINT_SIZE = 4;
 
 
 export default function Home() {
-  const imgRef = useRef(null);
-  const canvasRef = useRef(null);
-
+  const [annotation, setAnnotation] = useState({});
 
   
-  useEffect(() => {
-      // if (canvasRef.current && imgRef.current) {
-      //   //when img loaded, display image on canvas
-      //   imgRef.current.onload = () => {
-      //     canvasRef.current.getContext('2d').drawImage(imgRef.current, 0, 0);
-      //   }
-
-      //   imgRef.current.src = '/fly.png';
-      // }
-    }
-  )
-
+  
   function getMouseClickPosition(e) {
     if (canvasRef.current) {
       let canvasBox = canvasRef.current.getBoundingClientRect();
@@ -72,7 +61,7 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <Canvas img='/fly.png'></Canvas>
+        <Canvas className='my-3' img='/fly.png'></Canvas>
       </main>
 
       <footer className={styles.footer}>
