@@ -109,7 +109,9 @@ export default function Canvas(props) {
             }
         // }
         console.log('child init called');
-        console.log(props.children);
+        // console.log(props.children.props);
+        // props.children.props.parent = canvasObjRef.current;
+        // console.log(props.children.props);
     })
     
     function scaleImage(canvas, image) { //image, canvas
