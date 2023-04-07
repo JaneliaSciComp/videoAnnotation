@@ -1,8 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {fabric, useCanvas} from 'fabric';
+import {fabric} from 'fabric';
 import {Button} from 'react-bootstrap';
 import styles from '../styles/Home.module.css';
-import { NodeNextRequest } from 'next/dist/server/base-http/node';
 
 
 const WHEEL_SENSITIVITY = 10;
@@ -38,8 +37,8 @@ export default function Canvas(props) {
 
         if (!canvasObjRef.current && !imageObjRef.current) {
             const canvasObj = new fabric.Canvas('canvas', {
-                width: 1200,
-                height: 1200,
+                width: 600,
+                height: 500,
             });
             const imageObj = new fabric.Image('image', {
                 selectable: false,
