@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import React, {useState, useEffect, useRef} from 'react';
 import Canvas from '../components/Canvas';
+import Rectangle from '../components/Rectangle';
 import styles from '../styles/Home.module.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import {fabric} from 'fabric';
@@ -52,6 +53,7 @@ export default function Home() {
     drawPoint(clickPos[0], clickPos[1], color, shape);
   }
 
+  //
 
   return (
     <div className={styles.container}>
@@ -61,7 +63,9 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <Canvas className='my-3' img='/fly.png'></Canvas>
+        <Canvas type='image' src='/fly.png' className='my-3'>
+          <Rectangle/>
+        </Canvas>
       </main>
 
       <footer className={styles.footer}>

@@ -1,8 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {fabric, useCanvas} from 'fabric';
+import {fabric} from 'fabric';
 import {Button} from 'react-bootstrap';
 import styles from '../styles/Home.module.css';
-import { NodeNextRequest } from 'next/dist/server/base-http/node';
 
 
 const WHEEL_SENSITIVITY = 10;
@@ -29,24 +28,20 @@ export default function Canvas(props) {
             lockSkewingX: true,
             lockSkewingY: true,
         });
-        // console.log(recObj);
+        console.log(recObj);
         canvasObjRef.current.add(recObj).setActiveObject(recObj);
       }
     
     useEffect(() => {
-        //console.log(fabric.Object.prototype);
+        // console.log(fabric.Object.prototype);
+        console.log(props.children);
 
-        if (!canvasObjRef.current && !imageObjRef.current) {
+        if (!canvasObjRef.current) {
             const canvasObj = new fabric.Canvas('canvas', {
-                width: 1200,
-                height: 1200,
+                width: 600,
+                height: 500,
             });
-            const imageObj = new fabric.Image('image', {
-                selectable: false,
-            });
-
-            scaleImage(canvasObj, imageObj);
-            canvasObj.add(imageObj);
+          
 
             // zoom in/out
             canvasObj.on('mouse:wheel', (opt) => {
@@ -73,18 +68,49 @@ export default function Canvas(props) {
                 if ((e.key === 'Backspace' || e.key === 'Delete') && canvasObj.getActiveObject()) {
                     canvasObj.remove(canvasObj.getActiveObject());
                 }
-                // console.log(e.key); // Backspace
-                // console.log(e.keyCode); // 8
             }
-            
-            // setImage(image_obj);
-            // setCanvas(canvas_obj);
+        
             canvasObjRef.current = canvasObj;
-            imageObjRef.current = imageObj;
         }
-      }
-      //, [props]
+
+        if (props.type === 'video') {
+            // add frame control bar
+        }
+
+        console.log('canvas init called');
+      }, [props]
     )
+
+    useEffect(() => {
+        if (props.src && !imageObjRef.current) {
+            console.log('creating image object');
+            const imageObj = new fabric.Image('image', {
+                selectable: false,
+            });
+
+            if (canvasObjRef.current) {
+                scaleImage(canvasObjRef.current, imageObj);
+                canvasObjRef.current.add(imageObj);
+            }
+
+            imageObjRef.current = imageObj
+        }
+
+        console.log('img init called');
+    }, [props.src])
+
+
+    useEffect(() => {
+        let child = props.children;
+        // for (let child of props.children) {
+            switch (child.type) {
+                case 'rect':
+                    child.onClick = recBtnHandler;
+            }
+        // }
+        console.log('child init called');
+        console.log(props.children);
+    })
     
     function scaleImage(canvas, image) { //image, canvas
         // scale image to fit in the canvas
@@ -160,10 +186,11 @@ export default function Canvas(props) {
     return (
         <div>
             <div className='tool-bar my-3 d-flex '>
-                <Button onClick={recBtnHandler}>Rectangle</Button>
+                {/* <Button onClick={recBtnHandler}>Rectangle</Button> */}
+                {props.children}
             </div>
             <canvas id='canvas' className={styles.canvas} >
-                <img id='image' src={props.img} className={styles.image} alt="img"/>
+                <img id='image' src={props.src} className={styles.image} alt="img"/>
             </canvas>
         </div>
       )
