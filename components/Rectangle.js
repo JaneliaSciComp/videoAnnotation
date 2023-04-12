@@ -4,7 +4,7 @@ import {Button} from 'react-bootstrap';
 
 
 export default function Rectangle(props) {
-    return (
-        <Button type='rect'>Rectangle</Button>
-    )
+    // return (
+    //     <Button type='rect'>Rectangle</Button>
+    // )
 }

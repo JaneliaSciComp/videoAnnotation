@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import React, {useState, useEffect, useRef} from 'react';
 import Canvas from '../components/Canvas';
+import Image from '../components/Image';
 import Rectangle from '../components/Rectangle';
 import styles from '../styles/Home.module.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
@@ -63,8 +64,9 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <Canvas type='image' src='/fly.png' className='my-3'>
+        <Canvas className='my-3'>
           <Rectangle/>
+          <Image src='/fly.png'/>
         </Canvas>
       </main>
 

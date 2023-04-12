@@ -8,21 +8,21 @@ import Canvas from './Canvas';
 
 
 export default function Image(props) {
-    const imageObjRef = useRef(null);
+    // const imageObjRef = useRef(null);
 
-    useEffect(() => {
-        if (!imageObjRef.current) {
-            const imageObj = new fabric.Image.fromURL(props.src, (img)=>{
-                img.set({
-                    'selectable': false,
-                });
-                props.parentCanvas.add(img);
-            });
+    // useEffect(() => {
+    //     if (!imageObjRef.current) {
+    //         const imageObj = new fabric.Image.fromURL(props.src, (img)=>{
+    //             img.set({
+    //                 'selectable': false,
+    //             });
+    //             props.parentCanvas.add(img);
+    //         });
             
-        }
-    }, [props])
+    //     }
+    // }, [props])
 
-    return (
-        imageObjRef.current
-    )
+    // return (
+    //     imageObjRef.current
+    // )
 }

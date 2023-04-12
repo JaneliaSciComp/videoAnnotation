@@ -14,9 +14,12 @@ export default function Canvas(props) {
     // const [image, setImage] = useState(null);
     const canvasObjRef = useRef(null);
     const imageObjRef = useRef(null);
+    const [tools, setTools] = useState([]);
+    const [hasBar, setHasBar] = useState(false);
+    const [barPos, setBarPos] = useState('left');
 
 
-    function recBtnHandler() {
+    function addRect() {
         const recObj = new fabric.Rect({
             width: 50,
             height:50,
@@ -28,9 +31,8 @@ export default function Canvas(props) {
             lockSkewingX: true,
             lockSkewingY: true,
         });
-        console.log(recObj);
         canvasObjRef.current.add(recObj).setActiveObject(recObj);
-      }
+    }
     
     useEffect(() => {
         // console.log(fabric.Object.prototype);
@@ -81,38 +83,41 @@ export default function Canvas(props) {
       }, [props]
     )
 
+
     useEffect(() => {
-        if (props.src && !imageObjRef.current) {
-            console.log('creating image object');
-            const imageObj = new fabric.Image('image', {
-                selectable: false,
-            });
-
-            if (canvasObjRef.current) {
-                scaleImage(canvasObjRef.current, imageObj);
-                canvasObjRef.current.add(imageObj);
+        // let child = props.children;
+        let childTools = [];
+        for (let child of props.children) {
+            switch (child.type.name) {
+                case 'Image':
+                    addImage(child);
+                case 'Rectangle':
+                    childTools.push(
+                        <Button onClick={addRect}>Rectangle</Button>
+                    )
             }
-
-            imageObjRef.current = imageObj
         }
-
-        console.log('img init called');
-    }, [props.src])
-
-
-    useEffect(() => {
-        let child = props.children;
-        // for (let child of props.children) {
-            switch (child.type) {
-                case 'rect':
-                    child.onClick = recBtnHandler;
-            }
-        // }
+        setTools(childTools);
         console.log('child init called');
-        // console.log(props.children.props);
-        // props.children.props.parent = canvasObjRef.current;
-        // console.log(props.children.props);
-    })
+        
+        return ()=>{
+            console.log(tools.length);
+            setTools([]);
+            console.log(tools.length);
+        };
+    }, [props])
+
+
+    function addImage(imgChild) {
+        const imageObj = new fabric.Image.fromURL(imgChild.props.src, (img)=>{
+            img.set({selectable: false});
+            
+            if (canvasObjRef.current) {
+                scaleImage(canvasObjRef.current, img);
+                canvasObjRef.current.add(img);
+            }
+        });
+    }
     
     function scaleImage(canvas, image) { //image, canvas
         // scale image to fit in the canvas
@@ -189,11 +194,13 @@ export default function Canvas(props) {
         <div>
             <div className='tool-bar my-3 d-flex '>
                 {/* <Button onClick={recBtnHandler}>Rectangle</Button> */}
-                {props.children}
+                {tools}
             </div>
-            <canvas id='canvas' className={styles.canvas} >
-                <img id='image' src={props.src} className={styles.image} alt="img"/>
-            </canvas>
+            <canvas id='canvas' className={styles.canvas} />
+                {/* <img id='image' src={props.src} className={styles.image} alt="img"/> */}
+            {/* </canvas> */}
+            
+
         </div>
       )
 }
