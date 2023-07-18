@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
+import styles from '../styles/Canvas.module.css';
+
 import {fabric} from 'fabric';
-import {Button} from 'react-bootstrap';
-import styles from '../styles/Home.module.css';
 
 
 const WHEEL_SENSITIVITY = 10;
@@ -158,9 +158,9 @@ export default function Canvas(props) {
 
     return (
         <div>
-            <div className='tool-bar my-3 d-flex '>
+            {/* <div className='tool-bar my-3 d-flex '>
                 <Button onClick={recBtnHandler}>Rectangle</Button>
-            </div>
+            </div> */}
             <canvas id='canvas' className={styles.canvas} >
                 <img id='image' src={props.img} className={styles.image} alt="img"/>
             </canvas>
