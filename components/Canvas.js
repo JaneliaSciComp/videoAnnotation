@@ -14,24 +14,11 @@ export default function Canvas(props) {
     // const [image, setImage] = useState(null);
     const canvasObjRef = useRef(null);
     const imageObjRef = useRef(null);
+    const rectObjListRef = useRef([]);
+    const preRectIdListRef = useRef(props.rectIdList.length); // to remember previous rect ids
 
 
-    function recBtnHandler() {
-        const recObj = new fabric.Rect({
-            width: 50,
-            height:50,
-            stroke: 'red',
-            strokeWidth: 1,
-            fill: null,
-            lockRotation: true,
-            lockScalingFlip: true,
-            lockSkewingX: true,
-            lockSkewingY: true,
-        });
-        // console.log(recObj);
-        canvasObjRef.current.add(recObj).setActiveObject(recObj);
-      }
-    
+    //Set up canvas
     useEffect(() => {
         //console.log(fabric.Object.prototype);
 
@@ -70,7 +57,12 @@ export default function Canvas(props) {
             // add delete key event listener
             document.onkeydown = (e) => {
                 if ((e.key === 'Backspace' || e.key === 'Delete') && canvasObj.getActiveObject()) {
-                    canvasObj.remove(canvasObj.getActiveObject());
+                    // const activeObj = canvasObj.getActiveObject();
+                    // if (activeObj.type === 'rect') {
+
+                    // }
+                    // canvasObj.remove(activeObj);
+                    removeRect(canvasObj);
                 }
                 // console.log(e.key); // Backspace
                 // console.log(e.keyCode); // 8
@@ -84,6 +76,59 @@ export default function Canvas(props) {
       }
       //, [props]
     )
+
+    
+    // draw newly added rect
+    useEffect(() => {
+        // console.log('true1');
+        // console.log(props.rectIdList.length, preRectIdListRef.current);
+        if (props.rectIdList.length > preRectIdListRef.current) {
+            drawRect(props.rectIdList[props.rectIdList.length-1]);
+            console.log('rectObjList length: ', rectObjListRef.current);
+            preRectIdListRef.current = preRectIdListRef.current + 1;
+            console.log(preRectIdListRef.current, props.rectIdList.length);
+        }
+        
+      }
+      , [props.rectIdList]
+    )
+
+
+    function drawRect(idObj) {
+        const recObj = new fabric.Rect({
+            id: idObj.id,
+            label: idObj.label,
+            type: idObj.type,
+            width: 50,
+            height:50,
+            stroke: idObj.color,
+            strokeWidth: 1,
+            fill: null,
+            lockRotation: true,
+            lockScalingFlip: true,
+            lockSkewingX: true,
+            lockSkewingY: true,
+        });
+        // console.log(recObj);
+        rectObjListRef.current = [...rectObjListRef.current, recObj];
+        // console.log(rectObjListRef.current.length);
+        canvasObjRef.current.add(recObj).setActiveObject(recObj);
+
+    }
+
+
+    function removeRect(canvasObj){
+        // remove rectObj from canvas, remove rectIdObj in parent
+        const activeObj = canvasObj.getActiveObject();
+        if (activeObj.type === 'rect') {
+            console.log(props.rectIdList.length);
+            props.removeRectId(activeObj.id);
+            rectObjList.current = rectObjListRef.current.filter(Obj =>  Obj.id !== id)
+            preRectIdListRef.current = preRectIdListRef.current - 1;
+        }
+        canvasObj.remove(activeObj);
+    }
+
     
     function scaleImage(canvas, image) { //image, canvas
         // scale image to fit in the canvas
