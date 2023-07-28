@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useRef} from 'react';
 import styles from '../styles/Canvas.module.css';
-
+import {Button} from 'react-bootstrap';
 import {fabric} from 'fabric';
 
 
@@ -15,8 +15,9 @@ export default function Canvas(props) {
     const canvasObjRef = useRef(null);
     const imageObjRef = useRef(null);
     const rectObjListRef = useRef([]);
-    const preRectIdListRef = useRef(props.rectIdList.length); // to remember previous rect ids
+    const preRectIdListRef = useRef([...props.rectIdList]); // to remember previous rect ids
 
+    console.log('canvas render');
 
     //Set up canvas
     useEffect(() => {
@@ -54,14 +55,13 @@ export default function Canvas(props) {
                 console.log(opt.e.key);
             })
 
+            canvasObj.on('key:')
+
             // add delete key event listener
             document.onkeydown = (e) => {
                 if ((e.key === 'Backspace' || e.key === 'Delete') && canvasObj.getActiveObject()) {
-                    // const activeObj = canvasObj.getActiveObject();
-                    // if (activeObj.type === 'rect') {
-
-                    // }
-                    // canvasObj.remove(activeObj);
+                    // console.log('on delete key', props.rectIdList.length);
+                    // console.log(preRectIdListRef.current);
                     removeRect(canvasObj);
                 }
                 // console.log(e.key); // Backspace
@@ -77,16 +77,21 @@ export default function Canvas(props) {
       //, [props]
     )
 
+    // function canvasbtnclick() {
+    //     console.log(props.rectIdList.length);
+    //     removeRect(canvasObjRef.current);
+    //     console.log(props.rectIdList.length);
+    // }
+
     
     // draw newly added rect
     useEffect(() => {
-        // console.log('true1');
         // console.log(props.rectIdList.length, preRectIdListRef.current);
-        if (props.rectIdList.length > preRectIdListRef.current) {
+        if (props.rectIdList.length > preRectIdListRef.current.length) {
             drawRect(props.rectIdList[props.rectIdList.length-1]);
-            console.log('rectObjList length: ', rectObjListRef.current);
-            preRectIdListRef.current = preRectIdListRef.current + 1;
-            console.log(preRectIdListRef.current, props.rectIdList.length);
+            // console.log('rectObjList length: ', rectObjListRef.current);
+            preRectIdListRef.current = [...preRectIdListRef.current, props.rectIdList[props.rectIdList.length-1]];
+            // console.log(preRectIdListRef.current, props.rectIdList.length);
         }
         
       }
@@ -121,10 +126,10 @@ export default function Canvas(props) {
         // remove rectObj from canvas, remove rectIdObj in parent
         const activeObj = canvasObj.getActiveObject();
         if (activeObj.type === 'rect') {
-            console.log(props.rectIdList.length);
-            props.removeRectId(activeObj.id);
-            rectObjList.current = rectObjListRef.current.filter(Obj =>  Obj.id !== id)
-            preRectIdListRef.current = preRectIdListRef.current - 1;
+            rectObjListRef.current = rectObjListRef.current.filter(Obj =>  Obj.id !== activeObj.id)
+            preRectIdListRef.current = preRectIdListRef.current.filter(obj => obj.id !== activeObj.id);
+            props.resetRectaIdList([...preRectIdListRef.current]);
+            // console.log(rectObjListRef.current.length, preRectIdListRef);
         }
         canvasObj.remove(activeObj);
     }
@@ -209,6 +214,7 @@ export default function Canvas(props) {
             <canvas id='canvas' className={styles.canvas} >
                 <img id='image' src={props.img} className={styles.image} alt="img"/>
             </canvas>
+            {/* <Button onClick={canvasbtnclick}>test</Button> */}
         </div>
       )
 }
