@@ -4,6 +4,8 @@ import {Button} from 'react-bootstrap';
 import {fabric} from 'fabric';
 
 
+const CANVAS_WIDTH = 600;
+const CANVAS_HEIGHT = 500;
 const WHEEL_SENSITIVITY = 10;
 
 
@@ -25,8 +27,9 @@ export default function Canvas(props) {
 
         if (!canvasObjRef.current && !imageObjRef.current) {
             const canvasObj = new fabric.Canvas('canvas', {
-                width: 600,
-                height: 500,
+                //TODO
+                width: CANVAS_WIDTH,
+                height: CANVAS_HEIGHT,
             });
             const imageObj = new fabric.Image('image', {
                 selectable: false,
@@ -55,7 +58,6 @@ export default function Canvas(props) {
                 console.log(opt.e.key);
             })
 
-            canvasObj.on('key:')
 
             // add delete key event listener
             document.onkeydown = (e) => {
@@ -147,8 +149,9 @@ export default function Canvas(props) {
         } else {
             image.set({top: offsetY});
         }
-        console.log('scaled: ', image.getScaledWidth(), image.getScaledHeight());
-        console.log('original: ', image.get('width'), image.get('height'));
+        // console.log('scaled: ', image.getScaledWidth(), image.getScaledHeight());
+        // console.log('original: ', image.get('width'), image.get('height'));
+        console.log(image);
     }
 
     function wheelHandler(e, canvas) {
@@ -160,7 +163,7 @@ export default function Canvas(props) {
         // console.log(canvas);
         canvas.zoomToPoint({x: e.offsetX, y: e.offsetY}, zoom);
         // console.log('after zoom', canvas.viewportTransform);
-        // console.log(canvas);
+        // console.log(canvas.getZoom(), canvas.getWidth());
         e.preventDefault();
         e.stopPropagation();
     }
@@ -179,12 +182,16 @@ export default function Canvas(props) {
     function mouseMoveHandler(e, canvas) {
         if (canvas.isDragging) {
             let vpt = canvas.viewportTransform;
-            vpt[4] += e.clientX - canvas.lastPosX;
-            // let tempX = vpt[4] + e.clientX - canvas.lastPosX;
-            // tempX = Math.max(0, tempX);
-            // vpt[4] = Math.min(tempX, 650);
-            vpt[5] += e.clientY - canvas.lastPosY;
-            // console.log('dragging', e.clientX - canvas.lastPosX, e.clientY - canvas.lastPosY, vpt);
+            let zoom = canvas.getZoom();
+            let tempX = vpt[4] + e.clientX - canvas.lastPosX;
+            let tempY = vpt[5] + e.clientY - canvas.lastPosY;
+            // Doesn't let drag go infinitely
+            vpt[4] = Math.max(Math.min(0, tempX), canvas.getWidth() - canvas.getWidth()*zoom);
+            vpt[5] = Math.max(Math.min(0, tempY), canvas.getHeight() - canvas.getHeight()*zoom);
+            // Free drag
+            // vpt[4] += e.clientX - canvas.lastPosX;
+            // vpt[5] += e.clientY - canvas.lastPosY;
+            // console.log(canvas.viewportTransform);
             canvas.requestRenderAll();
             canvas.lastPosX = e.clientX;
             canvas.lastPosY = e.clientY;
