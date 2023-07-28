@@ -1,17 +1,12 @@
 import React from 'react';
 import {Button} from 'react-bootstrap';
-import styles from '../styles/Button.module.css';
+import styles from '../styles/DrawBtn.module.css';
 
 
-export default function Rectangle(props) {
+export default function Polygon(props) {
     function clickHandler() {
         const id = Date.now().toString();
-        props.addRectId({
-            id: id,
-            label: props.label,
-            color: props.color,
-            type: 'rect'         
-        });
+        props.setDrawPolygon(!props.drawPolygon);
     }
 
     return (

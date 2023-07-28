@@ -1,0 +1,8 @@
+.btn {
+    width: 6em;
+}
+
+.btn-choosen {
+    width: 6em;
+    background-image: linear-gradient(rgb(0 0 0/40%) 0 0);
+}
