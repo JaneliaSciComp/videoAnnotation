@@ -6,7 +6,9 @@ import {fabric} from 'fabric';
 
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 500;
+const CIRCLE_RADIUS = 4;
 const WHEEL_SENSITIVITY = 10;
+const CLICK_TOLERANCE = 5;
 
 
 export default function Canvas(props) {
@@ -18,7 +20,9 @@ export default function Canvas(props) {
     const imageObjRef = useRef(null);
     const rectObjListRef = useRef([]);
     const preRectIdListRef = useRef([...props.rectIdList]); // to remember previous rect ids
+    const polygonObjListRef = useRef([]);
 
+    
     console.log('canvas render');
 
     //Set up canvas
@@ -30,6 +34,8 @@ export default function Canvas(props) {
                 //TODO
                 width: CANVAS_WIDTH,
                 height: CANVAS_HEIGHT,
+                polygonPoints: [],
+                polygonLines:[],
             });
             const imageObj = new fabric.Image('image', {
                 selectable: false,
@@ -44,39 +50,43 @@ export default function Canvas(props) {
             })
 
             // drag image (mouse down + alt/option key down)
-            canvasObj.on('mouse:down', (opt) => {
-                mouseDownHandler(opt.e, canvasObj);
-            });
+            // canvasObj.on('mouse:down', (opt) => {
+            //     mouseDownHandler(opt.e, canvasObj);
+            // });
             canvasObj.on('mouse:move', (opt) => {
                 mouseMoveHandler(opt.e, canvasObj);
             });
             canvasObj.on('mouse:up', () => {
                 mouseUpHandler(canvasObj);
             });
-            // console.log('before move', canvas_obj.viewportTransform);
-            canvasObj.on('key:down', (opt) => {
-                console.log(opt.e.key);
-            })
+            
 
 
             // add delete key event listener
             document.onkeydown = (e) => {
                 if ((e.key === 'Backspace' || e.key === 'Delete') && canvasObj.getActiveObject()) {
-                    // console.log('on delete key', props.rectIdList.length);
-                    // console.log(preRectIdListRef.current);
                     removeRect(canvasObj);
                 }
                 // console.log(e.key); // Backspace
                 // console.log(e.keyCode); // 8
             }
             
-            // setImage(image_obj);
-            // setCanvas(canvas_obj);
+
             canvasObjRef.current = canvasObj;
             imageObjRef.current = imageObj;
         }
-      }
-      //, [props]
+
+        canvasObjRef.current.on('mouse:down', (opt) => {
+            mouseDownHandler(opt.e, canvasObjRef.current);
+        });
+
+        // console.log(canvasObjRef.current.__eventListeners["mouse:down"]);
+
+        return () => {
+            canvasObjRef.current.__eventListeners["mouse:down"] = [];
+            
+        }
+      }, [props]
     )
 
     // function canvasbtnclick() {
@@ -169,15 +179,73 @@ export default function Canvas(props) {
     }
 
     function mouseDownHandler(e, canvas) {
-        // console.log('mouse down');
+        console.log('mouse down');
         if (e.altKey === true) {
             canvas.isDragging = true;
             canvas.selection = false;
             canvas.lastPosX = e.clientX;
             canvas.lastPosY = e.clientY;
         }
-        //console.log(canvas); 
+        
+        // console.log(props.drawPolygon);
+        if (props.drawPolygon === true) {
+            canvas.selection = false;
+            // const polygonObj = new fabric.Polygon([
+            //     {x:100, y:100}, {x:150, y:100}, {x:125, y:150}
+            // ], {
+            //     stroke: 'red',
+            //     strokeWidth: 1,
+            // });
+
+            // console.log(canvas);
+
+            const clickPoint = canvas.getPointer();
+            console.log(clickPoint);
+           
+            if (canvas.polygonPoints.length==0 && canvas.polygonLines.length==0) {
+                const point = createPoint(clickPoint, 'red');
+                canvas.add(point).setActiveObject(point);
+                canvas.polygonPoints.push(point);
+                // console.log(point.getCenterPoint(), point.getCoords());
+            } else if (canvas.polygonPoints.length - canvas.polygonLines.length == 1) {
+                const startPoint = canvas.polygonPoints[0].getCenterPoint();
+                if (Math.abs(startPoint.x - clickPoint.x) <= CLICK_TOLERANCE && Math.abs(startPoint.y - clickPoint.y) <= CLICK_TOLERANCE) {
+                    const prePoint = canvas.polygonPoints[canvas.polygonPoints.length-1].getCenterPoint();
+                    const line = createLine(prePoint, startPoint, 'red');
+                    canvas.polygonLines.push(line);
+                    canvas.add(line);
+                    // console.log(canvas.polygonPoints.map(p => p.getCenterPoint()));
+                    const polygonObj = new fabric.Polygon(
+                        canvas.polygonPoints.map(p => p.getCenterPoint()), {
+                            stroke: 'red',
+                            strokeWidth: 1,
+                            fill: false
+                        }
+                    );
+                    // console.log(polygonObj)
+                    canvas.add(polygonObj).setActiveObject(polygonObj);
+                    canvas.polygonPoints.forEach(p=>canvas.remove(p));
+                    canvas.polygonLines.forEach(l=>canvas.remove(l));
+                    canvas.polygonPoints = [];
+                    canvas.polygonLines = [];
+                    canvas.selection = true;
+                    props.setDrawPolygon(false);
+
+                } else {
+                    const prePoint = canvas.polygonPoints[canvas.polygonPoints.length-1].getCenterPoint();
+                    const point = createPoint(clickPoint, 'red');
+                    canvas.add(point).setActiveObject(point);
+                    canvas.polygonPoints.push(point);
+                    const line = createLine(prePoint, point.getCenterPoint(), 'red');
+                    canvas.add(line);  //.setActiveObject(point);
+                    // canvas.renderAll();
+                    canvas.polygonLines.push(line);
+                }
+            }
+        }
+            
     }
+    
 
     function mouseMoveHandler(e, canvas) {
         if (canvas.isDragging) {
@@ -207,7 +275,27 @@ export default function Canvas(props) {
     }
 
     
+    function createPoint(clickPoint, color) {
+        const point = new fabric.Circle({
+            left: clickPoint.x - CIRCLE_RADIUS, //pointer.x,
+            top: clickPoint.y - CIRCLE_RADIUS,  //pointer.y,
+            radius: CIRCLE_RADIUS,
+            strokeWidth: 1,
+            stroke: color,
+            fill: color,
+        })
+        return point;
+    }
 
+    function createLine(startPoint, endPoint, color) {
+        const line = new fabric.Line([
+            startPoint.x, startPoint.y, endPoint.x, endPoint.y
+        ], {
+            strokeWidth: 1,
+            stroke: color,
+        })
+        return line;
+    }
 
 
 

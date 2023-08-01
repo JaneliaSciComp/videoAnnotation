@@ -14,7 +14,7 @@ export default function Workspace(props) {
     const [drawPolygon, setDrawPolygon] = useState(false);
 
 
-    console.log('workspace');
+    console.log('workspace render');
 
 
     function addRectId(idObj) {
