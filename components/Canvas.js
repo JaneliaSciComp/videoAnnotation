@@ -6,7 +6,7 @@ import {fabric} from 'fabric';
 
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 500;
-const CIRCLE_RADIUS = 4;
+const CIRCLE_RADIUS = 10;
 const WHEEL_SENSITIVITY = 10;
 const CLICK_TOLERANCE = 5;
 
@@ -21,6 +21,7 @@ export default function Canvas(props) {
     const rectObjListRef = useRef([]);
     const preRectIdListRef = useRef([...props.rectIdList]); // to remember previous rect ids
     const polygonObjListRef = useRef([]);
+    const editPolygon = useRef(false);
 
     
     console.log('canvas render');
@@ -44,23 +45,15 @@ export default function Canvas(props) {
             scaleImage(canvasObj, imageObj);
             canvasObj.add(imageObj);
 
-            // zoom in/out
-            canvasObj.on('mouse:wheel', (opt) => {
-                wheelHandler(opt.e, canvasObj);
-            })
-
-            // drag image (mouse down + alt/option key down)
-            // canvasObj.on('mouse:down', (opt) => {
-            //     mouseDownHandler(opt.e, canvasObj);
-            // });
-            canvasObj.on('mouse:move', (opt) => {
-                mouseMoveHandler(opt.e, canvasObj);
-            });
-            canvasObj.on('mouse:up', () => {
-                mouseUpHandler(canvasObj);
-            });
             
 
+            
+            // canvasObj.on('mouse:down', //(opt) => {
+            //     mouseDownHandler//(opt.e, canvasObj);
+            // );
+            
+            
+            
 
             // add delete key event listener
             document.onkeydown = (e) => {
@@ -76,14 +69,26 @@ export default function Canvas(props) {
             imageObjRef.current = imageObj;
         }
 
+        // zoom in/out
+        canvasObjRef.current.on('mouse:wheel', (opt) => {
+            wheelHandler(opt.e, canvasObjRef.current);
+        })
         canvasObjRef.current.on('mouse:down', (opt) => {
             mouseDownHandler(opt.e, canvasObjRef.current);
         });
+        canvasObjRef.current.on('mouse:dblclick', mouseDblclickHandler);
+        canvasObjRef.current.on('mouse:move', (opt) => {
+            mouseMoveHandler(opt.e, canvasObjRef.current);
+        });
+        canvasObjRef.current.on('mouse:up', () => {
+            mouseUpHandler(canvasObjRef.current);
+        });
 
-        // console.log(canvasObjRef.current.__eventListeners["mouse:down"]);
+        console.log(canvasObjRef.current.__eventListeners);
 
         return () => {
-            canvasObjRef.current.__eventListeners["mouse:down"] = [];
+            const eventListeners = canvasObjRef.current.__eventListeners;
+            Object.keys(eventListeners).forEach(key => eventListeners[key]=[]);
             
         }
       }, [props]
@@ -178,8 +183,31 @@ export default function Canvas(props) {
         e.stopPropagation();
     }
 
+
+    function mouseDblclickHandler(opt) {
+        console.log('dbclick');
+        // console.log(canvasObjRef.current.getActiveObject());
+        const canvas = canvasObjRef.current;
+        if (canvas.getActiveObject() && canvas.getActiveObject().type === 'polygon') {
+            const polygon = canvas.getActiveObject();
+            // console.log('polygon1 ', polygon);
+            canvas.editPolygon = true;
+            canvas.editingPolygonId = polygon.id;
+            // editPolygon.current = true;
+            // polygon.cornerColor = 'red';
+            // polygon.cornerStrokeColor = 'white';
+            polygon.pointObjects.forEach(obj=>canvas.add(obj));
+            polygon.lineObjects.forEach(obj=>canvas.add(obj));
+            canvas.remove(polygon);
+        }
+
+        
+    }
+
     function mouseDownHandler(e, canvas) {
         console.log('mouse down');
+
+        // drag image (mouse down + alt/option key down)
         if (e.altKey === true) {
             canvas.isDragging = true;
             canvas.selection = false;
@@ -190,14 +218,6 @@ export default function Canvas(props) {
         // console.log(props.drawPolygon);
         if (props.drawPolygon === true) {
             canvas.selection = false;
-            // const polygonObj = new fabric.Polygon([
-            //     {x:100, y:100}, {x:150, y:100}, {x:125, y:150}
-            // ], {
-            //     stroke: 'red',
-            //     strokeWidth: 1,
-            // });
-
-            // console.log(canvas);
 
             const clickPoint = canvas.getPointer();
             console.log(clickPoint);
@@ -209,7 +229,9 @@ export default function Canvas(props) {
                 // console.log(point.getCenterPoint(), point.getCoords());
             } else if (canvas.polygonPoints.length - canvas.polygonLines.length == 1) {
                 const startPoint = canvas.polygonPoints[0].getCenterPoint();
-                if (Math.abs(startPoint.x - clickPoint.x) <= CLICK_TOLERANCE && Math.abs(startPoint.y - clickPoint.y) <= CLICK_TOLERANCE) {
+                if (Math.abs(startPoint.x - clickPoint.x) <= CLICK_TOLERANCE 
+                && Math.abs(startPoint.y - clickPoint.y) <= CLICK_TOLERANCE 
+                && canvas.polygonPoints.length >= 3) {
                     const prePoint = canvas.polygonPoints[canvas.polygonPoints.length-1].getCenterPoint();
                     const line = createLine(prePoint, startPoint, 'red');
                     canvas.polygonLines.push(line);
@@ -217,11 +239,18 @@ export default function Canvas(props) {
                     // console.log(canvas.polygonPoints.map(p => p.getCenterPoint()));
                     const polygonObj = new fabric.Polygon(
                         canvas.polygonPoints.map(p => p.getCenterPoint()), {
+                            id: polygonObjListRef.current.length, ////
+                            type: 'polygon',
                             stroke: 'red',
                             strokeWidth: 1,
-                            fill: false
+                            fill: false,
+                            edit: false, ////
+                            pointObjects: [...canvas.polygonPoints], ////
+                            lineObjects: [...canvas.polygonLines], ////
                         }
                     );
+    
+                    polygonObjListRef.current = [...polygonObjListRef.current, polygonObj];
                     // console.log(polygonObj)
                     canvas.add(polygonObj).setActiveObject(polygonObj);
                     canvas.polygonPoints.forEach(p=>canvas.remove(p));
@@ -241,6 +270,22 @@ export default function Canvas(props) {
                     // canvas.renderAll();
                     canvas.polygonLines.push(line);
                 }
+            }
+        }
+
+        if (canvas.editPolygon) {
+            const polygon = polygonObjListRef.current.filter(obj=>obj.id===canvas.editingPolygonId)[0];
+            console.log(polygon);
+            if (!canvas.getActiveObject()) {
+                //TODO
+            }
+            else if (canvas.getActiveObject().type === 'polygonPoint') {
+                console.log('selected');
+                
+                const point = canvas.getActiveObject();
+                // console.log(polygonObjListRef.current[point.owner]);
+                canvas.dragPoint = true;
+                // dragPoint.current = true;
             }
         }
             
@@ -264,6 +309,24 @@ export default function Canvas(props) {
             canvas.lastPosX = e.clientX;
             canvas.lastPosY = e.clientY;
         }
+
+        if (canvas.dragPoint) {
+            console.log('dragging');
+            const point = canvas.getActiveObject();
+            // console.log('point ', point);
+            const polygon = polygonObjListRef.current[point.owner];
+            // console.log('polygon ', polygon);
+            const prePointIndex = point.index>0 ? point.index-1 : polygon.lineObjects.length-1;
+            const postPointIndex = point.index<polygon.pointObjects.length-1 ? point.index+1 : 0;
+            const newPreLine = createLine(polygon.pointObjects[prePointIndex].getCenterPoint(), point.getCenterPoint(), polygon.stroke);
+            const newPostLine = createLine(point.getCenterPoint(), polygon.pointObjects[postPointIndex].getCenterPoint(), polygon.stroke);
+            canvas.remove(polygon.lineObjects[prePointIndex]);
+            canvas.remove(polygon.lineObjects[point.index]); //postLineIndex==pointIndex
+            polygon.lineObjects[prePointIndex] = newPreLine;
+            polygon.lineObjects[point.index] = newPostLine;
+            canvas.add(newPreLine);
+            canvas.add(newPostLine)
+        }
     }
     
     function mouseUpHandler(canvas) {
@@ -272,6 +335,8 @@ export default function Canvas(props) {
         canvas.setViewportTransform(canvas.viewportTransform);
         canvas.isDragging = false;
         canvas.selection = true;
+
+        canvas.dragPoint = false;
     }
 
     
@@ -283,6 +348,11 @@ export default function Canvas(props) {
             strokeWidth: 1,
             stroke: color,
             fill: color,
+            lockScalingX: true,
+            lockScalingY: true,
+            type: 'polygonPoint', ////
+            owner: 0, ////
+            index: canvasObjRef.current.polygonPoints.length, ////
         })
         return point;
     }
@@ -293,6 +363,10 @@ export default function Canvas(props) {
         ], {
             strokeWidth: 1,
             stroke: color,
+            selectable: false,
+            type: 'polygonLine', ////
+            owner: 0, ////
+            index: canvasObjRef.current.polygonLines.length, ////
         })
         return line;
     }
