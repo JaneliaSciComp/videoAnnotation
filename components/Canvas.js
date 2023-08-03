@@ -246,7 +246,7 @@ export default function Canvas(props) {
                 const polygonObj = createPolygon(canvas.polygonPoints.map(p => p.getCenterPoint()), 
                     idObjToDraw, canvas.polygonPoints, canvas.polygonLines);
                 polygonObjListRef.current = {...polygonObjListRef.current, [polygonObj.id]: polygonObj};
-                // console.log(polygonObj)
+                console.log('polygonObj ', polygonObj)
                 canvas.add(polygonObj).setActiveObject(polygonObj);
                 
                 canvas.polygonPoints.forEach(p=>canvas.remove(p));
@@ -255,17 +255,17 @@ export default function Canvas(props) {
                 canvas.polygonLines=[];
                 canvas.selection = true;
                 props.setDrawPolygon(false);
-
+                console.log('canvas ', canvas);
             } else {
                 const point = createPoint(clickPoint, idObjToDraw);
                 canvas.add(point).setActiveObject(point);
-                canvas.polygonPoints.push(point);
-
                 const prePoint = canvas.polygonPoints[canvas.polygonPoints.length-1].getCenterPoint();
                 const line = createLine(prePoint, point.getCenterPoint(), idObjToDraw, canvas.polygonLines.length);
                 console.log('line ', line);
-                canvas.add(line);  //.setActiveObject(point);
+                canvas.add(line);
+                canvas.polygonPoints.push(point);
                 canvas.polygonLines.push(line);
+                console.log('canvas ',canvas);
             }
         }
     }
@@ -363,7 +363,7 @@ export default function Canvas(props) {
             //centeredScaling: true,
             type: idObj.type + 'Point', 
             owner: idObj.id,
-            index: canvasObjRef.current.length,
+            index: canvasObjRef.current.polygonPoints.length,
         })
         console.log('point', point);
         point.on('mouseover', (opt)=>{
