@@ -10,7 +10,7 @@ export default function Workspace(props) {
     const [frame, setFrame] = useState('/fly.png');
     // const [annotation, setAnnotation] = useState([]);
     const [rectIdList, setRectIdList] = useState([]);
-    const [polygonIdList, setPolygonIdList] = useState([]);
+    const [polygonIdList, setPolygonIdList] = useState({});
     const [drawPolygon, setDrawPolygon] = useState(false);
 
 
@@ -18,11 +18,14 @@ export default function Workspace(props) {
 
 
     function addRectId(idObj) {
-        // idObj is a object constructed by Rectangle, this func is called in Rectangle
         setRectIdList([...rectIdList, idObj]);
     }
     
-    
+    function addPolygonId(idObj) {
+        const key = Object.keys(idObj)[0];
+        console.log(key);
+        setPolygonIdList({...polygonIdList, [key]: idObj[key]});
+    }
 
     return (
         <div className={styles.container}>
@@ -31,12 +34,13 @@ export default function Workspace(props) {
                 addRectId={addRectId} />
             <Polygon label='polygon' color='blue'
                 drawPolygon={drawPolygon}
-                setDrawPolygon={setDrawPolygon} />
+                setDrawPolygon={setDrawPolygon} 
+                addPolygonId={addPolygonId}/>
             <Canvas className='my-3' 
                 img={frame}
                 // annotation={annotation} 
                 rectIdList={rectIdList}
-                resetRectIdList={setRectIdList}
+                setRectIdList={setRectIdList}
                 drawPolygon={drawPolygon}
                 setDrawPolygon={setDrawPolygon}
                 polygonIdList={polygonIdList}
