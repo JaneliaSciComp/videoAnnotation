@@ -7,7 +7,7 @@ export default function Polygon(props) {
     function clickHandler() {
         const id = Date.now().toString();
         console.log('polygon class ', id);
-        props.setDrawPolygon(!props.drawPolygon);
+        props.setDrawPolygon(true);
         props.addPolygonId({
             [id]: {
                 id: id,

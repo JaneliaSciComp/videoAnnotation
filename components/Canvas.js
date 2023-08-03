@@ -164,6 +164,8 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
         if (canvas.getActiveObject() && canvas.getActiveObject().type === 'polygon') {
             const polygon = canvas.getActiveObject();
+            console.log(polygon);
+            console.log(polygon.calcTransformMatrix());
             canvas.editPolygon = true;
             canvas.editingPolygonId = polygon.id;
             polygon.lineObjects.forEach(obj=>canvas.add(obj));
@@ -255,17 +257,14 @@ export default function Canvas(props) {
                 canvas.polygonLines=[];
                 canvas.selection = true;
                 props.setDrawPolygon(false);
-                console.log('canvas ', canvas);
             } else {
                 const point = createPoint(clickPoint, idObjToDraw);
                 canvas.add(point).setActiveObject(point);
                 const prePoint = canvas.polygonPoints[canvas.polygonPoints.length-1].getCenterPoint();
                 const line = createLine(prePoint, point.getCenterPoint(), idObjToDraw, canvas.polygonLines.length);
-                console.log('line ', line);
                 canvas.add(line);
                 canvas.polygonPoints.push(point);
                 canvas.polygonLines.push(line);
-                console.log('canvas ',canvas);
             }
         }
     }
@@ -412,6 +411,12 @@ export default function Canvas(props) {
                 stroke: idObj.color,
                 strokeWidth: STROKE_WIDTH,
                 fill: false,
+                // lockRotation: true,
+                lockScalingFlip: true,
+                lockSkewingX: true,
+                lockSkewingY: true,
+                // lockScalingX: true,
+                // lockScalingY: true,
                 pointObjects: [...pointObjects], 
                 lineObjects: [...lineObjects], 
             }
