@@ -98,6 +98,7 @@ export default function Canvas(props) {
             height:50,
             stroke: idObj.color,
             strokeWidth: STROKE_WIDTH,
+            strokeUniform: true,
             fill: null,
             lockRotation: true,
             lockScalingFlip: true,
@@ -163,16 +164,31 @@ export default function Canvas(props) {
         // console.log(canvasObjRef.current.getActiveObject());
         const canvas = canvasObjRef.current;
         if (canvas.getActiveObject() && canvas.getActiveObject().type === 'polygon') {
+            // const p = new fabric.Point(20,20);
+            // canvas.add(p);
             const polygon = canvas.getActiveObject();
             console.log(polygon);
-            console.log(polygon.calcTransformMatrix());
+            console.log('own matrix', polygon.calcOwnMatrix());
+            console.log('matrix', polygon.calcTransformMatrix());
             canvas.editPolygon = true;
             canvas.editingPolygonId = polygon.id;
+
+            console.log('points', polygon.points);
+            console.log(polygon.pathOffset, polygon.getCenterPoint());
+            const matrix = polygon.calcTransformMatrix();
+            const newPoints = polygon.points.map(p => new fabric.Point(p.x - polygon.pathOffset.x, p.y - polygon.pathOffset.y))
+                .map(p => fabric.util.transformPoint(p, matrix));
+            console.log('new points', newPoints);
+            const idObjToEdit = props.polygonIdList[polygon.id];
+            polygon.pointObjects = newPoints.map((p, i) => createPoint(p, idObjToEdit, i));
+            polygon.lineObjects = newPoints.map((p, i) => i<newPoints.length-1 ? createLine(p, newPoints[i+1], props.polygonIdList[polygon.id]) : createLine(p, newPoints[0], idObjToEdit))
+            console.log(polygon.lineObjects);
             polygon.lineObjects.forEach(obj=>canvas.add(obj));
             polygon.pointObjects.forEach(obj=>canvas.add(obj));
             canvas.remove(polygon);
         }
     }
+
 
     function mouseDownHandler(opt) {
         const e = opt.e;
@@ -193,7 +209,7 @@ export default function Canvas(props) {
             if (!canvas.getActiveObject() || canvas.getActiveObject().type !== 'polygonPoint'
             || canvas.getActiveObject().owner != canvas.editingPolygonId) {
                 finishEditPolygon();
-            } else if (canvas.getActiveObject().type === 'polygonPoint') {
+            } else {    
                 console.log('selected');
                 canvas.dragPoint = true;
             }
@@ -214,15 +230,13 @@ export default function Canvas(props) {
         
         const existingIds = new Set(Object.keys(polygonObjListRef.current));
         const idToDraw = Object.keys(props.polygonIdList).filter(id => !existingIds.has(id))[0];
-        console.log('id to draw ', idToDraw);
         const idObjToDraw = {...props.polygonIdList[idToDraw]};
-        console.log('idObj to draw', idObjToDraw);
 
         const clickPoint = canvas.getPointer();
         //console.log(clickPoint);
        
         if (canvas.polygonPoints.length==0 && canvas.polygonLines.length==0) {
-            const point = createPoint(clickPoint, idObjToDraw);
+            const point = createPoint(clickPoint, idObjToDraw, 0);
             canvas.add(point).setActiveObject(point);
             canvas.polygonPoints.push(point);
             // console.log(point.getCenterPoint(), point.getCoords());
@@ -232,23 +246,14 @@ export default function Canvas(props) {
             if (Math.abs(startPoint.x - clickPoint.x) <= CLICK_TOLERANCE 
             && Math.abs(startPoint.y - clickPoint.y) <= CLICK_TOLERANCE 
             && canvas.polygonPoints.length >= 3) {
-                canvas.polygonPoints[0].set({ // remove mouseover effect
-                    stroke: idObjToDraw.color,
-                    fill: idObjToDraw.color,
-                    scaleX: 1,
-                    scaleY: 1,
-                })
-                
                 const prePoint = canvas.polygonPoints[canvas.polygonPoints.length-1].getCenterPoint();
-                const line = createLine(prePoint, startPoint, idObjToDraw, canvas.polygonLines.length);
+                const line = createLine(prePoint, startPoint, idObjToDraw)//, canvas.polygonLines.length);
                 canvas.polygonLines.push(line);
                 canvas.add(line);
 
                 // console.log(canvas.polygonPoints.map(p => p.getCenterPoint()));
-                const polygonObj = createPolygon(canvas.polygonPoints.map(p => p.getCenterPoint()), 
-                    idObjToDraw, canvas.polygonPoints, canvas.polygonLines);
+                const polygonObj = createPolygon(canvas.polygonPoints.map(p => p.getCenterPoint()), idObjToDraw);
                 polygonObjListRef.current = {...polygonObjListRef.current, [polygonObj.id]: polygonObj};
-                console.log('polygonObj ', polygonObj)
                 canvas.add(polygonObj).setActiveObject(polygonObj);
                 
                 canvas.polygonPoints.forEach(p=>canvas.remove(p));
@@ -258,10 +263,10 @@ export default function Canvas(props) {
                 canvas.selection = true;
                 props.setDrawPolygon(false);
             } else {
-                const point = createPoint(clickPoint, idObjToDraw);
+                const point = createPoint(clickPoint, idObjToDraw, canvas.polygonPoints.length);
                 canvas.add(point).setActiveObject(point);
                 const prePoint = canvas.polygonPoints[canvas.polygonPoints.length-1].getCenterPoint();
-                const line = createLine(prePoint, point.getCenterPoint(), idObjToDraw, canvas.polygonLines.length);
+                const line = createLine(prePoint, point.getCenterPoint(), idObjToDraw)//, canvas.polygonLines.length);
                 canvas.add(line);
                 canvas.polygonPoints.push(point);
                 canvas.polygonLines.push(line);
@@ -273,8 +278,7 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
         const polygon = polygonObjListRef.current[canvas.editingPolygonId];
         const idObjToEdit = props.polygonIdList[canvas.editingPolygonId];
-        const newPolygon = createPolygon(polygon.pointObjects.map(p => p.getCenterPoint()), 
-            idObjToEdit, polygon.pointObjects, polygon.lineObjects);
+        const newPolygon = createPolygon(polygon.pointObjects.map(p => p.getCenterPoint()),idObjToEdit);
         polygonObjListRef.current[newPolygon.id] = newPolygon;////
         canvas.add(newPolygon).setActiveObject(newPolygon);
         polygon.pointObjects.forEach(p=>canvas.remove(p));
@@ -319,14 +323,15 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
         // console.log('dragging');
         const point = canvas.getActiveObject();
-        // console.log('point ', point);
+        console.log('point ', point, point.getCenterPoint());
+        console.log(point.calcTransformMatrix(),point.calcOwnMatrix());
         const polygon = polygonObjListRef.current[point.owner];
         const idObjToEdit = props.polygonIdList[point.owner];
         // console.log('polygon ', polygon);
         const prePointIndex = point.index>0 ? point.index-1 : polygon.lineObjects.length-1;
         const postPointIndex = point.index<polygon.pointObjects.length-1 ? point.index+1 : 0;
-        const newPreLine = createLine(polygon.pointObjects[prePointIndex].getCenterPoint(), point.getCenterPoint(), idObjToEdit, prePointIndex);
-        const newPostLine = createLine(point.getCenterPoint(), polygon.pointObjects[postPointIndex].getCenterPoint(), idObjToEdit, point.index);
+        const newPreLine = createLine(polygon.pointObjects[prePointIndex].getCenterPoint(), point.getCenterPoint(), idObjToEdit)//, prePointIndex);
+        const newPostLine = createLine(point.getCenterPoint(), polygon.pointObjects[postPointIndex].getCenterPoint(), idObjToEdit)//, point.index);
         canvas.remove(polygon.lineObjects[prePointIndex], polygon.lineObjects[point.index]);
         delete(polygon.lineObjects[prePointIndex]);
         delete(polygon.lineObjects[point.index]);
@@ -347,24 +352,29 @@ export default function Canvas(props) {
     }
 
     
-    function createPoint(clickPoint, idObj) {
+    function createPoint(clickPoint, idObj, index) {
         const point = new fabric.Circle({
-            left: clickPoint.x, // - CIRCLE_RADIUS, 
-            top: clickPoint.y, // - CIRCLE_RADIUS, 
+            left: clickPoint.x,  
+            top: clickPoint.y,  
             radius: CIRCLE_RADIUS,
             originX: 'center',
             originY: 'center',
             strokeWidth: 1,
+            strokeUniform: true,
             stroke: idObj.color,
             fill: idObj.color,
             lockScalingX: true,
             lockScalingY: true,
+            lockRotation: true,
+            lockScalingFlip: true,
+            lockSkewingX: true,
+            lockSkewingY: true,
             //centeredScaling: true,
             type: idObj.type + 'Point', 
             owner: idObj.id,
-            index: canvasObjRef.current.polygonPoints.length,
+            index: index,
         })
-        console.log('point', point);
+        // console.log('point', point);
         point.on('mouseover', (opt)=>{
             opt.target.set({
                 // radius: 10,
@@ -390,7 +400,7 @@ export default function Canvas(props) {
         return point;
     }
 
-    function createLine(startPoint, endPoint, idObj, index) {
+    function createLine(startPoint, endPoint, idObj){//, index) {
         return new fabric.Line([
             startPoint.x, startPoint.y, endPoint.x, endPoint.y
         ], {
@@ -399,17 +409,25 @@ export default function Canvas(props) {
             selectable: false,
             type: idObj.type+'Line',
             owner: idObj.id,
-            index: index, 
+            //index: index, 
+            lockRotation: true,
+            lockScalingFlip: true,
+            lockSkewingX: true,
+            lockSkewingY: true,
+            lockScalingX: true,
+            lockScalingY: true,
         })
     }
 
-    function createPolygon(points, idObj, pointObjects, lineObjects) {
+    function createPolygon(points, idObj) {
         const canvas = canvasObjRef.current;
         return new fabric.Polygon(points, {
                 id: idObj.id, 
                 type: idObj.type,
+                lable: idObj.label,
                 stroke: idObj.color,
                 strokeWidth: STROKE_WIDTH,
+                strokeUniform: true,
                 fill: false,
                 // lockRotation: true,
                 lockScalingFlip: true,
@@ -417,8 +435,6 @@ export default function Canvas(props) {
                 lockSkewingY: true,
                 // lockScalingX: true,
                 // lockScalingY: true,
-                pointObjects: [...pointObjects], 
-                lineObjects: [...lineObjects], 
             }
         ); 
     }
