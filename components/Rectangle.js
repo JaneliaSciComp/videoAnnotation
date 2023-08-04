@@ -6,6 +6,7 @@ import styles from '../styles/Button.module.css';
 export default function Rectangle(props) {
     function clickHandler() {
         const id = Date.now().toString();
+        props.setDrawRect(true);
         props.addRectId({
             id: id,
             label: props.label,

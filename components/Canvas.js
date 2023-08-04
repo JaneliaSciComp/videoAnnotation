@@ -16,11 +16,11 @@ export default function Canvas(props) {
     const canvasObjRef = useRef(null);
     const imageObjRef = useRef(null);
     const rectObjListRef = useRef([]);
-    const preRectIdListRef = useRef([...props.rectIdList]); // to remember previous rect ids
+    // const preRectIdListRef = useRef([...props.rectIdList]); // to remember previous rect ids
     const polygonObjListRef = useRef({});
 
     
-    console.log('canvas render');
+    console.log('canvas render', props);
 
     //Set up canvas
     useEffect(() => {
@@ -59,12 +59,12 @@ export default function Canvas(props) {
         canvasObjRef.current.on('mouse:up', mouseUpHandler);
         document.addEventListener("keydown", deleteKeyHandler); // add delete key event listener
 
-        console.log(canvasObjRef.current.__eventListeners);
+        // console.log(canvasObjRef.current.__eventListeners);
 
         return () => {
             const eventListeners = canvasObjRef.current.__eventListeners;
             Object.keys(eventListeners).forEach(key => eventListeners[key]=[]);
-            
+            document.removeEventListener("keydown", deleteKeyHandler);
         }
       }, [props]
     )
@@ -73,10 +73,9 @@ export default function Canvas(props) {
     // draw newly added rect
     useEffect(() => {
         // console.log(props.rectIdList.length, preRectIdListRef.current);
-        if (props.rectIdList.length > preRectIdListRef.current.length) {
-            drawRect(props.rectIdList[props.rectIdList.length-1]);
+        if (props.drawRect) {
+            drawRect();
             // console.log('rectObjList length: ', rectObjListRef.current);
-            preRectIdListRef.current = [...preRectIdListRef.current, props.rectIdList[props.rectIdList.length-1]];
             // console.log(preRectIdListRef.current, props.rectIdList.length);
         }
       }
@@ -84,14 +83,21 @@ export default function Canvas(props) {
     )
 
 
-    function drawRect(idObj) {
-        const recObj = new fabric.Rect({
-            id: idObj.id,
-            label: idObj.label,
-            type: idObj.type,
+    function drawRect() {
+        const canvas = canvasObjRef.current;
+        canvas.selection = false;
+
+        const existingIds = new Set(Object.keys(rectObjListRef.current));
+        const idToDraw = Object.keys(props.rectIdList).filter(id => !existingIds.has(id))[0];
+        const idObjToDraw = {...props.rectIdList[idToDraw]};
+
+        const rectObj = new fabric.Rect({
+            id: idObjToDraw.id,
+            label: idObjToDraw.label,
+            type: idObjToDraw.type,
             width: 50,
             height:50,
-            stroke: idObj.color,
+            stroke: idObjToDraw.color,
             strokeWidth: STROKE_WIDTH,
             strokeUniform: true,
             fill: null,
@@ -102,10 +108,11 @@ export default function Canvas(props) {
             hasRotatingPoint: false
         });
         // console.log(recObj);
-        rectObjListRef.current = [...rectObjListRef.current, recObj];
+        rectObjListRef.current = {...rectObjListRef.current, [rectObj.id]: rectObj};
         // console.log(rectObjListRef.current.length);
-        canvasObjRef.current.add(recObj).setActiveObject(recObj);
-
+        canvas.add(rectObj).setActiveObject(rectObj);
+        canvas.selection = true;
+        props.setDrawRect(false);
     }
 
 
@@ -126,20 +133,24 @@ export default function Canvas(props) {
         // remove obj from canvas, objListRef, remove idObj in parent
         const canvas = canvasObjRef.current;
         const activeObj = canvas.getActiveObject();
-        
         switch (activeObj.type) {
             case 'rect':
-                rectObjListRef.current = rectObjListRef.current.filter(Obj =>  Obj.id !== activeObj.id)
-                preRectIdListRef.current = preRectIdListRef.current.filter(obj => obj.id !== activeObj.id);
-                props.setRectIdList([...preRectIdListRef.current]);
+                // rectObjListRef.current = rectObjListRef.current.filter(Obj =>  Obj.id !== activeObj.id)
+                // preRectIdListRef.current = preRectIdListRef.current.filter(obj => obj.id !== activeObj.id);
+                // props.setRectIdList([...preRectIdListRef.current]);
+                delete(rectObjListRef.current[activeObj.id]);
+                const newRectIdList = {...props.rectIdList};
+                delete(newRectIdList[activeObj.id]);
+                props.setRectIdList(newRectIdList);
+                // console.log(rectObjListRef.current, props.rectIdList);
             case 'polygon':
-                console.log(polygonObjListRef.current, Object.keys(props.polygonIdList));
-                const idToDelete = activeObj.id;
-                delete(polygonObjListRef.current[idToDelete]);
-                const newIdList = {...props.polygonIdList};
-                delete(newIdList[idToDelete]);
-                props.setPolygonIdList(newIdList);
-                console.log(polygonObjListRef.current, props.polygonIdList);
+                // console.log(polygonObjListRef.current, Object.keys(props.polygonIdList));
+                delete(polygonObjListRef.current[activeObj.id]);
+                const newPolygonIdList = {...props.polygonIdList};
+                delete(newPolygonIdList[activeObj.id]);
+                // console.log(newIdList);
+                props.setPolygonIdList(newPolygonIdList);
+                // console.log(polygonObjListRef.current, props.polygonIdList);
         }
         
         canvas.remove(activeObj);
@@ -160,7 +171,7 @@ export default function Canvas(props) {
         }
         // console.log('scaled: ', image.getScaledWidth(), image.getScaledHeight());
         // console.log('original: ', image.get('width'), image.get('height'));
-        console.log(image);
+        // console.log(image);
     }
 
 
