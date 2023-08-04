@@ -9,12 +9,12 @@ export default function Polygon(props) {
         console.log('polygon class ', id);
         props.setDrawPolygon(true);
         props.addPolygonId({
-            [id]: {
+            // [id]: {
                 id: id,
                 label: props.label,
                 color: props.color,
                 type: 'polygon' 
-            }
+            // }
         });
     }
 

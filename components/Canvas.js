@@ -6,7 +6,7 @@ import {fabric} from 'fabric';
 
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 500;
-const CIRCLE_RADIUS = 4;
+const CIRCLE_RADIUS = 3;
 const STROKE_WIDTH = 2;
 const WHEEL_SENSITIVITY = 10;
 const CLICK_TOLERANCE = 5;
@@ -33,6 +33,7 @@ export default function Canvas(props) {
                 height: CANVAS_HEIGHT,
                 polygonPoints: [],
                 polygonLines: [],
+                hoverCursor: 'pointer',
             });
             const imageObj = new fabric.Image('image', {
                 selectable: false,
@@ -45,14 +46,7 @@ export default function Canvas(props) {
             //     mouseDownHandler//(opt.e, canvasObj);
             // );
 
-            // add delete key event listener
-            document.onkeydown = (e) => {
-                if ((e.key === 'Backspace' || e.key === 'Delete') && canvasObj.getActiveObject()) {
-                    removeRect();
-                }
-                // console.log(e.key); // Backspace
-                // console.log(e.keyCode); // 8
-            }
+            
 
             canvasObjRef.current = canvasObj;
             imageObjRef.current = imageObj;
@@ -63,6 +57,7 @@ export default function Canvas(props) {
         canvasObjRef.current.on('mouse:dblclick', mouseDblclickHandler);
         canvasObjRef.current.on('mouse:move', mouseMoveHandler);
         canvasObjRef.current.on('mouse:up', mouseUpHandler);
+        document.addEventListener("keydown", deleteKeyHandler); // add delete key event listener
 
         console.log(canvasObjRef.current.__eventListeners);
 
@@ -104,6 +99,7 @@ export default function Canvas(props) {
             lockScalingFlip: true,
             lockSkewingX: true,
             lockSkewingY: true,
+            hasRotatingPoint: false
         });
         // console.log(recObj);
         rectObjListRef.current = [...rectObjListRef.current, recObj];
@@ -113,16 +109,39 @@ export default function Canvas(props) {
     }
 
 
-    function removeRect(){
-        // remove rectObj from canvas, remove rectIdObj in parent
+    // function removeRect(){
+    //     // remove rectObj from canvas, remove rectIdObj in parent
+    //     const canvas = canvasObjRef.current;
+    //     const activeObj = canvas.getActiveObject();
+    //     if (activeObj.type === 'rect') {
+    //         rectObjListRef.current = rectObjListRef.current.filter(Obj =>  Obj.id !== activeObj.id)
+    //         preRectIdListRef.current = preRectIdListRef.current.filter(obj => obj.id !== activeObj.id);
+    //         props.setRectIdList([...preRectIdListRef.current]);
+    //         // console.log(rectObjListRef.current.length, preRectIdListRef);
+    //     }
+    //     canvas.remove(activeObj);
+    // }
+
+    function removeObj(){
+        // remove obj from canvas, objListRef, remove idObj in parent
         const canvas = canvasObjRef.current;
         const activeObj = canvas.getActiveObject();
-        if (activeObj.type === 'rect') {
-            rectObjListRef.current = rectObjListRef.current.filter(Obj =>  Obj.id !== activeObj.id)
-            preRectIdListRef.current = preRectIdListRef.current.filter(obj => obj.id !== activeObj.id);
-            props.setRectIdList([...preRectIdListRef.current]);
-            // console.log(rectObjListRef.current.length, preRectIdListRef);
+        
+        switch (activeObj.type) {
+            case 'rect':
+                rectObjListRef.current = rectObjListRef.current.filter(Obj =>  Obj.id !== activeObj.id)
+                preRectIdListRef.current = preRectIdListRef.current.filter(obj => obj.id !== activeObj.id);
+                props.setRectIdList([...preRectIdListRef.current]);
+            case 'polygon':
+                console.log(polygonObjListRef.current, Object.keys(props.polygonIdList));
+                const idToDelete = activeObj.id;
+                delete(polygonObjListRef.current[idToDelete]);
+                const newIdList = {...props.polygonIdList};
+                delete(newIdList[idToDelete]);
+                props.setPolygonIdList(newIdList);
+                console.log(polygonObjListRef.current, props.polygonIdList);
         }
+        
         canvas.remove(activeObj);
     }
 
@@ -349,6 +368,14 @@ export default function Canvas(props) {
         canvas.selection = true;
 
         canvas.dragPoint = false;
+    }
+
+    function deleteKeyHandler(e) {
+        if ((e.key === 'Backspace' || e.key === 'Delete') && canvasObjRef.current.getActiveObject()) {
+            removeObj();
+        }
+        // console.log(e.key); // Backspace
+        // console.log(e.keyCode); // 8
     }
 
     

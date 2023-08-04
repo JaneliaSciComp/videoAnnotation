@@ -24,7 +24,7 @@ export default function Workspace(props) {
     function addPolygonId(idObj) {
         const key = Object.keys(idObj)[0];
         console.log(key);
-        setPolygonIdList({...polygonIdList, [key]: idObj[key]});
+        setPolygonIdList({...polygonIdList, [idObj.id]: idObj});
     }
 
     return (
