@@ -3,6 +3,8 @@ import styles from '../styles/Workspace.module.css';
 import Canvas from './Canvas';
 import Rectangle from './Rectangle';
 import Polygon from './Polygon';
+import KeyPoint from './Keypoint';
+import Category from './Category';
 import {Row} from 'react-bootstrap';
 
 
@@ -10,6 +12,9 @@ import {Row} from 'react-bootstrap';
 export default function Workspace(props) {
     const [frame, setFrame] = useState('/fly.png');
     // const [annotation, setAnnotation] = useState([]);
+    const [categoryIdList, setCategoryIdList] = useState({});
+    const [keyPointIdList, setKeyPointIdList] = useState({});
+    const [drawKeyPoint, setDrawKeyPoint] = useState(false);
     const [rectIdList, setRectIdList] = useState({});
     const [drawRect, setDrawRect] = useState(false);
     const [polygonIdList, setPolygonIdList] = useState({});
@@ -18,6 +23,13 @@ export default function Workspace(props) {
 
     console.log('workspace render');
 
+    function addCategoryId(idObj) {
+        setCategoryIdList({...categoryIdList, [idObj.id]: idObj});
+    }
+
+    function addKeyPointId(idObj) {
+        setKeyPointIdList({...keyPointIdList, [idObj.id]: idObj});
+    }
 
     function addRectId(idObj) {
         setRectIdList({...rectIdList, [idObj.id]: idObj});
@@ -31,12 +43,36 @@ export default function Workspace(props) {
         <div className={styles.container}>
           <main className={styles.main}>
             <Row className='mx-1 my-1'>
-                <Rectangle label='rectangle' color='red'
+                <Category
+                    label='chase'
+                    color='black'
+                    addCategoryId={addCategoryId}
+                    >
+                </Category>
+            </Row>
+            <Row className='mx-1 my-1'> 
+                <KeyPoint
+                    label='head'
+                    color='lightblue'
+                    type='keyPoint' 
+                    drawKeyPoint={drawKeyPoint}
+                    setDrawKeyPoint={setDrawKeyPoint}
+                    addKeyPointId={addKeyPointId}
+                    >
+                </KeyPoint>
+            </Row>
+          
+            <Row className='mx-1 my-1'>
+                <Rectangle 
+                    label='rectangle' 
+                    color='red'
                     drawRect={drawRect}
                     setDrawRect={setDrawRect} 
                     addRectId={addRectId} 
                     />
-                <Rectangle label='rect' color='blue'
+                <Rectangle 
+                    label='rect' 
+                    color='blue'
                     drawRect={drawRect}
                     setDrawRect={setDrawRect} 
                     addRectId={addRectId} 
@@ -54,6 +90,10 @@ export default function Workspace(props) {
             <Row className='mx-1 my-1'>
                 <Canvas 
                     img={frame}
+                    drawKeyPoint={drawKeyPoint}
+                    setDrawKeyPoint={setDrawKeyPoint}
+                    keyPointIdList={keyPointIdList}
+                    setKeyPointIdList={setKeyPointIdList}
                     drawRect={drawRect}
                     setDrawRect={setDrawRect}
                     rectIdList={rectIdList}

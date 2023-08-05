@@ -1,6 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
 import styles from '../styles/Canvas.module.css';
-import {Button} from 'react-bootstrap';
 import {fabric} from 'fabric';
 
 
@@ -15,7 +14,8 @@ const CLICK_TOLERANCE = 5;
 export default function Canvas(props) {
     const canvasObjRef = useRef(null);
     const imageObjRef = useRef(null);
-    const rectObjListRef = useRef([]);
+    const keyPointObjListRef = useRef({});
+    const rectObjListRef = useRef({});
     const polygonObjListRef = useRef({});
 
     
@@ -67,93 +67,6 @@ export default function Canvas(props) {
       }, [props]
     )
 
-
-
-    function createRect() {
-        const canvas = canvasObjRef.current;
-        const idObj = canvas.rectIdObjToDraw;
-        const startPos = canvas.rectStartPosition;
-        const endPos = canvas.rectEndPosition;
-        canvas.selection = false;
-
-        const rectObj = new fabric.Rect({
-            id: idObj.id,
-            label: idObj.label,
-            type: idObj.type,
-            //left,top,width,height need to consider user's drag direction
-            left: Math.min(startPos.x, endPos.x),
-            top: Math.min(startPos.y, endPos.y),
-            width: Math.abs(endPos.x - startPos.x),
-            height: Math.abs(endPos.y - startPos.y),
-            stroke: idObj.color,
-            strokeWidth: STROKE_WIDTH,
-            strokeUniform: true,
-            fill: null,
-            lockRotation: true,
-            lockScalingFlip: true,
-            lockSkewingX: true,
-            lockSkewingY: true,
-            hasRotatingPoint: false
-        });
-        // console.log(recObj);
-        rectObjListRef.current = {...rectObjListRef.current, [rectObj.id]: rectObj};
-        // console.log(rectObjListRef.current.length);
-        canvas.add(rectObj).setActiveObject(rectObj);
-        canvas.rectStartPosition = null;
-        canvas.rectEndPosition = null;
-        canvas.rectIdObjToDraw = null;
-        canvas.rectLines.forEach(l => canvas.remove(l));
-        canvas.rectLines = [];
-        props.setDrawRect(false);
-        canvas.selection = true;
-    }
-
-
-    function drawRect() {
-        const canvas = canvasObjRef.current;
-        const idObj = canvas.rectIdObjToDraw;
-        const corner1 = canvas.rectStartPosition;
-        const corner3 = canvas.getPointer();
-        const corner2 = {x: corner1.x, y: corner3.y};
-        const corner4 = {x: corner3.x, y: corner1.y};
-        const line1 = createLine(corner1, corner2, idObj);
-        canvas.add(line1);
-        const line2 = createLine(corner2, corner3, idObj);
-        canvas.add(line2);
-        const line3 = createLine(corner3, corner4, idObj);
-        canvas.add(line3);
-        const line4 = createLine(corner4, corner1, idObj);
-        canvas.add(line4);
-        if (canvas.rectLines.length == 4) {
-            canvas.rectLines.forEach(l => canvas.remove(l));
-            canvas.rectLines = [];
-        }
-        canvas.rectLines.push(line1);
-        canvas.rectLines.push(line2);
-        canvas.rectLines.push(line3);
-        canvas.rectLines.push(line4);
-    }
-
-
-    function removeObj(){
-        // remove obj from canvas, objListRef, remove idObj in parent
-        const canvas = canvasObjRef.current;
-        const activeObj = canvas.getActiveObject();
-        switch (activeObj.type) {
-            case 'rect':
-                delete(rectObjListRef.current[activeObj.id]);
-                const newRectIdList = {...props.rectIdList};
-                delete(newRectIdList[activeObj.id]);
-                props.setRectIdList(newRectIdList);
-            case 'polygon':
-                delete(polygonObjListRef.current[activeObj.id]);
-                const newPolygonIdList = {...props.polygonIdList};
-                delete(newPolygonIdList[activeObj.id]);
-                props.setPolygonIdList(newPolygonIdList);
-        }
-        
-        canvas.remove(activeObj);
-    }
 
     
     function scaleImage(canvas, image) { //image, canvas
@@ -223,8 +136,13 @@ export default function Canvas(props) {
         console.log('mouse down');
 
         // drag image (mouse down + alt/option key down)
-        if (e.altKey === true) {
+        // if (e.altKey === true) {
+        if (!canvas.getActiveObject()){
             setupCanvasDrag(e);
+        }
+
+        if (props.drawKeyPoint === true) {
+            createKeyPoint();
         }
 
         if (props.drawRect === true) {
@@ -250,13 +168,56 @@ export default function Canvas(props) {
         }
     }
 
-    function setupCanvasDrag(e) {
+    
+    function mouseMoveHandler(opt) {
+        const e = opt.e;
         const canvas = canvasObjRef.current;
-        canvas.isDragging = true;
-        canvas.selection = false;
-        canvas.lastPosX = e.clientX;
-        canvas.lastPosY = e.clientY;
+        if (canvas.isDragging) {
+            dragCanvas(e);
+        }
+        if (canvas.isDraggingPoint) {
+            dragPolygonPoint();
+        }
+        if (props.drawRect && canvas.rectStartPosition) {
+            drawRect();
+        }
     }
+
+
+    function deleteKeyHandler(e) {
+        if ((e.key === 'Backspace' || e.key === 'Delete') && canvasObjRef.current.getActiveObject()) {
+            removeObj();
+        }
+        // console.log(e.key); // Backspace
+        // console.log(e.keyCode); // 8
+    }
+
+
+    function drawRect() {
+        const canvas = canvasObjRef.current;
+        const idObj = canvas.rectIdObjToDraw;
+        const corner1 = canvas.rectStartPosition;
+        const corner3 = canvas.getPointer();
+        const corner2 = {x: corner1.x, y: corner3.y};
+        const corner4 = {x: corner3.x, y: corner1.y};
+        const line1 = createLine(corner1, corner2, idObj);
+        canvas.add(line1);
+        const line2 = createLine(corner2, corner3, idObj);
+        canvas.add(line2);
+        const line3 = createLine(corner3, corner4, idObj);
+        canvas.add(line3);
+        const line4 = createLine(corner4, corner1, idObj);
+        canvas.add(line4);
+        if (canvas.rectLines.length == 4) {
+            canvas.rectLines.forEach(l => canvas.remove(l));
+            canvas.rectLines = [];
+        }
+        canvas.rectLines.push(line1);
+        canvas.rectLines.push(line2);
+        canvas.rectLines.push(line3);
+        canvas.rectLines.push(line4);
+    }
+
 
     function drawPolygon() {
         const canvas = canvasObjRef.current;
@@ -308,96 +269,63 @@ export default function Canvas(props) {
         }
     }
 
-    function finishEditPolygon() {
-        const canvas = canvasObjRef.current;
-        const polygon = polygonObjListRef.current[canvas.editingPolygonId];
-        const idObjToEdit = props.polygonIdList[canvas.editingPolygonId];
-        const newPolygon = createPolygon(polygon.pointObjects.map(p => p.getCenterPoint()),idObjToEdit);
-        polygonObjListRef.current[newPolygon.id] = newPolygon;////
-        canvas.add(newPolygon).setActiveObject(newPolygon);
-        polygon.pointObjects.forEach(p=>canvas.remove(p));
-        polygon.lineObjects.forEach(l=>canvas.remove(l));
-        canvas.editPolygon = false;
-        canvas.editingPolygonId = null;
-        // delete(polygon);
-    }
-    
 
-    function mouseMoveHandler(opt) {
-        const e = opt.e;
+    function createKeyPoint() {
         const canvas = canvasObjRef.current;
-        if (canvas.isDragging) {
-            dragCanvas(e);
-        }
-        if (canvas.isDraggingPoint) {
-            dragPolygonPoint();
-        }
-        if (props.drawRect && canvas.rectStartPosition) {
-            drawRect();
-        }
-    }
-
-    function dragCanvas(e) {
-        const canvas = canvasObjRef.current;
-        let vpt = canvas.viewportTransform;
-        let zoom = canvas.getZoom();
-        let tempX = vpt[4] + e.clientX - canvas.lastPosX;
-        let tempY = vpt[5] + e.clientY - canvas.lastPosY;
-        // Doesn't let drag go infinitely
-        vpt[4] = Math.max(Math.min(0, tempX), canvas.getWidth() - canvas.getWidth()*zoom);
-        vpt[5] = Math.max(Math.min(0, tempY), canvas.getHeight() - canvas.getHeight()*zoom);
-        // Free drag
-        // vpt[4] += e.clientX - canvas.lastPosX;
-        // vpt[5] += e.clientY - canvas.lastPosY;
-        canvas.requestRenderAll();
-        canvas.lastPosX = e.clientX;
-        canvas.lastPosY = e.clientY;
-    }
-
-    function dragPolygonPoint() {
-        const canvas = canvasObjRef.current;
-        // console.log('dragging');
-        const point = canvas.getActiveObject();
-        console.log('point ', point, point.getCenterPoint());
-        console.log(point.calcTransformMatrix(),point.calcOwnMatrix());
-        const polygon = polygonObjListRef.current[point.owner];
-        const idObjToEdit = props.polygonIdList[point.owner];
-        // console.log('polygon ', polygon);
-        const prePointIndex = point.index>0 ? point.index-1 : polygon.lineObjects.length-1;
-        const postPointIndex = point.index<polygon.pointObjects.length-1 ? point.index+1 : 0;
-        const newPreLine = createLine(polygon.pointObjects[prePointIndex].getCenterPoint(), point.getCenterPoint(), idObjToEdit)//, prePointIndex);
-        const newPostLine = createLine(point.getCenterPoint(), polygon.pointObjects[postPointIndex].getCenterPoint(), idObjToEdit)//, point.index);
-        canvas.remove(polygon.lineObjects[prePointIndex], polygon.lineObjects[point.index]);
-        delete(polygon.lineObjects[prePointIndex]);
-        delete(polygon.lineObjects[point.index]);
-        polygon.lineObjects[prePointIndex] = newPreLine;
-        polygon.lineObjects[point.index] = newPostLine;
-        canvas.add(newPreLine, newPostLine);
-    }
-    
-    function mouseUpHandler() {
-        // on mouse up we want to recalculate new interaction
-        // for all objects, so we call setViewportTransform
-        const canvas = canvasObjRef.current;
-        canvas.setViewportTransform(canvas.viewportTransform);
-        canvas.isDragging = false;
+        canvas.selection = false;
+        const existingIds = new Set(Object.keys(keyPointObjListRef.current));
+        const id = Object.keys(props.keyPointIdList).filter(id => !existingIds.has(id))[0];
+        const idObj = {...props.keyPointIdList[id]};
+        const point = createPoint(canvas.getPointer(), idObj, 0);
+        point.hasControls = false;
+        // point.hasBorders = false;
+        // console.log('keyPointObj', point);
+        // console.log(point.__eventListeners);
+        keyPointObjListRef.current = {...keyPointObjListRef.current, [id]: point};
+        // console.log('keyPointObjListRef', keyPointObjListRef.current);
+        canvas.add(point).setActiveObject(point);
+        props.setDrawKeyPoint(false);
         canvas.selection = true;
-        canvas.isDraggingPoint = false;
-
-        // finish drawing rect
-        if (props.drawRect) {
-            canvas.rectEndPosition = canvas.getPointer();
-            createRect();
-        }
     }
 
 
-    function deleteKeyHandler(e) {
-        if ((e.key === 'Backspace' || e.key === 'Delete') && canvasObjRef.current.getActiveObject()) {
-            removeObj();
-        }
-        // console.log(e.key); // Backspace
-        // console.log(e.keyCode); // 8
+    function createRect() {
+        const canvas = canvasObjRef.current;
+        const idObj = canvas.rectIdObjToDraw;
+        const startPos = canvas.rectStartPosition;
+        const endPos = canvas.rectEndPosition;
+        canvas.selection = false;
+
+        const rectObj = new fabric.Rect({
+            id: idObj.id,
+            label: idObj.label,
+            type: idObj.type,
+            //left,top,width,height need to consider user's drag direction
+            left: Math.min(startPos.x, endPos.x),
+            top: Math.min(startPos.y, endPos.y),
+            width: Math.abs(endPos.x - startPos.x),
+            height: Math.abs(endPos.y - startPos.y),
+            stroke: idObj.color,
+            strokeWidth: STROKE_WIDTH,
+            strokeUniform: true,
+            fill: null,
+            lockRotation: true,
+            lockScalingFlip: true,
+            lockSkewingX: true,
+            lockSkewingY: true,
+            hasRotatingPoint: false
+        });
+        // console.log(recObj);
+        rectObjListRef.current = {...rectObjListRef.current, [rectObj.id]: rectObj};
+        // console.log(rectObjListRef.current.length);
+        canvas.add(rectObj).setActiveObject(rectObj);
+        canvas.rectStartPosition = null;
+        canvas.rectEndPosition = null;
+        canvas.rectIdObjToDraw = null;
+        canvas.rectLines.forEach(l => canvas.remove(l));
+        canvas.rectLines = [];
+        props.setDrawRect(false);
+        canvas.selection = true;
     }
 
     
@@ -428,7 +356,7 @@ export default function Canvas(props) {
             opt.target.set({
                 // radius: 10,
                 strokeWidth: 2,
-                fill: 'white',
+                fill: idObj.type==='keyPoint'?false:'white',
                 scaleX: 2,
                 scaleY: 2,
                 //centeredScaling: true,
@@ -487,6 +415,111 @@ export default function Canvas(props) {
                 // lockScalingY: true,
             }
         ); 
+    }
+
+
+    function dragCanvas(e) {
+        const canvas = canvasObjRef.current;
+        let vpt = canvas.viewportTransform;
+        let zoom = canvas.getZoom();
+        let tempX = vpt[4] + e.clientX - canvas.lastPosX;
+        let tempY = vpt[5] + e.clientY - canvas.lastPosY;
+        // Doesn't let drag go infinitely
+        vpt[4] = Math.max(Math.min(0, tempX), canvas.getWidth() - canvas.getWidth()*zoom);
+        vpt[5] = Math.max(Math.min(0, tempY), canvas.getHeight() - canvas.getHeight()*zoom);
+        // Free drag
+        // vpt[4] += e.clientX - canvas.lastPosX;
+        // vpt[5] += e.clientY - canvas.lastPosY;
+        canvas.requestRenderAll();
+        canvas.lastPosX = e.clientX;
+        canvas.lastPosY = e.clientY;
+    }
+
+    function dragPolygonPoint() {
+        const canvas = canvasObjRef.current;
+        // console.log('dragging');
+        const point = canvas.getActiveObject();
+        console.log('point ', point, point.getCenterPoint());
+        console.log(point.calcTransformMatrix(),point.calcOwnMatrix());
+        const polygon = polygonObjListRef.current[point.owner];
+        const idObjToEdit = props.polygonIdList[point.owner];
+        // console.log('polygon ', polygon);
+        const prePointIndex = point.index>0 ? point.index-1 : polygon.lineObjects.length-1;
+        const postPointIndex = point.index<polygon.pointObjects.length-1 ? point.index+1 : 0;
+        const newPreLine = createLine(polygon.pointObjects[prePointIndex].getCenterPoint(), point.getCenterPoint(), idObjToEdit)//, prePointIndex);
+        const newPostLine = createLine(point.getCenterPoint(), polygon.pointObjects[postPointIndex].getCenterPoint(), idObjToEdit)//, point.index);
+        canvas.remove(polygon.lineObjects[prePointIndex], polygon.lineObjects[point.index]);
+        delete(polygon.lineObjects[prePointIndex]);
+        delete(polygon.lineObjects[point.index]);
+        polygon.lineObjects[prePointIndex] = newPreLine;
+        polygon.lineObjects[point.index] = newPostLine;
+        canvas.add(newPreLine, newPostLine);
+    }
+    
+    function mouseUpHandler() {
+        // on mouse up we want to recalculate new interaction
+        // for all objects, so we call setViewportTransform
+        const canvas = canvasObjRef.current;
+        canvas.setViewportTransform(canvas.viewportTransform);
+        canvas.isDragging = false;
+        canvas.selection = true;
+        canvas.isDraggingPoint = false;
+
+        // finish drawing rect
+        if (props.drawRect) {
+            canvas.rectEndPosition = canvas.getPointer();
+            createRect();
+        }
+    }
+
+
+    function setupCanvasDrag(e) {
+        const canvas = canvasObjRef.current;
+        canvas.isDragging = true;
+        canvas.selection = false;
+        canvas.lastPosX = e.clientX;
+        canvas.lastPosY = e.clientY;
+    }
+
+
+    function finishEditPolygon() {
+        const canvas = canvasObjRef.current;
+        const polygon = polygonObjListRef.current[canvas.editingPolygonId];
+        const idObjToEdit = props.polygonIdList[canvas.editingPolygonId];
+        const newPolygon = createPolygon(polygon.pointObjects.map(p => p.getCenterPoint()),idObjToEdit);
+        polygonObjListRef.current[newPolygon.id] = newPolygon;////
+        canvas.add(newPolygon).setActiveObject(newPolygon);
+        polygon.pointObjects.forEach(p=>canvas.remove(p));
+        polygon.lineObjects.forEach(l=>canvas.remove(l));
+        canvas.editPolygon = false;
+        canvas.editingPolygonId = null;
+        // delete(polygon);
+    }
+
+
+    function removeObj(){
+        // remove obj from canvas, objListRef, remove idObj in parent
+        const canvas = canvasObjRef.current;
+        const activeObj = canvas.getActiveObject();
+        switch (activeObj.type) {
+            case 'keyPoint':
+                delete(keyPointObjListRef.current[activeObj.id]);
+                const newkeyPointIdList = {...props.keyPointIdList};
+                delete(newkeyPointIdList[activeObj.id]);
+                props.setRectIdList(newkeyPointIdList);
+            case 'rect':
+                delete(rectObjListRef.current[activeObj.id]);
+                const newRectIdList = {...props.rectIdList};
+                delete(newRectIdList[activeObj.id]);
+                props.setRectIdList(newRectIdList);
+            case 'polygon':
+                delete(polygonObjListRef.current[activeObj.id]);
+                const newPolygonIdList = {...props.polygonIdList};
+                delete(newPolygonIdList[activeObj.id]);
+                props.setPolygonIdList(newPolygonIdList);
+        }
+        
+        canvas.remove(activeObj);
     }
 
 
