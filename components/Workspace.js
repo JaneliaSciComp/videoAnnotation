@@ -29,15 +29,23 @@ export default function Workspace(props) {
     return (
         <div className={styles.container}>
           <main className={styles.main}>
-            <Rectangle label='rectangle' color='blue'
+            <Rectangle label='rectangle' color='red'
+                drawRect={drawRect}
                 setDrawRect={setDrawRect} 
-                addRectId={addRectId} />
-            <Polygon label='polygon' color='blue'
+                addRectId={addRectId} 
+                />
+            <Rectangle label='rect' color='blue'
+                drawRect={drawRect}
+                setDrawRect={setDrawRect} 
+                addRectId={addRectId} 
+                />
+            <Polygon label='polygon' color='red'
+                drawPolygon={drawPolygon}
                 setDrawPolygon={setDrawPolygon} 
-                addPolygonId={addPolygonId}/>
+                addPolygonId={addPolygonId}
+                />
             <Canvas className='my-3' 
                 img={frame}
-                // annotation={annotation} 
                 drawRect={drawRect}
                 setDrawRect={setDrawRect}
                 rectIdList={rectIdList}

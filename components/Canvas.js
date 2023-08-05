@@ -16,7 +16,6 @@ export default function Canvas(props) {
     const canvasObjRef = useRef(null);
     const imageObjRef = useRef(null);
     const rectObjListRef = useRef([]);
-    // const preRectIdListRef = useRef([...props.rectIdList]); // to remember previous rect ids
     const polygonObjListRef = useRef({});
 
     
@@ -68,18 +67,6 @@ export default function Canvas(props) {
       }, [props]
     )
 
-    
-    // draw newly added rect
-    // useEffect(() => {
-    //     // console.log(props.rectIdList.length, preRectIdListRef.current);
-    //     if (props.drawRect) {
-    //         createRect();
-    //         // console.log('rectObjList length: ', rectObjListRef.current);
-    //         // console.log(preRectIdListRef.current, props.rectIdList.length);
-    //     }
-    //   }
-    //   , [props.rectIdList]
-    // )
 
 
     function createRect() {
@@ -154,22 +141,15 @@ export default function Canvas(props) {
         const activeObj = canvas.getActiveObject();
         switch (activeObj.type) {
             case 'rect':
-                // rectObjListRef.current = rectObjListRef.current.filter(Obj =>  Obj.id !== activeObj.id)
-                // preRectIdListRef.current = preRectIdListRef.current.filter(obj => obj.id !== activeObj.id);
-                // props.setRectIdList([...preRectIdListRef.current]);
                 delete(rectObjListRef.current[activeObj.id]);
                 const newRectIdList = {...props.rectIdList};
                 delete(newRectIdList[activeObj.id]);
                 props.setRectIdList(newRectIdList);
-                // console.log(rectObjListRef.current, props.rectIdList);
             case 'polygon':
-                // console.log(polygonObjListRef.current, Object.keys(props.polygonIdList));
                 delete(polygonObjListRef.current[activeObj.id]);
                 const newPolygonIdList = {...props.polygonIdList};
                 delete(newPolygonIdList[activeObj.id]);
-                // console.log(newIdList);
                 props.setPolygonIdList(newPolygonIdList);
-                // console.log(polygonObjListRef.current, props.polygonIdList);
         }
         
         canvas.remove(activeObj);
@@ -213,8 +193,6 @@ export default function Canvas(props) {
         // console.log(canvasObjRef.current.getActiveObject());
         const canvas = canvasObjRef.current;
         if (canvas.getActiveObject() && canvas.getActiveObject().type === 'polygon') {
-            // const p = new fabric.Point(20,20);
-            // canvas.add(p);
             const polygon = canvas.getActiveObject();
             console.log(polygon);
             console.log('own matrix', polygon.calcOwnMatrix());
@@ -339,8 +317,6 @@ export default function Canvas(props) {
         canvas.add(newPolygon).setActiveObject(newPolygon);
         polygon.pointObjects.forEach(p=>canvas.remove(p));
         polygon.lineObjects.forEach(l=>canvas.remove(l));
-        // newPolygon.pointObjects = polygon.pointObjects;
-        // newPolygon.lineObjects = polygon.lineObjects;
         canvas.editPolygon = false;
         canvas.editingPolygonId = null;
         // delete(polygon);
@@ -415,6 +391,7 @@ export default function Canvas(props) {
         }
     }
 
+
     function deleteKeyHandler(e) {
         if ((e.key === 'Backspace' || e.key === 'Delete') && canvasObjRef.current.getActiveObject()) {
             removeObj();
@@ -471,6 +448,7 @@ export default function Canvas(props) {
         });
         return point;
     }
+    
 
     function createLine(startPoint, endPoint, idObj){//, index) {
         return new fabric.Line([
