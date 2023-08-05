@@ -9,7 +9,7 @@ export default function Polygon(props) {
     // const style = {
     //     color:clicked?'white':props.color,
     //     background: clicked ? props.color:'white', 
-    //     border:'1px solid props.color'
+    //     border:'1px solid '+props.color
     // };
     
     useEffect(() => {
@@ -33,7 +33,9 @@ export default function Polygon(props) {
 
     return (
         <Button className={styles.btn} 
-        style={{color:clicked?'white':props.color, background: clicked?props.color:'white', border:'2px solid '+props.color}} 
+        style={{color:clicked?'white':props.color, 
+                background: clicked?props.color:'white', 
+                border:'2px solid '+props.color}} 
         onClick={clickHandler}>
             {props.label}
         </Button>
