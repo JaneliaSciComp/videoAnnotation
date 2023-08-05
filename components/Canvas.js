@@ -259,10 +259,12 @@ export default function Canvas(props) {
                 props.setDrawPolygon(false);
             } else {
                 const point = createPoint(clickPoint, idObjToDraw, canvas.polygonPoints.length);
-                canvas.add(point).setActiveObject(point);
-                const prePoint = canvas.polygonPoints[canvas.polygonPoints.length-1].getCenterPoint();
-                const line = createLine(prePoint, point.getCenterPoint(), idObjToDraw)//, canvas.polygonLines.length);
+                const prePoint = canvas.polygonPoints[canvas.polygonPoints.length-1];
+                const line = createLine(prePoint.getCenterPoint(), point.getCenterPoint(), idObjToDraw)//, canvas.polygonLines.length);
                 canvas.add(line);
+                canvas.remove(prePoint); // remove and readd to let prePoint overlay the line
+                canvas.add(prePoint);
+                canvas.add(point).setActiveObject(point);
                 canvas.polygonPoints.push(point);
                 canvas.polygonLines.push(line);
             }
@@ -278,7 +280,7 @@ export default function Canvas(props) {
         const idObj = {...props.keyPointIdList[id]};
         const point = createPoint(canvas.getPointer(), idObj, 0);
         point.hasControls = false;
-        // point.hasBorders = false;
+        point.hasBorders = false;
         // console.log('keyPointObj', point);
         // console.log(point.__eventListeners);
         keyPointObjListRef.current = {...keyPointObjListRef.current, [id]: point};
@@ -339,7 +341,7 @@ export default function Canvas(props) {
             strokeWidth: 1,
             strokeUniform: true,
             stroke: idObj.color,
-            fill: idObj.color,
+            fill: 'white',//idObj.color,
             lockScalingX: true,
             lockScalingY: true,
             lockRotation: true,
@@ -367,7 +369,7 @@ export default function Canvas(props) {
             opt.target.set({
                 // radius: CIRCLE_RADIUS,
                 strokeWidth: 1,
-                fill: idObj.color,
+                fill: idObj.type==='keyPoint'?idObj.color:'white',
                 scaleX: 1,
                 scaleY: 1,
                 //centeredScaling: true,
