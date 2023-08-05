@@ -448,7 +448,7 @@ export default function Canvas(props) {
         });
         return point;
     }
-    
+
 
     function createLine(startPoint, endPoint, idObj){//, index) {
         return new fabric.Line([
@@ -491,14 +491,10 @@ export default function Canvas(props) {
 
 
     return (
-        <div>
-            {/* <div className='tool-bar my-3 d-flex '>
-                <Button onClick={recBtnHandler}>Rectangle</Button>
-            </div> */}
+        <div className='px-0'>
             <canvas id='canvas' className={styles.canvas} >
                 <img id='image' src={props.img} className={styles.image} alt="img"/>
             </canvas>
-            {/* <Button onClick={canvasbtnclick}>test</Button> */}
         </div>
       )
 }

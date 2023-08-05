@@ -1,5 +1,6 @@
 .btn {
-    width: 6em;
+    margin: 0 2px;
+    width: 6em !important;
 }
 
 .btn:hover {
