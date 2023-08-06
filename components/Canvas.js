@@ -134,6 +134,8 @@ export default function Canvas(props) {
         const e = opt.e;
         const canvas = canvasObjRef.current;
         console.log('mouse down');
+        console.log(canvas);
+        console.log(imageObjRef.current);
 
         // drag image (mouse down + alt/option key down)
         // if (e.altKey === true) {
@@ -180,6 +182,23 @@ export default function Canvas(props) {
         }
         if (props.drawRect && canvas.rectStartPosition) {
             drawRect();
+        }
+    }
+
+
+    function mouseUpHandler() {
+        // on mouse up we want to recalculate new interaction
+        // for all objects, so we call setViewportTransform
+        const canvas = canvasObjRef.current;
+        canvas.setViewportTransform(canvas.viewportTransform);
+        canvas.isDragging = false;
+        canvas.selection = true;
+        canvas.isDraggingPoint = false;
+
+        // finish drawing rect
+        if (props.drawRect) {
+            canvas.rectEndPosition = canvas.getPointer();
+            createRect();
         }
     }
 
@@ -317,7 +336,7 @@ export default function Canvas(props) {
             lockSkewingY: true,
             hasRotatingPoint: false
         });
-        // console.log(recObj);
+        console.log(rectObj);
         rectObjListRef.current = {...rectObjListRef.current, [rectObj.id]: rectObj};
         // console.log(rectObjListRef.current.length);
         canvas.add(rectObj).setActiveObject(rectObj);
@@ -328,6 +347,8 @@ export default function Canvas(props) {
         canvas.rectLines = [];
         props.setDrawRect(false);
         canvas.selection = true;
+        props.setActiveId(rectObj.id); ////
+
     }
 
     
@@ -456,22 +477,6 @@ export default function Canvas(props) {
         polygon.lineObjects[prePointIndex] = newPreLine;
         polygon.lineObjects[point.index] = newPostLine;
         canvas.add(newPreLine, newPostLine);
-    }
-    
-    function mouseUpHandler() {
-        // on mouse up we want to recalculate new interaction
-        // for all objects, so we call setViewportTransform
-        const canvas = canvasObjRef.current;
-        canvas.setViewportTransform(canvas.viewportTransform);
-        canvas.isDragging = false;
-        canvas.selection = true;
-        canvas.isDraggingPoint = false;
-
-        // finish drawing rect
-        if (props.drawRect) {
-            canvas.rectEndPosition = canvas.getPointer();
-            createRect();
-        }
     }
 
 
