@@ -9,6 +9,7 @@ const CIRCLE_RADIUS = 3;
 const STROKE_WIDTH = 2;
 const WHEEL_SENSITIVITY = 10;
 const CLICK_TOLERANCE = 5;
+const ANNOTATION_TYPES = new Set(['keyPoint', 'rect', 'polygon']);
 
 
 export default function Canvas(props) {
@@ -41,6 +42,7 @@ export default function Canvas(props) {
 
             scaleImage(canvasObj, imageObj);
             canvasObj.add(imageObj);
+            
             
             // canvasObj.on('mouse:down', //(opt) => {
             //     mouseDownHandler//(opt.e, canvasObj);
@@ -87,6 +89,47 @@ export default function Canvas(props) {
     }
 
 
+    function getPointCoordToImage(point){
+        // point: {x:..., y:...}, the coord relative to canvas plane 
+        const img = imageObjRef.current;
+        return ({
+            x: (point.x-img.left)/img.scaleX,
+            y: (point.y - img.top)/img.scaleY,
+        });
+    }
+
+    function getKeypointCoordToImage(obj) {
+        // console.log('keypoint', obj);
+        return getPointCoordToImage(obj.getCenterPoint())
+    }
+
+    function getRectCoordToImage(obj){
+        // console.log('rect',obj.aCoords);
+        const topLeft = getPointCoordToImage(obj.aCoords.tl);
+        const width = getPointCoordToImage(obj.aCoords.tr).x - topLeft.x;
+        const height = getPointCoordToImage(obj.aCoords.bl).y - topLeft.y;
+        return {
+            left: topLeft.x,
+            top: topLeft.y,
+            width: width,
+            height: height
+        }
+    }
+
+    function getPolygonCoordToImage(obj) {
+        // console.log('polygon');
+        const newPoints = getUpdatedPolygonPoints(obj);
+        const res = newPoints.map(p=>getPointCoordToImage(p));
+        return Object.assign({}, res);
+    }
+
+    function getUpdatedPolygonPoints(polygon) {
+        const matrix = polygon.calcTransformMatrix();
+        const newPoints = polygon.points.map(p => new fabric.Point(p.x - polygon.pathOffset.x, p.y - polygon.pathOffset.y))
+            .map(p => fabric.util.transformPoint(p, matrix));
+        return newPoints;
+    }
+
     function wheelHandler(opt) {
         // zoom in/out
         const e = opt.e;
@@ -96,6 +139,12 @@ export default function Canvas(props) {
         zoom += e.deltaY * WHEEL_SENSITIVITY /10000;
         zoom = Math.max(1, zoom);
         canvas.zoomToPoint({x: e.offsetX, y: e.offsetY}, zoom);
+        if (zoom == 1) { //recenter canvas
+            let vpt = canvas.viewportTransform;
+            vpt[4] = 0;
+            vpt[5] = 0;
+            // canvas.requestRenderAll();
+        }
         e.preventDefault();
         e.stopPropagation();
     }
@@ -107,22 +156,13 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
         if (canvas.getActiveObject() && canvas.getActiveObject().type === 'polygon') {
             const polygon = canvas.getActiveObject();
-            console.log(polygon);
-            console.log('own matrix', polygon.calcOwnMatrix());
-            console.log('matrix', polygon.calcTransformMatrix());
             canvas.editPolygon = true;
             canvas.editingPolygonId = polygon.id;
 
-            console.log('points', polygon.points);
-            console.log(polygon.pathOffset, polygon.getCenterPoint());
-            const matrix = polygon.calcTransformMatrix();
-            const newPoints = polygon.points.map(p => new fabric.Point(p.x - polygon.pathOffset.x, p.y - polygon.pathOffset.y))
-                .map(p => fabric.util.transformPoint(p, matrix));
-            console.log('new points', newPoints);
+            const newPoints = getUpdatedPolygonPoints(polygon);
             const idObjToEdit = props.polygonIdList[polygon.id];
             polygon.pointObjects = newPoints.map((p, i) => createPoint(p, idObjToEdit, i));
             polygon.lineObjects = newPoints.map((p, i) => i<newPoints.length-1 ? createLine(p, newPoints[i+1], props.polygonIdList[polygon.id]) : createLine(p, newPoints[0], idObjToEdit))
-            console.log(polygon.lineObjects);
             polygon.lineObjects.forEach(obj=>canvas.add(obj));
             polygon.pointObjects.forEach(obj=>canvas.add(obj));
             canvas.remove(polygon);
@@ -134,13 +174,39 @@ export default function Canvas(props) {
         const e = opt.e;
         const canvas = canvasObjRef.current;
         console.log('mouse down');
-        console.log(canvas);
-        console.log(imageObjRef.current);
 
-        // drag image (mouse down + alt/option key down)
-        // if (e.altKey === true) {
         if (!canvas.getActiveObject()){
-            setupCanvasDrag(e);
+            // drag image (mouse down + alt/option key down)
+            if (e.altKey === true) {
+                setupCanvasDrag(e);
+            }
+
+            canvas.activeObj = null;
+            canvas.isEditingObj = null;
+            props.setActiveIdObj(null);
+        }
+        
+        if (canvas.getActiveObject()){ // when click on an obj
+            // if (canvas.activeObj) { // if click on the same active obj, use is editing it
+            //     canvas.isEditingObj = true;
+            //     console.log('canvas activeObj2', canvas.activeObj);
+            // } else { // if click on a new obj, use is choosing the obj
+            //     canvas.activeObj = canvas.getActiveObject();
+            //     console.log('canvas activeObj1', canvas.activeObj);
+            //     // let activeObjId = null;
+            //     // switch (canvas.activeObj.type) {
+            //     //     case 'keyPoint':
+            //     //         activeObjId = props.keyPointIdList
+            //     // }
+            //     // props.setActiveIdObj(activeObjId);
+            // }
+            const activeObj = canvas.getActiveObject();
+            if (ANNOTATION_TYPES.has(activeObj.type)) {
+                // canvas.activeObj = activeObj;
+                // canvas.isEditingObj = true;
+                // setActiveObjData();
+                addActiveIdObj(activeObj);
+            }
         }
 
         if (props.drawKeyPoint === true) {
@@ -168,6 +234,10 @@ export default function Canvas(props) {
                 canvas.isDraggingPoint = true;
             }
         }
+
+        // if (!canvas.getActiveObject()) {
+        //     props.setActiveId(null);
+        // }
     }
 
     
@@ -183,6 +253,41 @@ export default function Canvas(props) {
         if (props.drawRect && canvas.rectStartPosition) {
             drawRect();
         }
+        if (canvas.activeObj && canvas.isEditingObj) {
+            setActiveObjData();
+            // props.setActiveIdObj(props.rectIdList[canvas.activeObj.id]);
+        }
+    }
+
+
+    function setActiveObjData(){
+        const canvas = canvasObjRef.current;
+        const obj = canvas.activeObj;
+        let data = {};
+        let newIdObj = {};
+        // console.log('setActiveObjData');
+        switch (obj.type) {
+            case 'keyPoint':
+                data = getKeypointCoordToImage(obj);
+                ////
+                newIdObj = {...props.keyPointIdList[obj.id], data: data}; 
+                props.setKeyPointIdList({...props.keyPointIdList, [obj.id]: newIdObj});
+                break;
+            case 'rect':
+                data = getRectCoordToImage(obj);
+                newIdObj = {...props.rectIdList[obj.id], data: data};
+                props.setRectIdList({...props.rectIdList, [obj.id]: newIdObj});
+                break;
+            case 'polygon':
+                // console.log('canvas activeObj', canvas.activeObj);
+                data = getPolygonCoordToImage(obj);
+                newIdObj = {...props.polygonIdList[obj.id], data: data}; 
+                props.setPolygonIdList({...props.polygonIdList, [obj.id]: newIdObj});
+                break;
+        }
+        // console.log('done')
+        // return newIdObj;
+        props.setActiveIdObj(newIdObj);
     }
 
 
@@ -194,11 +299,14 @@ export default function Canvas(props) {
         canvas.isDragging = false;
         canvas.selection = true;
         canvas.isDraggingPoint = false;
+        canvas.isEditingObj = false;
 
         // finish drawing rect
         if (props.drawRect) {
             canvas.rectEndPosition = canvas.getPointer();
             createRect();
+
+            canvas.isEditingObj = false;//editingObj should be reset as above
         }
     }
 
@@ -276,13 +384,16 @@ export default function Canvas(props) {
                 canvas.polygonLines=[];
                 canvas.selection = true;
                 props.setDrawPolygon(false);
+
+                addActiveIdObj(polygonObj);
+                // console.log('poly',canvas.activeObj, canvas.isEditingObj);
+
             } else {
                 const point = createPoint(clickPoint, idObjToDraw, canvas.polygonPoints.length);
                 const prePoint = canvas.polygonPoints[canvas.polygonPoints.length-1];
                 const line = createLine(prePoint.getCenterPoint(), point.getCenterPoint(), idObjToDraw)//, canvas.polygonLines.length);
                 canvas.add(line);
-                canvas.remove(prePoint); // remove and readd to let prePoint overlay the line
-                canvas.add(prePoint);
+                canvas.bringToFront(prePoint);
                 canvas.add(point).setActiveObject(point);
                 canvas.polygonPoints.push(point);
                 canvas.polygonLines.push(line);
@@ -297,7 +408,10 @@ export default function Canvas(props) {
         const existingIds = new Set(Object.keys(keyPointObjListRef.current));
         const id = Object.keys(props.keyPointIdList).filter(id => !existingIds.has(id))[0];
         const idObj = {...props.keyPointIdList[id]};
+        // console.log(idObj);
         const point = createPoint(canvas.getPointer(), idObj, 0);
+        point.id = id;
+        point.type = 'keyPoint';
         point.hasControls = false;
         point.hasBorders = false;
         // console.log('keyPointObj', point);
@@ -307,6 +421,8 @@ export default function Canvas(props) {
         canvas.add(point).setActiveObject(point);
         props.setDrawKeyPoint(false);
         canvas.selection = true;
+
+        addActiveIdObj(point);
     }
 
 
@@ -347,8 +463,10 @@ export default function Canvas(props) {
         canvas.rectLines = [];
         props.setDrawRect(false);
         canvas.selection = true;
-        props.setActiveId(rectObj.id); ////
-
+        console.log(rectObj);
+        
+        addActiveIdObj(rectObj);
+        // console.log('rect',canvas.activeObj, canvas.isEditingObj);
     }
 
     
@@ -462,8 +580,8 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
         // console.log('dragging');
         const point = canvas.getActiveObject();
-        console.log('point ', point, point.getCenterPoint());
-        console.log(point.calcTransformMatrix(),point.calcOwnMatrix());
+        // console.log('point ', point, point.getCenterPoint());
+        // console.log(point.calcTransformMatrix(),point.calcOwnMatrix());
         const polygon = polygonObjListRef.current[point.owner];
         const idObjToEdit = props.polygonIdList[point.owner];
         // console.log('polygon ', polygon);
@@ -472,11 +590,13 @@ export default function Canvas(props) {
         const newPreLine = createLine(polygon.pointObjects[prePointIndex].getCenterPoint(), point.getCenterPoint(), idObjToEdit)//, prePointIndex);
         const newPostLine = createLine(point.getCenterPoint(), polygon.pointObjects[postPointIndex].getCenterPoint(), idObjToEdit)//, point.index);
         canvas.remove(polygon.lineObjects[prePointIndex], polygon.lineObjects[point.index]);
-        delete(polygon.lineObjects[prePointIndex]);
-        delete(polygon.lineObjects[point.index]);
+        // delete(polygon.lineObjects[prePointIndex]);
+        // delete(polygon.lineObjects[point.index]);
         polygon.lineObjects[prePointIndex] = newPreLine;
         polygon.lineObjects[point.index] = newPostLine;
         canvas.add(newPreLine, newPostLine);
+        canvas.bringToFront(polygon.pointObjects[prePointIndex]);
+        canvas.bringToFront(polygon.pointObjects[postPointIndex]);
     }
 
 
@@ -501,6 +621,7 @@ export default function Canvas(props) {
         canvas.editPolygon = false;
         canvas.editingPolygonId = null;
         // delete(polygon);
+        addActiveIdObj(newPolygon);
     }
 
 
@@ -513,20 +634,34 @@ export default function Canvas(props) {
                 delete(keyPointObjListRef.current[activeObj.id]);
                 const newkeyPointIdList = {...props.keyPointIdList};
                 delete(newkeyPointIdList[activeObj.id]);
-                props.setRectIdList(newkeyPointIdList);
+                props.setKeyPointIdList(newkeyPointIdList);
+                break;
             case 'rect':
                 delete(rectObjListRef.current[activeObj.id]);
                 const newRectIdList = {...props.rectIdList};
                 delete(newRectIdList[activeObj.id]);
                 props.setRectIdList(newRectIdList);
+                break;
             case 'polygon':
                 delete(polygonObjListRef.current[activeObj.id]);
                 const newPolygonIdList = {...props.polygonIdList};
                 delete(newPolygonIdList[activeObj.id]);
                 props.setPolygonIdList(newPolygonIdList);
+                break;
         }
         
         canvas.remove(activeObj);
+
+        canvas.activeObj = null;
+        canvas.isEditingObj = null;
+        props.setActiveIdObj(null);
+    }
+
+    function addActiveIdObj(activeObj) {
+        const canvas = canvasObjRef.current;
+        canvas.activeObj = activeObj;
+        canvas.isEditingObj = true;
+        setActiveObjData();
     }
 
 

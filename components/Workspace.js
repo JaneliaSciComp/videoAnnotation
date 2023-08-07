@@ -13,7 +13,7 @@ import {Row, Col} from 'react-bootstrap';
 export default function Workspace(props) {
     const [frame, setFrame] = useState('/fly.png');
     // const [annotation, setAnnotation] = useState([]);
-    const [activeId, setActiveId] = useState();
+    const [activeIdObj, setActiveIdObj] = useState();
     const [categoryIdList, setCategoryIdList] = useState({});
     const [keyPointIdList, setKeyPointIdList] = useState({});
     const [drawKeyPoint, setDrawKeyPoint] = useState(false);
@@ -94,7 +94,7 @@ export default function Workspace(props) {
                     </Row>
                 </Col>
                 <Col xs={6}>
-                    <AnnotationDisplay idObj={rectIdList[activeId]}/>
+                    <AnnotationDisplay idObj={activeIdObj}/>
                 </Col>
             </Row>
             
@@ -113,7 +113,7 @@ export default function Workspace(props) {
                     setDrawPolygon={setDrawPolygon}
                     polygonIdList={polygonIdList}
                     setPolygonIdList={setPolygonIdList}
-                    setActiveId={setActiveId}
+                    setActiveIdObj={setActiveIdObj}
                     />
                 
             </Row>
