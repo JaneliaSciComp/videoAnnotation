@@ -26,7 +26,7 @@ export default function Workspace(props) {
     console.log('workspace render');
 
     function addCategoryId(idObj) {
-        setCategoryIdList({...categoryIdList, [idObj.id]: idObj});
+        setCategoryIdList({[idObj.id]: idObj});
     }
 
     function addKeyPointId(idObj) {

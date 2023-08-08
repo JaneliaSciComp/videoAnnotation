@@ -13,7 +13,7 @@ export default function Category(props) {
     }
 
     return (
-        <Button className={styles.btn} 
+        <Button className={`${styles["btn-category"]} ${styles.btn}`} 
             style={{color: props.color, background: 'white', border:'2px solid '+props.color}} 
             onClick={clickHandler}>
         {props.label}
