@@ -25,7 +25,7 @@ export default function Workspace(props) {
 
     console.log('workspace render');
 
-    function addCategoryId(idObj) {
+    function setCategoryId(idObj) {
         setCategoryIdList({[idObj.id]: idObj});
     }
 
@@ -50,7 +50,8 @@ export default function Workspace(props) {
                         <Category
                             label='chase'
                             color='black'
-                            addCategoryId={addCategoryId}
+                            setCategoryId={setCategoryId}
+                            setActiveIdObj={setActiveIdObj}
                             >
                         </Category>
                     </Row>

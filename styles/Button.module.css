@@ -8,8 +8,9 @@
 }
 
 .btn-category:active {
-    margin: 1px 0 0 3px; /*TODO*/
+    /* margin: 1px 0 0 3px; TODO */
     color: white !important;
     background: black !important;
+    transform: translateY(4px);
 }
 

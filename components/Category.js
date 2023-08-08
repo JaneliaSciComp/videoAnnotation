@@ -4,12 +4,14 @@ import styles from '../styles/Button.module.css';
 export default function Category(props) {
     function clickHandler() {
         const id = Date.now().toString();
-        props.addCategoryId({
+        const idObj = {
             id: id,
             label: props.label,
             color: props.color,
             type: 'category',         
-        });
+        };
+        props.setCategoryId(idObj);
+        props.setActiveIdObj(idObj);
     }
 
     return (
