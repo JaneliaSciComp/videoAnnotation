@@ -261,6 +261,8 @@ export default function Canvas(props) {
 
 
     function setActiveObjData(){
+        // retrieve canvas.activeObj, calculate its data points relative to image
+        // update data points in props.idObjList, and parent's activeIdObj
         const canvas = canvasObjRef.current;
         const obj = canvas.activeObj;
         let data = {};
@@ -285,8 +287,7 @@ export default function Canvas(props) {
                 props.setPolygonIdList({...props.polygonIdList, [obj.id]: newIdObj});
                 break;
         }
-        // console.log('done')
-        // return newIdObj;
+       
         props.setActiveIdObj(newIdObj);
     }
 
@@ -306,7 +307,7 @@ export default function Canvas(props) {
             canvas.rectEndPosition = canvas.getPointer();
             createRect();
 
-            canvas.isEditingObj = false;//editingObj should be reset as above
+            canvas.isEditingObj = false;// createRect() set it to be true, should be reset to be false
         }
     }
 
@@ -658,6 +659,7 @@ export default function Canvas(props) {
     }
 
     function addActiveIdObj(activeObj) {
+        // these commands will be used at multiple places, when create, choose, edit, and delete an object
         const canvas = canvasObjRef.current;
         canvas.activeObj = activeObj;
         canvas.isEditingObj = true;
