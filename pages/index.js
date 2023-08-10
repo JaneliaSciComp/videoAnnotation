@@ -9,6 +9,26 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 export default function Home() {
   // const [annotation, setAnnotation] = useState({});
+  const imgRef = useRef(null);
+  const canvasRef = useRef(null);
+  
+  useEffect(()=>{
+    // if (props.opencvReady) {
+      imgRef.current.src = '/fly.png';
+      imgRef.current.onload = () => {
+        let mat = cv.imread(imgRef.current);
+        console.log('worked');
+        cv.imshow(canvasRef.current.id, mat);
+        mat.delete();
+        // cv.save(mat, 'output.png');
+      }    
+    // }
+    
+  }
+  // , [props.opencvReady]
+  )
+
+  
 
 
   return (
@@ -19,6 +39,8 @@ export default function Home() {
       </Head>
 
       <main className={styles.workspaceContainer}>
+        <img ref={imgRef} width="300" height="200"  alt="No Image" />
+        <canvas id='output' ref={canvasRef} width="300" height="200"></canvas>
         <Workspace />
       </main>
 
