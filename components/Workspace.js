@@ -6,7 +6,7 @@ import Polygon from './Polygon';
 import KeyPoint from './Keypoint';
 import Category from './Category';
 import AnnotationDisplay from './AnnotationDisplay';
-import {Row, Col} from 'react-bootstrap';
+import {Form, Row, Col} from 'react-bootstrap';
 
 
 
@@ -14,7 +14,7 @@ export default function Workspace(props) {
     const [frame, setFrame] = useState('/fly.png');
     // const [annotation, setAnnotation] = useState([]);
     const [activeIdObj, setActiveIdObj] = useState();
-    const [categoryIdList, setCategoryIdList] = useState({});
+    const [categoryId, setCategoryId] = useState({});
     const [keyPointIdList, setKeyPointIdList] = useState({});
     const [drawKeyPoint, setDrawKeyPoint] = useState(false);
     const [rectIdList, setRectIdList] = useState({});
@@ -25,9 +25,9 @@ export default function Workspace(props) {
 
     console.log('workspace render');
 
-    function setCategoryId(idObj) {
-        setCategoryIdList({[idObj.id]: idObj});
-    }
+    // function setCategoryId(idObj) {
+    //     setCategoryIdList({[idObj.id]: idObj});
+    // }
 
     function addKeyPointId(idObj) {
         setKeyPointIdList({...keyPointIdList, [idObj.id]: idObj});
@@ -117,6 +117,10 @@ export default function Workspace(props) {
                     setActiveIdObj={setActiveIdObj}
                     />
                 
+            </Row>
+
+            <Row className='my-3'>
+                <input type='file' id='videoInput' accept='.mp4, .mov, .avi'></input>
             </Row>
             
           </main>

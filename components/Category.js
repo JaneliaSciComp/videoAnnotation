@@ -10,7 +10,7 @@ export default function Category(props) {
             color: props.color,
             type: 'category',         
         };
-        props.setCategoryId(idObj);
+        props.setCategoryId({[idObj.id]: idObj});
         props.setActiveIdObj(idObj);
     }
 
