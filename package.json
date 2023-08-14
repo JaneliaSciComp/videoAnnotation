@@ -12,6 +12,8 @@
     "antd": "^5.8.2",
     "bootstrap": "^5.2.3",
     "fabric": "^5.3.0",
+    "file-saver": "^2.0.5",
+    "jszip": "^3.10.1",
     "next": "13.2.4",
     "react": "18.2.0",
     "react-bootstrap": "^2.7.2",

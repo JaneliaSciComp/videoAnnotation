@@ -7,7 +7,11 @@ import KeyPoint from './Keypoint';
 import Category from './Category';
 import AnnotationDisplay from './AnnotationDisplay';
 import {Form, Row, Col} from 'react-bootstrap';
+import { saveAs } from 'file-saver';
+import JSZip from "jszip";
+import videoStyles from '../styles/Video.module.css';
 
+const ROOT_DIR = 'http://localhost';
 
 
 export default function Workspace(props) {
@@ -21,6 +25,8 @@ export default function Workspace(props) {
     const [drawRect, setDrawRect] = useState(false);
     const [polygonIdList, setPolygonIdList] = useState({});
     const [drawPolygon, setDrawPolygon] = useState(false);
+
+    const videoRef = useRef();
 
 
     console.log('workspace render');
@@ -39,6 +45,72 @@ export default function Workspace(props) {
     
     function addPolygonId(idObj) {
         setPolygonIdList({...polygonIdList, [idObj.id]: idObj});
+    }
+
+    function submitVideoHandler(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        // console.log('webkitEntries', e.target.webkitEntries);
+        // const file = e.target.files[0];
+        
+        // if (file) {
+        //     // saveAs(file, 'test.jpg');
+        //     const frames = extractFrames(file);
+
+        // }
+        if (e.target.files[0]) {
+            videoRef.current.src = URL.createObjectURL(e.target.files[0]);
+            // console.log(videoRef.current.src);
+            // videoRef.current.play();
+            const frames = extractFrames(videoRef.current);
+        }
+        
+        
+    }
+
+    function extractFrames(videoElem) {
+        const cap = new cv.VideoCapture(videoElem);
+        console.log(videoElem, cap);
+        // console.log(cap.get(cv.CAP_PROP_FPS ), cap.get(cv.CAP_PROP_FRAME_COUNT))
+        if (cap) {
+            const res = [];
+            const zip = new JSZip();
+            let counter = 0;
+            let ret = null;
+            let frame = new cv.Mat(videoElem.height, videoElem.width, cv.CV_8UC4); //
+            console.log(videoElem.height, videoElem.width);
+            let blob = null;
+            do {
+                // ret, frame = cap.read();
+                cap.read(frame);
+                console.log(frame);
+                res.push(frame);
+                blob = new Blob(frame);
+                saveAs(frame, 'test.jpg');
+                // zip.file(`f_${counter}.jpg`, frame);
+                counter++;
+            } while (counter<1); // (ret);  
+            cap.release();
+            return res;
+        } else {
+            //TODO: show info to user
+            return null;
+        }
+//         const zip = JsZip();
+//   blobs.forEach((blob, i) => {
+//     zip.file(`file-${i}.csv`, blob);
+//   });
+//   zip.generateAsync({type: 'blob'}).then(zipFile => {
+//     const currentDate = new Date().getTime();
+//     const fileName = `combined-${currentDate}.zip`;
+//     return FileSaver.saveAs(zipFile, fileName);
+        
+    }
+
+    function submitFramesHandler(e) {
+        e.preventDefault();
+        e.stopPropagation();
+
     }
 
     return (
@@ -118,9 +190,11 @@ export default function Workspace(props) {
                     />
                 
             </Row>
-
+            
             <Row className='my-3'>
-                <input type='file' id='videoInput' accept='.mp4, .mov, .avi'></input>
+                <input type='file' id='videoInput' accept='.jpg, .mp4, .mov, .avi' onChange={submitVideoHandler}></input>
+                <video ref={videoRef} width={500} height={500} controls className={videoStyles.videoTag}></video>
+                <input type='file' webkitdirectory='' id='framesInput'  onChange={submitFramesHandler}></input>
             </Row>
             
           </main>
