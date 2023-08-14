@@ -12,6 +12,7 @@ import JSZip from "jszip";
 import videoStyles from '../styles/Video.module.css';
 
 const ROOT_DIR = 'http://localhost';
+const FRAME_FORMAT = 'jpg';
 
 
 export default function Workspace(props) {
@@ -26,7 +27,8 @@ export default function Workspace(props) {
     const [polygonIdList, setPolygonIdList] = useState({});
     const [drawPolygon, setDrawPolygon] = useState(false);
 
-    const videoRef = useRef();
+    const videoRef = useRef(null);
+    const canvasRef = useRef(null);
 
 
     console.log('workspace render');
@@ -53,15 +55,10 @@ export default function Workspace(props) {
         // console.log('webkitEntries', e.target.webkitEntries);
         // const file = e.target.files[0];
         
-        // if (file) {
-        //     // saveAs(file, 'test.jpg');
-        //     const frames = extractFrames(file);
-
-        // }
         if (e.target.files[0]) {
             videoRef.current.src = URL.createObjectURL(e.target.files[0]);
             // console.log(videoRef.current.src);
-            // videoRef.current.play();
+            videoRef.current.play();
             const frames = extractFrames(videoRef.current);
         }
         
@@ -76,21 +73,35 @@ export default function Workspace(props) {
             const res = [];
             const zip = new JSZip();
             let counter = 0;
-            let ret = null;
             let frame = new cv.Mat(videoElem.height, videoElem.width, cv.CV_8UC4); //
             console.log(videoElem.height, videoElem.width);
-            let blob = null;
             do {
                 // ret, frame = cap.read();
                 cap.read(frame);
                 console.log(frame);
-                res.push(frame);
-                blob = new Blob(frame);
-                saveAs(frame, 'test.jpg');
+                // res.push(frame);
+
+                cv.imshow(canvasRef.current.id, frame);
+                canvasRef.current.toBlob((blob)=>{
+                    zip.file(`frames/f_${counter}.${FRAME_FORMAT}`, blob);
+                    let frameObj = {
+                        frameNum: counter,
+                        blobData: blob,
+                        url: URL.createObjectURL(blob)
+                    };
+                    res.push(frameObj);
+                }, `image/${FRAME_FORMAT}`);
+                // blob = new Blob(frame);
+                // saveAs(frame, 'test.jpg');
                 // zip.file(`f_${counter}.jpg`, frame);
                 counter++;
             } while (counter<1); // (ret);  
-            cap.release();
+            // cap.delete();
+            zip.generateAsync({type: 'blob'}).then(zipFile => {
+                const currentDate = new Date().getTime();
+                const fileName = `frames_${currentDate}.zip`;
+                saveAs(zipFile, fileName);
+              });
             return res;
         } else {
             //TODO: show info to user
@@ -112,6 +123,7 @@ export default function Workspace(props) {
         e.stopPropagation();
 
     }
+    // 
 
     return (
         <div className={styles.container}>
@@ -194,6 +206,7 @@ export default function Workspace(props) {
             <Row className='my-3'>
                 <input type='file' id='videoInput' accept='.jpg, .mp4, .mov, .avi' onChange={submitVideoHandler}></input>
                 <video ref={videoRef} width={500} height={500} controls className={videoStyles.videoTag}></video>
+                <canvas ref={canvasRef} id='canvasTag' className={videoStyles.canvasTag}></canvas>
                 <input type='file' webkitdirectory='' id='framesInput'  onChange={submitFramesHandler}></input>
             </Row>
             
