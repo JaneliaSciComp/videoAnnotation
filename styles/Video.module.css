@@ -1,7 +1,11 @@
 .videoTag {
-    /* display: none; */
+    display: none;
 }
 
 .canvasTag {
-    /* display: none; */
+    display: none;
+}
+
+.pyscript {
+    display: none;
 }
