@@ -11,6 +11,7 @@ const FRAME_FORMAT = 'jpg';
 export default function Workspace(props) {
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
+    const imgRef = useRef(null);
 
     const pyscript_code = `
         import cv2 as cv
@@ -27,11 +28,11 @@ export default function Workspace(props) {
 
         def extractFrames(input_file_name):
             os.makedirs('/tmp/frames', exist_ok=True)
-            #frames = []
+            frames = []
             cap = cv.VideoCapture(input_file_name)
             console.log(cap.get(cv.CAP_PROP_FPS ), cap.get(cv.CAP_PROP_FRAME_COUNT))
             counter = 0
-            while cap.isOpened(): #counter<1: 
+            while counter<1: #cap.isOpened(): 
                 if counter%100 == 0:
                     print(counter)
                 ret, frame = cap.read()
@@ -46,8 +47,10 @@ export default function Workspace(props) {
             print(len(os.listdir('/tmp/frames/')))
             print(f'Extracted {counter} frames')
             cap.release()
-            zip_file = shutil.make_archive('/tmp/frames', 'zip', root_dir='/tmp/frames')
-            return zip_file
+            #imgElem = document.getElementById('imgOutput')
+            #imgElem.src = '/tmp/frames/f_1.jpg'
+            #zip_file = shutil.make_archive('/tmp/frames', 'zip', root_dir='/tmp/frames')
+            return frame
 
 
 
@@ -71,14 +74,16 @@ export default function Workspace(props) {
             #print('save_v called')
             #data = e.target.result
             data_bin = data.to_py()
-            print(data.type, data_bin.type)
+            #print(data.type, data_bin.type)
             with open('/tmp/video.mov', 'wb') as f:
                 f.write(data_bin)
             print(os.listdir('/tmp/'))
-            zip_file = extractFrames('/tmp/video.mp4')
-            #frames = extractFrames('/tmp/video.mov')
+            #zip_file = extractFrames('/tmp/video.mov')
+            frame = extractFrames('/tmp/video.mov')
             #extractFrames('/tmp/video.mov')
-            return zip_file
+            #return zip_file
+            return frame
+            #return [1,2,3]
 
         
         def main():
@@ -88,7 +93,7 @@ export default function Workspace(props) {
             #print('event added')
             #console.log(elem)
 
-        main()
+        #main()
     `
 
     async function submitVideoHandler(e) {
@@ -106,19 +111,50 @@ export default function Workspace(props) {
             console.log(data);
 
             const js_processVideo = pyscript.interpreter.globals.get('save_video');
-            const zip_file = js_processVideo(data);
-            console.log(typeof(zip_file));
-            // saveAs()
+            const frame = js_processVideo(data);
+            console.log(typeof(frame), frame);
+            const frame_js = new Uint8Array(frame.toJs());
+            
+            // const frame_blob = Blob()
+            console.log(typeof(frame_js), frame_js);
+            const img_data = new Blob([frame_js], { type: 'image/jpg' } /* (1) */)
+            console.log(img_data);
+            const url = URL.createObjectURL(img_data);
+            imgRef.current.src = url;
+            console.log(url);
+            imgRef.current.onload = () => {
+                console.log('worked', imgRef.current.src)
+            }
+            // saveAs(img_data, 'test.jpg');
+            // for (const n of frame) {
+            //     console.log(n);
+                // const ctx = canvasRef.current.getContext("2d");
+                // ctx.drawImage(frame_js,0,0);
+            // }
+            
+            
+            // const zip = new JSZip();
+            // frames.forEach((f, i) => {
+            //     zip.file(`f_${i}.jpg`, f);
+            // });
+            // console.log(zip);
+            // zip.generateAsync({type: 'blob'}).then(zipFile => {
+            //     const currentDate = new Date().getTime();
+            //     const fileName = `combined-${currentDate}.zip`;
+            //     console.log(fileName)
+            //     saveAs(zipFile, fileName);
+            //     // return FileSaver.saveAs(zipFile, fileName);
+            // });
         };
-        // // reader.readAsArrayBuffer(file);
+        reader.readAsArrayBuffer(file);
         // // reader.readAsDataURL(file);
         // reader.readAsBinaryString(file);
-        const js_processVideo = pyscript.interpreter.globals.get('process_video');
-        const frames = await js_processVideo(e)
-        // .then((frames)=>{
-        //     console.log(frames, typeof(frames));
-        // });
-        console.log(frames, typeof(frames));
+        // const js_processVideo = pyscript.interpreter.globals.get('process_video');
+        // const frames = await js_processVideo(e)
+        // // .then((frames)=>{
+        // //     console.log(frames, typeof(frames));
+        // // });
+        // console.log(frames, typeof(frames));
         
         
         
@@ -155,9 +191,10 @@ export default function Workspace(props) {
     return (
         <>
             <Script defer src="https://pyscript.net/latest/pyscript.js" strategy='beforeInteractive'/>
-            <input type='file' id='videoInput' accept='.jpg, .mp4, .mov, .avi' ></input>
-            {/* <video ref={videoRef} width={500} height={500} controls className={videoStyles.videoTag}></video>
-            <canvas ref={canvasRef} id='canvasTag' className={videoStyles.canvasTag}></canvas> */}
+            <input type='file' id='videoInput' accept='.jpg, .mp4, .mov, .avi' onChange={submitVideoHandler}></input>
+            {/* <video ref={videoRef} width={500} height={500} controls className={videoStyles.videoTag}></video>*/}
+            {/* <canvas ref={canvasRef} id='canvasTag' className={videoStyles.canvasTag}></canvas>  */}
+            <img ref={imgRef} id='imgOutput' width="300" height="200"  alt="No Image" />
             {/* <input type='file' webkitdirectory='' id='framesInput'  onChange={submitFramesHandler}></input> */}
             
             <div className={videoStyles.pyscript}>
