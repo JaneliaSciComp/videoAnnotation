@@ -47,8 +47,11 @@ export default function Workspace(props) {
             print(len(os.listdir('/tmp/frames/')))
             print(f'Extracted {counter} frames')
             cap.release()
-            #imgElem = document.getElementById('imgOutput')
-            #imgElem.src = '/tmp/frames/f_1.jpg'
+            img = cv.imread('/tmp/frames/f_0.jpg')
+            print(img.shape)
+            ret, buf_arr = cv.imencode(".jpg", img)
+            print(len(buf_arr))
+            print(buf_arr)
             #zip_file = shutil.make_archive('/tmp/frames', 'zip', root_dir='/tmp/frames')
             return frame
 
@@ -82,7 +85,11 @@ export default function Workspace(props) {
             frame = extractFrames('/tmp/video.mov')
             #extractFrames('/tmp/video.mov')
             #return zip_file
-            return frame
+            print(frame.shape)
+            ret, buf_arr = cv.imencode(".jpg", frame)
+            print(buf_arr.shape)
+            print(buf_arr)
+            return buf_arr
             #return [1,2,3]
 
         
@@ -113,10 +120,12 @@ export default function Workspace(props) {
             const js_processVideo = pyscript.interpreter.globals.get('save_video');
             const frame = js_processVideo(data);
             console.log(typeof(frame), frame);
-            const frame_js = new Uint8Array(frame.toJs());
+            const frame_js = frame.toJs();
+            // const frame_arr = new Uint8Array(frame_js)
             
             // const frame_blob = Blob()
             console.log(typeof(frame_js), frame_js);
+            // console.log(typeof(frame_arr), frame_arr);
             const img_data = new Blob([frame_js], { type: 'image/jpg' } /* (1) */)
             console.log(img_data);
             const url = URL.createObjectURL(img_data);
@@ -125,7 +134,7 @@ export default function Workspace(props) {
             imgRef.current.onload = () => {
                 console.log('worked', imgRef.current.src)
             }
-            // saveAs(img_data, 'test.jpg');
+            saveAs(img_data, 'test.jpg');
             // for (const n of frame) {
             //     console.log(n);
                 // const ctx = canvasRef.current.getContext("2d");

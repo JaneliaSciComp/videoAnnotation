@@ -70,14 +70,14 @@ export default function Workspace(props) {
                 
                     <Row className='mx-1 my-1'>
                         <Rectangle 
-                            label='rectangle' 
+                            label='male' 
                             color='red'
                             drawRect={drawRect}
                             setDrawRect={setDrawRect} 
                             addRectId={addRectId} 
                             />
                         <Rectangle 
-                            label='rect' 
+                            label='female' 
                             color='blue'
                             drawRect={drawRect}
                             setDrawRect={setDrawRect} 
@@ -87,7 +87,7 @@ export default function Workspace(props) {
                         
                     <Row className='mx-1 my-1'>
                         <Polygon 
-                            label='polygon' 
+                            label='fly' 
                             color='red'
                             drawPolygon={drawPolygon}
                             setDrawPolygon={setDrawPolygon} 
