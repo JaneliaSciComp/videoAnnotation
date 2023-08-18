@@ -16,7 +16,7 @@ export default function Workspace(props) {
     const pyscript_code = `
         import cv2 as cv
         import os
-        import shutil
+        #import shutil
         #print(os.getcwd())  #/home/pyodide
         #print(os.listdir('/')) #['tmp', 'home', 'dev', 'proc', 'lib']
 
@@ -24,19 +24,22 @@ export default function Workspace(props) {
         from js import document, console
         from pyodide.ffi import create_proxy
 
-        
+        frame_track = 0
 
         def extractFrames(input_file_name):
             os.makedirs('/tmp/frames', exist_ok=True)
-            frames = []
+            #frames = []
             cap = cv.VideoCapture(input_file_name)
+            os.remove(input_file_name)
+            print(os.listdir('/tmp/'))
+            fps = cap.get(cv.CAP_PROP_FPS )
+            frame_count = cap.get(cv.CAP_PROP_FRAME_COUNT)
             console.log(cap.get(cv.CAP_PROP_FPS ), cap.get(cv.CAP_PROP_FRAME_COUNT))
             counter = 0
-            while counter<1: #cap.isOpened(): 
-                if counter%100 == 0:
+            while counter<1: # cap.isOpened(): #
+                if counter%200 == 0:
                     print(counter)
                 ret, frame = cap.read()
-                #print(ret)
                 if not ret:
                     #print("Can't receive frame (stream end?). Exiting ...")
                     break
@@ -44,7 +47,6 @@ export default function Workspace(props) {
                 counter += 1
                 #frames.append(frame)
             
-            print(len(os.listdir('/tmp/frames/')))
             print(f'Extracted {counter} frames')
             cap.release()
             img = cv.imread('/tmp/frames/f_0.jpg')
@@ -53,28 +55,10 @@ export default function Workspace(props) {
             print(len(buf_arr))
             print(buf_arr)
             #zip_file = shutil.make_archive('/tmp/frames', 'zip', root_dir='/tmp/frames')
-            return frame
-
-
-
-        async def process_video(e):
-            #print('event handler called')
-            files = e.target.files
-            
-            #console.log(files)
-            #console.log(files.0)
-            for video in files:
-                reader = js.FileReader.new()
-                onload_event = create_proxy(save_video)
-                reader.onload = onload_event
-                reader.readAsArrayBuffer(video)
-                #frames = reader.readAsArrayBuffer(video)
-                break
-            #return frames
+            return frame  #fps, frame_count
 
             
-        def save_video(data): #(e)
-            #print('save_v called')
+        def process_video(data): #(e)
             #data = e.target.result
             data_bin = data.to_py()
             #print(data.type, data_bin.type)
@@ -92,15 +76,6 @@ export default function Workspace(props) {
             return buf_arr
             #return [1,2,3]
 
-        
-        def main():
-            change_handler = create_proxy(process_video)
-            elem = document.getElementById('videoInput')
-            elem.addEventListener('change', change_handler)
-            #print('event added')
-            #console.log(elem)
-
-        #main()
     `
 
     async function submitVideoHandler(e) {
@@ -113,11 +88,9 @@ export default function Workspace(props) {
         const reader = new FileReader();
         reader.onload = function() {
             var data = reader.result;
-            // var node = document.getElementById('output');
-            // node.innerText = text;
             console.log(data);
 
-            const js_processVideo = pyscript.interpreter.globals.get('save_video');
+            const js_processVideo = pyscript.interpreter.globals.get('process_video');
             const frame = js_processVideo(data);
             console.log(typeof(frame), frame);
             const frame_js = frame.toJs();
@@ -131,15 +104,8 @@ export default function Workspace(props) {
             const url = URL.createObjectURL(img_data);
             imgRef.current.src = url;
             console.log(url);
-            imgRef.current.onload = () => {
-                console.log('worked', imgRef.current.src)
-            }
+            
             saveAs(img_data, 'test.jpg');
-            // for (const n of frame) {
-            //     console.log(n);
-                // const ctx = canvasRef.current.getContext("2d");
-                // ctx.drawImage(frame_js,0,0);
-            // }
             
             
             // const zip = new JSZip();
