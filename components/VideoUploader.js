@@ -3,6 +3,7 @@ import { saveAs } from 'file-saver';
 import JSZip from "jszip";
 import videoStyles from '../styles/Video.module.css';
 import Script from 'next/script';
+import { InputNumber, Row, Col, Slider } from 'antd';
 
 
 const FRAME_FORMAT = 'jpg';
@@ -11,11 +12,14 @@ const FRAME_FORMAT = 'jpg';
 export default function Workspace(props) {
     // const videoRef = useRef(null);
     // const canvasRef = useRef(null);
-    const imgRef = useRef(null);
-    const framesRef = useRef({});
+    const imgRef = useRef();
+    const framesRef = useRef();
     const [decodeStatus, setDecodeStatus] = useState('not started'); //not started; ongoing; done; failed
-    const [fps, setFps] = useState();
-    const [frameCount, setFrameCount] = useState();
+    
+    const [fps, setFps] = useState(0);
+    const [frameCount, setFrameCount] = useState(0);
+    const [transferDone, setTransferDone] = useState(false);
+    const [sliderValue, setSliderValue] = useState(0);
 
     console.log('VideoUploader render');
 
@@ -94,6 +98,7 @@ export default function Workspace(props) {
         
         
         def get_frame(frame_num):
+            # return buf_arr, diff with getFrame in js
             if os.path.exists(file_path):
                 frame = cv.imread(f'/tmp/frames/f_{frame_num}.jpg')
                 ret, buf_arr = cv.imencode(".jpg", frame)
@@ -118,11 +123,16 @@ export default function Workspace(props) {
 
     useEffect(() => {
         if (decodeStatus === 'done') { // collect frame data in pyscript
+            setTransferDone(false);
             console.log('useEffect called');
             let tracker = 0;
             const moveFrame = pyscript.interpreter.globals.get('move_frame');
             const zip = new JSZip();
+            const frames = {};
             while (tracker < frameCount) {
+                if (tracker%200 == 0) {
+                    console.log(tracker);
+                }
                 const res = moveFrame(tracker);
                 if (typeof res === 'string'){
                     console.log(res);
@@ -132,24 +142,62 @@ export default function Workspace(props) {
                     const frame = new Blob([res_js], { type: 'image/jpg' })
                     // console.log(img_data);
                     const url = URL.createObjectURL(frame);
-                    framesRef.current = {...framesRef.current, [tracker]: url}
+                    frames[tracker] = url;
                     zip.file(`frames/f_${tracker}.jpg`, frame);
                     tracker++;
                 }
             }
             if (tracker==frameCount) {
+                framesRef.current = frames;
                 zip.generateAsync({type: 'blob'})
                     .then(zipFile => {
                         saveAs(zipFile, `frames.zip`);
                 });
+                setTransferDone(true);
             }
         }
+
+
+        // if (decodeStatus === 'ongoing') { // collect frame data in pyscript
+        //     setTransferDone(false);
+        //     console.log('useEffect called');
+        //     let tracker = 0;
+        //     const moveFrame = pyscript.interpreter.globals.get('move_frame');
+        //     const zip = new JSZip();
+        //     const frames = {};
+        //     while (tracker < frameCount) {
+        //         if (tracker%200 == 0) {
+        //             console.log(tracker);
+        //         }
+        //         const res = moveFrame(tracker);
+        //         if (typeof res === 'string'){
+        //             console.log(res);
+        //             break;
+        //         } else {
+        //             const res_js = res.toJs();
+        //             const frame = new Blob([res_js], { type: 'image/jpg' })
+        //             // console.log(img_data);
+        //             const url = URL.createObjectURL(frame);
+        //             frames[tracker] = url;
+        //             zip.file(`frames/f_${tracker}.jpg`, frame);
+        //             tracker++;
+        //         }
+        //     }
+        //     if (tracker==frameCount) {
+        //         framesRef.current = frames;
+        //         zip.generateAsync({type: 'blob'})
+        //             .then(zipFile => {
+        //                 saveAs(zipFile, `frames.zip`);
+        //         });
+        //         setTransferDone(true);
+        //     }
+        // }
 
       }, [decodeStatus]
     )
 
     function getFrame(frameNum) {
-        return framesRef.current[frameNum];
+        return framesRef.current[frameNum]; //return url
     }
 
 
@@ -158,8 +206,11 @@ export default function Workspace(props) {
         e.stopPropagation();
         // console.log('webkitEntries', e.target.webkitEntries);
         setDecodeStatus('ongoing');
-        setFps(null);
-        setFrameCount(null);
+        setTransferDone(false);
+        setFps(0);
+        setFrameCount(0);
+        setSliderValue(0);
+        framesRef.current = null;
         const file = e.target.files[0];
         // console.log(file);
 
@@ -171,7 +222,7 @@ export default function Workspace(props) {
             const js_processVideo = pyscript.interpreter.globals.get('process_video');
             const res = js_processVideo(data);
             data=null;
-            console.log(typeof(res), res);
+            // console.log(typeof(res), res);
                         
             if (typeof res === 'string'){
                 setDecodeStatus('failed');
@@ -232,8 +283,20 @@ export default function Workspace(props) {
 
     }
 
-    //onChange={submitVideoHandler}
 
+    function sliderChangeHandler(newValue) {
+        setSliderValue(newValue);
+        console.log(framesRef.current[newValue]);
+        props.setFrame(framesRef.current[newValue]);
+    }
+
+    function inputNumerChangeHandler(newValue) {
+        if (typeof newValue === 'number' && Number.isInteger(newValue) ) {
+            setSliderValue(newValue);
+            console.log(framesRef.current[newValue]);
+            props.setFrame(framesRef.current[newValue]);
+        }
+    }
 
     return (
         <>
@@ -252,10 +315,31 @@ export default function Workspace(props) {
                         }
                     </span>
                 </p>
+                <Row className='videoStyles.sliderContainer'>
+                    <Col span={10}>
+                        <Slider
+                            min={frameCount==0 ? 0 : 1}
+                            max={frameCount}
+                            marks={{0:'0', [frameCount]:`${frameCount}`}}
+                            onChange={sliderChangeHandler}
+                            value={sliderValue}
+                            />
+                    </Col>
+                    <Col span={2} className='mx-2'>
+                        <InputNumber
+                            min={frameCount==0 ? 0 : 1}
+                            max={frameCount}
+                            defaultValue={frameCount==0 ? 0 : 1}
+                            value={sliderValue}
+                            onChange={inputNumerChangeHandler}
+                            />
+                    </Col>
+                    
+                </Row>
             </div>
             {/* <video ref={videoRef} width={500} height={500} controls className={videoStyles.videoTag}></video>*/}
             {/* <canvas ref={canvasRef} id='canvasTag' className={videoStyles.canvasTag}></canvas>  */}
-            <img ref={imgRef} id='imgOutput' width="300" height="200"  alt="No Image" />
+            {/* <img ref={imgRef} id='imgOutput' width="300" height="200"  alt="No Image" /> */}
             {/* <input type='file' webkitdirectory='' id='framesInput'  onChange={submitFramesHandler}></input> */}
             
             <div className={videoStyles.pyscript}>

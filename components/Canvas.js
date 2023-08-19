@@ -36,12 +36,14 @@ export default function Canvas(props) {
                 rectLines: [],
                 hoverCursor: 'pointer',
             });
-            const imageObj = new fabric.Image('image', {
-                selectable: false,
-            });
 
-            scaleImage(canvasObj, imageObj);
-            canvasObj.add(imageObj);
+            setupImg();
+            // const imageObj = new fabric.Image('image', {
+            //     selectable: false,
+            // });
+
+            // scaleImage(canvasObj, imageObj);
+            // canvasObj.add(imageObj);
             
             
             // canvasObj.on('mouse:down', //(opt) => {
@@ -49,7 +51,7 @@ export default function Canvas(props) {
             // );
 
             canvasObjRef.current = canvasObj;
-            imageObjRef.current = imageObj;
+            // imageObjRef.current = imageObj;
         }
 
         canvasObjRef.current.on('mouse:wheel', wheelHandler);
@@ -68,6 +70,32 @@ export default function Canvas(props) {
         }
       }, [props]
     )
+
+
+    useEffect(() => {
+        if (imageObjRef.current && canvasObjRef.current) {
+            
+            setupImg();
+            // canvasObjRef.current.renderAll();
+            console.log('called', imageObjRef.current.src);
+        }
+      }, [props.img]
+
+      
+    )
+
+
+    function setupImg(){
+        if (imageObjRef.current) {
+            canvasObjRef.current.remove(imageObjRef.current);
+        }
+        const imageObj = new fabric.Image('image', {
+            selectable: false,
+        });
+        scaleImage(canvasObjRef.current, imageObj);
+        canvasObjRef.current.add(imageObj);
+        imageObjRef.current = imageObj;
+    }
 
 
     

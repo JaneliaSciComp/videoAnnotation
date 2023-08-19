@@ -12,6 +12,7 @@ import {Row, Col} from 'react-bootstrap';
 
 
 export default function Workspace(props) {
+    const imgRef = useRef();
     const [frame, setFrame] = useState('/fly.png');
     // const [annotation, setAnnotation] = useState([]);
     const [activeIdObj, setActiveIdObj] = useState();
@@ -26,6 +27,12 @@ export default function Workspace(props) {
     
 
     console.log('workspace render');
+
+    useEffect(()=>{
+        console.log('haha');
+        imgRef.current.src = frame;
+    }, [frame]
+    )
 
 
     function addKeyPointId(idObj) {
@@ -121,7 +128,8 @@ export default function Workspace(props) {
             </Row>
             
             <Row className='my-3'>
-                <VideoUploader />
+                <VideoUploader setFrame={setFrame} />
+                <img ref={imgRef} id='imgOutput' width="300" height="200"  alt="No Image" />
             </Row>
             
           </main>
