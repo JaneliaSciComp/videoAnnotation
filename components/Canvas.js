@@ -102,7 +102,7 @@ export default function Canvas(props) {
             imageObjRef.current = imageObj;
         }
         scaleImage(canvasObjRef.current, imageObjRef.current);
-        // canvasObjRef.current.renderAll();
+        canvasObjRef.current.renderAll();
     }
 
 

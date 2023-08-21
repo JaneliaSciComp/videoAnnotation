@@ -99,9 +99,11 @@ export default function Workspace(props) {
         
         def get_frame(frame_num):
             # return buf_arr, diff with getFrame in js
+            file_path = f'/tmp/frames/f_{frame_num}.jpg'
             if os.path.exists(file_path):
-                frame = cv.imread(f'/tmp/frames/f_{frame_num}.jpg')
+                frame = cv.imread(file_path)
                 ret, buf_arr = cv.imencode(".jpg", frame)
+                del frame
                 return buf_arr
             else:
                 return 'Frame is not in pyscript'
@@ -121,80 +123,81 @@ export default function Workspace(props) {
     `
 
 
-    useEffect(() => {
-        if (decodeStatus === 'done') { // collect frame data in pyscript
-            setTransferDone(false);
-            console.log('useEffect called');
-            let tracker = 0;
-            const moveFrame = pyscript.interpreter.globals.get('move_frame');
-            const zip = new JSZip();
-            const frames = {};
-            while (tracker < frameCount) {
-                if (tracker%200 == 0) {
-                    console.log(tracker);
-                }
-                const res = moveFrame(tracker);
-                if (typeof res === 'string'){
-                    console.log(res);
-                    break;
-                } else {
-                    const res_js = res.toJs();
-                    const frame = new Blob([res_js], { type: 'image/jpg' })
-                    // console.log(img_data);
-                    const url = URL.createObjectURL(frame);
-                    frames[tracker] = url;
-                    zip.file(`frames/f_${tracker}.jpg`, frame);
-                    tracker++;
-                }
-            }
-            if (tracker==frameCount) {
-                framesRef.current = frames;
-                zip.generateAsync({type: 'blob'})
-                    .then(zipFile => {
-                        saveAs(zipFile, `frames.zip`);
-                });
-                setTransferDone(true);
-            }
-        }
+    // useEffect(() => {
+    //     if (decodeStatus === 'done') { // collect frame data in pyscript
+    //         setTransferDone(false);
+    //         console.log('useEffect called');
+    //         let tracker = 0;
+    //         const moveFrame = pyscript.interpreter.globals.get('move_frame');
+    //         const zip = new JSZip();
+    //         const frames = {};
+    //         while (tracker < frameCount) {
+    //             if (tracker%200 == 0) {
+    //                 console.log(tracker);
+    //             }
+    //             const res = moveFrame(tracker);
+    //             if (typeof res === 'string'){
+    //                 console.log(res);
+    //                 break;
+    //             } else {
+    //                 const res_js = res.toJs();
+    //                 const frame = new Blob([res_js], { type: 'image/jpg' })
+    //                 // console.log(img_data);
+    //                 const url = URL.createObjectURL(frame);
+    //                 frames[tracker] = url;
+    //                 zip.file(`frames/f_${tracker}.jpg`, frame);
+    //                 tracker++;
+    //             }
+    //         }
+    //         if (tracker==frameCount) {
+    //             framesRef.current = frames;
+    //             zip.generateAsync({type: 'blob'})
+    //                 .then(zipFile => {
+    //                     saveAs(zipFile, `frames.zip`);
+    //             });
+    //             setTransferDone(true);
+    //         }
+    //     }
 
 
-        // if (decodeStatus === 'ongoing') { // collect frame data in pyscript
-        //     setTransferDone(false);
-        //     console.log('useEffect called');
-        //     let tracker = 0;
-        //     const moveFrame = pyscript.interpreter.globals.get('move_frame');
-        //     const zip = new JSZip();
-        //     const frames = {};
-        //     while (tracker < frameCount) {
-        //         if (tracker%200 == 0) {
-        //             console.log(tracker);
-        //         }
-        //         const res = moveFrame(tracker);
-        //         if (typeof res === 'string'){
-        //             console.log(res);
-        //             break;
-        //         } else {
-        //             const res_js = res.toJs();
-        //             const frame = new Blob([res_js], { type: 'image/jpg' })
-        //             // console.log(img_data);
-        //             const url = URL.createObjectURL(frame);
-        //             frames[tracker] = url;
-        //             zip.file(`frames/f_${tracker}.jpg`, frame);
-        //             tracker++;
-        //         }
-        //     }
-        //     if (tracker==frameCount) {
-        //         framesRef.current = frames;
-        //         zip.generateAsync({type: 'blob'})
-        //             .then(zipFile => {
-        //                 saveAs(zipFile, `frames.zip`);
-        //         });
-        //         setTransferDone(true);
-        //     }
-        // }
+    //     // if (decodeStatus === 'ongoing') { // collect frame data in pyscript
+    //     //     setTransferDone(false);
+    //     //     console.log('useEffect called');
+    //     //     let tracker = 0;
+    //     //     const moveFrame = pyscript.interpreter.globals.get('move_frame');
+    //     //     const zip = new JSZip();
+    //     //     const frames = {};
+    //     //     while (tracker < frameCount) {
+    //     //         if (tracker%200 == 0) {
+    //     //             console.log(tracker);
+    //     //         }
+    //     //         const res = moveFrame(tracker);
+    //     //         if (typeof res === 'string'){
+    //     //             console.log(res);
+    //     //             break;
+    //     //         } else {
+    //     //             const res_js = res.toJs();
+    //     //             res = null;
+    //     //             const frame = new Blob([res_js], { type: 'image/jpg' })
+    //     //             // console.log(img_data);
+    //     //             const url = URL.createObjectURL(frame);
+    //     //             frames[tracker] = url;
+    //     //             zip.file(`frames/f_${tracker}.jpg`, frame);
+    //     //             tracker++;
+    //     //         }
+    //     //     }
+    //     //     if (tracker==frameCount) {
+    //     //         framesRef.current = frames;
+    //     //         zip.generateAsync({type: 'blob'})
+    //     //             .then(zipFile => {
+    //     //                 saveAs(zipFile, `frames.zip`);
+    //     //         });
+    //     //         setTransferDone(true);
+    //     //     }
+    //     // }
 
-      }, [decodeStatus]
-    )
+    //   }, [decodeStatus]
+    // )
 
     // function getFrame(frameNum) {
     //     return framesRef.current[frameNum]; //return url
@@ -202,15 +205,16 @@ export default function Workspace(props) {
 
     function getFrame(frameNum) {
         const getFrame_py = pyscript.interpreter.globals.get('get_frame');
-        const res = getFrame_py(frameNum);
+        let res = getFrame_py(frameNum);
             if (typeof res === 'string'){
                 console.log(res);
             } else {
                 const res_js = res.toJs();
+                res = null;
                 const frame = new Blob([res_js], { type: 'image/jpg' })
                 // console.log(img_data);
                 const url = URL.createObjectURL(frame);
-                props.setFrame(url);
+                return url;
             }
     }
 
@@ -276,15 +280,21 @@ export default function Workspace(props) {
 
     function sliderChangeHandler(newValue) {
         setSliderValue(newValue);
-        console.log(framesRef.current[newValue]);
-        props.setFrame(framesRef.current[newValue]);
+        // console.log(framesRef.current[newValue]);
+        // props.setFrame(framesRef.current[newValue]);
+
+        const url = getFrame(newValue-1);
+        props.setFrame(url);
     }
 
     function inputNumerChangeHandler(newValue) {
         if (typeof newValue === 'number' && Number.isInteger(newValue) ) {
             setSliderValue(newValue);
-            console.log(framesRef.current[newValue]);
-            props.setFrame(framesRef.current[newValue]);
+            // console.log(framesRef.current[newValue]);
+            // props.setFrame(framesRef.current[newValue]);
+
+            const url = getFrame(newValue-1);
+            props.setFrame(url);
         }
     }
 
