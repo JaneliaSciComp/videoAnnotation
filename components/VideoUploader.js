@@ -36,7 +36,7 @@ export default function Workspace(props) {
 
         #counter = 0 # counter = n, means the nth frame is being processed, (n-1)th frame is done
 
-        def extractFrames(input_file_name):
+        async def extractFrames(input_file_name):
             try:
                 #global counter
                 os.makedirs('/tmp/frames', exist_ok=True)
@@ -48,9 +48,11 @@ export default function Workspace(props) {
                 frame_count = cap.get(cv.CAP_PROP_FRAME_COUNT)
                 console.log(cap.get(cv.CAP_PROP_FPS ), cap.get(cv.CAP_PROP_FRAME_COUNT))
                 counter = 0
-                while cap.isOpened(): #counter<1: # 
+                while counter<1200: # cap.isOpened(): #
                     if counter%200 == 0:
                         print(counter)
+                    if counter%5 == 0:
+                        await asyncio.sleep(0.005)
                     ret, frame = cap.read()
                     if not ret:
                         #print("Can't receive frame (stream end?). Exiting ...")
@@ -58,6 +60,7 @@ export default function Workspace(props) {
                     cv.imwrite(f'/tmp/frames/f_{counter}.jpg', frame)
                     counter += 1
                     #frames.append(frame)
+                    #await asyncio.sleep(0.01)
                 
                 print(f'Extracted {counter} frames')
                 cap.release()
@@ -76,7 +79,7 @@ export default function Workspace(props) {
                 return 'Something wrong with video decode'
 
             
-        def process_video(data): #(e)
+        async def process_video(data): #(e)
             try:
                 #data = e.target.result
                 data_bin = data.to_py()
@@ -86,7 +89,7 @@ export default function Workspace(props) {
                     f.write(data_bin)
                 del data_bin
                 print(os.listdir('/tmp/'))
-                res = extractFrames('/tmp/video.mov') #frame=
+                res = await extractFrames('/tmp/video.mov') #frame=
                 #print(frame.shape)
                 #ret, buf_arr = cv.imencode(".jpg", frame)
                 #print(buf_arr.shape)
@@ -219,7 +222,7 @@ export default function Workspace(props) {
     }
 
 
-    function submitVideoHandler(e) {
+    async function submitVideoHandler(e) {
         e.preventDefault();
         e.stopPropagation();
         // console.log('webkitEntries', e.target.webkitEntries);
@@ -233,14 +236,14 @@ export default function Workspace(props) {
         // console.log(file);
 
         const reader = new FileReader();
-        reader.onload = function() {
+        reader.onload = async function() {
             let data = reader.result;
             // console.log(data);
 
             const js_processVideo = pyscript.interpreter.globals.get('process_video');
-            const res = js_processVideo(data);
+            const res = await js_processVideo(data);
             data=null;
-            // console.log(typeof(res), res);
+            console.log(typeof(res), res);
                         
             if (typeof res === 'string'){
                 setDecodeStatus('failed');
@@ -250,23 +253,31 @@ export default function Workspace(props) {
                 setDecodeStatus('done');
                 setFps(res_js[0]);
                 setFrameCount(res_js[1]);
+                setFrame(1);
             }
+
+            // const worker = new Worker('./worker.js');
+            // worker.addEventListener('message', (msg)=>{
+            //     if (typeof msg === 'string'){
+            //         setDecodeStatus('failed');
+            //     } else {
+            //         console.log('worker responded');
+            //         const res_js = msg.toJs();
+            //         console.log(typeof(res_js), res_js);
+            //         setDecodeStatus('done');
+            //         setFps(res_js[0]);
+            //         setFrameCount(res_js[1]);
+            //     }
+            // })
+
+            // worker.postMessage({
+            //     cmd: 'decode',
+            //     arr: data
+            // })
         };
         reader.readAsArrayBuffer(file);
         // // reader.readAsDataURL(file);
         // reader.readAsBinaryString(file);
-        // const zip = new JSZip();
-            // frames.forEach((f, i) => {
-            //     zip.file(`f_${i}.jpg`, f);
-            // });
-            // console.log(zip);
-            // zip.generateAsync({type: 'blob'}).then(zipFile => {
-            //     const currentDate = new Date().getTime();
-            //     const fileName = `combined-${currentDate}.zip`;
-            //     console.log(fileName)
-            //     saveAs(zipFile, fileName);
-            //     // return FileSaver.saveAs(zipFile, fileName);
-            // });
         
     }
 
@@ -279,28 +290,33 @@ export default function Workspace(props) {
 
 
     function sliderChangeHandler(newValue) {
-        setSliderValue(newValue);
+        // setSliderValue(newValue);
         // console.log(framesRef.current[newValue]);
         // props.setFrame(framesRef.current[newValue]);
 
-        const url = getFrame(newValue-1);
-        props.setFrame(url);
+        setFrame(newValue);
     }
 
     function inputNumerChangeHandler(newValue) {
         if (typeof newValue === 'number' && Number.isInteger(newValue) ) {
-            setSliderValue(newValue);
+            // setSliderValue(newValue);
             // console.log(framesRef.current[newValue]);
             // props.setFrame(framesRef.current[newValue]);
 
-            const url = getFrame(newValue-1);
-            props.setFrame(url);
+            setFrame(newValue);
         }
     }
 
+    function setFrame(newValue) {
+        setSliderValue(newValue);
+        const url = getFrame(newValue-1);
+        props.setFrame(url);
+    }
+
+    //strategy='beforeInteractive'
     return (
         <>
-            <Script defer src="https://pyscript.net/latest/pyscript.js" strategy='beforeInteractive'/>
+            <Script defer src="https://pyscript.net/latest/pyscript.js" />
             <div>
                 <input type='file' id='videoInput' 
                     accept='.jpg, .mp4, .mov, .avi' 
