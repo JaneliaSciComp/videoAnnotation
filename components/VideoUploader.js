@@ -196,8 +196,22 @@ export default function Workspace(props) {
       }, [decodeStatus]
     )
 
+    // function getFrame(frameNum) {
+    //     return framesRef.current[frameNum]; //return url
+    // }
+
     function getFrame(frameNum) {
-        return framesRef.current[frameNum]; //return url
+        const getFrame_py = pyscript.interpreter.globals.get('get_frame');
+        const res = getFrame_py(frameNum);
+            if (typeof res === 'string'){
+                console.log(res);
+            } else {
+                const res_js = res.toJs();
+                const frame = new Blob([res_js], { type: 'image/jpg' })
+                // console.log(img_data);
+                const url = URL.createObjectURL(frame);
+                props.setFrame(url);
+            }
     }
 
 
@@ -233,13 +247,6 @@ export default function Workspace(props) {
                 setFps(res_js[0]);
                 setFrameCount(res_js[1]);
             }
-            // const img_data = new Blob([frame_js], { type: 'image/jpg' } /* (1) */)
-            // console.log(img_data);
-            // const url = URL.createObjectURL(img_data);
-            // imgRef.current.src = url;
-            // console.log(url);
-            
-            // saveAs(img_data, 'test.jpg');
         };
         reader.readAsArrayBuffer(file);
         // // reader.readAsDataURL(file);
@@ -259,23 +266,6 @@ export default function Workspace(props) {
         
     }
 
-    // function extractFrames(videoElem) {
-    //     const cap = new cv.VideoCapture(videoElem);
-    //     console.log(videoElem, cap);
-    //     // console.log(cap.get(cv.CAP_PROP_FPS ), cap.get(cv.CAP_PROP_FRAME_COUNT))
-    //     if (cap) {
-    //         const res = [];
-    //         const zip = new JSZip();
-    //         let counter = 0;
-    
-    //             counter++;
-    
-    //         return res;
-    //     } else {
-    //         //TODO: show info to user
-    //         return null;
-    //     }
-    // }
 
     function submitFramesHandler(e) {
         e.preventDefault();

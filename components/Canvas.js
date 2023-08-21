@@ -25,7 +25,7 @@ export default function Canvas(props) {
 
     //Set up canvas
     useEffect(() => {
-        console.log(imgRef.current);
+        // console.log(imgRef.current);
 
         if (!canvasObjRef.current) {
             const canvasObj = new fabric.Canvas('canvas', {
@@ -37,17 +37,6 @@ export default function Canvas(props) {
                 rectLines: [],
                 hoverCursor: 'pointer',
             });
-
-
-            // const imageObj = new fabric.Image(imgRef.current, {
-            //     selectable: false,
-            // });
-
-            // console.log(imageObj);
-
-            // scaleImage(canvasObj, imageObj);
-            // canvasObj.add(imageObj);
-            
             
             // canvasObj.on('mouse:down', //(opt) => {
             //     mouseDownHandler//(opt.e, canvasObj);
@@ -100,7 +89,6 @@ export default function Canvas(props) {
         }
         // console.log('scaled: ', image.getScaledWidth(), image.getScaledHeight());
         // console.log('original: ', image.get('width'), image.get('height'));
-        // console.log(image);
     }
 
 
