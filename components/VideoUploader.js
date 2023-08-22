@@ -3,7 +3,7 @@ import { saveAs } from 'file-saver';
 import JSZip from "jszip";
 import videoStyles from '../styles/Video.module.css';
 import Script from 'next/script';
-import { InputNumber, Row, Col, Slider } from 'antd';
+import { InputNumber, Row, Col, Slider, Progress } from 'antd';
 
 
 const FRAME_FORMAT = 'jpg';
@@ -12,20 +12,23 @@ const FRAME_FORMAT = 'jpg';
 export default function VideoUploader(props) {
     // const videoRef = useRef(null);
     // const canvasRef = useRef(null);
-    const imgRef = useRef();
-    const framesRef = useRef();
+    // const imgRef = useRef();
+    // const framesRef = useRef();
     const [decodeStatus, setDecodeStatus] = useState('not started'); //not started; ongoing; done; failed
     
     const [fps, setFps] = useState(0);
     const [frameCount, setFrameCount] = useState(0);
-    const [transferDone, setTransferDone] = useState(false);
+    const [totalFrameCount, setTotalFrameCount] = useState(0);
+    // const [transferDone, setTransferDone] = useState(false);
     const [sliderValue, setSliderValue] = useState(0);
 
     console.log('VideoUploader render');
 
     useEffect(()=>{
-        window.setFrameWrapper = (newValue)=>{setFrame(newValue)};
-        window.setFrameCountWrapper = (newValue)=>{setFrameCount(newValue)};
+        window.setFrameWrapper = (n)=>{setFrame(n)};
+        window.setFrameCountWrapper = (n)=>{setFrameCount(n)};
+        window.setFpsWrapper = (n)=>{setFps(n)};
+        window.setTotalFrameCountWrapper = (n) =>{setTotalFrameCount(n)};
     },[])
 
     const pyscript_code = `
@@ -46,12 +49,13 @@ export default function VideoUploader(props) {
             try:
                 #global counter
                 os.makedirs('/tmp/frames', exist_ok=True)
-                #frames = []
                 cap = cv.VideoCapture(input_file_name)
                 os.remove(input_file_name)
                 #print(os.listdir('/tmp/'))
                 fps = cap.get(cv.CAP_PROP_FPS )
-                frame_count = cap.get(cv.CAP_PROP_FRAME_COUNT)
+                total_frame_count = cap.get(cv.CAP_PROP_FRAME_COUNT)
+                window.setFpsWrapper(fps)
+                window.setTotalFrameCountWrapper(total_frame_count)
                 console.log(cap.get(cv.CAP_PROP_FPS ), cap.get(cv.CAP_PROP_FRAME_COUNT))
                 counter = 0
                 time = datetime.now()
@@ -75,14 +79,9 @@ export default function VideoUploader(props) {
                 
                 print(f'Extracted {counter} frames')
                 cap.release()
-                #img = cv.imread('/tmp/frames/f_0.jpg')
-                #print(img.shape)
-                #ret, buf_arr = cv.imencode(".jpg", img)
-                #print(len(buf_arr))
-                #print(buf_arr)
-
+                
                 #if counter == frame_count:
-                return [fps, counter] #frame_count may be diff with counter
+                return counter #frame_count may be diff with counter
                 #else:
                 #    return 'Something wrong with video decode'
             except Exception as e:
@@ -103,35 +102,6 @@ export default function VideoUploader(props) {
                 #print(os.listdir('/tmp/'))
                 res = await extractFrames(video_path) 
                 return res
-
-                #os.makedirs('/tmp/frames', exist_ok=True)
-                #cap = cv.VideoCapture(video_path)
-                #os.remove(video_path)
-                #fps = cap.get(cv.CAP_PROP_FPS )
-                #frame_count = cap.get(cv.CAP_PROP_FRAME_COUNT)
-                #console.log(cap.get(cv.CAP_PROP_FPS ), cap.get(cv.CAP_PROP_FRAME_COUNT))
-                #yield [frame_count, fps]
-                #counter = 0
-                #time = datetime.now()
-                #while counter<1200: # cap.isOpened(): #
-                #    if counter%200 == 0 and counter//200 > 0:
-                #        print(counter, datetime.now() - time)
-                #        time = datetime.now()
-                #        yield [frame_count, counter]
-                #    if counter%5 == 0:
-                #        await asyncio.sleep(0.005)
-                #    ret, frame = cap.read()
-                #    if not ret:
-                        #print("Can't receive frame (stream end?). Exiting ...")
-                #        break
-                #    cv.imwrite(f'/tmp/frames/f_{counter}.jpg', frame)
-                #    counter += 1
-                    #frames.append(frame)
-                    #await asyncio.sleep(0.001)
-                
-                #print(f'Extracted {counter} frames')
-                #cap.release()
-                #yield [0, counter]
             except Exception as e:
                 print(e)
                 return 'Something wrong with video decode'
@@ -258,17 +228,27 @@ export default function VideoUploader(props) {
             }
     }
 
+    
+    function resetStatus() {
+        setDecodeStatus('ongoing');
+        setFps(0);
+        setFrameCount(0);
+        setSliderValue(0);
+    }
+
 
     async function submitVideoHandler(e) {
         e.preventDefault();
         e.stopPropagation();
         // console.log('webkitEntries', e.target.webkitEntries);
-        setDecodeStatus('ongoing');
-        setTransferDone(false);
-        setFps(0);
-        setFrameCount(0);
-        setSliderValue(0);
-        framesRef.current = null;
+        // setDecodeStatus('ongoing');
+        // setTransferDone(false);
+        // setFps(0);
+        // setFrameCount(0);
+        // setSliderValue(0);
+        // framesRef.current = null;
+        
+        resetStatus();
         const file = e.target.files[0];
         // console.log(file);
 
@@ -280,50 +260,19 @@ export default function VideoUploader(props) {
             const js_processVideo = pyscript.interpreter.globals.get('process_video');
             let res = await js_processVideo(data);
             data=null;
-            // console.log(typeof(res), res);
+            console.log(typeof(res), res);
                         
             if (typeof res === 'string'){
                 setDecodeStatus('failed');
             } else {
-                const res_js = res.toJs();
+                // const res_js = res.toJs();
                 // console.log(typeof(res_js), res_js);
                 setDecodeStatus('done');
-                setFps(res_js[0]);
-                setFrameCount(res_js[1]);
+                // setFps(res_js[0]);
+                setFrameCount(res);
+                setTotalFrameCount(res); // update real totalFrameCount
                 // setFrame(1);
             }
-
-            // if (typeof res === 'string'){
-            //     setDecodeStatus('failed');
-            //     console.log('first round failed');
-            // } else {
-            //     const res_js = res.toJs();
-            //     console.log(typeof(res_js), res_js);
-            //     setFps(res_js[1]);
-            // }
-
-            // let i = 0;
-            // while (true) {
-            //     res = await js_processVideo(data);
-            //     if (typeof res === 'string'){
-            //         setDecodeStatus('failed');
-            //         break;
-            //     } else { 
-            //         const res_js = res.toJs();
-            //         console.log(typeof(res_js), res_js);
-            //         setFrameCount(res_js[1]);
-            //         if (res[1]==200) { //TODO: first round done
-            //             setFrame[1];
-            //         }
-            //         if (res[0]==0) { //decode is done
-            //             // console.log(typeof(res_js), res_js);
-            //             setDecodeStatus('done');
-            //             break;
-            //         }
-            //     }
-            // }
-
-
 
 
             // const worker = new Worker('./worker.js');
@@ -388,19 +337,23 @@ export default function VideoUploader(props) {
         <>
             <Script defer src="https://pyscript.net/latest/pyscript.js" />
             <div>
-                <input type='file' id='videoInput' 
+                <input type='file' id='videoInput' className='videoStyles.videoInput'
                     accept='.jpg, .mp4, .mov, .avi' 
                     onChange={submitVideoHandler}>
                 </input>
-                <p className='videoStyles.decodeInfo'>
-                    {`Decoding is ${decodeStatus}. `}
-                    <span>
-                        {decodeStatus==='done' ? 
-                            `FPS: ${fps}, Frame Count: ${frameCount}`
-                            : null
-                        }
+                {decodeStatus!=='not started' ?
+                    <Progress type="circle" size={35}
+                     percent={totalFrameCount==0 ? 0 : frameCount/totalFrameCount*100} 
+                     status={decodeStatus==='failed' ? "exception" : null} />
+                    : null
+                }
+                
+                {decodeStatus==='done' ? 
+                    <span className='videoStyles.decodeInfo'>                        
+                        {`FPS: ${fps}, Frame Count: ${frameCount}`}
                     </span>
-                </p>
+                    : null
+                }
                 <Row className='videoStyles.sliderContainer'>
                     <Col span={10}>
                         <Slider
