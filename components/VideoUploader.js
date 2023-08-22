@@ -9,7 +9,7 @@ import { InputNumber, Row, Col, Slider } from 'antd';
 const FRAME_FORMAT = 'jpg';
 
 
-export default function Workspace(props) {
+export default function VideoUploader(props) {
     // const videoRef = useRef(null);
     // const canvasRef = useRef(null);
     const imgRef = useRef();
@@ -23,6 +23,11 @@ export default function Workspace(props) {
 
     console.log('VideoUploader render');
 
+    useEffect(()=>{
+        window.setFrameWrapper = (newValue)=>{setFrame(newValue)};
+        window.setFrameCountWrapper = (newValue)=>{setFrameCount(newValue)};
+    },[])
+
     const pyscript_code = `
         import cv2 as cv
         import os
@@ -32,7 +37,7 @@ export default function Workspace(props) {
         #print(os.listdir('/')) #['tmp', 'home', 'dev', 'proc', 'lib']
 
         import asyncio
-        from js import document, console
+        from js import document, console, window
         from pyodide.ffi import create_proxy
 
         #counter = 0 # counter = n, means the nth frame is being processed, (n-1)th frame is done
@@ -44,7 +49,7 @@ export default function Workspace(props) {
                 #frames = []
                 cap = cv.VideoCapture(input_file_name)
                 os.remove(input_file_name)
-                print(os.listdir('/tmp/'))
+                #print(os.listdir('/tmp/'))
                 fps = cap.get(cv.CAP_PROP_FPS )
                 frame_count = cap.get(cv.CAP_PROP_FRAME_COUNT)
                 console.log(cap.get(cv.CAP_PROP_FPS ), cap.get(cv.CAP_PROP_FRAME_COUNT))
@@ -54,6 +59,9 @@ export default function Workspace(props) {
                     if counter%200 == 0:
                         print(counter, datetime.now() - time)
                         time = datetime.now()
+                        window.setFrameCountWrapper(counter)
+                        if counter//200==1:
+                            window.setFrameWrapper(1)
                     if counter%5 == 0:
                         await asyncio.sleep(0.005)
                     ret, frame = cap.read()
@@ -88,16 +96,42 @@ export default function Workspace(props) {
                 data_bin = data.to_py()
                 del data
                 #print(data.type, data_bin.type)
-                with open('/tmp/video.mov', 'wb') as f:
+                video_path = '/tmp/video.mov'
+                with open(video_path, 'wb') as f:
                     f.write(data_bin)
                 del data_bin
-                print(os.listdir('/tmp/'))
-                res = await extractFrames('/tmp/video.mov') #frame=
-                #print(frame.shape)
-                #ret, buf_arr = cv.imencode(".jpg", frame)
-                #print(buf_arr.shape)
-                #print(buf_arr)
+                #print(os.listdir('/tmp/'))
+                res = await extractFrames(video_path) 
                 return res
+
+                #os.makedirs('/tmp/frames', exist_ok=True)
+                #cap = cv.VideoCapture(video_path)
+                #os.remove(video_path)
+                #fps = cap.get(cv.CAP_PROP_FPS )
+                #frame_count = cap.get(cv.CAP_PROP_FRAME_COUNT)
+                #console.log(cap.get(cv.CAP_PROP_FPS ), cap.get(cv.CAP_PROP_FRAME_COUNT))
+                #yield [frame_count, fps]
+                #counter = 0
+                #time = datetime.now()
+                #while counter<1200: # cap.isOpened(): #
+                #    if counter%200 == 0 and counter//200 > 0:
+                #        print(counter, datetime.now() - time)
+                #        time = datetime.now()
+                #        yield [frame_count, counter]
+                #    if counter%5 == 0:
+                #        await asyncio.sleep(0.005)
+                #    ret, frame = cap.read()
+                #    if not ret:
+                        #print("Can't receive frame (stream end?). Exiting ...")
+                #        break
+                #    cv.imwrite(f'/tmp/frames/f_{counter}.jpg', frame)
+                #    counter += 1
+                    #frames.append(frame)
+                    #await asyncio.sleep(0.001)
+                
+                #print(f'Extracted {counter} frames')
+                #cap.release()
+                #yield [0, counter]
             except Exception as e:
                 print(e)
                 return 'Something wrong with video decode'
@@ -244,7 +278,7 @@ export default function Workspace(props) {
             // console.log(data);
 
             const js_processVideo = pyscript.interpreter.globals.get('process_video');
-            const res = await js_processVideo(data);
+            let res = await js_processVideo(data);
             data=null;
             // console.log(typeof(res), res);
                         
@@ -256,8 +290,41 @@ export default function Workspace(props) {
                 setDecodeStatus('done');
                 setFps(res_js[0]);
                 setFrameCount(res_js[1]);
-                setFrame(1);
+                // setFrame(1);
             }
+
+            // if (typeof res === 'string'){
+            //     setDecodeStatus('failed');
+            //     console.log('first round failed');
+            // } else {
+            //     const res_js = res.toJs();
+            //     console.log(typeof(res_js), res_js);
+            //     setFps(res_js[1]);
+            // }
+
+            // let i = 0;
+            // while (true) {
+            //     res = await js_processVideo(data);
+            //     if (typeof res === 'string'){
+            //         setDecodeStatus('failed');
+            //         break;
+            //     } else { 
+            //         const res_js = res.toJs();
+            //         console.log(typeof(res_js), res_js);
+            //         setFrameCount(res_js[1]);
+            //         if (res[1]==200) { //TODO: first round done
+            //             setFrame[1];
+            //         }
+            //         if (res[0]==0) { //decode is done
+            //             // console.log(typeof(res_js), res_js);
+            //             setDecodeStatus('done');
+            //             break;
+            //         }
+            //     }
+            // }
+
+
+
 
             // const worker = new Worker('./worker.js');
             // worker.addEventListener('message', (msg)=>{
