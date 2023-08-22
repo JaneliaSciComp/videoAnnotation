@@ -26,6 +26,7 @@ export default function Workspace(props) {
     const pyscript_code = `
         import cv2 as cv
         import os
+        from datetime import datetime
         #import shutil
         #print(os.getcwd())  #/home/pyodide
         #print(os.listdir('/')) #['tmp', 'home', 'dev', 'proc', 'lib']
@@ -48,9 +49,11 @@ export default function Workspace(props) {
                 frame_count = cap.get(cv.CAP_PROP_FRAME_COUNT)
                 console.log(cap.get(cv.CAP_PROP_FPS ), cap.get(cv.CAP_PROP_FRAME_COUNT))
                 counter = 0
+                time = datetime.now()
                 while counter<1200: # cap.isOpened(): #
                     if counter%200 == 0:
-                        print(counter)
+                        print(counter, datetime.now() - time)
+                        time = datetime.now()
                     if counter%5 == 0:
                         await asyncio.sleep(0.005)
                     ret, frame = cap.read()
@@ -60,7 +63,7 @@ export default function Workspace(props) {
                     cv.imwrite(f'/tmp/frames/f_{counter}.jpg', frame)
                     counter += 1
                     #frames.append(frame)
-                    #await asyncio.sleep(0.01)
+                    #await asyncio.sleep(0.001)
                 
                 print(f'Extracted {counter} frames')
                 cap.release()
@@ -243,13 +246,13 @@ export default function Workspace(props) {
             const js_processVideo = pyscript.interpreter.globals.get('process_video');
             const res = await js_processVideo(data);
             data=null;
-            console.log(typeof(res), res);
+            // console.log(typeof(res), res);
                         
             if (typeof res === 'string'){
                 setDecodeStatus('failed');
             } else {
                 const res_js = res.toJs();
-                console.log(typeof(res_js), res_js);
+                // console.log(typeof(res_js), res_js);
                 setDecodeStatus('done');
                 setFps(res_js[0]);
                 setFrameCount(res_js[1]);
