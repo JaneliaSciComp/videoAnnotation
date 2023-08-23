@@ -14,12 +14,12 @@ export default function VideoUploader(props) {
     // const videoRef = useRef(null);
     // const canvasRef = useRef(null);
     // const imgRef = useRef();
-    // const framesRef = useRef();
+    const framesRef = useRef();
     const [decodeStatus, setDecodeStatus] = useState('not started'); //not started; ongoing; done; failed
     const [fps, setFps] = useState(0);
     var [frameCount, setFrameCount] = useState(0);
     const [totalFrameCount, setTotalFrameCount] = useState(0);
-    // const [transferDone, setTransferDone] = useState(false);
+    const [transferDone, setTransferDone] = useState(false);
     const [sliderValue, setSliderValue] = useState(0);
     const [playFps, setPlayFps] = useState(0);
     const playInterval = useRef(null);
@@ -63,13 +63,13 @@ export default function VideoUploader(props) {
                 console.log(cap.get(cv.CAP_PROP_FPS ), cap.get(cv.CAP_PROP_FRAME_COUNT))
                 counter = 0
                 time = datetime.now()
-                while counter<1200: # cap.isOpened(): #
+                while counter<600: # cap.isOpened(): #
                     if counter%200 == 0:
                         print(counter, datetime.now() - time)
                         time = datetime.now()
                         window.setFrameCountWrapper(counter)
-                        if counter//200==1:
-                            window.setFrameWrapper(1)
+                        #if counter//200==1: #### whether transfer
+                        #    window.setFrameWrapper(1)
                     if counter%5 == 0:
                         await asyncio.sleep(0.005)
                     ret, frame = cap.read()
@@ -136,110 +136,76 @@ export default function VideoUploader(props) {
                 return 'Something wrong with move_frame'
     `
 
-
-    // useEffect(() => {
-    //     if (decodeStatus === 'done') { // collect frame data in pyscript
-    //         setTransferDone(false);
-    //         console.log('useEffect called');
-    //         let tracker = 0;
-    //         const moveFrame = pyscript.interpreter.globals.get('move_frame');
-    //         const zip = new JSZip();
-    //         const frames = {};
-    //         while (tracker < frameCount) {
-    //             if (tracker%200 == 0) {
-    //                 console.log(tracker);
-    //             }
-    //             const res = moveFrame(tracker);
-    //             if (typeof res === 'string'){
-    //                 console.log(res);
-    //                 break;
-    //             } else {
-    //                 const res_js = res.toJs();
-    //                 const frame = new Blob([res_js], { type: 'image/jpg' })
-    //                 // console.log(img_data);
-    //                 const url = URL.createObjectURL(frame);
-    //                 frames[tracker] = url;
-    //                 zip.file(`frames/f_${tracker}.jpg`, frame);
-    //                 tracker++;
-    //             }
-    //         }
-    //         if (tracker==frameCount) {
-    //             framesRef.current = frames;
-    //             zip.generateAsync({type: 'blob'})
-    //                 .then(zipFile => {
-    //                     saveAs(zipFile, `frames.zip`);
-    //             });
-    //             setTransferDone(true);
-    //         }
-    //     }
-
-
-    //     // if (decodeStatus === 'ongoing') { // collect frame data in pyscript
-    //     //     setTransferDone(false);
-    //     //     console.log('useEffect called');
-    //     //     let tracker = 0;
-    //     //     const moveFrame = pyscript.interpreter.globals.get('move_frame');
-    //     //     const zip = new JSZip();
-    //     //     const frames = {};
-    //     //     while (tracker < frameCount) {
-    //     //         if (tracker%200 == 0) {
-    //     //             console.log(tracker);
-    //     //         }
-    //     //         const res = moveFrame(tracker);
-    //     //         if (typeof res === 'string'){
-    //     //             console.log(res);
-    //     //             break;
-    //     //         } else {
-    //     //             const res_js = res.toJs();
-    //     //             res = null;
-    //     //             const frame = new Blob([res_js], { type: 'image/jpg' })
-    //     //             // console.log(img_data);
-    //     //             const url = URL.createObjectURL(frame);
-    //     //             frames[tracker] = url;
-    //     //             zip.file(`frames/f_${tracker}.jpg`, frame);
-    //     //             tracker++;
-    //     //         }
-    //     //     }
-    //     //     if (tracker==frameCount) {
-    //     //         framesRef.current = frames;
-    //     //         zip.generateAsync({type: 'blob'})
-    //     //             .then(zipFile => {
-    //     //                 saveAs(zipFile, `frames.zip`);
-    //     //         });
-    //     //         setTransferDone(true);
-    //     //     }
-    //     // }
-
-    //   }, [decodeStatus]
-    // )
-
-    // function getFrame(frameNum) {
-    //     return framesRef.current[frameNum]; //return url
-    // }
-
-    useEffect(()=>{
-        // when playFps changes, update playback effect if it's playing
-        if (playInterval.current) {
-            clearInterval(playInterval.current);
-            playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
-        }
-    }, [playFps])
-
-
-    function getFrame(frameNum) {
-        const getFrame_py = pyscript.interpreter.globals.get('get_frame');
-        let res = getFrame_py(frameNum);
-            if (typeof res === 'string'){
-                console.log(res);
-            } else {
-                const res_js = res.toJs();
-                res = null;
-                const frame = new Blob([res_js], { type: 'image/jpg' })
-                // console.log(img_data);
-                const url = URL.createObjectURL(frame);
-                return url;
+    ////whether transfer
+    useEffect(() => {
+        if (decodeStatus === 'done') { // collect frame data in pyscript
+            setTransferDone(false);
+            console.log('useEffect called');
+            let tracker = 0;
+            const moveFrame = pyscript.interpreter.globals.get('move_frame');
+            // const zip = new JSZip();
+            const frames = {};
+            while (tracker < frameCount) {
+                if (tracker%200 == 0) {
+                    console.log(tracker);
+                }
+                const res = moveFrame(tracker);
+                if (typeof res === 'string'){
+                    console.log(res);
+                    break;
+                } else {
+                    const res_js = res.toJs();
+                    const frame = new Blob([res_js], { type: 'image/jpg' })
+                    // console.log(img_data);
+                    const url = URL.createObjectURL(frame);
+                    frames[tracker] = url;
+                    // zip.file(`frames/f_${tracker}.jpg`, frame);
+                    tracker++;
+                }
             }
+            if (tracker==frameCount) {
+                framesRef.current = frames;
+                // zip.generateAsync({type: 'blob'})
+                //     .then(zipFile => {
+                //         saveAs(zipFile, `frames.zip`);
+                // });
+                setTransferDone(true);
+                setFrame(1);
+            }
+        }
+
+      }, [decodeStatus]
+    )
+    
+
+    ////whether transfer
+    function getFrame(frameNum) {
+        return framesRef.current[frameNum]; //return url
     }
+
+    // useEffect(()=>{
+    //     // when playFps changes, update playback effect if it's playing
+    //     if (playInterval.current) {
+    //         clearInterval(playInterval.current);
+    //         playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
+    //     }
+    // }, [playFps])
+
+    ////whether transfer
+    // function getFrame(frameNum) {
+    //     const getFrame_py = pyscript.interpreter.globals.get('get_frame');
+    //     let res = getFrame_py(frameNum);
+    //         if (typeof res === 'string'){
+    //             console.log(res);
+    //         } else {
+    //             const res_js = res.toJs();
+    //             res = null;
+    //             const frame = new Blob([res_js], { type: 'image/jpg' })
+    //             // console.log(img_data);
+    //             const url = URL.createObjectURL(frame);
+    //             return url;
+    //         }
+    // }
 
     
     function resetDecodeStatus() {
@@ -347,8 +313,8 @@ export default function VideoUploader(props) {
         props.setFrame(url);
     }
 
+    
     let currentSliderValue =sliderValue;
-    // let currentFrameCount = frameCount;
     function incrementFrame() {
         console.log('increment called');
         let newFrameNum = ++currentSliderValue;
@@ -362,9 +328,12 @@ export default function VideoUploader(props) {
         }
     }
 
+    // let playInterval;
     function playClickHandler() {
         if (frameCount > 0 && sliderValue < frameCount) { // make sure some frames are ready
             playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
+            // playInterval = setInterval(incrementFrame, Math.floor(1000/playFps));
+
             console.log('setInterval',playInterval.current);
         }
         
@@ -377,6 +346,12 @@ export default function VideoUploader(props) {
             playInterval.current = null;
             console.log('resetInterval',playInterval.current);
         }
+        // if (playInterval) {
+        //     clearInterval(playInterval);
+        //     console.log('clearInterval',playInterval);
+        //     playInterval.current = null;
+        //     console.log('resetInterval',playInterval);
+        // }
         
     }
 
