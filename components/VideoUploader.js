@@ -3,7 +3,8 @@ import { saveAs } from 'file-saver';
 import JSZip from "jszip";
 import videoStyles from '../styles/Video.module.css';
 import Script from 'next/script';
-import { InputNumber, Row, Col, Slider, Progress } from 'antd';
+import { InputNumber, Row, Col, Slider, Progress, Input } from 'antd';
+import { CaretRightOutlined, PauseOutlined } from '@ant-design/icons';
 
 
 const FRAME_FORMAT = 'jpg';
@@ -15,12 +16,13 @@ export default function VideoUploader(props) {
     // const imgRef = useRef();
     // const framesRef = useRef();
     const [decodeStatus, setDecodeStatus] = useState('not started'); //not started; ongoing; done; failed
-    
     const [fps, setFps] = useState(0);
-    const [frameCount, setFrameCount] = useState(0);
+    var [frameCount, setFrameCount] = useState(0);
     const [totalFrameCount, setTotalFrameCount] = useState(0);
     // const [transferDone, setTransferDone] = useState(false);
     const [sliderValue, setSliderValue] = useState(0);
+    const [playFps, setPlayFps] = useState(0);
+    const playInterval = useRef(null);
 
     console.log('VideoUploader render');
 
@@ -29,6 +31,7 @@ export default function VideoUploader(props) {
         window.setFrameCountWrapper = (n)=>{setFrameCount(n)};
         window.setFpsWrapper = (n)=>{setFps(n)};
         window.setTotalFrameCountWrapper = (n) =>{setTotalFrameCount(n)};
+        window.setPlayFpsWrapper = (n)=>{setPlayFps(n)};
     },[])
 
     const pyscript_code = `
@@ -56,6 +59,7 @@ export default function VideoUploader(props) {
                 total_frame_count = cap.get(cv.CAP_PROP_FRAME_COUNT)
                 window.setFpsWrapper(fps)
                 window.setTotalFrameCountWrapper(total_frame_count)
+                window.setPlayFpsWrapper(fps)
                 console.log(cap.get(cv.CAP_PROP_FPS ), cap.get(cv.CAP_PROP_FRAME_COUNT))
                 counter = 0
                 time = datetime.now()
@@ -213,6 +217,15 @@ export default function VideoUploader(props) {
     //     return framesRef.current[frameNum]; //return url
     // }
 
+    useEffect(()=>{
+        // when playFps changes, update playback effect if it's playing
+        if (playInterval.current) {
+            clearInterval(playInterval.current);
+            playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
+        }
+    }, [playFps])
+
+
     function getFrame(frameNum) {
         const getFrame_py = pyscript.interpreter.globals.get('get_frame');
         let res = getFrame_py(frameNum);
@@ -229,11 +242,12 @@ export default function VideoUploader(props) {
     }
 
     
-    function resetStatus() {
+    function resetDecodeStatus() {
         setDecodeStatus('ongoing');
         setFps(0);
         setFrameCount(0);
         setSliderValue(0);
+        setPlayFps(0);
     }
 
 
@@ -248,7 +262,7 @@ export default function VideoUploader(props) {
         // setSliderValue(0);
         // framesRef.current = null;
         
-        resetStatus();
+        resetDecodeStatus();
         const file = e.target.files[0];
         // console.log(file);
 
@@ -327,17 +341,56 @@ export default function VideoUploader(props) {
     }
 
     function setFrame(newValue) {
+        console.log('setFrame called');
         setSliderValue(newValue);
         const url = getFrame(newValue-1);
         props.setFrame(url);
     }
+
+    let currentSliderValue =sliderValue;
+    // let currentFrameCount = frameCount;
+    function incrementFrame() {
+        console.log('increment called');
+        let newFrameNum = ++currentSliderValue;
+        if (newFrameNum <= totalFrameCount ) {
+            setFrame(newFrameNum);
+        } else {
+            if (playInterval.current) {
+                clearInterval(playInterval.current);
+                playInterval.current = null;
+            }
+        }
+    }
+
+    function playClickHandler() {
+        if (frameCount > 0 && sliderValue < frameCount) { // make sure some frames are ready
+            playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
+            console.log('setInterval',playInterval.current);
+        }
+        
+    }
+
+    function pauseClickHandler() {
+        if (playInterval.current) {
+            clearInterval(playInterval.current);
+            console.log('clearInterval',playInterval.current);
+            playInterval.current = null;
+            console.log('resetInterval',playInterval.current);
+        }
+        
+    }
+
+    function playFpsInputChangeHandler(newValue) {
+        setPlayFps(newValue);
+    }
+
 
     //strategy='beforeInteractive'
     return (
         <>
             <Script defer src="https://pyscript.net/latest/pyscript.js" />
             <div>
-                <input type='file' id='videoInput' className='videoStyles.videoInput'
+                <input type='file' id='videoInput' className='d-inline-flex'
                     accept='.jpg, .mp4, .mov, .avi' 
                     onChange={submitVideoHandler}>
                 </input>
@@ -354,18 +407,16 @@ export default function VideoUploader(props) {
                     </span>
                     : null
                 }
-                <Row className='videoStyles.sliderContainer'>
-                    <Col span={10}>
-                        <Slider
-                            min={frameCount==0 ? 0 : 1}
-                            max={frameCount}
-                            marks={{0:'0', [frameCount]:`${frameCount}`}}
-                            onChange={sliderChangeHandler}
-                            value={sliderValue}
-                            />
-                    </Col>
-                    <Col span={2} className='mx-2'>
-                        <InputNumber
+                <Row >
+                    <Col span={5} className='mt-2 '>
+                        {/* <span>FPS</span> */}
+                        <Input className={videoStyles.playFpsInput} 
+                            value={playFps}
+                            onChange={playFpsInputChangeHandler}
+                            size="small"/>
+                        <CaretRightOutlined className=' ms-1' onClick={playClickHandler}/>
+                        <PauseOutlined className=' ms-1' onClick={pauseClickHandler} />
+                        <InputNumber className={videoStyles.sliderValueInput} size='small'
                             min={frameCount==0 ? 0 : 1}
                             max={frameCount}
                             defaultValue={frameCount==0 ? 0 : 1}
@@ -373,10 +424,28 @@ export default function VideoUploader(props) {
                             onChange={inputNumerChangeHandler}
                             />
                     </Col>
+                    <Col span={12}>
+                        <Slider className='ms-1'
+                            min={frameCount==0 ? 0 : 1}
+                            max={frameCount}
+                            marks={{0:'0', [frameCount]:`${frameCount}`}}
+                            onChange={sliderChangeHandler}
+                            value={sliderValue}
+                            />
+                    </Col>
+                    {/* <Col span={2} className='ms-2'>
+                        <InputNumber
+                            min={frameCount==0 ? 0 : 1}
+                            max={frameCount}
+                            defaultValue={frameCount==0 ? 0 : 1}
+                            value={sliderValue}
+                            onChange={inputNumerChangeHandler}
+                            />
+                    </Col> */}
                     
                 </Row>
             </div>
-            {/* <video ref={videoRef} width={500} height={500} controls className={videoStyles.videoTag}></video>*/}
+            {/* <video ref={videoRef} width={500} height={500} controls className={videoStyles.videoTag}></video> */}
             {/* <canvas ref={canvasRef} id='canvasTag' className={videoStyles.canvasTag}></canvas>  */}
             {/* <img ref={imgRef} id='imgOutput' width="300" height="200"  alt="No Image" /> */}
             {/* <input type='file' webkitdirectory='' id='framesInput'  onChange={submitFramesHandler}></input> */}

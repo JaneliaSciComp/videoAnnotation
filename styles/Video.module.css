@@ -1,5 +1,5 @@
 .videoTag {
-    display: none;
+    /* display: none; */
 }
 
 .canvasTag {
@@ -14,10 +14,15 @@
 
 }
 
-.sliderContainer {
-    width: 100;
+.sliderValueInput {
+    margin-left: 1em;
+    width: 40%;
 }
 
 .videoInput {
     width: 30
+}
+
+.playFpsInput {
+    width: 20% ;
 }
