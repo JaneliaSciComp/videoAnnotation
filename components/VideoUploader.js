@@ -198,15 +198,15 @@ export default function VideoUploader(props) {
         return framesRef.current[frameNum]; //return url
     }
 
-    // useEffect(()=>{
-    //     // when playFps changes, update playback effect if it's playing
-    //     if (playInterval.current) {
-    //         clearInterval(playInterval.current);
-    //         playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
-    //     }
-    // }, [playFps])
+    useEffect(()=>{
+        // when playFps changes, update playback effect if it's playing
+        if (playInterval.current) {
+            clearInterval(playInterval.current);
+            playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
+        }
+    }, [playFps])
 
-    /// no transfer
+    /// no transfer, get frame from python
     // function getFrame(frameNum) {
     //     const getFrame_py = pyscript.interpreter.globals.get('get_frame');
     //     let res = getFrame_py(frameNum);
@@ -250,7 +250,7 @@ export default function VideoUploader(props) {
             const js_processVideo = pyscript.interpreter.globals.get('process_video');
             let res = await js_processVideo(data);
             data=null;
-            console.log(typeof(res), res);
+            // console.log(typeof(res), res);
                         
             if (typeof res === 'string'){
                 setDecodeStatus('failed');
@@ -287,7 +287,7 @@ export default function VideoUploader(props) {
     }
 
     function inputNumerChangeHandler(newValue) {
-        if (typeof newValue === 'number' && Number.isInteger(newValue) ) {
+        if (typeof newValue === 'number' && Number.isInteger(newValue) && newValue>=0 ) {
             // setSliderValue(newValue);
             // console.log(framesRef.current[newValue]);
             // props.setFrame(framesRef.current[newValue]);
@@ -297,7 +297,7 @@ export default function VideoUploader(props) {
     }
 
     function setFrame(newValue) {
-        console.log('setFrame called');
+        // console.log('setFrame called');
         setSliderValue(newValue);
         let url;
         if (newValue >= 1) {
@@ -311,7 +311,7 @@ export default function VideoUploader(props) {
     
     let currentSliderValue =sliderValue;
     function incrementFrame() {
-        console.log('increment called');
+        // console.log('increment called');
         let newFrameNum = ++currentSliderValue;
         if (newFrameNum <= totalFrameCount ) {
             setFrame(newFrameNum);
@@ -325,10 +325,12 @@ export default function VideoUploader(props) {
 
     // let playInterval;
     function playClickHandler() {
-        if (frameCount > 0 && sliderValue < frameCount) { // make sure some frames are ready
+        if (!playInterval.current 
+            && frameCount > 0 
+            && sliderValue < frameCount 
+            && playFps>0) { // make sure some frames are ready
             playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
             // playInterval = setInterval(incrementFrame, Math.floor(1000/playFps));
-
             console.log('setInterval',playInterval.current);
         }
         
@@ -337,9 +339,9 @@ export default function VideoUploader(props) {
     function pauseClickHandler() {
         if (playInterval.current) {
             clearInterval(playInterval.current);
-            console.log('clearInterval',playInterval.current);
+            // console.log('clearInterval',playInterval.current);
             playInterval.current = null;
-            console.log('resetInterval',playInterval.current);
+            // console.log('resetInterval',playInterval.current);
         }
         // if (playInterval) {
         //     clearInterval(playInterval);
@@ -351,7 +353,10 @@ export default function VideoUploader(props) {
     }
 
     function playFpsInputChangeHandler(newValue) {
-        setPlayFps(newValue);
+        if (typeof newValue === 'number' && Number.isInteger(newValue) && newValue>=0 ) {
+            console.log('playfps changed');
+            setPlayFps(newValue);
+        }
     }
 
 
@@ -378,9 +383,11 @@ export default function VideoUploader(props) {
                     : null
                 }
                 <Row >
-                    <Col span={5} className='mt-2 '>
-                        {/* <span>FPS</span> */}
-                        <Input className={videoStyles.playFpsInput} 
+                    <Col span={7} className='mt-2 '>
+                        <span className='me-1'>FPS</span>
+                        <InputNumber className={videoStyles.playFpsInput} 
+                            min={frameCount==0 ? 0 : 1}
+                            max={fps==0 ? 0 : fps} //TODO
                             value={playFps}
                             onChange={playFpsInputChangeHandler}
                             size="small"/>
@@ -394,7 +401,7 @@ export default function VideoUploader(props) {
                             onChange={inputNumerChangeHandler}
                             />
                     </Col>
-                    <Col span={12}>
+                    <Col span={13}>
                         <Slider className='ms-1'
                             min={frameCount==0 ? 0 : 1}
                             max={frameCount}
