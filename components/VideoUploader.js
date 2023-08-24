@@ -353,7 +353,9 @@ export default function VideoUploader(props) {
     }
 
     function playFpsInputChangeHandler(newValue) {
-        if (typeof newValue === 'number' && Number.isInteger(newValue) && newValue>=0 ) {
+        if (typeof newValue === 'number' 
+        && Number.isInteger(newValue) 
+        && newValue>=0 ) {
             console.log('playfps changed');
             setPlayFps(newValue);
         }
