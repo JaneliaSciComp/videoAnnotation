@@ -332,7 +332,7 @@ export default function Canvas(props) {
     function deleteKeyHandler(e) {
         if ((e.key === 'Backspace' || e.key === 'Delete') 
         && canvasObjRef.current.getActiveObject()
-        && canvasObjRef.current.getActiveObject().type !== 'polygonKey') {
+        && canvasObjRef.current.getActiveObject().type !== 'polygonPoint') {
             removeObj();
         }
         // console.log(e.key); // Backspace

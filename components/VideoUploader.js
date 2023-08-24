@@ -19,7 +19,7 @@ export default function VideoUploader(props) {
     const [fps, setFps] = useState(0);
     var [frameCount, setFrameCount] = useState(0);
     const [totalFrameCount, setTotalFrameCount] = useState(0);
-    const [transferDone, setTransferDone] = useState(false);
+    // const [transferDone, setTransferDone] = useState(false); //// transfer frames after extracting all
     const [sliderValue, setSliderValue] = useState(0);
     const [playFps, setPlayFps] = useState(0);
     const playInterval = useRef(null);
@@ -32,6 +32,8 @@ export default function VideoUploader(props) {
         window.setFpsWrapper = (n)=>{setFps(n)};
         window.setTotalFrameCountWrapper = (n) =>{setTotalFrameCount(n)};
         window.setPlayFpsWrapper = (n)=>{setPlayFps(n)};
+        //window.vaFrames = {}; /////
+        window.moveFrameToJsWrapper = (frameNum, frameData)=>{moveFrameToJs(frameNum,frameData)};
     },[])
 
     const pyscript_code = `
@@ -46,11 +48,8 @@ export default function VideoUploader(props) {
         from js import document, console, window
         from pyodide.ffi import create_proxy
 
-        #counter = 0 # counter = n, means the nth frame is being processed, (n-1)th frame is done
-
         async def extractFrames(input_file_name):
             try:
-                #global counter
                 os.makedirs('/tmp/frames', exist_ok=True)
                 cap = cv.VideoCapture(input_file_name)
                 os.remove(input_file_name)
@@ -63,25 +62,26 @@ export default function VideoUploader(props) {
                 console.log(cap.get(cv.CAP_PROP_FPS ), cap.get(cv.CAP_PROP_FRAME_COUNT))
                 counter = 0
                 time = datetime.now()
-                while counter<600: # cap.isOpened(): #
+                while counter<600: #cap.isOpened(): # 
                     if counter%200 == 0:
                         print(counter, datetime.now() - time)
                         time = datetime.now()
                         window.setFrameCountWrapper(counter)
-                        #if counter//200==1: #### whether transfer
-                        #    window.setFrameWrapper(1)
+                        if counter//200==1: ### no transfer or ##### stream
+                            window.setFrameWrapper(1) ### no transfer or ##### stream
                     if counter%5 == 0:
                         await asyncio.sleep(0.005)
                     ret, frame = cap.read()
                     if not ret:
                         #print("Can't receive frame (stream end?). Exiting ...")
                         break
-                    cv.imwrite(f'/tmp/frames/f_{counter}.jpg', frame)
+                    #cv.imwrite(f'/tmp/frames/f_{counter}.jpg', frame) ### no transfer or #### transfer after extracting all
+                    ret_, buf_arr = cv.imencode(".jpg", frame) ##### stream
+                    window.moveFrameToJsWrapper(counter, buf_arr) ##### stream
                     counter += 1
-                    #frames.append(frame)
                     #await asyncio.sleep(0.001)
                 
-                print(f'Extracted {counter} frames')
+                print(f'Extracted {counter} frames', datetime.now() - time)
                 cap.release()
                 
                 #if counter == frame_count:
@@ -111,75 +111,90 @@ export default function VideoUploader(props) {
                 return 'Something wrong with video decode'
         
         
-        def get_frame(frame_num):
-            # return buf_arr, diff with getFrame in js
-            file_path = f'/tmp/frames/f_{frame_num}.jpg'
-            if os.path.exists(file_path):
-                frame = cv.imread(file_path)
-                ret, buf_arr = cv.imencode(".jpg", frame)
-                del frame
-                return buf_arr
-            else:
-                return 'Frame is not in pyscript'
+        ### no transfer
+        #def get_frame(frame_num):
+        #    # return buf_arr, diff with getFrame in js
+        #    file_path = f'/tmp/frames/f_{frame_num}.jpg'
+        #    if os.path.exists(file_path):
+        #        frame = cv.imread(file_path)
+        #        ret, buf_arr = cv.imencode(".jpg", frame)
+        #        del frame
+        #        return buf_arr
+        #    else:
+        #        return 'Frame is not in pyscript'
         
 
-        def move_frame(frame_num):
-            try:
-                frame_path = f'/tmp/frames/f_{frame_num}.jpg'
-                frame = cv.imread(frame_path)
-                ret, buf_arr = cv.imencode(".jpg", frame)
-                del frame
-                os.remove(frame_path)
-                return buf_arr
-            except Exception as e:
-                print(e)
-                return 'Something wrong with move_frame'
+        #### transfer after extracting all
+        #def move_frame(frame_num):
+        #    try:
+        #        frame_path = f'/tmp/frames/f_{frame_num}.jpg'
+        #        frame = cv.imread(frame_path)
+        #        ret, buf_arr = cv.imencode(".jpg", frame)
+        #        del frame
+        #        os.remove(frame_path)
+        #        return buf_arr
+        #    except Exception as e:
+        #        print(e)
+        #        return 'Something wrong with move_frame'
     `
 
-    ////whether transfer
-    useEffect(() => {
-        if (decodeStatus === 'done') { // collect frame data in pyscript
-            setTransferDone(false);
-            console.log('useEffect called');
-            let tracker = 0;
-            const moveFrame = pyscript.interpreter.globals.get('move_frame');
-            // const zip = new JSZip();
-            const frames = {};
-            while (tracker < frameCount) {
-                if (tracker%200 == 0) {
-                    console.log(tracker);
-                }
-                const res = moveFrame(tracker);
-                if (typeof res === 'string'){
-                    console.log(res);
-                    break;
-                } else {
-                    const res_js = res.toJs();
-                    const frame = new Blob([res_js], { type: 'image/jpg' })
-                    // console.log(img_data);
-                    const url = URL.createObjectURL(frame);
-                    frames[tracker] = url;
-                    // zip.file(`frames/f_${tracker}.jpg`, frame);
-                    tracker++;
-                }
-            }
-            if (tracker==frameCount) {
-                framesRef.current = frames;
-                // zip.generateAsync({type: 'blob'})
-                //     .then(zipFile => {
-                //         saveAs(zipFile, `frames.zip`);
-                // });
-                setTransferDone(true);
-                setFrame(1);
-            }
-        }
 
-      }, [decodeStatus]
-    )
+    ///// stream frames
+    function moveFrameToJs(frameNum, frameData) {
+        console.log('moveFrameToJs called');
+        const frameData_js = frameData.toJs();
+        const frame = new Blob([frameData_js], { type: 'image/jpg' });
+        const url = URL.createObjectURL(frame);
+        // window.vaFrames[frameNum] = url;
+        framesRef.current = {...framesRef.current, [frameNum]:url};
+    }
+
+
+    //// transfer frames after extracting all
+    // useEffect(() => {
+    //     if (decodeStatus === 'done') { // collect frame data in pyscript
+    //         setTransferDone(false);
+    //         console.log('useEffect called');
+    //         let tracker = 0;
+    //         const moveFrame = pyscript.interpreter.globals.get('move_frame');
+    //         // const zip = new JSZip();
+    //         const frames = {};
+    //         while (tracker < frameCount) {
+    //             if (tracker%200 == 0) {
+    //                 console.log(tracker);
+    //             }
+    //             const res = moveFrame(tracker);
+    //             if (typeof res === 'string'){
+    //                 console.log(res);
+    //                 break;
+    //             } else {
+    //                 const res_js = res.toJs();
+    //                 const frame = new Blob([res_js], { type: 'image/jpg' })
+    //                 // console.log(img_data);
+    //                 const url = URL.createObjectURL(frame);
+    //                 frames[tracker] = url;
+    //                 // zip.file(`frames/f_${tracker}.jpg`, frame);
+    //                 tracker++;
+    //             }
+    //         }
+    //         if (tracker==frameCount) {
+    //             framesRef.current = frames;
+    //             // zip.generateAsync({type: 'blob'})
+    //             //     .then(zipFile => {
+    //             //         saveAs(zipFile, `frames.zip`);
+    //             // });
+    //             setTransferDone(true);
+    //             setFrame(1);
+    //         }
+    //     }
+
+    //   }, [decodeStatus]
+    // )
     
 
-    ////whether transfer
+    ///// transfer frames after extracting all
     function getFrame(frameNum) {
+        ////window.vaFrames[frameNum];  /////
         return framesRef.current[frameNum]; //return url
     }
 
@@ -191,7 +206,7 @@ export default function VideoUploader(props) {
     //     }
     // }, [playFps])
 
-    ////whether transfer
+    /// no transfer
     // function getFrame(frameNum) {
     //     const getFrame_py = pyscript.interpreter.globals.get('get_frame');
     //     let res = getFrame_py(frameNum);
@@ -214,6 +229,8 @@ export default function VideoUploader(props) {
         setFrameCount(0);
         setSliderValue(0);
         setPlayFps(0);
+        setFrame(0);
+        framesRef.current = null; //// transfer after extracting all or ///// stream
     }
 
 
@@ -221,13 +238,6 @@ export default function VideoUploader(props) {
         e.preventDefault();
         e.stopPropagation();
         // console.log('webkitEntries', e.target.webkitEntries);
-        // setDecodeStatus('ongoing');
-        // setTransferDone(false);
-        // setFps(0);
-        // setFrameCount(0);
-        // setSliderValue(0);
-        // framesRef.current = null;
-        
         resetDecodeStatus();
         const file = e.target.files[0];
         // console.log(file);
@@ -253,26 +263,6 @@ export default function VideoUploader(props) {
                 setTotalFrameCount(res); // update real totalFrameCount
                 // setFrame(1);
             }
-
-
-            // const worker = new Worker('./worker.js');
-            // worker.addEventListener('message', (msg)=>{
-            //     if (typeof msg === 'string'){
-            //         setDecodeStatus('failed');
-            //     } else {
-            //         console.log('worker responded');
-            //         const res_js = msg.toJs();
-            //         console.log(typeof(res_js), res_js);
-            //         setDecodeStatus('done');
-            //         setFps(res_js[0]);
-            //         setFrameCount(res_js[1]);
-            //     }
-            // })
-
-            // worker.postMessage({
-            //     cmd: 'decode',
-            //     arr: data
-            // })
         };
         reader.readAsArrayBuffer(file);
         // // reader.readAsDataURL(file);
@@ -309,7 +299,12 @@ export default function VideoUploader(props) {
     function setFrame(newValue) {
         console.log('setFrame called');
         setSliderValue(newValue);
-        const url = getFrame(newValue-1);
+        let url;
+        if (newValue >= 1) {
+            url = getFrame(newValue-1);
+        } else {
+            url = null;
+        }
         props.setFrame(url);
     }
 
