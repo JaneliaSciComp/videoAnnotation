@@ -1,112 +1,152 @@
 import React, {useState, useEffect, useRef} from 'react';
-import { saveAs } from 'file-saver';
-import JSZip from "jszip";
+// import { saveAs } from 'file-saver';
+// import JSZip from "jszip";
 import videoStyles from '../styles/Video.module.css';
+import { InputNumber, Row, Col, Slider, Input, Button, Form } from 'antd';
+import { CaretRightOutlined, PauseOutlined } from '@ant-design/icons';
 
 const FRAME_FORMAT = 'jpg';
 
 
-export default function Workspace(props) {
-    const videoRef = useRef(null);
-    const canvasRef = useRef(null);
+export default function VideoUploader(props) {
+    // const videoRef = useRef(null);
+    // const canvasRef = useRef(null);
+    const [fps, setFps] = useState(0);
+    const [totalFrameCount, setTotalFrameCount] = useState(0);
+    const [sliderValue, setSliderValue] = useState(0);
+    const [playFps, setPlayFps] = useState(0);
+    const playInterval = useRef(null);
 
-    function submitVideoHandler(e) {
-        e.preventDefault();
-        e.stopPropagation();
-        // console.log('webkitEntries', e.target.webkitEntries);
-        const file = e.target.files[0];
-        console.log(file);
+    console.log('VideoUploader render');
 
-        const reader = new FileReader();
-        reader.onload = function() {
-            var data = reader.result;
-            // var node = document.getElementById('output');
-            // node.innerText = text;
-            console.log(data);
-        };
-        // reader.readAsArrayBuffer(file);
-        // reader.readAsDataURL(file);
-        reader.readAsBinaryString(file);
-        
-        // if (file) {
-        //     videoRef.current.src = URL.createObjectURL(file);
-        //     console.log(videoRef.current.videoTracks);
-        //     const captureStream = videoRef.current.captureStream();
-        //     videoRef.current.play();
-        //     // const frames = extractFrames(videoRef.current);
-        
-        //     console.log(captureStream);
-        //     // const track = file.getVideoTracks()[0];
-        //     const media_processor = new MediaStreamTrackProcessor(captureStream);
 
-        //     const reader = media_processor.readable.getReader();
-        //     // while (true) {
-        //         const result =  reader.read(); //=await
-        //         // if (result.done) break;
-
-        //         let frame = result.value;
-        //         const ctx = canvasRef.current.getContext('2d');
-        //         ctx.drawImage(frame,0,0);
-        //     // }
-        // }
-        
-        
+    function getFrame(frameNum) {
+        ////window.vaFrames[frameNum];  /////
+        return 'frame url' //return url
     }
 
-    function extractFrames(videoElem) {
-        const cap = new cv.VideoCapture(videoElem);
-        console.log(videoElem, cap);
-        // console.log(cap.get(cv.CAP_PROP_FPS ), cap.get(cv.CAP_PROP_FRAME_COUNT))
-        if (cap) {
-            const res = [];
-            const zip = new JSZip();
-            let counter = 0;
-            let frame = new cv.Mat(videoElem.height, videoElem.width, cv.CV_8UC4); //
-            console.log(videoElem.height, videoElem.width);
-            do {
-                // ret, frame = cap.read();
-                cap.read(frame);
-                console.log(frame);
-                // res.push(frame);
+    useEffect(()=>{
+        // when playFps changes, update playback effect if it's playing
+        if (playInterval.current) {
+            clearInterval(playInterval.current);
+            playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
+        }
+    }, [playFps])
 
-                cv.imshow(canvasRef.current.id, frame);
-                canvasRef.current.toBlob((blob)=>{
-                    zip.file(`frames/f_${counter}.${FRAME_FORMAT}`, blob);
-                    let frameObj = {
-                        frameNum: counter,
-                        blobData: blob,
-                        url: URL.createObjectURL(blob)
-                    };
-                    res.push(frameObj);
-                }, `image/${FRAME_FORMAT}`);
-                counter++;
-            } while (counter<1); // (ret);  
-            // cap.delete();
-            zip.generateAsync({type: 'blob'}).then(zipFile => {
-                const currentDate = new Date().getTime();
-                const fileName = `frames_${currentDate}.zip`;
-                saveAs(zipFile, fileName);
-              });
-            return res;
-        } else {
-            //TODO: show info to user
-            return null;
+
+    // function submitVideoHandler(e) {
+    //     e.preventDefault();
+    //     e.stopPropagation(); 
+        
+    // }
+
+    function sliderChangeHandler(newValue) {
+        setFrame(newValue);
+    }
+
+    function inputNumerChangeHandler(newValue) {
+        if (typeof newValue === 'number' && Number.isInteger(newValue) && newValue>=0 ) {
+            setFrame(newValue);
         }
     }
 
-    function submitFramesHandler(e) {
-        e.preventDefault();
-        e.stopPropagation();
-
+    function setFrame(newValue) {
+        // console.log('setFrame called');
+        setSliderValue(newValue);
+        let url;
+        if (newValue >= 1) {
+            url = getFrame(newValue-1);
+        } else {
+            url = null;
+        }
+        props.setFrame(url);
     }
+
+    
+    let currentSliderValue =sliderValue;
+    function incrementFrame() {
+        // console.log('increment called');
+        let newFrameNum = ++currentSliderValue;
+        if (newFrameNum <= totalFrameCount ) {
+            setFrame(newFrameNum);
+        } else {
+            if (playInterval.current) {
+                clearInterval(playInterval.current);
+                playInterval.current = null;
+            }
+        }
+    }
+
+    // let playInterval;
+    function playClickHandler() {
+        if (!playInterval.current 
+            && totalFrameCount > 0 
+            && sliderValue < totalFrameCount 
+            && playFps>0) { // make sure some frames are ready
+            playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
+            // playInterval = setInterval(incrementFrame, Math.floor(1000/playFps));
+            console.log('setInterval',playInterval.current);
+        }
+        
+    }
+
+    function pauseClickHandler() {
+        if (playInterval.current) {
+            clearInterval(playInterval.current);
+            // console.log('clearInterval',playInterval.current);
+            playInterval.current = null;
+            // console.log('resetInterval',playInterval.current);
+        }
+    }
+
+    function playFpsInputChangeHandler(newValue) {
+        if (typeof newValue === 'number' 
+        && Number.isInteger(newValue) 
+        && newValue>=0 ) {
+            console.log('playfps changed');
+            setPlayFps(newValue);
+        }
+    }
+
+
+    
+
+    
 
 
     return (
         <>
-            <input type='file' id='videoInput' accept='.jpg, .mp4, .mov, .avi' onChange={submitVideoHandler}></input>
-            <video ref={videoRef} width={500} height={500} controls className={videoStyles.videoTag}></video>
-            <canvas ref={canvasRef} id='canvasTag' className={videoStyles.canvasTag}></canvas>
-            <input type='file' webkitdirectory='' id='framesInput'  onChange={submitFramesHandler}></input>
+            {/* <input type='file' id='videoInput' accept='.jpg, .mp4, .mov, .avi' onChange={submitVideoHandler}></input> */}
+            <Row >
+                    <Col span={7} className='mt-2 '>
+                        <span className='me-1'>FPS</span>
+                        <InputNumber className={videoStyles.playFpsInput} 
+                            min={totalFrameCount==0 ? 0 : 1}
+                            max={fps==0 ? 0 : 2*fps} //TODO
+                            value={playFps}
+                            onChange={playFpsInputChangeHandler}
+                            size="small"/>
+                        <CaretRightOutlined className=' ms-1' onClick={playClickHandler}/>
+                        <PauseOutlined className=' ms-1' onClick={pauseClickHandler} />
+                        <InputNumber className={videoStyles.sliderValueInput} size='small'
+                            min={0}
+                            max={totalFrameCount}
+                            defaultValue={0}
+                            value={sliderValue}
+                            onChange={inputNumerChangeHandler}
+                            />
+                    </Col>
+                    <Col span={13}>
+                        <Slider className='ms-1'
+                            min={0}
+                            max={totalFrameCount}
+                            marks={{0:'0', [totalFrameCount]:`${totalFrameCount}`}}
+                            onChange={sliderChangeHandler}
+                            value={sliderValue}
+                            />
+                    </Col>
+                    
+                </Row>
         </>
     )
 

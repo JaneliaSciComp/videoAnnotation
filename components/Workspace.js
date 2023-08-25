@@ -12,7 +12,8 @@ import {Row, Col} from 'react-bootstrap';
 
 
 export default function Workspace(props) {
-    const [frame, setFrame] = useState('/fly.png');
+    const imgRef = useRef();
+    const [frame, setFrame] = useState(); //'/fly.png'
     // const [annotation, setAnnotation] = useState([]);
     const [activeIdObj, setActiveIdObj] = useState();
     const [categoryId, setCategoryId] = useState({});
@@ -70,14 +71,14 @@ export default function Workspace(props) {
                 
                     <Row className='mx-1 my-1'>
                         <Rectangle 
-                            label='rectangle' 
+                            label='male' 
                             color='red'
                             drawRect={drawRect}
                             setDrawRect={setDrawRect} 
                             addRectId={addRectId} 
                             />
                         <Rectangle 
-                            label='rect' 
+                            label='female' 
                             color='blue'
                             drawRect={drawRect}
                             setDrawRect={setDrawRect} 
@@ -87,7 +88,7 @@ export default function Workspace(props) {
                         
                     <Row className='mx-1 my-1'>
                         <Polygon 
-                            label='polygon' 
+                            label='fly' 
                             color='red'
                             drawPolygon={drawPolygon}
                             setDrawPolygon={setDrawPolygon} 
@@ -121,7 +122,8 @@ export default function Workspace(props) {
             </Row>
             
             <Row className='my-3'>
-                <VideoUploader />
+                <VideoUploader setFrame={setFrame} />
+                {/* <img ref={imgRef} id='imgOutput' width="300" height="200"  alt="No Image" /> */}
             </Row>
             
           </main>

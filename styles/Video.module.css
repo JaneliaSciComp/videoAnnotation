@@ -5,3 +5,14 @@
 .canvasTag {
     /* display: none; */
 }
+
+.sliderValueInput {
+    margin-left: 1em;
+    width: 35%;
+}
+
+
+
+.playFpsInput {
+    width: 25% ;
+}

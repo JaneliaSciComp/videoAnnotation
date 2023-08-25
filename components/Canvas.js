@@ -13,8 +13,9 @@ const ANNOTATION_TYPES = new Set(['keyPoint', 'rect', 'polygon']);
 
 
 export default function Canvas(props) {
-    const canvasObjRef = useRef(null);
-    const imageObjRef = useRef(null);
+    const imgRef = useRef();
+    const canvasObjRef = useRef();
+    const imageObjRef = useRef();
     const keyPointObjListRef = useRef({});
     const rectObjListRef = useRef({});
     const polygonObjListRef = useRef({});
@@ -24,9 +25,9 @@ export default function Canvas(props) {
 
     //Set up canvas
     useEffect(() => {
-        //console.log(fabric.Object.prototype);
+        // console.log(imgRef.current);
 
-        if (!canvasObjRef.current && !imageObjRef.current) {
+        if (!canvasObjRef.current) {
             const canvasObj = new fabric.Canvas('canvas', {
                 //TODO
                 width: CANVAS_WIDTH,
@@ -36,22 +37,17 @@ export default function Canvas(props) {
                 rectLines: [],
                 hoverCursor: 'pointer',
             });
-            const imageObj = new fabric.Image('image', {
-                selectable: false,
-            });
-
-            scaleImage(canvasObj, imageObj);
-            canvasObj.add(imageObj);
-            
             
             // canvasObj.on('mouse:down', //(opt) => {
             //     mouseDownHandler//(opt.e, canvasObj);
             // );
 
             canvasObjRef.current = canvasObj;
-            imageObjRef.current = imageObj;
+            // imageObjRef.current = imageObj;
         }
 
+        
+        imgRef.current.addEventListener("load", imageLoadHandler)
         canvasObjRef.current.on('mouse:wheel', wheelHandler);
         canvasObjRef.current.on('mouse:down', mouseDownHandler);
         canvasObjRef.current.on('mouse:dblclick', mouseDblclickHandler);
@@ -70,10 +66,18 @@ export default function Canvas(props) {
     )
 
 
+    useEffect(() => {
+        if (props.img){
+            imgRef.current.src = props.img;
+        }
+      }, [props.img]
+    )
+
     
     function scaleImage(canvas, image) { //image, canvas
         // scale image to fit in the canvas
         const scale = Math.min(canvas.width/image.width, canvas.height/image.height);
+        // console.log(canvas.width, image.width);
         image.set({scaleX: scale, scaleY: scale});
         // align image to the center, css styling doesn't work
         const offsetX = (canvas.width - image.width * scale) / 2;
@@ -85,7 +89,20 @@ export default function Canvas(props) {
         }
         // console.log('scaled: ', image.getScaledWidth(), image.getScaledHeight());
         // console.log('original: ', image.get('width'), image.get('height'));
-        // console.log(image);
+    }
+
+
+    function imageLoadHandler(){
+        // console.log('imgloader called');
+        if (!imageObjRef.current) {
+            const imageObj = new fabric.Image(imgRef.current, {
+                    selectable: false,
+                });
+            canvasObjRef.current.add(imageObj);
+            imageObjRef.current = imageObj;
+        }
+        scaleImage(canvasObjRef.current, imageObjRef.current);
+        canvasObjRef.current.renderAll();
     }
 
 
@@ -313,7 +330,9 @@ export default function Canvas(props) {
 
 
     function deleteKeyHandler(e) {
-        if ((e.key === 'Backspace' || e.key === 'Delete') && canvasObjRef.current.getActiveObject()) {
+        if ((e.key === 'Backspace' || e.key === 'Delete') 
+        && canvasObjRef.current.getActiveObject()
+        && canvasObjRef.current.getActiveObject().type !== 'polygonPoint') {
             removeObj();
         }
         // console.log(e.key); // Backspace
@@ -666,11 +685,13 @@ export default function Canvas(props) {
         setActiveObjData();
     }
 
-
+    // src={props.img}ref={imgRef} 
     return (
+        
         <div className='px-0'>
+            {/* <p>{console.log('return called')}</p> */}
             <canvas id='canvas' className={styles.canvas} >
-                <img id='image' src={props.img} className={styles.image} alt="img"/>
+                <img id='image' ref={imgRef} className={styles.image} alt="img"/>
             </canvas>
         </div>
       )
