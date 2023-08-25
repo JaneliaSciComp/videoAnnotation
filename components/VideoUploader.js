@@ -96,9 +96,10 @@ export default function VideoUploader(props) {
         async def process_video(data): #(e) (data)
             #files = e.target.files
             #for f in files:
-            #    cap = cv.VideoCapture(f)
-            #    console.log(cap.get(cv.CAP_PROP_FPS ), cap.get(cv.CAP_PROP_FRAME_COUNT))
-            #    return
+            #print(data) # to see if pass readableStream to python
+            #cap = cv.VideoCapture(data)
+            #console.log(cap.get(cv.CAP_PROP_FPS ), cap.get(cv.CAP_PROP_FRAME_COUNT))
+            #return
             try:
                 #data = e.target.result
                 data_bin = data.to_py()
@@ -254,6 +255,12 @@ export default function VideoUploader(props) {
         resetDecodeStatus();
         const file = e.target.files[0];
         // console.log(file);
+        // console.log(file.webkitRelativePath, file.type, file.size);
+        // const url = URL.createObjectURL(file);
+        // console.log(file.stream());
+        // console.log(url);
+        // const js_processVideo = pyscript.interpreter.globals.get('process_video');
+        // js_processVideo(file.stream());
 
         const reader = new FileReader();
         reader.onload = async function() {
