@@ -254,6 +254,7 @@ export default function VideoUploader(props) {
         // console.log('webkitEntries', e.target.webkitEntries);
         resetDecodeStatus();
         const file = e.target.files[0];
+        // console.log('slice',file.slice(0,1500));
         // console.log(file);
         // console.log(file.webkitRelativePath, file.type, file.size);
         // const url = URL.createObjectURL(file);
@@ -261,6 +262,10 @@ export default function VideoUploader(props) {
         // console.log(url);
         // const js_processVideo = pyscript.interpreter.globals.get('process_video');
         // js_processVideo(file.stream());
+        // const blob = new Blob(file);
+        // const js_processVideo = pyscript.interpreter.globals.get('process_video');
+        // js_processVideo(blob);
+        
 
         const reader = new FileReader();
         reader.onload = async function() {
