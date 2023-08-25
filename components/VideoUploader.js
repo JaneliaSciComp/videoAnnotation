@@ -62,7 +62,7 @@ export default function VideoUploader(props) {
                 console.log(cap.get(cv.CAP_PROP_FPS ), cap.get(cv.CAP_PROP_FRAME_COUNT))
                 counter = 0
                 time = datetime.now()
-                while counter<600: #cap.isOpened(): # 
+                while counter<2400: #cap.isOpened(): # 
                     if counter%200 == 0:
                         print(counter, datetime.now() - time)
                         time = datetime.now()
@@ -93,7 +93,12 @@ export default function VideoUploader(props) {
                 return 'Something wrong with video decode'
 
             
-        async def process_video(data): #(e)
+        async def process_video(data): #(e) (data)
+            #files = e.target.files
+            #for f in files:
+            #    cap = cv.VideoCapture(f)
+            #    console.log(cap.get(cv.CAP_PROP_FPS ), cap.get(cv.CAP_PROP_FRAME_COUNT))
+            #    return
             try:
                 #data = e.target.result
                 data_bin = data.to_py()
@@ -136,6 +141,14 @@ export default function VideoUploader(props) {
         #    except Exception as e:
         #        print(e)
         #        return 'Something wrong with move_frame'
+
+        #def main():
+        #    change_handler = create_proxy(process_video)
+        #    elem = document.getElementById('videoInput')
+        #    elem.addEventListener('change', change_handler)
+        
+        #main()
+
     `
 
 
@@ -362,14 +375,15 @@ export default function VideoUploader(props) {
     }
 
 
-    //strategy='beforeInteractive'
+    //strategy='beforeInteractive' 
     return (
         <>
             <Script defer src="https://pyscript.net/latest/pyscript.js" />
             <div>
                 <input type='file' id='videoInput' className='d-inline-flex'
                     accept='.jpg, .mp4, .mov, .avi' 
-                    onChange={submitVideoHandler}>
+                    onChange={submitVideoHandler}
+                    >
                 </input>
                 {decodeStatus!=='not started' ?
                     <Progress type="circle" size={35}
@@ -389,7 +403,7 @@ export default function VideoUploader(props) {
                         <span className='me-1'>FPS</span>
                         <InputNumber className={videoStyles.playFpsInput} 
                             min={frameCount==0 ? 0 : 1}
-                            max={fps==0 ? 0 : fps} //TODO
+                            max={fps==0 ? 0 : 2*fps} //TODO
                             value={playFps}
                             onChange={playFpsInputChangeHandler}
                             size="small"/>
