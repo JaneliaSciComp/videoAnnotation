@@ -2,10 +2,11 @@ import React, {useState, useEffect, useRef} from 'react';
 // import { saveAs } from 'file-saver';
 // import JSZip from "jszip";
 import videoStyles from '../styles/Video.module.css';
-import { InputNumber, Row, Col, Slider, Input, Button, Form } from 'antd';
+import { InputNumber, Slider } from 'antd';
 import { CaretRightOutlined, PauseOutlined } from '@ant-design/icons';
+import {Row, Col, Form, Button} from 'react-bootstrap';
 
-const FRAME_FORMAT = 'jpg';
+const FRAME_URL_ROOT = 'http://localhost:8000/api/frame';
 
 
 export default function VideoUploader(props) {
@@ -15,6 +16,7 @@ export default function VideoUploader(props) {
     const [totalFrameCount, setTotalFrameCount] = useState(0);
     const [sliderValue, setSliderValue] = useState(0);
     const [playFps, setPlayFps] = useState(0);
+    const [submitError, setSubmitError] = useState();
     const playInterval = useRef(null);
 
     console.log('VideoUploader render');
@@ -22,8 +24,44 @@ export default function VideoUploader(props) {
 
     function getFrame(frameNum) {
         ////window.vaFrames[frameNum];  /////
-        return 'frame url' //return url
+        fetch(`${FRAME_URL_ROOT}?num=${frameNum}`, {
+            method: 'GET',
+        }).then(res => {
+            if (res.ok) {
+                console.log('res.ok');
+                // console.log(res);
+                return res.json(); 
+            } else {
+                console.log('res.ok false');
+                // console.log(res);
+                setSubmitError('Frame request failed');
+            }
+        }).then((res)=>{
+            if (res){
+                if (res['error']) {
+                    // console.log(res['error']);
+                    setSubmitError(res['error']);
+                } else {
+                    // console.log(res['res']);
+                    const data = deserializeFrameData(res['res']);
+                    // console.log(data);
+                    const dataBlob = new Blob([data], {type:'image/jpg'});
+                    const url = URL.createObjectURL(dataBlob);
+                    // console.log(url);
+                    // return url;
+                    props.setFrame(url);
+                } 
+            } 
+        })
     }
+
+    function deserializeFrameData(content){
+        content = content.split('[')[1];
+        content = content.split(']')[0];
+        let arr = content.split(',');
+        return new Uint8Array(arr);
+    }
+
 
     useEffect(()=>{
         // when playFps changes, update playback effect if it's playing
@@ -33,12 +71,6 @@ export default function VideoUploader(props) {
         }
     }, [playFps])
 
-
-    // function submitVideoHandler(e) {
-    //     e.preventDefault();
-    //     e.stopPropagation(); 
-        
-    // }
 
     function sliderChangeHandler(newValue) {
         setFrame(newValue);
@@ -55,11 +87,8 @@ export default function VideoUploader(props) {
         setSliderValue(newValue);
         let url;
         if (newValue >= 1) {
-            url = getFrame(newValue-1);
-        } else {
-            url = null;
+            getFrame(newValue-1);
         }
-        props.setFrame(url);
     }
 
     
@@ -109,6 +138,38 @@ export default function VideoUploader(props) {
     }
 
 
+    function videoPathSubmitHandler(e) {
+        // console.log(e.target);
+        e.preventDefault();
+        e.stopPropagation(); 
+        setSubmitError(null);
+        fetch("http://localhost:8000/api/videopath", {
+            method: 'POST',
+            body: new FormData(e.target),
+        }).then(res => {
+            if (res.ok) {
+                console.log('res.ok');
+                // console.log(res);
+                return res.json(); 
+            } else {
+                console.log('res.ok false');
+                // console.log(res);
+                setSubmitError('Request failed');
+            }
+        }).then((res)=>{
+            if (res){
+                if (res['error']) {
+                    // console.log(res['error']);
+                    setSubmitError(res['error']);
+                } else {
+                    setFps(res['fps']);
+                    setPlayFps(res['fps']);
+                    setTotalFrameCount(res['frame_count']);
+                    setFrame(1);
+                } 
+            } 
+        })
+    }
     
 
     
@@ -118,35 +179,77 @@ export default function VideoUploader(props) {
         <>
             {/* <input type='file' id='videoInput' accept='.jpg, .mp4, .mov, .avi' onChange={submitVideoHandler}></input> */}
             <Row >
-                    <Col span={7} className='mt-2 '>
-                        <span className='me-1'>FPS</span>
-                        <InputNumber className={videoStyles.playFpsInput} 
-                            min={totalFrameCount==0 ? 0 : 1}
-                            max={fps==0 ? 0 : 2*fps} //TODO
-                            value={playFps}
-                            onChange={playFpsInputChangeHandler}
-                            size="small"/>
-                        <CaretRightOutlined className=' ms-1' onClick={playClickHandler}/>
-                        <PauseOutlined className=' ms-1' onClick={pauseClickHandler} />
-                        <InputNumber className={videoStyles.sliderValueInput} size='small'
-                            min={0}
-                            max={totalFrameCount}
-                            defaultValue={0}
-                            value={sliderValue}
-                            onChange={inputNumerChangeHandler}
-                            />
-                    </Col>
-                    <Col span={13}>
-                        <Slider className='ms-1'
-                            min={0}
-                            max={totalFrameCount}
-                            marks={{0:'0', [totalFrameCount]:`${totalFrameCount}`}}
-                            onChange={sliderChangeHandler}
-                            value={sliderValue}
-                            />
-                    </Col>
+                <Col sm={5} className='mt-2 '>
+                    <span className='me-1'>FPS</span>
+                    <InputNumber className={videoStyles.playFpsInput} 
+                        min={totalFrameCount==0 ? 0 : 1}
+                        max={fps==0 ? 0 : 2*fps} //TODO
+                        value={playFps}
+                        onChange={playFpsInputChangeHandler}
+                        size="small"/>
+                    <CaretRightOutlined className=' ms-1' onClick={playClickHandler}/>
+                    <PauseOutlined className=' ms-1' onClick={pauseClickHandler} />
+                    <InputNumber className={videoStyles.sliderValueInput} size='small'
+                        min={0}
+                        max={totalFrameCount}
+                        defaultValue={0}
+                        value={sliderValue}
+                        onChange={inputNumerChangeHandler}
+                        />
+                </Col>
+                <Col sm={7}>
+                    <Slider className='ms-1'
+                        min={0}
+                        max={totalFrameCount}
+                        marks={{0:'0', [totalFrameCount]:`${totalFrameCount}`}}
+                        onChange={sliderChangeHandler}
+                        value={sliderValue}
+                        />
+                </Col>
+            </Row>
+            <Row>
+                {/* <Form name="basic"
+                    encType='multipart/form-data'
+                    labelCol={{span: 8}}
+                    wrapperCol={{span: 16}}
+                    // style={{maxWidth: 600}}
+                    initialValues={{remember: true}}
+                    onFinish={videoPathSubmitHandler}
+                    // onFinishFailed={onFinishFailed}
+                    autoComplete="off">
+                    <Form.Item
+                        label="Video path"
+                        name="video_path"
+                        rules={[{
+                            required: true,
+                            message: 'Please provide video path in your local computer, e.g. /somePath/videoName.avi',
+                        }]}>
+                        <Input placeholder='E.g. /somePath/videoName.avi'/>
+                    </Form.Item>
+
+                    <Form.Item wrapperCol={{span: 3}}>
+                        <Button type="primary" htmlType="submit" size='small'>
+                            Submit
+                        </Button>
+                    </Form.Item>
+                </Form> onSubmit={videoPathSubmitHandler}*/}
+                <Form onSubmit={videoPathSubmitHandler} encType='multipart/form-data'>
+                    <Form.Group as={Row} controlId='videoPath'>
+                        <Form.Label column sm={2}>Video path</Form.Label>
+                        <Col sm={6}>
+                            <Form.Control type='string' name='video_path' placeholder='E.g. /somePath/videoName.avi' required />
+                            <Form.Control.Feedback type='invalid'>Please provide video path in your local computer, e.g. /somePath/videoName.avi</Form.Control.Feedback>
+                            {submitError ?
+                            <p >{submitError}</p>
+                            : null}
+                        </Col>
+                        <Col sm={1}>
+                            <Button type='submit' className='btn-submit' >Submit</Button>
+                        </Col>
+                    </Form.Group>
                     
-                </Row>
+                </Form>
+            </Row>
         </>
     )
 
