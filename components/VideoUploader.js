@@ -165,6 +165,9 @@ export default function VideoUploader(props) {
                     setFps(res['fps']);
                     setPlayFps(res['fps']);
                     setTotalFrameCount(res['frame_count']);
+                    // setFps(25);
+                    // setPlayFps(25);
+                    // setTotalFrameCount(10000);
                     setFrame(1);
                 } 
             } 
