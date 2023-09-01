@@ -91,11 +91,12 @@ export default function VideoUploader(props) {
     }
 
 
+    
     function videoPathSubmitHandler(e) {
         // console.log(e.target);
         e.preventDefault();
         e.stopPropagation(); 
-        setSubmitError(null);
+        resetVideoStatus();
         const id = new Date().getTime();
         props.setVideoId(id);
         fetch("http://localhost:8000/api/videopath", {
@@ -124,8 +125,6 @@ export default function VideoUploader(props) {
                         setPlayFps(25);
                         setTotalFrameCount(10000);
                     }
-                    
-                    
                     setFrame(1);
                 } 
             } 
@@ -135,11 +134,16 @@ export default function VideoUploader(props) {
 
     function setFrame(newValue) {
         // console.log('setFrame called');
-        setSliderValue(newValue);
-        // let url;
-        if (newValue >= 1) {
-            getFrame(newValue-1);
+        if (newValue) {
+            setSliderValue(newValue);
+            // let url;
+            if (newValue >= 1) {
+                getFrame(newValue-1);
+            }
+        } else {
+            props.setFrame(null);
         }
+        
     }
 
 
@@ -162,10 +166,6 @@ export default function VideoUploader(props) {
                 if (res['error']) {
                     setFrameError(res['error']);
                 } else {
-                    // console.log(res['res'].length);
-                    // const data = deserializeFrameData(res['res']);
-                    // // console.log(data);
-                    // const dataBlob = new Blob([data], {type:'image/jpg'});
                     const url = URL.createObjectURL(res);
                     props.setFrame(url);
                 } 
@@ -173,12 +173,17 @@ export default function VideoUploader(props) {
         })
     }
 
-    // function deserializeFrameData(content){
-    //     content = content.split('[')[1];
-    //     content = content.split(']')[0];
-    //     let arr = content.split(',');
-    //     return new Uint8Array(arr);
-    // }
+    function resetVideoStatus() {
+        setFps(0);
+        setTotalFrameCount(0);
+        setSliderValue(0);
+        setPlayFps(0);
+        setFrameError(null);
+        setSubmitError(null);
+        setFrame(null);
+    }
+
+
 
 
 

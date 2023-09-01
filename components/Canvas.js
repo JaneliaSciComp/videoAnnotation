@@ -43,16 +43,6 @@ export default function Canvas(props) {
             // );
 
             canvasObjRef.current = canvasObj;
-
-            if (!imageObjRef.current) {
-                const imageObj = new fabric.Image(imgRef.current, {
-                        selectable: false,
-                        width: canvasObj.width,
-                        height: canvasObj.height,
-                    });
-                canvasObjRef.current.add(imageObj);
-                imageObjRef.current = imageObj;
-            }
         }
 
         
@@ -96,9 +86,17 @@ export default function Canvas(props) {
 
 
     useEffect(()=> {
+        console.log('img', imgRef.current.src);
         canvasObjRef.current.remove(imageObjRef.current);
+        const imageObj = new fabric.Image(imgRef.current, {
+            selectable: false,
+            width: canvasObjRef.current.width,
+            height: canvasObjRef.current.height,
+        });
+        canvasObjRef.current.add(imageObj);
         canvasObjRef.current.renderAll();
-        imageObjRef.current = null;
+        imageObjRef.current = imageObj;
+        
       }, [props.videoId]
     )
 
@@ -106,6 +104,8 @@ export default function Canvas(props) {
     useEffect(() => {
         if (props.img){
             imgRef.current.src = props.img;
+        } else {
+            imgRef.current.src = '';
         }
       }, [props.img]
     )
@@ -130,13 +130,8 @@ export default function Canvas(props) {
 
 
     function imageLoadHandler(){
-        if (!imageObjRef.current) {
-            const imageObj = new fabric.Image(imgRef.current, {
-                    selectable: false,
-                });
-            canvasObjRef.current.add(imageObj);
-            imageObjRef.current = imageObj;
-        }
+        imageObjRef.current.width = imgRef.current.width;
+        imageObjRef.current.height = imgRef.current.height;
         scaleImage(canvasObjRef.current, imageObjRef.current);
         canvasObjRef.current.renderAll();
     }
