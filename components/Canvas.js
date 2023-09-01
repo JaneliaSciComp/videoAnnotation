@@ -86,7 +86,7 @@ export default function Canvas(props) {
 
 
     useEffect(()=> {
-        console.log('img', imgRef.current.src);
+        // console.log('img', imgRef.current.src);
         canvasObjRef.current.remove(imageObjRef.current);
         const imageObj = new fabric.Image(imgRef.current, {
             selectable: false,
