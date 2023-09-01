@@ -43,11 +43,39 @@ export default function Canvas(props) {
             // );
 
             canvasObjRef.current = canvasObj;
-            // imageObjRef.current = imageObj;
+
+            if (!imageObjRef.current) {
+                const imageObj = new fabric.Image(imgRef.current, {
+                        selectable: false,
+                        width: canvasObj.width,
+                        height: canvasObj.height,
+                    });
+                canvasObjRef.current.add(imageObj);
+                imageObjRef.current = imageObj;
+            }
         }
 
         
-        imgRef.current.addEventListener("load", imageLoadHandler)
+        // imgRef.current.addEventListener("load", imageLoadHandler)
+        // canvasObjRef.current.on('mouse:wheel', wheelHandler);
+        // canvasObjRef.current.on('mouse:down', mouseDownHandler);
+        // canvasObjRef.current.on('mouse:dblclick', mouseDblclickHandler);
+        // canvasObjRef.current.on('mouse:move', mouseMoveHandler);
+        // canvasObjRef.current.on('mouse:up', mouseUpHandler);
+        // document.addEventListener("keydown", deleteKeyHandler); // add delete key event listener
+
+        // // console.log(canvasObjRef.current.__eventListeners);
+
+        // return () => {
+        //     const eventListeners = canvasObjRef.current.__eventListeners;
+        //     Object.keys(eventListeners).forEach(key => eventListeners[key]=[]);
+        //     document.removeEventListener("keydown", deleteKeyHandler);
+        // }
+      }, []
+    )
+
+    useEffect(() => {
+        imgRef.current.addEventListener("load", imageLoadHandler);
         canvasObjRef.current.on('mouse:wheel', wheelHandler);
         canvasObjRef.current.on('mouse:down', mouseDownHandler);
         canvasObjRef.current.on('mouse:dblclick', mouseDblclickHandler);
@@ -61,8 +89,17 @@ export default function Canvas(props) {
             const eventListeners = canvasObjRef.current.__eventListeners;
             Object.keys(eventListeners).forEach(key => eventListeners[key]=[]);
             document.removeEventListener("keydown", deleteKeyHandler);
+            imgRef.current.removeEventListener("load", imageLoadHandler);
         }
       }, [props]
+    )
+
+
+    useEffect(()=> {
+        canvasObjRef.current.remove(imageObjRef.current);
+        canvasObjRef.current.renderAll();
+        imageObjRef.current = null;
+      }, [props.videoId]
     )
 
 
@@ -93,7 +130,6 @@ export default function Canvas(props) {
 
 
     function imageLoadHandler(){
-        // console.log('imgloader called');
         if (!imageObjRef.current) {
             const imageObj = new fabric.Image(imgRef.current, {
                     selectable: false,
@@ -472,7 +508,7 @@ export default function Canvas(props) {
             lockSkewingY: true,
             hasRotatingPoint: false
         });
-        console.log(rectObj);
+        // console.log(rectObj);
         rectObjListRef.current = {...rectObjListRef.current, [rectObj.id]: rectObj};
         // console.log(rectObjListRef.current.length);
         canvas.add(rectObj).setActiveObject(rectObj);

@@ -96,17 +96,17 @@ export default function VideoUploader(props) {
         e.preventDefault();
         e.stopPropagation(); 
         setSubmitError(null);
+        const id = new Date().getTime();
+        props.setVideoId(id);
         fetch("http://localhost:8000/api/videopath", {
             method: 'POST',
             body: new FormData(e.target),
         }).then(res => {
             if (res.ok) {
-                console.log('res.ok');
-                // console.log(res);
+                // console.log('res.ok');
                 return res.json(); 
             } else {
-                console.log('res.ok false');
-                // console.log(res);
+                // console.log('res.ok false');
                 setSubmitError('Request failed');
             }
         }).then((res)=>{
@@ -115,7 +115,7 @@ export default function VideoUploader(props) {
                     // console.log(res['error']);
                     setSubmitError(res['error']);
                 } else {
-                    if (res['frame_count'] > 0) {
+                    if (res['frame_count'] > 0) {//TODO
                         setFps(res['fps']);
                         setPlayFps(res['fps']);
                         setTotalFrameCount(res['frame_count']);
@@ -151,8 +151,6 @@ export default function VideoUploader(props) {
         }).then(res => {
             if (res.ok) {
                 console.log('res.ok');
-                // console.log(res);
-                // return res.json(); 
                 return res.blob();
             } else {
                 console.log('res.ok false');
@@ -162,7 +160,6 @@ export default function VideoUploader(props) {
         }).then((res)=>{
             if (res){
                 if (res['error']) {
-                    // console.log(res['error']);
                     setFrameError(res['error']);
                 } else {
                     // console.log(res['res'].length);

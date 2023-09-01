@@ -12,7 +12,7 @@ import {Row, Col} from 'react-bootstrap';
 
 
 export default function Workspace(props) {
-    const imgRef = useRef();
+    const [videoId, setVideoId] = useState();
     const [frame, setFrame] = useState(); //'/fly.png'
     // const [annotation, setAnnotation] = useState([]);
     const [activeIdObj, setActiveIdObj] = useState();
@@ -103,6 +103,7 @@ export default function Workspace(props) {
             
             <Row className='mx-1 my-1'>
                 <Canvas 
+                    videoId={videoId}
                     img={frame}
                     drawKeyPoint={drawKeyPoint}
                     setDrawKeyPoint={setDrawKeyPoint}
@@ -122,7 +123,7 @@ export default function Workspace(props) {
             </Row>
             
             <Row className='my-3'>
-                <VideoUploader setFrame={setFrame} />
+                <VideoUploader setFrame={setFrame} setVideoId={setVideoId} />
                 {/* <img ref={imgRef} id='imgOutput' width="300" height="200"  alt="No Image" /> */}
             </Row>
             
