@@ -17,51 +17,13 @@ export default function VideoUploader(props) {
     const [sliderValue, setSliderValue] = useState(0);
     const [playFps, setPlayFps] = useState(0);
     const [submitError, setSubmitError] = useState();
+    const [frameError, setFrameError] = useState();
     const playInterval = useRef(null);
 
     console.log('VideoUploader render');
 
 
-    function getFrame(frameNum) {
-        ////window.vaFrames[frameNum];  /////
-        fetch(`${FRAME_URL_ROOT}?num=${frameNum}`, {
-            method: 'GET',
-        }).then(res => {
-            if (res.ok) {
-                console.log('res.ok');
-                // console.log(res);
-                return res.json(); 
-            } else {
-                console.log('res.ok false');
-                // console.log(res);
-                setSubmitError('Frame request failed');
-            }
-        }).then((res)=>{
-            if (res){
-                if (res['error']) {
-                    // console.log(res['error']);
-                    setSubmitError(res['error']);
-                } else {
-                    // console.log(res['res']);
-                    const data = deserializeFrameData(res['res']);
-                    // console.log(data);
-                    const dataBlob = new Blob([data], {type:'image/jpg'});
-                    const url = URL.createObjectURL(dataBlob);
-                    // console.log(url);
-                    // return url;
-                    props.setFrame(url);
-                } 
-            } 
-        })
-    }
-
-    function deserializeFrameData(content){
-        content = content.split('[')[1];
-        content = content.split(']')[0];
-        let arr = content.split(',');
-        return new Uint8Array(arr);
-    }
-
+    
 
     useEffect(()=>{
         // when playFps changes, update playback effect if it's playing
@@ -79,15 +41,6 @@ export default function VideoUploader(props) {
     function inputNumerChangeHandler(newValue) {
         if (typeof newValue === 'number' && Number.isInteger(newValue) && newValue>=0 ) {
             setFrame(newValue);
-        }
-    }
-
-    function setFrame(newValue) {
-        // console.log('setFrame called');
-        setSliderValue(newValue);
-        let url;
-        if (newValue >= 1) {
-            getFrame(newValue-1);
         }
     }
 
@@ -162,12 +115,17 @@ export default function VideoUploader(props) {
                     // console.log(res['error']);
                     setSubmitError(res['error']);
                 } else {
-                    setFps(res['fps']);
-                    setPlayFps(res['fps']);
-                    setTotalFrameCount(res['frame_count']);
-                    // setFps(25);
-                    // setPlayFps(25);
-                    // setTotalFrameCount(10000);
+                    if (res['frame_count'] > 0) {
+                        setFps(res['fps']);
+                        setPlayFps(res['fps']);
+                        setTotalFrameCount(res['frame_count']);
+                    } else {
+                        setFps(25);
+                        setPlayFps(25);
+                        setTotalFrameCount(10000);
+                    }
+                    
+                    
                     setFrame(1);
                 } 
             } 
@@ -175,7 +133,56 @@ export default function VideoUploader(props) {
     }
     
 
-    
+    function setFrame(newValue) {
+        // console.log('setFrame called');
+        setSliderValue(newValue);
+        // let url;
+        if (newValue >= 1) {
+            getFrame(newValue-1);
+        }
+    }
+
+
+    function getFrame(frameNum) {
+        ////window.vaFrames[frameNum];  /////
+        setFrameError(null);
+        fetch(`${FRAME_URL_ROOT}?num=${frameNum}`, {
+            method: 'GET',
+        }).then(res => {
+            if (res.ok) {
+                console.log('res.ok');
+                // console.log(res);
+                // return res.json(); 
+                return res.blob();
+            } else {
+                console.log('res.ok false');
+                // console.log(res);
+                setFrameError('Frame request failed');
+            }
+        }).then((res)=>{
+            if (res){
+                if (res['error']) {
+                    // console.log(res['error']);
+                    setFrameError(res['error']);
+                } else {
+                    // console.log(res['res'].length);
+                    // const data = deserializeFrameData(res['res']);
+                    // // console.log(data);
+                    // const dataBlob = new Blob([data], {type:'image/jpg'});
+                    const url = URL.createObjectURL(res);
+                    props.setFrame(url);
+                } 
+            } 
+        })
+    }
+
+    // function deserializeFrameData(content){
+    //     content = content.split('[')[1];
+    //     content = content.split(']')[0];
+    //     let arr = content.split(',');
+    //     return new Uint8Array(arr);
+    // }
+
 
 
     return (
@@ -210,6 +217,9 @@ export default function VideoUploader(props) {
                         />
                 </Col>
             </Row>
+            {submitError ?
+                <p >{frameError}</p>
+                : null}
             <Row>
                 {/* <Form name="basic"
                     encType='multipart/form-data'
