@@ -9,7 +9,7 @@ const CIRCLE_RADIUS = 3;
 const STROKE_WIDTH = 2;
 const WHEEL_SENSITIVITY = 10;
 const CLICK_TOLERANCE = 5;
-const ANNOTATION_TYPES = new Set(['keyPoint', 'rect', 'polygon']);
+const ANNOTATION_TYPES = new Set(['keyPoint', 'bbox', 'polygon']);
 
 
 export default function Canvas(props) {
@@ -17,7 +17,7 @@ export default function Canvas(props) {
     const canvasObjRef = useRef();
     const imageObjRef = useRef();
     const keyPointObjListRef = useRef({});
-    const rectObjListRef = useRef({});
+    const bboxObjListRef = useRef({});
     const polygonObjListRef = useRef({});
 
     
@@ -34,7 +34,7 @@ export default function Canvas(props) {
                 height: CANVAS_HEIGHT,
                 polygonPoints: [],
                 polygonLines: [],
-                rectLines: [],
+                bboxLines: [],
                 hoverCursor: 'pointer',
             });
             
@@ -151,8 +151,8 @@ export default function Canvas(props) {
         return getPointCoordToImage(obj.getCenterPoint())
     }
 
-    function getRectCoordToImage(obj){
-        // console.log('rect',obj.aCoords);
+    function getBBoxCoordToImage(obj){
+        // console.log('bbox',obj.aCoords);
         const topLeft = getPointCoordToImage(obj.aCoords.tl);
         const width = getPointCoordToImage(obj.aCoords.tr).x - topLeft.x;
         const height = getPointCoordToImage(obj.aCoords.bl).y - topLeft.y;
@@ -262,10 +262,10 @@ export default function Canvas(props) {
         }
 
         if (props.drawRect === true) {
-            const existingIds = new Set(Object.keys(rectObjListRef.current));
+            const existingIds = new Set(Object.keys(bboxObjListRef.current));
             const idToDraw = Object.keys(props.rectIdList).filter(id => !existingIds.has(id))[0];
-            canvas.rectIdObjToDraw = {...props.rectIdList[idToDraw]};
-            canvas.rectStartPosition = canvas.getPointer();
+            canvas.bboxIdObjToDraw = {...props.rectIdList[idToDraw]};
+            canvas.bboxStartPosition = canvas.getPointer();
         }
         
         if (props.drawPolygon === true) {
@@ -298,8 +298,8 @@ export default function Canvas(props) {
         if (canvas.isDraggingPoint) {
             dragPolygonPoint();
         }
-        if (props.drawRect && canvas.rectStartPosition) {
-            drawRect();
+        if (props.drawRect && canvas.bboxStartPosition) {
+            drawBBox();
         }
         if (canvas.activeObj && canvas.isEditingObj) {
             setActiveObjData();
@@ -323,8 +323,8 @@ export default function Canvas(props) {
                 newIdObj = {...props.keyPointIdList[obj.id], data: data}; 
                 props.setKeyPointIdList({...props.keyPointIdList, [obj.id]: newIdObj});
                 break;
-            case 'rect':
-                data = getRectCoordToImage(obj);
+            case 'bbox':
+                data = getBBoxCoordToImage(obj);
                 newIdObj = {...props.rectIdList[obj.id], data: data};
                 props.setRectIdList({...props.rectIdList, [obj.id]: newIdObj});
                 break;
@@ -352,8 +352,8 @@ export default function Canvas(props) {
 
         // finish drawing rect
         if (props.drawRect) {
-            canvas.rectEndPosition = canvas.getPointer();
-            createRect();
+            canvas.bboxEndPosition = canvas.getPointer();
+            createBBox();
 
             canvas.isEditingObj = false;// createRect() set it to be true, should be reset to be false
         }
@@ -371,10 +371,10 @@ export default function Canvas(props) {
     }
 
 
-    function drawRect() {
+    function drawBBox() {
         const canvas = canvasObjRef.current;
-        const idObj = canvas.rectIdObjToDraw;
-        const corner1 = canvas.rectStartPosition;
+        const idObj = canvas.bboxIdObjToDraw;
+        const corner1 = canvas.bboxStartPosition;
         const corner3 = canvas.getPointer();
         const corner2 = {x: corner1.x, y: corner3.y};
         const corner4 = {x: corner3.x, y: corner1.y};
@@ -386,14 +386,14 @@ export default function Canvas(props) {
         canvas.add(line3);
         const line4 = createLine(corner4, corner1, idObj);
         canvas.add(line4);
-        if (canvas.rectLines.length == 4) {
-            canvas.rectLines.forEach(l => canvas.remove(l));
-            canvas.rectLines = [];
+        if (canvas.bboxLines.length == 4) {
+            canvas.bboxLines.forEach(l => canvas.remove(l));
+            canvas.bboxLines = [];
         }
-        canvas.rectLines.push(line1);
-        canvas.rectLines.push(line2);
-        canvas.rectLines.push(line3);
-        canvas.rectLines.push(line4);
+        canvas.bboxLines.push(line1);
+        canvas.bboxLines.push(line2);
+        canvas.bboxLines.push(line3);
+        canvas.bboxLines.push(line4);
     }
 
 
@@ -477,14 +477,14 @@ export default function Canvas(props) {
     }
 
 
-    function createRect() {
+    function createBBox() {
         const canvas = canvasObjRef.current;
-        const idObj = canvas.rectIdObjToDraw;
-        const startPos = canvas.rectStartPosition;
-        const endPos = canvas.rectEndPosition;
+        const idObj = canvas.bboxIdObjToDraw;
+        const startPos = canvas.bboxStartPosition;
+        const endPos = canvas.bboxEndPosition;
         canvas.selection = false;
 
-        const rectObj = new fabric.Rect({
+        const bboxObj = new fabric.Rect({
             id: idObj.id,
             label: idObj.label,
             type: idObj.type,
@@ -503,20 +503,20 @@ export default function Canvas(props) {
             lockSkewingY: true,
             hasRotatingPoint: false
         });
-        // console.log(rectObj);
-        rectObjListRef.current = {...rectObjListRef.current, [rectObj.id]: rectObj};
-        // console.log(rectObjListRef.current.length);
-        canvas.add(rectObj).setActiveObject(rectObj);
-        canvas.rectStartPosition = null;
-        canvas.rectEndPosition = null;
-        canvas.rectIdObjToDraw = null;
-        canvas.rectLines.forEach(l => canvas.remove(l));
-        canvas.rectLines = [];
+        // console.log(bboxObj);
+        bboxObjListRef.current = {...bboxObjListRef.current, [bboxObj.id]: bboxObj};
+        // console.log(bboxObjListRef.current.length);
+        canvas.add(bboxObj).setActiveObject(bboxObj);
+        canvas.bboxStartPosition = null;
+        canvas.bboxEndPosition = null;
+        canvas.bboxIdObjToDraw = null;
+        canvas.bboxLines.forEach(l => canvas.remove(l));
+        canvas.bboxLines = [];
         props.setDrawRect(false);
         canvas.selection = true;
-        console.log(rectObj);
+        console.log(bboxObj);
         
-        addActiveIdObj(rectObj);
+        addActiveIdObj(bboxObj);
         // console.log('rect',canvas.activeObj, canvas.isEditingObj);
     }
 
@@ -687,8 +687,8 @@ export default function Canvas(props) {
                 delete(newkeyPointIdList[activeObj.id]);
                 props.setKeyPointIdList(newkeyPointIdList);
                 break;
-            case 'rect':
-                delete(rectObjListRef.current[activeObj.id]);
+            case 'bbox':
+                delete(bboxObjListRef.current[activeObj.id]);
                 const newRectIdList = {...props.rectIdList};
                 delete(newRectIdList[activeObj.id]);
                 props.setRectIdList(newRectIdList);

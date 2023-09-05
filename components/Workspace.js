@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
 import styles from '../styles/Workspace.module.css';
 import Canvas from './Canvas';
-import Rectangle from './Rectangle';
+import BoundingBox from './BoundingBox';
 import Polygon from './Polygon';
 import KeyPoint from './Keypoint';
 import Category from './Category';
@@ -70,14 +70,14 @@ export default function Workspace(props) {
                     </Row>
                 
                     <Row className='mx-1 my-1'>
-                        <Rectangle 
+                        <BoundingBox 
                             label='male' 
                             color='red'
                             drawRect={drawRect}
                             setDrawRect={setDrawRect} 
                             addRectId={addRectId} 
                             />
-                        <Rectangle 
+                        <BoundingBox 
                             label='female' 
                             color='blue'
                             drawRect={drawRect}

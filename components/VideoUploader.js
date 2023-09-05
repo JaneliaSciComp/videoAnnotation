@@ -223,31 +223,6 @@ export default function VideoUploader(props) {
                 <p >{frameError}</p>
                 : null}
             <Row>
-                {/* <Form name="basic"
-                    encType='multipart/form-data'
-                    labelCol={{span: 8}}
-                    wrapperCol={{span: 16}}
-                    // style={{maxWidth: 600}}
-                    initialValues={{remember: true}}
-                    onFinish={videoPathSubmitHandler}
-                    // onFinishFailed={onFinishFailed}
-                    autoComplete="off">
-                    <Form.Item
-                        label="Video path"
-                        name="video_path"
-                        rules={[{
-                            required: true,
-                            message: 'Please provide video path in your local computer, e.g. /somePath/videoName.avi',
-                        }]}>
-                        <Input placeholder='E.g. /somePath/videoName.avi'/>
-                    </Form.Item>
-
-                    <Form.Item wrapperCol={{span: 3}}>
-                        <Button type="primary" htmlType="submit" size='small'>
-                            Submit
-                        </Button>
-                    </Form.Item>
-                </Form> onSubmit={videoPathSubmitHandler}*/}
                 <Form onSubmit={videoPathSubmitHandler} encType='multipart/form-data'>
                     <Form.Group as={Row} controlId='videoPath'>
                         <Form.Label column sm={2}>Video path</Form.Label>
