@@ -16,9 +16,10 @@ export default function Canvas(props) {
     const imgRef = useRef();
     const canvasObjRef = useRef();
     const imageObjRef = useRef();
-    const keyPointObjListRef = useRef({});
-    const bboxObjListRef = useRef({});
-    const polygonObjListRef = useRef({});
+    // const keyPointObjListRef = useRef({});
+    // const bboxObjListRef = useRef({});
+    // const polygonObjListRef = useRef({});
+    const fabricObjListRef = useRef({});
 
     
     console.log('canvas render');
@@ -102,12 +103,12 @@ export default function Canvas(props) {
 
 
     useEffect(() => {
-        if (props.img){
-            imgRef.current.src = props.img;
+        if (props.imgUrl){
+            imgRef.current.src = props.imgUrl;
         } else {
             imgRef.current.src = '';
         }
-      }, [props.img]
+      }, [props.imgUrl]
     )
 
     
@@ -208,9 +209,9 @@ export default function Canvas(props) {
             canvas.editingPolygonId = polygon.id;
 
             const newPoints = getUpdatedPolygonPoints(polygon);
-            const idObjToEdit = props.polygonIdList[polygon.id];
+            const idObjToEdit = props.frameAnnotation[polygon.id];
             polygon.pointObjects = newPoints.map((p, i) => createPoint(p, idObjToEdit, i));
-            polygon.lineObjects = newPoints.map((p, i) => i<newPoints.length-1 ? createLine(p, newPoints[i+1], props.polygonIdList[polygon.id]) : createLine(p, newPoints[0], idObjToEdit))
+            polygon.lineObjects = newPoints.map((p, i) => i<newPoints.length-1 ? createLine(p, newPoints[i+1], props.frameAnnotation[polygon.id]) : createLine(p, newPoints[0], idObjToEdit))
             polygon.lineObjects.forEach(obj=>canvas.add(obj));
             polygon.pointObjects.forEach(obj=>canvas.add(obj));
             canvas.remove(polygon);
@@ -257,18 +258,18 @@ export default function Canvas(props) {
             }
         }
 
-        if (props.drawKeyPoint === true) {
+        if (props.drawType === 'keyPoint') {
             createKeyPoint();
         }
 
-        if (props.drawRect === true) {
-            const existingIds = new Set(Object.keys(bboxObjListRef.current));
-            const idToDraw = Object.keys(props.rectIdList).filter(id => !existingIds.has(id))[0];
-            canvas.bboxIdObjToDraw = {...props.rectIdList[idToDraw]};
+        if (props.drawType === 'bbox') {
+            const existingIds = new Set(Object.keys(fabricObjListRef.current));
+            const idToDraw = Object.keys(props.frameAnnotation).filter(id => !existingIds.has(id))[0];
+            canvas.bboxIdObjToDraw = {...props.frameAnnotation[idToDraw]};
             canvas.bboxStartPosition = canvas.getPointer();
         }
         
-        if (props.drawPolygon === true) {
+        if (props.drawType === 'polygon') {
             drawPolygon();
         }
 
@@ -298,7 +299,7 @@ export default function Canvas(props) {
         if (canvas.isDraggingPoint) {
             dragPolygonPoint();
         }
-        if (props.drawRect && canvas.bboxStartPosition) {
+        if (props.drawType==='bbox' && canvas.bboxStartPosition) {
             drawBBox();
         }
         if (canvas.activeObj && canvas.isEditingObj) {
@@ -309,8 +310,8 @@ export default function Canvas(props) {
 
 
     function setActiveObjData(){
-        // retrieve canvas.activeObj, calculate its data points relative to image
-        // update data points in props.idObjList, and parent's activeIdObj
+        // retrieve canvas.activeObj, calculate its data (coordinates) relative to image
+        // update its data in props.frameAnnotation, and parent's activeIdObj
         const canvas = canvasObjRef.current;
         const obj = canvas.activeObj;
         let data = {};
@@ -320,21 +321,23 @@ export default function Canvas(props) {
             case 'keyPoint':
                 data = getKeypointCoordToImage(obj);
                 ////
-                newIdObj = {...props.keyPointIdList[obj.id], data: data}; 
-                props.setKeyPointIdList({...props.keyPointIdList, [obj.id]: newIdObj});
+                // newIdObj = {...props.keyPointIdList[obj.id], data: data}; 
+                // props.setKeyPointIdList({...props.keyPointIdList, [obj.id]: newIdObj});
                 break;
             case 'bbox':
                 data = getBBoxCoordToImage(obj);
-                newIdObj = {...props.rectIdList[obj.id], data: data};
-                props.setRectIdList({...props.rectIdList, [obj.id]: newIdObj});
+                // newIdObj = {...props.rectIdList[obj.id], data: data};
+                // props.setRectIdList({...props.rectIdList, [obj.id]: newIdObj});
                 break;
             case 'polygon':
                 // console.log('canvas activeObj', canvas.activeObj);
                 data = getPolygonCoordToImage(obj);
-                newIdObj = {...props.polygonIdList[obj.id], data: data}; 
-                props.setPolygonIdList({...props.polygonIdList, [obj.id]: newIdObj});
+                // newIdObj = {...props.polygonIdList[obj.id], data: data}; 
+                // props.setPolygonIdList({...props.polygonIdList, [obj.id]: newIdObj});
                 break;
         }
+        newIdObj = {...props.frameAnnotation[obj.id], data: data}; 
+        props.setFrameAnnotation({...props.frameAnnotation, [obj.id]: newIdObj});
        
         props.setActiveIdObj(newIdObj);
     }
@@ -350,8 +353,8 @@ export default function Canvas(props) {
         canvas.isDraggingPoint = false;
         canvas.isEditingObj = false;
 
-        // finish drawing rect
-        if (props.drawRect) {
+        // finish drawing bbox
+        if (props.drawType === 'bbox') {
             canvas.bboxEndPosition = canvas.getPointer();
             createBBox();
 
@@ -401,9 +404,9 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
         canvas.selection = false;
         
-        const existingIds = new Set(Object.keys(polygonObjListRef.current));
-        const idToDraw = Object.keys(props.polygonIdList).filter(id => !existingIds.has(id))[0];
-        const idObjToDraw = {...props.polygonIdList[idToDraw]};
+        const existingIds = new Set(Object.keys(fabricObjListRef.current));
+        const idToDraw = Object.keys(props.frameAnnotation).filter(id => !existingIds.has(id))[0];
+        const idObjToDraw = {...props.frameAnnotation[idToDraw]};
 
         const clickPoint = canvas.getPointer();
         //console.log(clickPoint);
@@ -426,7 +429,7 @@ export default function Canvas(props) {
 
                 // console.log(canvas.polygonPoints.map(p => p.getCenterPoint()));
                 const polygonObj = createPolygon(canvas.polygonPoints.map(p => p.getCenterPoint()), idObjToDraw);
-                polygonObjListRef.current = {...polygonObjListRef.current, [polygonObj.id]: polygonObj};
+                fabricObjListRef.current = {...fabricObjListRef.current, [polygonObj.id]: polygonObj};
                 canvas.add(polygonObj).setActiveObject(polygonObj);
                 
                 canvas.polygonPoints.forEach(p=>canvas.remove(p));
@@ -434,7 +437,7 @@ export default function Canvas(props) {
                 canvas.polygonPoints=[];
                 canvas.polygonLines=[];
                 canvas.selection = true;
-                props.setDrawPolygon(false);
+                props.setDrawType(null);
 
                 addActiveIdObj(polygonObj);
                 // console.log('poly',canvas.activeObj, canvas.isEditingObj);
@@ -456,9 +459,9 @@ export default function Canvas(props) {
     function createKeyPoint() {
         const canvas = canvasObjRef.current;
         canvas.selection = false;
-        const existingIds = new Set(Object.keys(keyPointObjListRef.current));
-        const id = Object.keys(props.keyPointIdList).filter(id => !existingIds.has(id))[0];
-        const idObj = {...props.keyPointIdList[id]};
+        const existingIds = new Set(Object.keys(fabricObjListRef.current));
+        const id = Object.keys(props.frameAnnotation).filter(id => !existingIds.has(id))[0];
+        const idObj = {...props.frameAnnotation[id]};
         // console.log(idObj);
         const point = createPoint(canvas.getPointer(), idObj, 0);
         point.id = id;
@@ -467,10 +470,10 @@ export default function Canvas(props) {
         point.hasBorders = false;
         // console.log('keyPointObj', point);
         // console.log(point.__eventListeners);
-        keyPointObjListRef.current = {...keyPointObjListRef.current, [id]: point};
+        fabricObjListRef.current = {...fabricObjListRef.current, [id]: point};
         // console.log('keyPointObjListRef', keyPointObjListRef.current);
         canvas.add(point).setActiveObject(point);
-        props.setDrawKeyPoint(false);
+        props.setDrawType(null);
         canvas.selection = true;
 
         addActiveIdObj(point);
@@ -504,7 +507,7 @@ export default function Canvas(props) {
             hasRotatingPoint: false
         });
         // console.log(bboxObj);
-        bboxObjListRef.current = {...bboxObjListRef.current, [bboxObj.id]: bboxObj};
+        fabricObjListRef.current = {...fabricObjListRef.current, [bboxObj.id]: bboxObj};
         // console.log(bboxObjListRef.current.length);
         canvas.add(bboxObj).setActiveObject(bboxObj);
         canvas.bboxStartPosition = null;
@@ -512,7 +515,7 @@ export default function Canvas(props) {
         canvas.bboxIdObjToDraw = null;
         canvas.bboxLines.forEach(l => canvas.remove(l));
         canvas.bboxLines = [];
-        props.setDrawRect(false);
+        props.setDrawType(null);
         canvas.selection = true;
         console.log(bboxObj);
         
@@ -633,8 +636,8 @@ export default function Canvas(props) {
         const point = canvas.getActiveObject();
         // console.log('point ', point, point.getCenterPoint());
         // console.log(point.calcTransformMatrix(),point.calcOwnMatrix());
-        const polygon = polygonObjListRef.current[point.owner];
-        const idObjToEdit = props.polygonIdList[point.owner];
+        const polygon = fabricObjListRef.current[point.owner];
+        const idObjToEdit = props.frameAnnotation[point.owner];
         // console.log('polygon ', polygon);
         const prePointIndex = point.index>0 ? point.index-1 : polygon.lineObjects.length-1;
         const postPointIndex = point.index<polygon.pointObjects.length-1 ? point.index+1 : 0;
@@ -662,10 +665,10 @@ export default function Canvas(props) {
 
     function finishEditPolygon() {
         const canvas = canvasObjRef.current;
-        const polygon = polygonObjListRef.current[canvas.editingPolygonId];
-        const idObjToEdit = props.polygonIdList[canvas.editingPolygonId];
+        const polygon = fabricObjListRef.current[canvas.editingPolygonId];
+        const idObjToEdit = props.frameAnnotation[canvas.editingPolygonId];
         const newPolygon = createPolygon(polygon.pointObjects.map(p => p.getCenterPoint()),idObjToEdit);
-        polygonObjListRef.current[newPolygon.id] = newPolygon;////
+        fabricObjListRef.current[newPolygon.id] = newPolygon;////
         canvas.add(newPolygon).setActiveObject(newPolygon);
         polygon.pointObjects.forEach(p=>canvas.remove(p));
         polygon.lineObjects.forEach(l=>canvas.remove(l));
@@ -680,26 +683,33 @@ export default function Canvas(props) {
         // remove obj from canvas, objListRef, remove idObj in parent
         const canvas = canvasObjRef.current;
         const activeObj = canvas.getActiveObject();
-        switch (activeObj.type) {
-            case 'keyPoint':
-                delete(keyPointObjListRef.current[activeObj.id]);
-                const newkeyPointIdList = {...props.keyPointIdList};
-                delete(newkeyPointIdList[activeObj.id]);
-                props.setKeyPointIdList(newkeyPointIdList);
-                break;
-            case 'bbox':
-                delete(bboxObjListRef.current[activeObj.id]);
-                const newRectIdList = {...props.rectIdList};
-                delete(newRectIdList[activeObj.id]);
-                props.setRectIdList(newRectIdList);
-                break;
-            case 'polygon':
-                delete(polygonObjListRef.current[activeObj.id]);
-                const newPolygonIdList = {...props.polygonIdList};
-                delete(newPolygonIdList[activeObj.id]);
-                props.setPolygonIdList(newPolygonIdList);
-                break;
-        }
+        // switch (activeObj.type) {
+        //     case 'keyPoint':
+        //         // console.log(keyPointObjListRef.current);
+        //         delete(keyPointObjListRef.current[activeObj.id]);
+        //         // console.log(keyPointObjListRef.current);
+        //         // console.log(props.keyPointIdList);
+        //         // const newkeyPointIdList = {...props.keyPointIdList};
+        //         // delete(newkeyPointIdList[activeObj.id]);
+        //         // props.setKeyPointIdList(newkeyPointIdList);
+        //         break;
+        //     case 'bbox':
+        //         delete(bboxObjListRef.current[activeObj.id]);
+        //         // const newRectIdList = {...props.rectIdList};
+        //         // delete(newRectIdList[activeObj.id]);
+        //         // props.setRectIdList(newRectIdList);
+        //         break;
+        //     case 'polygon':
+        //         delete(polygonObjListRef.current[activeObj.id]);
+        //         // const newPolygonIdList = {...props.polygonIdList};
+        //         // delete(newPolygonIdList[activeObj.id]);
+        //         // props.setPolygonIdList(newPolygonIdList);
+        //         break;
+        // }
+        delete(fabricObjListRef.current[activeObj.id]);
+        const annotationList = {...props.frameAnnotation};
+        delete(annotationList[activeObj.id]);
+        props.setFrameAnnotation(annotationList);
         
         canvas.remove(activeObj);
 
@@ -716,7 +726,7 @@ export default function Canvas(props) {
         setActiveObjData();
     }
 
-    // src={props.img}ref={imgRef} 
+    // src={props.imgUrl}ref={imgRef} 
     return (
         
         <div className='px-0'>

@@ -13,33 +13,59 @@ import {Row, Col} from 'react-bootstrap';
 
 export default function Workspace(props) {
     const [videoId, setVideoId] = useState();
-    const [frame, setFrame] = useState(); //'/fly.png'
-    // const [annotation, setAnnotation] = useState([]);
+    const [frameUrl, setFrameUrl] = useState(); //'/fly.png'
+    const [frameNum, setFrameNum] = useState();
+    const annotationRef = useRef({});
+    const [frameAnnotation, setFrameAnnotation] = useState({});
     const [activeIdObj, setActiveIdObj] = useState();
-    const [categoryId, setCategoryId] = useState({});
-    const [keyPointIdList, setKeyPointIdList] = useState({});
-    const [drawKeyPoint, setDrawKeyPoint] = useState(false);
-    const [rectIdList, setRectIdList] = useState({});
-    const [drawRect, setDrawRect] = useState(false);
-    const [polygonIdList, setPolygonIdList] = useState({});
-    const [drawPolygon, setDrawPolygon] = useState(false);
+    // const [categoryId, setCategoryId] = useState({});
+    // const [keyPointIdList, setKeyPointIdList] = useState({});
+    // const [drawKeyPoint, setDrawKeyPoint] = useState(false);
+    // const [rectIdList, setRectIdList] = useState({});
+    // const [drawRect, setDrawRect] = useState(false);
+    // const [polygonIdList, setPolygonIdList] = useState({});
+    // const [drawPolygon, setDrawPolygon] = useState(false);
+    const [drawType, setDrawType] = useState();
 
     
 
     console.log('workspace render');
 
+    useEffect(() => {
+        // when videouploader switch to a new frame, save the annotation for current frame
+        // then retrieve the annotation for the new frame
+        if (frameNum && annotationRef.current[frameNum]) {
+            setFrameAnnotation({...annotationRef.current[frameNum]});
+            console.log('frame anno', frameAnnotation);    
+        } else {
+            setFrameAnnotation({});
+        }
+        
+        return ()=>{
+            if (frameNum && Object.keys(frameAnnotation).length > 0) {
+                annotationRef.current = {...annotationRef.current, [frameNum]: frameAnnotation};
+            }
+        }
+      }, [frameNum]
+    )
 
-    function addKeyPointId(idObj) {
-        setKeyPointIdList({...keyPointIdList, [idObj.id]: idObj});
+
+    function addAnnotationObj(idObj) {
+        setFrameAnnotation({...frameAnnotation, [idObj.id]: idObj});
     }
 
-    function addRectId(idObj) {
-        setRectIdList({...rectIdList, [idObj.id]: idObj});
-    }
+
+    // function addKeyPointId(idObj) {
+    //     setKeyPointIdList({...keyPointIdList, [idObj.id]: idObj});
+    // }
+
+    // function addRectId(idObj) {
+    //     setRectIdList({...rectIdList, [idObj.id]: idObj});
+    // }
     
-    function addPolygonId(idObj) {
-        setPolygonIdList({...polygonIdList, [idObj.id]: idObj});
-    }
+    // function addPolygonId(idObj) {
+    //     setPolygonIdList({...polygonIdList, [idObj.id]: idObj});
+    // }
 
     
 
@@ -52,7 +78,8 @@ export default function Workspace(props) {
                         <Category
                             label='chase'
                             color='black'
-                            setCategoryId={setCategoryId}
+                            frameNum={frameNum}
+                            addAnnotationObj={addAnnotationObj}
                             setActiveIdObj={setActiveIdObj}
                             >
                         </Category>
@@ -61,10 +88,11 @@ export default function Workspace(props) {
                         <KeyPoint
                             label='head'
                             color='lightblue'
-                            type='keyPoint' 
-                            drawKeyPoint={drawKeyPoint}
-                            setDrawKeyPoint={setDrawKeyPoint}
-                            addKeyPointId={addKeyPointId}
+                            drawType={drawType}
+                            setDrawType={setDrawType} 
+                            // addKeyPointId={addKeyPointId}
+                            frameNum={frameNum}
+                            addAnnotationObj={addAnnotationObj}
                             >
                         </KeyPoint>
                     </Row>
@@ -73,16 +101,20 @@ export default function Workspace(props) {
                         <BoundingBox 
                             label='male' 
                             color='red'
-                            drawRect={drawRect}
-                            setDrawRect={setDrawRect} 
-                            addRectId={addRectId} 
+                            drawType={drawType}
+                            setDrawType={setDrawType} 
+                            // addRectId={addRectId} 
+                            frameNum={frameNum}
+                            addAnnotationObj={addAnnotationObj}
                             />
                         <BoundingBox 
                             label='female' 
                             color='blue'
-                            drawRect={drawRect}
-                            setDrawRect={setDrawRect} 
-                            addRectId={addRectId} 
+                            drawType={drawType}
+                            setDrawType={setDrawType}  
+                            // addRectId={addRectId} 
+                            frameNum={frameNum}
+                            addAnnotationObj={addAnnotationObj}
                             />
                     </Row>
                         
@@ -90,9 +122,11 @@ export default function Workspace(props) {
                         <Polygon 
                             label='fly' 
                             color='red'
-                            drawPolygon={drawPolygon}
-                            setDrawPolygon={setDrawPolygon} 
-                            addPolygonId={addPolygonId}
+                            drawType={drawType}
+                            setDrawType={setDrawType}
+                            // addPolygonId={addPolygonId}
+                            frameNum={frameNum}
+                            addAnnotationObj={addAnnotationObj}
                             />
                     </Row>
                 </Col>
@@ -104,27 +138,31 @@ export default function Workspace(props) {
             <Row className='mx-1 my-1'>
                 <Canvas 
                     videoId={videoId}
-                    img={frame}
-                    drawKeyPoint={drawKeyPoint}
-                    setDrawKeyPoint={setDrawKeyPoint}
-                    keyPointIdList={keyPointIdList}
-                    setKeyPointIdList={setKeyPointIdList}
-                    drawRect={drawRect}
-                    setDrawRect={setDrawRect}
-                    rectIdList={rectIdList}
-                    setRectIdList={setRectIdList}
-                    drawPolygon={drawPolygon}
-                    setDrawPolygon={setDrawPolygon}
-                    polygonIdList={polygonIdList}
-                    setPolygonIdList={setPolygonIdList}
+                    imgUrl={frameUrl}
+                    frameNum={frameNum}
+                    drawType={drawType}
+                    setDrawType={setDrawType}
+                    frameAnnotation={frameAnnotation}
+                    setFrameAnnotation={setFrameAnnotation}
+                    // drawKeyPoint={drawKeyPoint}
+                    // setDrawKeyPoint={setDrawKeyPoint}
+                    // keyPointIdList={keyPointIdList}
+                    // setKeyPointIdList={setKeyPointIdList}
+                    // drawRect={drawRect}
+                    // setDrawRect={setDrawRect}
+                    // rectIdList={rectIdList}
+                    // setRectIdList={setRectIdList}
+                    // drawPolygon={drawPolygon}
+                    // setDrawPolygon={setDrawPolygon}
+                    // polygonIdList={polygonIdList}
+                    // setPolygonIdList={setPolygonIdList}
                     setActiveIdObj={setActiveIdObj}
                     />
                 
             </Row>
             
             <Row className='my-3'>
-                <VideoUploader setFrame={setFrame} setVideoId={setVideoId} />
-                {/* <img ref={imgRef} id='imgOutput' width="300" height="200"  alt="No Image" /> */}
+                <VideoUploader setFrameUrl={setFrameUrl} setFrameNum={setFrameNum} setVideoId={setVideoId} />
             </Row>
             
           </main>

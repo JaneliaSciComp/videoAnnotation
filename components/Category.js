@@ -6,11 +6,12 @@ export default function Category(props) {
         const id = Date.now().toString();
         const idObj = {
             id: id,
+            frameNum: props.frameNum,
             label: props.label,
             color: props.color,
             type: 'category',         
         };
-        props.setCategoryId({[idObj.id]: idObj});
+        props.addAnnotationObj(idObj);
         props.setActiveIdObj(idObj);
     }
 

@@ -141,7 +141,8 @@ export default function VideoUploader(props) {
                 getFrame(newValue-1);
             }
         } else {
-            props.setFrame(null);
+            props.setFrameUrl(null);
+            props.setFrameNum(null);
         }
         
     }
@@ -167,7 +168,8 @@ export default function VideoUploader(props) {
                     setFrameError(res['error']);
                 } else {
                     const url = URL.createObjectURL(res);
-                    props.setFrame(url);
+                    props.setFrameUrl(url);
+                    props.setFrameNum(frameNum);
                 } 
             } 
         })

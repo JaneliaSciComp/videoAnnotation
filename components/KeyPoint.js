@@ -7,9 +7,11 @@ export default function KeyPoint(props) {
          label={props.label}
          color={props.color}
          type='keyPoint' 
-         drawObj={props.drawKeyPoint}
-         setDraw={props.setDrawKeyPoint}
-         addId={props.addKeyPointId}
+         drawType={props.drawType}
+         setDrawType={props.setDrawType}
+         frameNum={props.frameNum}
+         addAnnotationObj={props.addAnnotationObj}
+        //  addId={props.addKeyPointId}
          >
         </BtnPrototype>
     )

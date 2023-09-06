@@ -7,9 +7,11 @@ export default function BoundingBox(props) {
          label={props.label}
          color={props.color}
          type='bbox' 
-         drawObj={props.drawRect}
-         setDraw={props.setDrawRect}
-         addId={props.addRectId}
+         drawType={props.drawType}
+         setDrawType={props.setDrawType}
+        //  addId={props.addRectId}
+         frameNum={props.frameNum}
+         addAnnotationObj={props.addAnnotationObj}
          >
         </BtnPrototype>
     )

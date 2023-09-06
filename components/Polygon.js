@@ -7,9 +7,11 @@ export default function Polygon(props) {
          label={props.label}
          color={props.color}
          type='polygon' 
-         drawObj={props.drawPolygon}
-         setDraw={props.setDrawPolygon}
-         addId={props.addPolygonId}
+         drawType={props.drawType}
+         setDrawType={props.setDrawType}
+        //  addId={props.addPolygonId}
+         frameNum={props.frameNum}
+         addAnnotationObj={props.addAnnotationObj}
          >
         </BtnPrototype>
     )

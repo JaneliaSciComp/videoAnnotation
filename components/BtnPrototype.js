@@ -7,17 +7,18 @@ export default function BtnPrototype(props) {
     const [clicked, setClicked] = useState(false);
 
     useEffect(() => {
-        if (!props.drawObj) {
+        if (!props.drawType) {
             setClicked(false);
         }
-    }, [props.drawObj])
+    }, [props.drawType])
 
     
     function clickHandler() {
         const id = Date.now().toString();
-        props.setDraw(true);
-        props.addId({
+        props.setDrawType(props.type);
+        props.addAnnotationObj({
             id: id,
+            frameNum: props.frameNum,
             label: props.label,
             color: props.color,
             type: props.type,         
