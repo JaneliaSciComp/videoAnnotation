@@ -35,11 +35,13 @@ export default function VideoUploader(props) {
 
 
     function sliderChangeHandler(newValue) {
-        setFrame(newValue);
+        if (newValue >= 1) {
+            setFrame(newValue);
+        }
     }
 
     function inputNumerChangeHandler(newValue) {
-        if (typeof newValue === 'number' && Number.isInteger(newValue) && newValue>=0 ) {
+        if (typeof newValue === 'number' && Number.isInteger(newValue) && newValue>=1 ) {
             setFrame(newValue);
         }
     }
@@ -141,8 +143,8 @@ export default function VideoUploader(props) {
                 getFrame(newValue-1);
             }
         } else {
-            props.setFrameUrl(null);
-            props.setFrameNum(null);
+            // props.setFrameUrl(null);
+            // props.setFrameNum(null);
         }
         
     }

@@ -15,6 +15,7 @@ export default function Workspace(props) {
     const [videoId, setVideoId] = useState();
     const [frameUrl, setFrameUrl] = useState(); //'/fly.png'
     const [frameNum, setFrameNum] = useState();
+    const prevFrameNum = useRef();
     const annotationRef = useRef({});
     const [frameAnnotation, setFrameAnnotation] = useState({});
     const [activeIdObj, setActiveIdObj] = useState();
@@ -32,26 +33,41 @@ export default function Workspace(props) {
     console.log('workspace render');
 
     useEffect(() => {
-        // when videouploader switch to a new frame, save the annotation for current frame
-        // then retrieve the annotation for the new frame
-        if (frameNum && annotationRef.current[frameNum]) {
+        /* when videouploader switch to a new frame, save the annotation for current frame
+           then retrieve the annotation for the new frame
+         */
+        // console.log('useEffect called ', prevFrameNum.current, frameNum, frameAnnotation);
+        if (Number.isInteger(prevFrameNum.current) && Object.keys(frameAnnotation).length > 0) {
+            // annotationRef.current = {...annotationRef.current, [frameNum]: frameAnnotation};
+            // console.log('save called', prevFrameNum.current);
+            annotationRef.current[prevFrameNum.current] = frameAnnotation; ////???
+        }
+        prevFrameNum.current = frameNum;
+        
+        setActiveIdObj(null);
+        if (Number.isInteger(frameNum) && annotationRef.current[frameNum]) {
+            // console.log('retrieve1 called', frameNum, annotationRef.current[frameNum]);
             setFrameAnnotation({...annotationRef.current[frameNum]});
-            console.log('frame anno', frameAnnotation);    
         } else {
+            // console.log('retrieve2 called');
             setFrameAnnotation({});
         }
         
-        return ()=>{
-            if (frameNum && Object.keys(frameAnnotation).length > 0) {
-                annotationRef.current = {...annotationRef.current, [frameNum]: frameAnnotation};
-            }
-        }
+        // return ()=>{
+        //     console.log('return1 called', frameNum, frameAnnotation);
+        //     if (Number.isInteger(frameNum) && Object.keys(frameAnnotation).length > 0) {
+        //         // annotationRef.current = {...annotationRef.current, [frameNum]: frameAnnotation};
+        //         console.log('return2 called', frameNum);
+        //         annotationRef.current[frameNum] = frameAnnotation; ////???
+        //     }
+        // }
       }, [frameNum]
     )
 
 
     function addAnnotationObj(idObj) {
-        setFrameAnnotation({...frameAnnotation, [idObj.id]: idObj});
+        // setFrameAnnotation({...frameAnnotation, [idObj.id]: idObj});
+        frameAnnotation[idObj.id] = idObj; 
     }
 
 
@@ -133,6 +149,7 @@ export default function Workspace(props) {
                 <Col xs={6}>
                     <AnnotationDisplay idObj={activeIdObj}/>
                 </Col>
+                
             </Row>
             
             <Row className='mx-1 my-1'>
