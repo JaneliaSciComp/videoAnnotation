@@ -14,16 +14,19 @@ export default function BtnPrototype(props) {
 
     
     function clickHandler() {
-        const id = Date.now().toString();
-        props.setDrawType(props.type);
-        props.addAnnotationObj({
-            id: id,
-            frameNum: props.frameNum,
-            label: props.label,
-            color: props.color,
-            type: props.type,         
-        });
-        setClicked(true);
+        if (Number.isInteger(props.frameNum)) {
+            const id = Date.now().toString();
+            props.setDrawType(props.type);
+            props.addAnnotationObj({
+                id: id,
+                frameNum: props.frameNum,
+                label: props.label,
+                color: props.color,
+                type: props.type,         
+            });
+            setClicked(true);
+        }
+       
     }
 
     return (

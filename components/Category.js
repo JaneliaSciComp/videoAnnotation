@@ -3,16 +3,18 @@ import styles from '../styles/Button.module.css';
 
 export default function Category(props) {
     function clickHandler() {
-        const id = Date.now().toString();
-        const idObj = {
-            id: id,
-            frameNum: props.frameNum,
-            label: props.label,
-            color: props.color,
-            type: 'category',         
-        };
-        props.addAnnotationObj(idObj);
-        props.setActiveIdObj(idObj);
+        if (Number.isInteger(props.frameNum)) {
+            const id = Date.now().toString();
+            const idObj = {
+                id: id,
+                frameNum: props.frameNum,
+                label: props.label,
+                color: props.color,
+                type: 'category',         
+            };
+            props.addAnnotationObj(idObj);
+            props.setActiveIdObj(idObj);
+        }
     }
 
     return (

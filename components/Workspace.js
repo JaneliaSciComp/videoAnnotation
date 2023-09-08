@@ -32,6 +32,12 @@ export default function Workspace(props) {
 
     console.log('workspace render');
 
+    useEffect(() => { 
+        annotationRef.current = {};
+        setFrameAnnotation({});
+      }, [videoId]
+    )
+
     useEffect(() => {
         /* when videouploader switch to a new frame, save the annotation for current frame
            then retrieve the annotation for the new frame
