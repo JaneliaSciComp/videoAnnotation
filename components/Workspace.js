@@ -9,6 +9,7 @@ import Category from './Category';
 import AnnotationDisplay from './AnnotationDisplay';
 import VideoUploader from './VideoUploader';
 import {Row, Col} from 'react-bootstrap';
+import BtnGroup from './BtnGroup';
 
 
 
@@ -117,14 +118,41 @@ export default function Workspace(props) {
             <Row >
                 <Col xs={6}>
                     <Row className='mx-1 my-1'>
+                        <BtnGroup 
+                            child='shapeBtn'
+                            type='bbox'
+                            numOfBtn={2}
+                            labels={['a','b']}
+                            colors={['red', 'blue']}
+                            frameNum={frameNum}
+                            addAnnotationObj={addAnnotationObj}
+                            setActiveIdObj={setActiveIdObj}
+                            drawType={drawType}
+                            setDrawType={setDrawType}
+                        />
+                    </Row>
+                    <Row className='mx-1 my-1'>
+                        <BtnGroup 
+                            child='category'
+                            // type='bbox'
+                            numOfBtn={2}
+                            labels={['cate1','cate2']}
+                            colors={['red', 'blue']}
+                            frameNum={frameNum}
+                            addAnnotationObj={addAnnotationObj}
+                            setActiveIdObj={setActiveIdObj}
+                            drawType={drawType}
+                            setDrawType={setDrawType}
+                        />
+                    </Row>
+                    <Row className='mx-1 my-1'>
                         <Category
                             label='chase'
                             color='black'
                             frameNum={frameNum}
                             addAnnotationObj={addAnnotationObj}
                             setActiveIdObj={setActiveIdObj}
-                            >
-                        </Category>
+                            />
                     </Row>
                     <Row className='mx-1 my-1'> 
                         <ShapeBtn
