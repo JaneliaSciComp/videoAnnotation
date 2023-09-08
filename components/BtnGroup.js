@@ -41,8 +41,10 @@ export default function BtnGroup(props) {
     }
 
     return (
-        <Fragment>
+        // <Fragment>
+        <div className='px-0'>
             {renderBtns()}
-        </Fragment>
+        </div>
+        // </Fragment>
     )
 }
