@@ -33,7 +33,7 @@ export default function Workspace(props) {
     console.log('workspace render');
 
     useEffect(() => { 
-        annotationRef.current = {};
+        // annotationRef.current = {};
         setFrameAnnotation({});
       }, [videoId]
     )
@@ -49,6 +49,8 @@ export default function Workspace(props) {
             annotationRef.current[prevFrameNum.current] = frameAnnotation; ////???
         }
         prevFrameNum.current = frameNum;
+        setActiveIdObj(null);
+        setDrawType(null);
         
         setActiveIdObj(null);
         if (Number.isInteger(frameNum) && annotationRef.current[frameNum]) {

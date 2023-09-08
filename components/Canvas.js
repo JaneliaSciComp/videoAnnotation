@@ -117,13 +117,19 @@ export default function Canvas(props) {
     
     useEffect(() => {
         //when frame changes, update objects on canvas
-        console.log('canvas useEffect called');
+        // console.log('canvas useEffect called');
         if (Object.keys(fabricObjListRef.current).length>0) {
             Object.keys(fabricObjListRef.current).forEach(id => 
                 canvasObjRef.current.remove(fabricObjListRef.current[id]));
             fabricObjListRef.current = {};
         }
 
+        // createFabricObjBasedOnAnnotation();
+      }, [props.frameAnnotation]
+    )
+
+
+    function createFabricObjBasedOnAnnotation() {
         if (Object.keys(props.frameAnnotation).length>0) {
             console.log('draw anno');
             Object.keys(props.frameAnnotation).forEach(id => {
@@ -134,25 +140,24 @@ export default function Canvas(props) {
                     switch (annoObj.type) {
                         case 'keyPoint':
                             dataToCanvas = getKeypointCoordToCanvas(annoObj);
-                            console.log('keypoint', dataToCanvas);
+                            // console.log('keypoint', dataToCanvas);
                             createKeyPoint(dataToCanvas, annoObj);
                             break;
                         case 'bbox':
                             dataToCanvas = getBBoxCoordToCanvas(annoObj);
-                            console.log('bbox', dataToCanvas);
+                            // console.log('bbox', dataToCanvas);
                             createBBox(dataToCanvas, annoObj);
                             break;
                         case 'polygon':
                             dataToCanvas = getPolygonCoordToCanvas(annoObj);
-                            console.log('polygon', dataToCanvas);
+                            // console.log('polygon', dataToCanvas);
                             createPolygon(dataToCanvas, annoObj);
                             break;
                     }
                 }
             });
         }
-      }, [props.frameAnnotation]
-    )
+    }
 
     
     function scaleImage(canvas, image) { //image, canvas
@@ -174,16 +179,25 @@ export default function Canvas(props) {
 
 
     function imageLoadHandler(){
-        //When new video is loaded, scale frame size to fit in canvas 
-        imageObjRef.current.width = imgRef.current.width;
-        imageObjRef.current.height = imgRef.current.height;
-        scaleImage(canvasObjRef.current, imageObjRef.current);
+        //When new video is loaded
+        //scale frame size to fit in canvas 
+        if (props.frameNum == 0) {
+            imageObjRef.current.width = imgRef.current.width;
+            imageObjRef.current.height = imgRef.current.height;
+            scaleImage(canvasObjRef.current, imageObjRef.current);
+        }
+
+        //Draw fabric objects according to annotation
+        createFabricObjBasedOnAnnotation();
         canvasObjRef.current.renderAll();
     }
 
 
+    /*  For the next four functions
+        obj contains coordinates/width/height relative to canvas plane
+        convert to coordinates relative to img plane 
+    */
     function getPointCoordToImage(point){
-        // point: {x:..., y:...}, the coord relative to canvas plane 
         const img = imageObjRef.current;
         return ({
             x: (point.x - img.left)/img.scaleX,
@@ -191,35 +205,11 @@ export default function Canvas(props) {
         });
     }
 
-    function getPointCoordToCanvas(point){
-        // point: {x:..., y:...}, the coord relative to img plane 
-        const img = imageObjRef.current;
-        return ({
-            x: point.x * img.scaleX + img.left,
-            y: point.y * img.scaleY + img.top,
-        });
-    }
-
     function getKeypointCoordToImage(obj) {
-        /* obj contains coordinates relative to canvas plane
-           convert to coordinates relative to img plane 
-           */
-        // console.log('keypoint', obj);
         return getPointCoordToImage(obj.getCenterPoint())
     }
 
-    function getKeypointCoordToCanvas(obj) {
-        /* obj contains coordinates relative to img plane
-           convert to coordinates relative to canvas plane 
-           */
-        return getPointCoordToCanvas(obj.data);
-    }
-
     function getBBoxCoordToImage(obj){
-        /* obj contains coordinates/width/height relative to canvas plane
-           convert to coordinates relative to img plane 
-           */
-        // console.log('bbox',obj.aCoords);
         const topLeft = getPointCoordToImage(obj.aCoords.tl);
         const width = getPointCoordToImage(obj.aCoords.tr).x - topLeft.x;
         const height = getPointCoordToImage(obj.aCoords.bl).y - topLeft.y;
@@ -231,11 +221,38 @@ export default function Canvas(props) {
         }
     }
 
+    function getPolygonCoordToImage(obj) {
+        const newPoints = getUpdatedPolygonPoints(obj);
+        const res = newPoints.map(p=>getPointCoordToImage(p));
+        return Object.assign({}, res);
+    }
+
+    function getUpdatedPolygonPoints(polygon) {
+        const matrix = polygon.calcTransformMatrix();
+        const newPoints = polygon.points.map(p => new fabric.Point(p.x - polygon.pathOffset.x, p.y - polygon.pathOffset.y))
+            .map(p => fabric.util.transformPoint(p, matrix));
+        return newPoints;
+    }
+
+
+    /*  For the next four functions
+        obj contains coordinates/width/height relative to img plane
+        convert to coordinates relative to canvas plane 
+    */
+    function getPointCoordToCanvas(point){
+        // point: {x:..., y:...}, the coord relative to img plane 
+        const img = imageObjRef.current;
+        return ({
+            x: point.x * img.scaleX + img.left,
+            y: point.y * img.scaleY + img.top,
+        });
+    }
+
+    function getKeypointCoordToCanvas(obj) {
+        return getPointCoordToCanvas(obj.data);
+    }
+
     function getBBoxCoordToCanvas(obj){
-        /* obj contains coordinates/width/height relative to img plane
-           convert to coordinates relative to canvas plane 
-           */
-        // console.log('bbox',obj.aCoords);
         const img = imageObjRef.current;
         const topLeft = {x: obj.data.left, y: obj.data.top};
         const topLeftToCanvas = getPointCoordToCanvas(topLeft);
@@ -250,29 +267,10 @@ export default function Canvas(props) {
     }
 
     function getPolygonCoordToCanvas(obj) {
-        /* obj contains coordinates of points relative to img plane
-           convert to coordinates relative to canvas plane 
-           */
-        // console.log('polygon');
         return Object.keys(obj.data).map(i => getPointCoordToCanvas(obj.data[i]));
     }
 
-    function getPolygonCoordToImage(obj) {
-        /* obj contains coordinates of points relative to canvas plane
-           convert to coordinates relative to img plane 
-           */
-        // console.log('polygon');
-        const newPoints = getUpdatedPolygonPoints(obj);
-        const res = newPoints.map(p=>getPointCoordToImage(p));
-        return Object.assign({}, res);
-    }
 
-    function getUpdatedPolygonPoints(polygon) {
-        const matrix = polygon.calcTransformMatrix();
-        const newPoints = polygon.points.map(p => new fabric.Point(p.x - polygon.pathOffset.x, p.y - polygon.pathOffset.y))
-            .map(p => fabric.util.transformPoint(p, matrix));
-        return newPoints;
-    }
 
     function wheelHandler(opt) {
         // zoom in/out
@@ -602,7 +600,7 @@ export default function Canvas(props) {
             // console.log(bboxObj);
             // fabricObjListRef.current = {...fabricObjListRef.current, [bboxObj.id]: bboxObj};
             fabricObjListRef.current[bboxObj.id] = bboxObj;
-            // console.log(bboxObjListRef.current.length);
+            // console.log('drawbboxObj', bboxObj.left, bboxObj.height, bboxObj.width, bboxObj.height);
             canvas.add(bboxObj).setActiveObject(bboxObj);
             addActiveIdObj(bboxObj);
         } else {
@@ -618,7 +616,6 @@ export default function Canvas(props) {
         canvas.bboxLines = [];
         props.setDrawType(null);
         canvas.selection = true;
-        // console.log(bboxObj);
         // console.log('rect',canvas.activeObj, canvas.isEditingObj);
     }
 
@@ -651,7 +648,7 @@ export default function Canvas(props) {
         // fabricObjListRef.current = {...fabricObjListRef.current, [bboxObj.id]: bboxObj};
         fabricObjListRef.current[bboxObj.id] = bboxObj;
         canvas.add(bboxObj);
-        // console.log(bboxObj);
+        // console.log('createbboxObj', bboxObj.left, bboxObj.height, bboxObj.width, bboxObj.height);
     }
 
     
