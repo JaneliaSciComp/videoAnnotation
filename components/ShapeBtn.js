@@ -3,7 +3,7 @@ import {Button} from 'react-bootstrap';
 import styles from '../styles/Button.module.css';
 
 
-export default function BtnPrototype(props) {
+export default function ShapeBtn(props) {
     const [clicked, setClicked] = useState(false);
 
     useEffect(() => {

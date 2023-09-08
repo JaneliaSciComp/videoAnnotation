@@ -1,9 +1,10 @@
 import React, {useState, useEffect, useRef} from 'react';
 import styles from '../styles/Workspace.module.css';
 import Canvas from './Canvas';
-import BoundingBox from './BoundingBox';
-import Polygon from './Polygon';
-import KeyPoint from './Keypoint';
+// import BoundingBox from './BoundingBox';
+// import Polygon from './Polygon';
+// import KeyPoint from './Keypoint';
+import ShapeBtn from './ShapeBtn';
 import Category from './Category';
 import AnnotationDisplay from './AnnotationDisplay';
 import VideoUploader from './VideoUploader';
@@ -34,24 +35,14 @@ export default function Workspace(props) {
 
     useEffect(() => { 
         // annotationRef.current = {};
-        setFrameAnnotation({});
-      }, [videoId]
-    )
-
-    useEffect(() => {
-        /* when videouploader switch to a new frame, save the annotation for current frame
-           then retrieve the annotation for the new frame
-         */
-        // console.log('useEffect called ', prevFrameNum.current, frameNum, frameAnnotation);
+        console.log('videoid');
+        // saveAnnotationAndUpdateStates();
         if (Number.isInteger(prevFrameNum.current) && Object.keys(frameAnnotation).length > 0) {
-            // annotationRef.current = {...annotationRef.current, [frameNum]: frameAnnotation};
-            // console.log('save called', prevFrameNum.current);
-            annotationRef.current[prevFrameNum.current] = frameAnnotation; ////???
+            annotationRef.current[prevFrameNum.current] = frameAnnotation; 
         }
         prevFrameNum.current = frameNum;
         setActiveIdObj(null);
         setDrawType(null);
-        
         setActiveIdObj(null);
         if (Number.isInteger(frameNum) && annotationRef.current[frameNum]) {
             // console.log('retrieve1 called', frameNum, annotationRef.current[frameNum]);
@@ -60,17 +51,44 @@ export default function Workspace(props) {
             // console.log('retrieve2 called');
             setFrameAnnotation({});
         }
-        
-        // return ()=>{
-        //     console.log('return1 called', frameNum, frameAnnotation);
-        //     if (Number.isInteger(frameNum) && Object.keys(frameAnnotation).length > 0) {
-        //         // annotationRef.current = {...annotationRef.current, [frameNum]: frameAnnotation};
-        //         console.log('return2 called', frameNum);
-        //         annotationRef.current[frameNum] = frameAnnotation; ////???
-        //     }
-        // }
-      }, [frameNum]
+      }, [videoId, frameNum]
     )
+
+    // useEffect(() => {
+    //     /* when videouploader switch to a new frame, save the annotation for current frame
+    //        then retrieve the annotation for the new frame
+    //      */
+    //     console.log('frameNum called ', prevFrameNum.current, frameNum, frameAnnotation);
+    //     saveAnnotationAndUpdateStates();
+    //     if (Number.isInteger(frameNum) && annotationRef.current[frameNum]) {
+    //         // console.log('retrieve1 called', frameNum, annotationRef.current[frameNum]);
+    //         setFrameAnnotation({...annotationRef.current[frameNum]});
+    //     } else {
+    //         // console.log('retrieve2 called');
+    //         setFrameAnnotation({});
+    //     }
+        
+    //     // return ()=>{
+    //     //     console.log('return1 called', frameNum, frameAnnotation);
+    //     //     if (Number.isInteger(frameNum) && Object.keys(frameAnnotation).length > 0) {
+    //     //         // annotationRef.current = {...annotationRef.current, [frameNum]: frameAnnotation};
+    //     //         console.log('return2 called', frameNum);
+    //     //         annotationRef.current[frameNum] = frameAnnotation; 
+    //     //     }
+    //     // }
+    //   }, [frameNum]
+    // )
+
+
+    function saveAnnotationAndUpdateStates() {
+        if (Number.isInteger(prevFrameNum.current) && Object.keys(frameAnnotation).length > 0) {
+            annotationRef.current[prevFrameNum.current] = frameAnnotation; 
+        }
+        prevFrameNum.current = frameNum;
+        setActiveIdObj(null);
+        setDrawType(null);
+        setActiveIdObj(null);
+    }
 
 
     function addAnnotationObj(idObj) {
@@ -109,7 +127,8 @@ export default function Workspace(props) {
                         </Category>
                     </Row>
                     <Row className='mx-1 my-1'> 
-                        <KeyPoint
+                        <ShapeBtn
+                            type='keyPoint'
                             label='head'
                             color='lightblue'
                             drawType={drawType}
@@ -117,12 +136,12 @@ export default function Workspace(props) {
                             // addKeyPointId={addKeyPointId}
                             frameNum={frameNum}
                             addAnnotationObj={addAnnotationObj}
-                            >
-                        </KeyPoint>
+                            />
                     </Row>
                 
                     <Row className='mx-1 my-1'>
-                        <BoundingBox 
+                        <ShapeBtn 
+                            type='bbox'
                             label='male' 
                             color='red'
                             drawType={drawType}
@@ -131,7 +150,8 @@ export default function Workspace(props) {
                             frameNum={frameNum}
                             addAnnotationObj={addAnnotationObj}
                             />
-                        <BoundingBox 
+                        <ShapeBtn 
+                            type='bbox'
                             label='female' 
                             color='blue'
                             drawType={drawType}
@@ -143,7 +163,8 @@ export default function Workspace(props) {
                     </Row>
                         
                     <Row className='mx-1 my-1'>
-                        <Polygon 
+                        <ShapeBtn
+                            type='polygon' 
                             label='fly' 
                             color='red'
                             drawType={drawType}
