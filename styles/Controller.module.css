@@ -1,0 +1,22 @@
+.groupSelect {
+    margin: 0 2px;
+    width: 8em;
+}
+
+.btnSelect {
+    margin: 0 2px;
+    width: 10em;
+}
+
+.numInput {
+    margin: 0 2px;
+    width: 4em;
+}
+
+.generateBtn {
+    margin: 0 2px 3px 5px;
+}
+
+.deleteBtn {
+    margin: 0 1px 3px 0;
+}

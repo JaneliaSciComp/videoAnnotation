@@ -4,6 +4,17 @@ import styles from '../styles/Button.module.css';
 
 
 export default function ShapeBtn(props) {
+    /*
+        To annotate an object on the frame. Activate drawing on canvas.
+        Props: 
+            type='bbox'
+            label='Mouse' 
+            color='red'
+            drawType={drawType}
+            setDrawType={setDrawType} 
+            frameNum={frameNum}
+            addAnnotationObj={addAnnotationObj}
+    */
     const [clicked, setClicked] = useState(false);
 
     useEffect(() => {
@@ -30,7 +41,7 @@ export default function ShapeBtn(props) {
     }
 
     return (
-        <Button className={styles.btn} 
+        <Button className={styles.btn}
             style={{color:clicked?'white':props.color, background: clicked?props.color:'white', border:'2px solid '+props.color}} 
             onClick={clickHandler}>
         {props.label}

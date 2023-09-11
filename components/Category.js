@@ -2,6 +2,16 @@ import {Button} from 'react-bootstrap';
 import styles from '../styles/Button.module.css';
 
 export default function Category(props) {
+    /*
+        To annotate entire frame.
+        Props: 
+            label='chase'
+            color='black'
+            frameNum={frameNum}
+            addAnnotationObj={addAnnotationObj}
+            setActiveIdObj={setActiveIdObj}
+    */
+
     function clickHandler() {
         if (Number.isInteger(props.frameNum)) {
             const id = Date.now().toString();

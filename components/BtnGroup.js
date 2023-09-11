@@ -4,6 +4,20 @@ import { Fragment } from 'react';
 
 
 export default function BtnGroup(props) {
+    /*
+        To bundle a group of annotating btns of the same type.
+        Props: 
+            child='shapeBtn'
+            type='bbox'. Omit for 'category' btns
+            numOfBtn={2}
+            labels={['fly','mouse']}. The label for each child btn
+            colors={['red', 'blue']}. The color for each child btn
+            frameNum={frameNum}
+            addAnnotationObj={addAnnotationObj}
+            setActiveIdObj={setActiveIdObj}
+            drawType={drawType}
+            setDrawType={setDrawType}
+    */
 
     function renderBtns() {
         let btns = [];
@@ -21,7 +35,7 @@ export default function BtnGroup(props) {
                 }
                 break;
             case 'shapeBtn':
-                console.log('shapeBtn');
+                // console.log('shapeBtn');
                 for (let i = 0; i < props.numOfBtn; i++) {
                     btns.push(<ShapeBtn
                                 key={i}
@@ -36,7 +50,7 @@ export default function BtnGroup(props) {
                 }
                 break;
         }
-        console.log('btnGroup', btns);
+        // console.log('btnGroup', btns);
         return btns;
     }
 
