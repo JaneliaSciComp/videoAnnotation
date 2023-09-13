@@ -10,8 +10,8 @@ import AnnotationDisplay from './AnnotationDisplay';
 import VideoUploader from './VideoUploader';
 import {Row, Col} from 'react-bootstrap';
 import BtnGroup from './BtnGroup';
-import BtnGroupController from './BtnGroupController';
-
+// import BtnGroupController from './BtnGroupController';
+import Design from './Design';
 
 
 export default function Workspace(props) {
@@ -117,7 +117,7 @@ export default function Workspace(props) {
         <div className={styles.container}>
           <main className={styles.main}>
             <Row className='mx-1 my-1'>
-                <BtnGroupController />
+                <Design />
             </Row>
             
             <Row >
