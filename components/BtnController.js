@@ -6,24 +6,24 @@ import { DeleteOutlined} from '@ant-design/icons';
 
 export default function BtnController(props) {
     /*
-        To an annotating btn.
+        To configure an annotating btn.
         Props: 
-            index: integer. Required when has btnGroupController as parent. To distinguish from other btnController
+            index: integer. Required when define the event listeners. To distinguish from other btnController
             // data: object. {key: int, groupType: str, btnType: str, label: str, color: str}
             groupType: 'category'/'shape'. Optional. When specified, the btnType list will be generated accordingly; otherwise, use general list.
-            btnType: 'bbox'. Optional. When specified, the default value of the btnType select will be set.
-            color: 'red'. Optional.
-            label: 'mouse'. Optional.
+            defaultBtnType: 'bbox'. Optional. When specified, the default value of the btnType select will be set.
+            defaultColor: 'red'. Optional.
+            defaultLabel: 'mouse'. Optional.
             typeSelectPlaceHolder: 'Btn type'
             labelPlaceHolder: 'mouse'
             disableTypeSelect: boolean. False by default, true when specified. Whether to disable type selcet.
             disableLabelInput: boolean. False by default, true when specified. Whether to disable label input.
             disableColorPicker: boolean. False by default, true when specified. Whether to disable color picker.
             enableDelete: boolean. False by default, true when specified. Whether to include the delete btn.
-            onBtnTypeChange: Callback when btn type changes
-            onLabelEnter: Callback when use press enter in label input
-            onColorChange: Callback when colorPicker changes
-            onDelete: Callback when delete btn clicked
+            onBtnTypeChange: Callback when btn type changes. Takes one argument: target {index: int, index property of this object, value: str, the value of this btnType select, label: str, the label of this btnType selcet}
+            onLabelEnter: Callback when label input changes. Takes one argument: target {index: int, index property of this object, value: str, the value of this label input}
+            onColorChange: Callback when colorPicker changes. Takes one argument: target {index: int, index property of this object, value: str, the value of this color picker}
+            onDelete: Callback when delete btn clicked. Takes one argument: target {index: int, index property of this object}
     */
     console.log('btnController render', props.index);
 
@@ -53,7 +53,10 @@ export default function BtnController(props) {
             value: value,
             label: opt.label
         };
-        props.onBtnTypeChange(target);
+        
+        if (props.onBtnTypeChange) {
+            props.onBtnTypeChange(target);
+        } 
     }
 
 
@@ -64,7 +67,10 @@ export default function BtnController(props) {
             index: props.index,
             value: e.target.value,
         };
-        props.onLabelChange(target);
+
+        if (props.onLabelChange) {
+            props.onLabelChange(target);
+        }
     }
 
 
@@ -74,7 +80,10 @@ export default function BtnController(props) {
             index: props.index,
             value: value.metaColor.originalInput,
         };
-        props.onColorChange(target);
+
+        if (props.onColorChange) {
+            props.onColorChange(target);
+        }
     }
 
 
@@ -82,7 +91,10 @@ export default function BtnController(props) {
         const target = {
             index: props.index,
         };
-        props.onDelete(target);
+
+        if (props.onDelete) {
+            props.onDelete(target);
+        }
     }
 
 
@@ -90,26 +102,26 @@ export default function BtnController(props) {
         <div className='d-inline-flex'>
             <Space.Compact block className='px-0'>
                 <Select className={styles.btnSelect}
-                    value={props.btnType}
+                    defaultValue={props.defaultBtnType}
                     onChange={onBtnTypeChange}
                     options={props.groupType?btnOptions[props.groupType]:btnOptions.general}
                     placeholder={props.typeSelectPlaceHolder}
-                    disabled={props.disableTypeSelect?props.disableTypeSelect:false}
+                    disabled={props.disableTypeSelect}
                     />
                 <Input className={styles.labelText}
                     // addonBefore="Label"
                     allowClear
-                    value={props.label}
+                    defaultValue={props.defaultLabel}
                     // onPressEnter={onLabelEnter}
                     onChange={onLabelChange}
                     placeholder={props.labelPlaceHolder}
-                    disabled = {props.disableLabelInput?props.disableLabelInput:false}
+                    disabled = {props.disableLabelInput}
                     />
                 <ColorPicker className={styles.colorPicker}
                     // className={videoStyles.playFpsInput} 
-                    value={props.color}
+                    defaultValue={props.defaultColor}
                     onChange={onColorChange}
-                    disable = {props.disableColorPicker?props.disableColorPicker:false}
+                    disabled = {props.disableColorPicker}
                     // size="small"
                     presets={[
                         { label: 'Recommended',
