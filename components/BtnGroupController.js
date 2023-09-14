@@ -185,6 +185,9 @@ export default function BtnGroupController(props) {
                 index: i,
                 groupType: groupType,
                 btnType: btnType,
+                label: '',
+                color: '#1677FF',
+
             };
             newData.push(data);
         }
