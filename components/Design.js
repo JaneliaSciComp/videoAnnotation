@@ -29,8 +29,8 @@ export default function Design(props) {
         const ids = Object.keys(data);
         const res = ids.map(id => 
                 <BtnGroupController
-                    id = {id} 
-                    key = {id}
+                    id={id} 
+                    key={id}
                     data={data}
                     setData={setData}
                     groupTypePlaceHolder='Group Type'
