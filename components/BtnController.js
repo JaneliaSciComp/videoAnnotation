@@ -5,15 +5,21 @@ import { DeleteOutlined} from '@ant-design/icons';
 // import {Button} from 'react-bootstrap';
 
 export default function BtnController(props) {
-    /*
-        To configure an annotating btn.
+    /** 
+        To configure an annotating btn. 
+        Produce btn data: 
+            {index: 0,
+             btnType: 'bbox',
+             label: 'fly',
+             color: '#FFFFFF'
+            },
         Props: 
             index: integer. Required when define the event listeners. To distinguish from other btnController
             // data: object. {key: int, groupType: str, btnType: str, label: str, color: str}
             groupType: 'category'/'shape'. Optional. When specified, the btnType list will be generated accordingly; otherwise, use general list.
-            defaultBtnType: 'bbox'. Optional. When specified, the default value of the btnType select will be set.
-            defaultColor: 'red'. Optional.
-            defaultLabel: 'mouse'. Optional.
+            btnType: 'bbox'. Optional. //When specified, the default value of the btnType select will be set.
+            color: 'red'. Optional.
+            label: 'mouse'. Optional.
             typeSelectPlaceHolder: 'Btn type'
             labelPlaceHolder: 'mouse'
             disableTypeSelect: boolean. False by default, true when specified. Whether to disable type selcet.
@@ -25,7 +31,7 @@ export default function BtnController(props) {
             onColorChange: Callback when colorPicker changes. Takes one argument: target {index: int, index property of this object, value: str, the value of this color picker}
             onDelete: Callback when delete btn clicked. Takes one argument: target {index: int, index property of this object}
     */
-    console.log('btnController render', props.index);
+    // console.log('btnController render', props.index);
 
     const btnOptions = {
         category: [
@@ -46,7 +52,7 @@ export default function BtnController(props) {
 
 
     function onBtnTypeChange(value, opt) {
-        console.log('BtnType', value, opt);
+        // console.log('BtnType', value, opt);
         // no need to use if (props.onLabelChange), because the developer has to use props to set up the callback
         const target = {
             index: props.index,
@@ -102,7 +108,7 @@ export default function BtnController(props) {
         <div className='d-inline-flex'>
             <Space.Compact block className='px-0'>
                 <Select className={styles.btnSelect}
-                    defaultValue={props.defaultBtnType}
+                    value={props.btnType ? props.btnType : null}
                     onChange={onBtnTypeChange}
                     options={props.groupType?btnOptions[props.groupType]:btnOptions.general}
                     placeholder={props.typeSelectPlaceHolder}
@@ -111,7 +117,7 @@ export default function BtnController(props) {
                 <Input className={styles.labelText}
                     // addonBefore="Label"
                     allowClear
-                    defaultValue={props.defaultLabel}
+                    value={props.label ? props.label : null}
                     // onPressEnter={onLabelEnter}
                     onChange={onLabelChange}
                     placeholder={props.labelPlaceHolder}
@@ -119,7 +125,7 @@ export default function BtnController(props) {
                     />
                 <ColorPicker className={styles.colorPicker}
                     // className={videoStyles.playFpsInput} 
-                    defaultValue={props.defaultColor}
+                    value={props.color ? props.color : null}
                     onChange={onColorChange}
                     disabled = {props.disableColorPicker}
                     // size="small"

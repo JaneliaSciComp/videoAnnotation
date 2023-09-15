@@ -9,10 +9,20 @@ const BTNNUM_MAX=50
 
 
 export default function BtnGroupController(props) {
-    /*
+    /**
         To configure a annotating btn group.
+        Produce btnGroup data: 
+            {groupIndex: [
+                {index: 0, 
+                 btnType: 'bbox',
+                 label: 'fly',
+                 color: '#FFFFFF'
+                },
+                {index: 1, ...},
+                ...
+            ]}
         Props: 
-            id: unique id. If not provided, then set up id state.  //Required. //when specify onDelete. To distinguish from other btnGroupController
+            index: unique index, to indicate the order of btn groups If not provided, then set up index state.  //Required. //when specify onDelete. To distinguish from other btnGroupController
             defaultGroupType: 'category'/'shape'. Optional. When specified, the btnType dropdown will be generated accordingly; otherwise, use general list.
             defaultBtnType: 'bbox'. Optional. When specified, the default value of the btnType select will be set.
             defaultBtnNum: integer. Optional.
@@ -29,9 +39,20 @@ export default function BtnGroupController(props) {
             onGroupTypeChange: Callback when group type select changes
             onBtnTypeChange: Callback when btn type select changes
             onBtnNumChange: Callback when btn num input changes
+            onDownBtnClick: When the down btn is clicked, it will generate the btnController children. 
+                Developer can also add extra function by defining this api. It will be called after the generating function.
+                Takes one argument: target
+                    {
+                        index: getSelfIndex(),
+                        groupType: groupType,
+                        btnType: btnType,
+                        btnNum: btnNum
+                    };
             onDelete: Callback when delete btn clicked. Takes one argument: target {index: int}
-    */
-    const [id, setId] = useState();
+     */
+        
+    
+    const [index, setIndex] = useState();
     const [groupType, setGroupType] = useState();
     const [btnType, setBtnType] = useState();
     const [btnNum, setBtnNum] = useState(0);
@@ -70,8 +91,8 @@ export default function BtnGroupController(props) {
         if (!props.data || !props.setData) {
             throw SyntaxError('Property data and setData are required, cannot be null or undefined');
         }
-        if (!props.id) {
-            setId(Date.now().toString());
+        if (!props.index) {
+            setIndex(Date.now().toString());
         }
       },[]
     )
@@ -80,7 +101,7 @@ export default function BtnGroupController(props) {
     useEffect(() => {
         // to update callback's scope when data changes
         // console.log('useEffect called');
-        if (props.data && getId()) { // avoid calling renderChildren when component just mounted
+        if (props.data && getSelfIndex()) { // avoid calling renderChildren when component just mounted
             renderChildren();
         } 
       }, [props.data]
@@ -96,7 +117,7 @@ export default function BtnGroupController(props) {
         // if user has defined custom callback
         if (props.onGroupTypeChange) {
             const target = {
-                id: getId(),
+                index: getSelfIndex(),
                 value: newValue,
                 label: opt.label
             };
@@ -110,7 +131,7 @@ export default function BtnGroupController(props) {
         // if user has defined custom callback
         if (props.onBtnTypeChange) {
             const target = {
-                id: getId(),
+                index: getSelfIndex(),
                 value: newValue,
                 label: opt.label
             };
@@ -129,7 +150,7 @@ export default function BtnGroupController(props) {
             // if user has defined custom callback
             if (props.onBtnNumChange) {
                 const target = {
-                    id: getId(),
+                    index: getSelfIndex(),
                     value: newValue,
                 };
                 props.onBtnNumChange(target);
@@ -140,8 +161,8 @@ export default function BtnGroupController(props) {
         }
     }
 
-    function downBtnClickHandler() {
-        const id = getId();
+    function onDownBtnClick() {
+        const index = getSelfIndex();
         const childrenData = getData();
         let data = [];
         if (groupType && btnType) {
@@ -157,25 +178,35 @@ export default function BtnGroupController(props) {
                     data = createChildrenData(0, btnNum);
                 } 
             }
-            props.setData({...props.data, [id]: data});
+            props.setData({...props.data, [index]: data});
             prevBtnNumRef.current = btnNum;
             prevBtnTypeRef.current = btnType;
         } else {
-            props.setData({...props.data, [id]: []});
+            props.setData({...props.data, [index]: []});
         }
+
+        if (props.onDownBtnClick) {
+            const target = {
+                index: getSelfIndex(),
+                groupType: groupType,
+                btnType: btnType,
+                btnNum: btnNum
+            };
+            props.onDownBtnClick(target);
+        }        
     }
 
     function getData() {
-        const id = getId();
-        let data = props.data[id];
+        const index = getSelfIndex();
+        let data = props.data[index];
         if (!data) {
             data=[]
         }
         return data; //arr
     }
 
-    function getId() {
-        return props.id ? props.id : id; 
+    function getSelfIndex() {
+        return props.index ? props.index : index; 
     }
 
     function createChildrenData(startIndex, endIndex) {
@@ -196,7 +227,7 @@ export default function BtnGroupController(props) {
 
 
     function renderChildren() {
-        console.log('renderChildren called');
+        // console.log('renderChildren called');
         const childrenData = getData();
         let res = [];
         for (let i = 0; i < childrenData.length; i++) {
@@ -206,9 +237,9 @@ export default function BtnGroupController(props) {
                     index={i} 
                     // data={childrenData[i]}
                     groupType={childrenData[i].groupType}
-                    defaultBtnType={childrenData[i].btnType}
-                    defaultcColor={childrenData[i].color}
-                    defaultLabel={childrenData[i].label}
+                    btnType={childrenData[i].btnType}
+                    color={childrenData[i].color}
+                    label={childrenData[i].label}
                     typeSelectPlaceHolder='Btn type'
                     labelPlaceHolder="Label: e.g. 'mouse'"
                     disableTypeSelect
@@ -225,7 +256,7 @@ export default function BtnGroupController(props) {
 
     function onDelete() {
         const target = {
-            id: getId(),
+            index: getSelfIndex(),
         }
 
         if (props.onDelete) {
@@ -236,19 +267,19 @@ export default function BtnGroupController(props) {
     
     function onChildLabelChange(target) {
         // console.log('parent ',target);
-        const id = getId();
+        const index = getSelfIndex();
         const childrenData = getData();
         const data = {...childrenData[target.index]};
-        console.log('label', children[target.index]);
+        // console.log('label', children[target.index]);
         data.label = target.value;
         // console.log(data);
         const childrenDataCopy = [...childrenData];
         childrenDataCopy[target.index] = data;
-        props.setData({...props.data, [id]: childrenDataCopy});
+        props.setData({...props.data, [index]: childrenDataCopy});
     } 
 
     function onChildColorChange(target) {
-        const id = getId();
+        const index = getSelfIndex();
         const childrenData = getData();
         const data = {...childrenData[target.index]};
         // console.log('color', childrenData);
@@ -256,17 +287,17 @@ export default function BtnGroupController(props) {
         // console.log(data);
         const childrenDataCopy = [...childrenData];
         childrenDataCopy[target.index] = data;
-        props.setData({...props.data, [id]: childrenDataCopy});
+        props.setData({...props.data, [index]: childrenDataCopy});
     }
 
     function onChildDelete(target) {
         setBtnNum(btnNum-1);
         prevBtnNumRef.current = prevBtnNumRef.current>0 ? prevBtnNumRef.current-1 : 0;
-        const id = getId();
+        const index = getSelfIndex();
         const newChildrenData = [...getData()];
         newChildrenData.splice(target.index, 1);
         newChildrenData.forEach((item,i) => {item.index=i});
-        props.setData({...props.data, [id]: newChildrenData});
+        props.setData({...props.data, [index]: newChildrenData});
     }
 
 
@@ -308,7 +339,7 @@ export default function BtnGroupController(props) {
                         // shape='circle'
                         type='text'
                         icon={<DownOutlined />}
-                        onClick={downBtnClickHandler} 
+                        onClick={onDownBtnClick} 
                         // size='small'
                         />
                     {/* :null

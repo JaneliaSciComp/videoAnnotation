@@ -9,6 +9,7 @@ import Category from './Category';
 import AnnotationDisplay from './AnnotationDisplay';
 import VideoUploader from './VideoUploader';
 import {Row, Col} from 'react-bootstrap';
+import { Space } from 'antd';
 import BtnGroup from './BtnGroup';
 // import BtnGroupController from './BtnGroupController';
 import Design from './Design';
@@ -30,6 +31,8 @@ export default function Workspace(props) {
     // const [polygonIdList, setPolygonIdList] = useState({});
     // const [drawPolygon, setDrawPolygon] = useState(false);
     const [drawType, setDrawType] = useState();
+    const [btnConfigData, setBtnConfigData] = useState({})
+    const [btnGroups, setBtnGroups] = useState()
 
     
 
@@ -111,13 +114,61 @@ export default function Workspace(props) {
     //     setPolygonIdList({...polygonIdList, [idObj.id]: idObj});
     // }
 
+    useEffect(() => {
+        if (btnConfigData) {
+            renderBtnGroup();
+        }
+      }, [btnConfigData]
+    )
+
+
+    function renderBtnGroup() {
+        const groupIndices = Object.keys(btnConfigData).sort((a, b) => Number(a)-Number(b));
+        const groups = groupIndices.map((index, i) => {
+                            const data = btnConfigData[index];
+                            console.log(index, data);
+                            return <BtnGroup 
+                                        key={i}
+                                        data={data}
+                                        frameNum={frameNum}
+                                        addAnnotationObj={addAnnotationObj}
+                                        setActiveIdObj={setActiveIdObj}
+                                        drawType={drawType}
+                                        setDrawType={setDrawType}
+                                    />
+                        })
+        // console.log(btnGroupIds);
+        setBtnGroups(groups);
+    }
+
+
+    function onAddBtnClick() {
+        console.log('Add btn clicked');
+    }
+
+    function onCreateBtnClick(data) {
+        console.log('create', data);
+    }
     
 
     return (
         <div className={styles.container}>
           <main className={styles.main}>
             <Row className='mx-1 my-1'>
-                <Design />
+                <Design 
+                    data={btnConfigData}
+                    setData={setBtnConfigData}
+                    onAddBtnClick={onAddBtnClick}
+                    onCreateBtnClick={onCreateBtnClick}
+                />
+            </Row>
+            <Row className='mx-1 my-1'>
+                {btnGroups ?
+                    <Space direction='vertical'>
+                        {btnGroups}
+                    </Space>
+                    : null
+                }
             </Row>
             
             <Row >
