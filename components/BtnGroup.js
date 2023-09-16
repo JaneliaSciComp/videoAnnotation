@@ -38,7 +38,7 @@ export default function BtnGroup(props) {
             const res = renderBtns();
             setBtns(res);
         }
-    }, [props.data])
+    }, [props])
 
     function renderBtns() {
         console.log('renderBtns called');
@@ -53,7 +53,6 @@ export default function BtnGroup(props) {
                                 addAnnotationObj={props.addAnnotationObj}
                                 setActiveIdObj={props.setActiveIdObj}
                                 />
-                    break;
                 case 'shape':
                     return <ShapeBtn
                                 key={i}
@@ -68,36 +67,7 @@ export default function BtnGroup(props) {
             }
         });
 
-        // switch (props.child) {
-        //     case 'category':
-        //         for (let i = 0; i < props.numOfBtn; i++) {
-        //             btns.push(<Category 
-        //                         key={i}
-        //                         label={props.labels[i]}
-        //                         color={props.colors[i]}
-        //                         frameNum={props.frameNum}
-        //                         addAnnotationObj={props.addAnnotationObj}
-        //                         setActiveIdObj={props.setActiveIdObj}
-        //                         />);
-        //         }
-        //         break;
-        //     case 'shapeBtn':
-        //         // console.log('shapeBtn');
-        //         for (let i = 0; i < props.numOfBtn; i++) {
-        //             btns.push(<ShapeBtn
-        //                         key={i}
-        //                         type={props.type} 
-        //                         label={props.labels[i]}
-        //                         color={props.colors[i]}
-        //                         frameNum={props.frameNum}
-        //                         addAnnotationObj={props.addAnnotationObj}
-        //                         drawType={props.drawType}
-        //                         setDrawType={props.setDrawType}
-        //                         />);
-        //         }
-        //         break;
-        // }
-        // console.log('btnGroup', btns);
+        
         return btns;
     }
 

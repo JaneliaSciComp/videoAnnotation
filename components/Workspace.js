@@ -97,8 +97,8 @@ export default function Workspace(props) {
 
 
     function addAnnotationObj(idObj) {
-        // setFrameAnnotation({...frameAnnotation, [idObj.id]: idObj});
-        frameAnnotation[idObj.id] = idObj; 
+        setFrameAnnotation({...frameAnnotation, [idObj.id]: idObj});
+        // frameAnnotation[idObj.id] = idObj; 
     }
 
 
@@ -118,7 +118,7 @@ export default function Workspace(props) {
         if (btnConfigData) {
             renderBtnGroup();
         }
-      }, [btnConfigData]
+      }, [btnConfigData, frameNum, frameAnnotation, drawType]
     )
 
 
