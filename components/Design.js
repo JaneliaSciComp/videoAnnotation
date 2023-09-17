@@ -10,7 +10,7 @@ const BTNGROUPNUM_MAX=50
 
 export default function Design(props) {
     /**
-     * Produce btnGroup data: 
+     * To produce btnGroup data: 
         {
             {groupIndex1: [
                 {index: 0, 

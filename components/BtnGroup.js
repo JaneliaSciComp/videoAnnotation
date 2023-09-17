@@ -1,8 +1,7 @@
 import ShapeBtn from './ShapeBtn';
 import Category from './Category';
 import { useState, useEffect } from 'react';
-import { Space } from 'antd';
-
+import {Row} from 'react-bootstrap';
 
 export default function BtnGroup(props) {
     /*
@@ -73,9 +72,9 @@ export default function BtnGroup(props) {
 
     return (
         // <Fragment>
-        <Space className='px-0'>
+        <Row className='my-1'>
             {btns? btns:null}
-        </Space>
+        </Row>
         // </Fragment>
     )
 }

@@ -35,6 +35,7 @@ export default function ShapeBtn(props) {
                 color: props.color,
                 type: props.type,         
             });
+            // console.log('shape called', props);
             setClicked(true);
         }
        

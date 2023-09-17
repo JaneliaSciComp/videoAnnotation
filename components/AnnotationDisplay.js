@@ -56,7 +56,8 @@ export default function AnnotationDisplay(props) {
 
     return (
         <Descriptions 
-            className='my-2 px-2 py-2 border rounded' 
+            className='my-2 px-2 py-2 border rounded'
+            style={{height: '200px', overflow: 'scroll', padding: '1em 0'}} 
             title="Annotation" 
             items={info} 
             />

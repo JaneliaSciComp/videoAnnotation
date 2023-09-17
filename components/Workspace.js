@@ -38,33 +38,28 @@ export default function Workspace(props) {
 
     console.log('workspace render');
 
-    useEffect(() => { 
-        // annotationRef.current = {};
-        console.log('videoid');
-        // saveAnnotationAndUpdateStates();
-        if (Number.isInteger(prevFrameNum.current) && Object.keys(frameAnnotation).length > 0) {
-            annotationRef.current[prevFrameNum.current] = frameAnnotation; 
-        }
-        prevFrameNum.current = frameNum;
-        setActiveIdObj(null);
-        setDrawType(null);
-        setActiveIdObj(null);
-        if (Number.isInteger(frameNum) && annotationRef.current[frameNum]) {
-            // console.log('retrieve1 called', frameNum, annotationRef.current[frameNum]);
-            setFrameAnnotation({...annotationRef.current[frameNum]});
-        } else {
-            // console.log('retrieve2 called');
-            setFrameAnnotation({});
-        }
-      }, [videoId, frameNum]
+    useEffect(() => {
+        //save frame anno data for last video
+        saveAnnotationAndUpdateStates();
+        //update totoal anno data for current video. will be replace by retrieving from DB later on.
+        annotationRef.current = {};
+        prevFrameNum.current=null; 
+        setFrameNum(null); // It's possible last vdieo is showing frame 0, then when switch video, frameNum won't change, then the effect below won't be called. So set frameNum to null, then when show frame 0 for the current video, the effect below will be called
+        // setFrameAnnotation({});
+        // console.log('videoid');
+      }, [videoId] //when switch video, videoId will change first, then frameNum change to 0. So this effect called first, then the effect below
     )
 
-    // useEffect(() => {
-    //     /* when videouploader switch to a new frame, save the annotation for current frame
-    //        then retrieve the annotation for the new frame
-    //      */
-    //     console.log('frameNum called ', prevFrameNum.current, frameNum, frameAnnotation);
-    //     saveAnnotationAndUpdateStates();
+    // useEffect(() => { 
+    //     // annotationRef.current = {};
+    //     console.log('frameNum');
+    //     // saveAnnotationAndUpdateStates();
+    //     if (Number.isInteger(prevFrameNum.current) && Object.keys(frameAnnotation).length > 0) {
+    //         annotationRef.current[prevFrameNum.current] = frameAnnotation; 
+    //     }
+    //     prevFrameNum.current = frameNum;
+    //     setDrawType(null);
+    //     setActiveIdObj(null);
     //     if (Number.isInteger(frameNum) && annotationRef.current[frameNum]) {
     //         // console.log('retrieve1 called', frameNum, annotationRef.current[frameNum]);
     //         setFrameAnnotation({...annotationRef.current[frameNum]});
@@ -72,17 +67,35 @@ export default function Workspace(props) {
     //         // console.log('retrieve2 called');
     //         setFrameAnnotation({});
     //     }
-        
-    //     // return ()=>{
-    //     //     console.log('return1 called', frameNum, frameAnnotation);
-    //     //     if (Number.isInteger(frameNum) && Object.keys(frameAnnotation).length > 0) {
-    //     //         // annotationRef.current = {...annotationRef.current, [frameNum]: frameAnnotation};
-    //     //         console.log('return2 called', frameNum);
-    //     //         annotationRef.current[frameNum] = frameAnnotation; 
-    //     //     }
-    //     // }
     //   }, [frameNum]
     // )
+
+    useEffect(() => {
+        /* when videouploader switch to a new frame, save the annotation for current frame
+           then retrieve the annotation for the new frame
+         */
+        // console.log('frameNum called ', prevFrameNum.current, frameNum, frameAnnotation);
+        //save cuurent frame anno data
+        saveAnnotationAndUpdateStates();
+        //retrieve next frame anno data
+        if (Number.isInteger(frameNum) && annotationRef.current[frameNum]) {
+            // console.log('retrieve1 called', frameNum, annotationRef.current[frameNum]);
+            setFrameAnnotation({...annotationRef.current[frameNum]});
+        } else {
+            // console.log('retrieve2 called');
+            setFrameAnnotation({});
+        }
+        
+        // return ()=>{
+        //     console.log('return1 called', frameNum, frameAnnotation);
+        //     if (Number.isInteger(frameNum) && Object.keys(frameAnnotation).length > 0) {
+        //         // annotationRef.current = {...annotationRef.current, [frameNum]: frameAnnotation};
+        //         console.log('return2 called', frameNum);
+        //         annotationRef.current[frameNum] = frameAnnotation; 
+        //     }
+        // }
+      }, [frameNum]
+    )
 
 
     function saveAnnotationAndUpdateStates() {
@@ -92,13 +105,12 @@ export default function Workspace(props) {
         prevFrameNum.current = frameNum;
         setActiveIdObj(null);
         setDrawType(null);
-        setActiveIdObj(null);
     }
 
 
     function addAnnotationObj(idObj) {
-        setFrameAnnotation({...frameAnnotation, [idObj.id]: idObj});
-        // frameAnnotation[idObj.id] = idObj; 
+        // setFrameAnnotation({...frameAnnotation, [idObj.id]: idObj});
+        frameAnnotation[idObj.id] = idObj; 
     }
 
 
@@ -163,17 +175,17 @@ export default function Workspace(props) {
                 />
             </Row>
             <Row className='mx-1 my-1'>
-                {btnGroups ?
-                    <Space direction='vertical'>
+                {btnGroups} 
+                    {/* <Space direction='vertical'>
                         {btnGroups}
                     </Space>
                     : null
-                }
+                } */}
             </Row>
             
             <Row >
                 <Col xs={6}>
-                    <Row className='mx-1 my-1'>
+                    {/* <Row className='mx-1 my-1'>
                         <BtnGroup 
                             child='shapeBtn'
                             type='bbox'
@@ -200,7 +212,7 @@ export default function Workspace(props) {
                             drawType={drawType}
                             setDrawType={setDrawType}
                         />
-                    </Row>
+                    </Row> */}
                     <Row className='mx-1 my-1'>
                         <Category
                             label='chase'
@@ -259,7 +271,7 @@ export default function Workspace(props) {
                             />
                     </Row>
                 </Col>
-                <Col xs={6}>
+                <Col xs={6} >
                     <AnnotationDisplay idObj={activeIdObj}/>
                 </Col>
                 

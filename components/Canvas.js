@@ -547,7 +547,7 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
         // canvas.selection = false;
         const idTodraw = annoObjToDraw.id;
-        // console.log(idObj);
+        // console.log('canvas',annoObjToDraw);
         const point = createPoint(data, annoObjToDraw, 0);
         point.id = idTodraw;
         point.type = 'keyPoint';
@@ -662,7 +662,7 @@ export default function Canvas(props) {
             strokeWidth: 1,
             strokeUniform: true,
             stroke: idObj.color,
-            fill: 'white',//idObj.color,
+            fill: idObj.type==='keyPoint'?idObj.color:'white', //'white',//idObj.color,
             lockScalingX: true,
             lockScalingY: true,
             lockRotation: true,
@@ -841,7 +841,7 @@ export default function Canvas(props) {
 
     function getIdToDraw() {
         const existingIds = new Set(Object.keys(fabricObjListRef.current));
-        const idToDraw = Object.keys(props.frameAnnotation).filter(id => !existingIds.has(id))[0];
+        const idToDraw = Object.entries(props.frameAnnotation).filter(([id, annoObj]) => !existingIds.has(id) && ANNOTATION_TYPES.has(annoObj.type))[0][0];
         return idToDraw;
     }
 
