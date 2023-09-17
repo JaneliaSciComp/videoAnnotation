@@ -174,17 +174,13 @@ export default function Workspace(props) {
                     onCreateBtnClick={onCreateBtnClick}
                 />
             </Row>
-            <Row className='mx-1 my-1'>
+            {/* <Row className='mx-1 my-1'>
                 {btnGroups} 
-                    {/* <Space direction='vertical'>
-                        {btnGroups}
-                    </Space>
-                    : null
-                } */}
-            </Row>
+            </Row> */}
             
             <Row >
                 <Col xs={6}>
+                    {btnGroups} 
                     {/* <Row className='mx-1 my-1'>
                         <BtnGroup 
                             child='shapeBtn'
@@ -213,7 +209,7 @@ export default function Workspace(props) {
                             setDrawType={setDrawType}
                         />
                     </Row> */}
-                    <Row className='mx-1 my-1'>
+                    {/* <Row className='mx-1 my-1'>
                         <Category
                             label='chase'
                             color='black'
@@ -269,7 +265,7 @@ export default function Workspace(props) {
                             frameNum={frameNum}
                             addAnnotationObj={addAnnotationObj}
                             />
-                    </Row>
+                    </Row> */}
                 </Col>
                 <Col xs={6} >
                     <AnnotationDisplay idObj={activeIdObj}/>
