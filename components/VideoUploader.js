@@ -52,8 +52,6 @@ export default function VideoUploader(props) {
             try:
                 os.makedirs('/tmp/frames', exist_ok=True)
                 cap = cv.VideoCapture(input_file_name)
-                os.remove(input_file_name)
-                #print(os.listdir('/tmp/'))
                 fps = cap.get(cv.CAP_PROP_FPS )
                 total_frame_count = cap.get(cv.CAP_PROP_FRAME_COUNT)
                 window.setFpsWrapper(fps)
