@@ -67,6 +67,7 @@ export default function BtnGroupController(props) {
     const btnGroupOptions = [
         {value: 'shape', label: 'Shape'},
         {value: 'category', label: 'Category'},
+        {value: 'skeleton', label: 'Skeleton'},
     ]
 
     const btnOptions = {
@@ -78,18 +79,22 @@ export default function BtnGroupController(props) {
             {value: 'bbox', label: 'Bounding Box'},
             {value: 'polygon', label: 'Polygon'},
         ],
+        skeleton: [
+            {value: 'skeleton', label: 'Skeleton'}
+        ],
         general: [
             {value: 'category', label: 'Category'},
             {value: 'keyPoint', label: 'Key Point'},
             {value: 'bbox', label: 'Bounding Box'},
             {value: 'polygon', label: 'Polygon'},
+            {value: 'skeleton', label: 'Skeleton'},
         ]
     }
 
 
     useEffect(()=>{
         if (!props.data || !props.setData) {
-            throw SyntaxError('Property data and setData are required, cannot be null or undefined');
+            throw Error('Property data and setData are required, cannot be null or undefined');
         }
         if (!props.index) {
             setIndex(Date.now().toString());

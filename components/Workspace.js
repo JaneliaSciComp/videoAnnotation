@@ -9,7 +9,6 @@ import Category from './Category';
 import AnnotationDisplay from './AnnotationDisplay';
 import VideoUploader from './VideoUploader';
 import {Row, Col} from 'react-bootstrap';
-import { Space } from 'antd';
 import BtnGroup from './BtnGroup';
 // import BtnGroupController from './BtnGroupController';
 import Design from './Design';
@@ -175,7 +174,6 @@ export default function Workspace(props) {
                 />
             </Row>
             {/* <Row className='mx-1 my-1'>
-                {btnGroups} 
             </Row> */}
             
             <Row >

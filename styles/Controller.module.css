@@ -33,6 +33,12 @@
     border-bottom-left-radius: 0;
 }
 
+.edgeColorPicker {
+    border-top-right-radius: 0 !important;
+    border-bottom-right-radius: 0 !important;
+    border-right: none;
+}
+
 .designContainer {
     border: 1px solid rgb(222, 226, 230);
     border-radius: 6px;

@@ -3,6 +3,8 @@ import styles from '../styles/Controller.module.css';
 import BtnGroupController from './BtnGroupController';
 import { Button, Space } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
+import SkeletonEdgeGroupController from './SkeletonEdgeGroupController';
+
 
 
 const BTNGROUPNUM_MAX=50
@@ -10,10 +12,11 @@ const BTNGROUPNUM_MAX=50
 
 export default function Design(props) {
     /**
-     * To produce btnGroup data: 
+     * Produce btnGroup data: 
         {
             {groupIndex1: [
                 {index: 0, 
+                 groupType: 'shape',
                  btnType: 'bbox',
                  label: 'fly',
                  color: '#FFFFFF'
@@ -87,7 +90,7 @@ export default function Design(props) {
     function onCreateBtnClick() {
         console.log(data);
         if (!props.data || !props.setData) {
-            throw SyntaxError('Property Data and setData are required');
+            throw Error('Property Data and setData are required');
         }
         props.setData({...props.data, ...data});
         
@@ -123,6 +126,10 @@ export default function Design(props) {
             <p className='my-2'>Customize Annotation Buttons</p>
             <Space direction='vertical'>
                 {children}
+            </Space>
+            <br />
+            <Space>
+                <SkeletonEdgeGroupController vertices={['head', 'left wing', 'right wing', 'tail']}/>
             </Space>
             <br />
             <Space className='my-3 d-flex justify-content-center' wrap>
