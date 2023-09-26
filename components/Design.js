@@ -3,7 +3,7 @@ import styles from '../styles/Controller.module.css';
 import BtnGroupController from './BtnGroupController';
 import { Button, Space } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
-import SkeletonEdgeGroupController from './SkeletonEdgeGroupController';
+import SkeletonEdgeController from './SkeletonEdgeController';
 
 
 
@@ -121,6 +121,8 @@ export default function Design(props) {
     //     console.log('downBtn', target);
     // }
 
+    const edgesOptions = [{label: 'head', value: 0}, {label: 'left wing', value: 1}, {label: 'right wing', value: 2}, {label: 'tail', value: 3}];
+
     return (
         <div className={styles.designContainer}>
             <p className='my-2'>Customize Annotation Buttons</p>
@@ -129,7 +131,8 @@ export default function Design(props) {
             </Space>
             <br />
             <Space>
-                <SkeletonEdgeGroupController vertices={['head', 'left wing', 'right wing', 'tail']}/>
+                <SkeletonEdgeController 
+                    vertices={edgesOptions}/>
             </Space>
             <br />
             <Space className='my-3 d-flex justify-content-center' wrap>
