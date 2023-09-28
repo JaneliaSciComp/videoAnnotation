@@ -53,8 +53,8 @@ export default function BtnGroup(props) {
         let btns;
         switch (props.data.groupType) {
             case 'category':
-                btns = childData.map((item, i)=>{
-                            return <Category 
+                btns = childData.map((item, i) =>
+                            <Category 
                                 key={i}
                                 label={item.label}
                                 color={item.color}
@@ -62,11 +62,11 @@ export default function BtnGroup(props) {
                                 addAnnotationObj={props.addAnnotationObj}
                                 setActiveIdObj={props.setActiveIdObj}
                                 />
-                        });
+                        );
                 break;
             case 'shape':
-                btns = childData.map((item, i)=>{
-                            return <ShapeBtn
+                btns = childData.map((item, i) => 
+                            <ShapeBtn
                                 key={i}
                                 type={item.btnType} 
                                 label={item.label}
@@ -76,7 +76,7 @@ export default function BtnGroup(props) {
                                 drawType={props.drawType}
                                 setDrawType={props.setDrawType}
                                 />
-                        });
+                        );
                 break;
             case 'skeleton':
                 btns = [<SkeletonBtn
@@ -87,6 +87,7 @@ export default function BtnGroup(props) {
                             addAnnotationObj={props.addAnnotationObj}
                             drawType={props.drawType}
                             setDrawType={props.setDrawType}
+                            frameAnnotation={props.frameAnnotation}
                             />
                         ]
                 break;

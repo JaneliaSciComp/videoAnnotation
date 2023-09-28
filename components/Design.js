@@ -73,6 +73,8 @@ export default function Design(props) {
                     // onBtnTypeChange={onBtnTypeChange}
                     // onBtnNumChange={onBtnNumChange}
                     // onDownBtnClick={onDownBtnClick}
+                    skeletonData={skeletonData}
+                    setSkeletonData={setSkeletonData}
                     />
             ); 
         setChildren(res);
@@ -125,7 +127,7 @@ export default function Design(props) {
     //     console.log('downBtn', target);
     // }
 
-    const edgesOptions = [{label: 'head', value: 0}, {label: 'left wing', value: 1}, {label: 'right wing', value: 2}, {label: 'tail', value: 3}];
+    const edgesOptions = ['head', 'left wing', 'right wing','tail'];
 
     return (
         <div className={styles.designContainer}>
@@ -134,13 +136,13 @@ export default function Design(props) {
                 {children}
             </Space>
             <br />
-            <Space>
+            {/* <Space>
                 <SkeletonEdgeController 
                     vertices={edgesOptions}
                     data={skeletonData}
                     setData={setSkeletonData} 
                     index={'1'} />
-            </Space>
+            </Space> */}
             <br />
             <Space className='my-3 d-flex justify-content-center' wrap>
                 {/* icon={<PlusOutlined />} */}

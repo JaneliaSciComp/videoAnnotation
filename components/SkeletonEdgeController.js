@@ -21,10 +21,7 @@ export default function SkeletonEdgeController(props) {
             data: Required. The generated data, structure as above, will be append to it
             setData: Required. The setter of data. Use as [data, setData]=useState()
             vertices: 
-                [
-                    {label: 'head', value: 0},
-                    ...
-                ]
+                [ 'head', 'right wing', 'left wing', 'tail' ]
             color: '#1677FF'. Optional.
             disableColorPicker: boolean. False by default, true when specified. Whether to disable color picker.
 
@@ -62,7 +59,8 @@ export default function SkeletonEdgeController(props) {
                 ]
             color: dynamically change when user pick new value
     */
-        
+    
+    const [verticesOptions, setVerticesOptions] = useState([]);
     const [currentVertex, setCurrentVertex] = useState(0);
     const [checkedValues, setCheckedValues] = useState();
     const edgeDataRef = useRef([]);
@@ -75,12 +73,29 @@ export default function SkeletonEdgeController(props) {
 
     useEffect(()=>{
         if (!props.data || !props.setData) {
-            throw Error('Property data and setData are required, cannot be null or undefined');
+            throw Error('Property [data] and [setData] are required, cannot be null or undefined');
         }
         if (!props.index) {
-            setIndex(Date.now().toString());
+            throw Error('Property [Index] and setData are required');
         }
       },[]
+    )
+
+    useEffect(() => {
+        // generate input data for radioGroup when props.vertices changes
+        console.log(props.vertices);
+        if (props.vertices) {
+            const options = props.vertices.map((item, i) => {
+                return {
+                        label: item,
+                        value: i
+                    }
+            })
+            console.log(options);
+            setVerticesOptions(options);
+        }
+        
+      }, [props.vertices] 
     )
 
     useEffect(() => {
@@ -123,7 +138,7 @@ export default function SkeletonEdgeController(props) {
     }
     
     function onNextBtnClick() {
-        if (currentVertex < props.vertices.length - 1) {
+        if (currentVertex < verticesOptions.length - 1) {
             setCurrentVertex(currentVertex + 1);
         }
     }
@@ -193,13 +208,13 @@ export default function SkeletonEdgeController(props) {
             <br />
             <Row >
                 <Col span={12} className='d-flex justify-content-center align-items-center'>
-                    <Tag className={styles.edgeTag}>{props.vertices[currentVertex].label}</Tag>
+                    <Tag className={styles.edgeTag}>{verticesOptions[currentVertex].label}</Tag>
                 </Col>
                 <Col span={12}>
-                    <Checkbox.Group 
-                        options={props.vertices.filter(v => v.value !== currentVertex)} 
+                    {/* <Checkbox.Group 
+                        options={verticesOptions.filter(v => v.value !== currentVertex)} 
                         value={checkedValues}
-                        onChange={onCheckBoxChange} />
+                        onChange={onCheckBoxChange} /> */}
                 </Col> 
             </Row>
             <br />

@@ -26,7 +26,7 @@ export default function SkeletonBtn(props) {
             setFrameAnnotation={setFrameAnnotation}
     */
     const [clicked, setClicked] = useState(false);
-    const [radioValue, setRadioValue] = useState(0);
+    const [radioValue, setRadioValue] = useState(2);
     const annotationIdRef = useRef();
     const landmarkRef = useRef(); //null: not read for drawing; 0: drawing the first landmark; ...
 
@@ -36,7 +36,7 @@ export default function SkeletonBtn(props) {
             annotationIdRef.current = null;
             landmarkRef.current = null;
         } else if (props.drawType.slice(0, 8) === 'skeleton') {
-            //every time drawType change, adds default radioValue(0) to current landmark annotation
+            //every time drawType change (new landmark), adds default radioValue(2) to current landmark annotation
             landmarkRef.current = props.drawType.split('_')[1];
             addRadioToAnnotation(radioValue);
         }
@@ -54,7 +54,7 @@ export default function SkeletonBtn(props) {
         if (Number.isInteger(props.frameNum)) {
             const id = Date.now().toString();
             annotationIdRef.current = id;
-            props.setDrawType('skeleton_0');
+            props.setDrawType('skeleton_0'); // drawType changed, useEffect will add default radio value
             props.addAnnotationObj({
                 id: id,
                 frameNum: props.frameNum,
@@ -88,9 +88,9 @@ export default function SkeletonBtn(props) {
 
             <Radio.Group className='ms-3' value={radioValue} onChange={onRadioChange}>
                 <Space direction="vertical">
-                    <Radio value={0}>clear</Radio>
-                    <Radio value={1}>occluded but labelled</Radio>
-                    <Radio value={2}>not labelled</Radio>
+                    <Radio value={0}>not labelled</Radio>
+                    <Radio value={1}>labeled but not visible</Radio>
+                    <Radio value={2}>labeled and visible</Radio>
                 </Space>
             </Radio.Group>
         </div>

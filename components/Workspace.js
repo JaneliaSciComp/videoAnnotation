@@ -16,7 +16,7 @@ import Design from './Design';
 
 export default function Workspace(props) {
     const [videoId, setVideoId] = useState();
-    const [frameUrl, setFrameUrl] = useState(); //'/fly.png'
+    const [frameUrl, setFrameUrl] = useState('/fly.png'); //'/fly.png'
     const [frameNum, setFrameNum] = useState();
     const prevFrameNum = useRef();
     const annotationRef = useRef({});
@@ -181,6 +181,41 @@ export default function Workspace(props) {
             <Row >
                 <Col xs={6}>
                     {btnGroups} 
+                    <BtnGroup 
+                        type='skeleton'
+                        data={{
+                            groupType: 'skeleton',
+                            btnType: 'skeleton',
+                            btnNum: 4,
+                            childData: [
+                                {index: 0, 
+                                    btnType: 'skeleton',
+                                    label: 'head',
+                                    color: '#1677FF'
+                                    },
+                                {index: 1, 
+                                    btnType: 'skeleton',
+                                    label: 'left wing',
+                                    color: '#F5222D'
+                                    },
+                                {index: 2, 
+                                    btnType: 'skeleton',
+                                    label: 'right wing',
+                                    color: '#52C41A'
+                                    },
+                                {index: 3, 
+                                    btnType: 'skeleton',
+                                    label: 'tail',
+                                    color: '#EB2F96'
+                                    },
+                            ]
+                        }}
+                        frameNum={frameNum}
+                        addAnnotationObj={addAnnotationObj}
+                        drawType={drawType}
+                        setDrawType={setDrawType}
+                        frameAnnotation={frameAnnotation}
+                    />
                     {/* <Row className='mx-1 my-1'>
                         <BtnGroup 
                             child='shapeBtn'

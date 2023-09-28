@@ -106,7 +106,7 @@ export default function Canvas(props) {
 
     useEffect(() => {
         // update image when url changes
-        if (props.imgUrl){
+        if (props.imgUrl) {
             imgRef.current.src = props.imgUrl;
         } else {
             imgRef.current.src = '';
@@ -181,7 +181,8 @@ export default function Canvas(props) {
     function imageLoadHandler(){
         //When new video is loaded
         //scale frame size to fit in canvas 
-        if (props.frameNum == 0) {
+        // if (props.frameNum === 0) {
+        if (!props.frameNum) { //including frameNum==0 (new video), frameNum==null (image instead of video)
             imageObjRef.current.width = imgRef.current.width;
             imageObjRef.current.height = imgRef.current.height;
             scaleImage(canvasObjRef.current, imageObjRef.current);
