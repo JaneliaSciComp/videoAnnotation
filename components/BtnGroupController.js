@@ -171,18 +171,22 @@ export default function BtnGroupController(props) {
         const childrenData = getData();
         let data = [];
         if (groupType && btnType) {
-            if (btnNum > prevBtnNumRef.current) {
-                const newData = createChildrenData(prevBtnNumRef.current, btnNum);
-                data = [...childrenData, ...newData];
-            } else if (btnNum < prevBtnNumRef.current) {
-                data = [...childrenData].slice(0, btnNum);
+            if (btnType !== prevBtnTypeRef.current) {
+                console.log(btnType, prevBtnTypeRef.current)
+                data = createChildrenData(0, btnNum);
             } else {
-                data = [...childrenData];
-                console.log('data', data);
-                if (btnType !== prevBtnTypeRef.current) {
-                    data = createChildrenData(0, btnNum);
-                } 
+                if (btnNum > prevBtnNumRef.current) {
+                    const newData = createChildrenData(prevBtnNumRef.current, btnNum);
+                    data = [...childrenData, ...newData];
+                } else if (btnNum < prevBtnNumRef.current) {
+                    data = [...childrenData].slice(0, btnNum);
+                } else {
+                    // data = [...childrenData];
+                    // console.log('data', data);
+                    
+                }
             }
+            
             props.setData({...props.data, [index]: data});
             prevBtnNumRef.current = btnNum;
             prevBtnTypeRef.current = btnType;
@@ -234,6 +238,7 @@ export default function BtnGroupController(props) {
     function renderChildren() {
         // console.log('renderChildren called');
         const childrenData = getData();
+        console.log(childrenData);
         let res = [];
         for (let i = 0; i < childrenData.length; i++) {
             res.push(

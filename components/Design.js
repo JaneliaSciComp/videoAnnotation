@@ -39,6 +39,7 @@ export default function Design(props) {
      */
     const [data, setData] = useState({});
     const [children, setChildren] = useState([]);
+    const [skeletonData, setSkeletonData] = useState({});
 
     useEffect(() => {
         // initialize a group when comp mount
@@ -132,7 +133,10 @@ export default function Design(props) {
             <br />
             <Space>
                 <SkeletonEdgeController 
-                    vertices={edgesOptions}/>
+                    vertices={edgesOptions}
+                    data={skeletonData}
+                    setData={setSkeletonData} 
+                    index={'1'} />
             </Space>
             <br />
             <Space className='my-3 d-flex justify-content-center' wrap>

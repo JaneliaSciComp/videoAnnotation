@@ -120,7 +120,7 @@ export default function BtnController(props) {
                 <Input className={styles.labelText}
                     // addonBefore="Label"
                     allowClear
-                    value={props.label ? props.label : null}
+                    defaultValue={props.label ? props.label : null}
                     // onPressEnter={onLabelEnter}
                     onChange={onLabelChange}
                     placeholder={props.labelPlaceHolder}
@@ -128,7 +128,7 @@ export default function BtnController(props) {
                     />
                 <ColorPicker className={styles.colorPicker}
                     // className={videoStyles.playFpsInput} 
-                    value={props.color ? props.color : null}
+                    defaultValue={props.color ? props.color : '#1677FF'}
                     onChange={onColorChange}
                     disabled = {props.disableColorPicker}
                     // size="small"
