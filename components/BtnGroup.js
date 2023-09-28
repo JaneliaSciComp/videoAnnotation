@@ -1,5 +1,6 @@
 import ShapeBtn from './ShapeBtn';
 import Category from './Category';
+import SkeletonBtn from './SkeletonBtn';
 import { useState, useEffect } from 'react';
 import {Row} from 'react-bootstrap';
 
@@ -13,16 +14,20 @@ export default function BtnGroup(props) {
             // labels={['fly','mouse']}. The label for each child btn
             // colors={['red', 'blue']}. The color for each child btn
             data: 
-            [
-                {index: 0, 
-                 groupType: 'shape',
-                 btnType: 'bbox',
-                 label: 'fly',
-                 color: '#FFFFFF'
-                },
-                {index: 1, ...},
-                ...
-            ]}
+            {
+                groupType: 'shape',
+                btnType: 'bbox',
+                btnNum: 2,
+                childData: [
+                    {index: 0, 
+                    btnType: 'bbox',
+                    label: 'fly',
+                    color: '#FFFFFF'
+                    },
+                    {index: 1, ...},
+                    ...
+                ]
+            }
             frameNum={frameNum}
             addAnnotationObj={addAnnotationObj}
             setActiveIdObj={setActiveIdObj}
@@ -34,17 +39,22 @@ export default function BtnGroup(props) {
 
     useEffect(() => {
         if (props.data) {
+            // console.log('btnGroup', props.data);
             const res = renderBtns();
             setBtns(res);
         }
     }, [props])
 
     function renderBtns() {
-        console.log('renderBtns called');
-        let btns = props.data.map((item, i)=>{
-            switch (item.groupType) {
-                case 'category':
-                    return <Category 
+        // console.log('renderBtns called');
+        const childData = props.data.childData;
+        // console.log(props.data);
+        // console.log(props.data.childData);
+        let btns;
+        switch (props.data.groupType) {
+            case 'category':
+                btns = childData.map((item, i)=>{
+                            return <Category 
                                 key={i}
                                 label={item.label}
                                 color={item.color}
@@ -52,8 +62,11 @@ export default function BtnGroup(props) {
                                 addAnnotationObj={props.addAnnotationObj}
                                 setActiveIdObj={props.setActiveIdObj}
                                 />
-                case 'shape':
-                    return <ShapeBtn
+                        });
+                break;
+            case 'shape':
+                btns = childData.map((item, i)=>{
+                            return <ShapeBtn
                                 key={i}
                                 type={item.btnType} 
                                 label={item.label}
@@ -63,18 +76,30 @@ export default function BtnGroup(props) {
                                 drawType={props.drawType}
                                 setDrawType={props.setDrawType}
                                 />
-            }
-        });
-
+                        });
+                break;
+            case 'skeleton':
+                btns = [<SkeletonBtn
+                            key={0}
+                            type='skeleton' 
+                            data={childData}
+                            frameNum={props.frameNum}
+                            addAnnotationObj={props.addAnnotationObj}
+                            drawType={props.drawType}
+                            setDrawType={props.setDrawType}
+                            />
+                        ]
+                break;
+        }
         
         return btns;
     }
 
     return (
         // <Fragment>
-        <Row className='my-1'>
+        <div className='my-1'>
             {btns? btns:null}
-        </Row>
+        </div>
         // </Fragment>
     )
 }

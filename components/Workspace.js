@@ -137,7 +137,7 @@ export default function Workspace(props) {
         const groupIndices = Object.keys(btnConfigData).sort((a, b) => Number(a)-Number(b));
         const groups = groupIndices.map((index, i) => {
                             const data = btnConfigData[index];
-                            console.log(index, data);
+                            // console.log('workspace renderBtnGroup:', index, data);
                             return <BtnGroup 
                                         key={i}
                                         data={data}
@@ -146,6 +146,8 @@ export default function Workspace(props) {
                                         setActiveIdObj={setActiveIdObj}
                                         drawType={drawType}
                                         setDrawType={setDrawType}
+                                        frameAnnotation={data.groupType==='skeleton' ? frameAnnotation : null}
+                                        
                                     />
                         })
         // console.log(btnGroupIds);
