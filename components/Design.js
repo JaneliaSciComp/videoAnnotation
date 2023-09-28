@@ -14,16 +14,19 @@ export default function Design(props) {
     /**
      * Produce btnGroup data: 
         {
-            {groupIndex1: [
-                {index: 0, 
-                 groupType: 'shape',
-                 btnType: 'bbox',
-                 label: 'fly',
-                 color: '#FFFFFF'
-                },
-                {index: 1, ...},
-                ...
-            ]}
+            {groupIndex1: {
+                groupType: 'shape',
+                btnType: 'bbox',
+                btnNum: 2,
+                childData: [
+                    {index: 0, 
+                    btnType: 'bbox',
+                    label: 'fly',
+                    color: '#FFFFFF'
+                    },
+                    {index: 1, ...},
+                    ...
+                ]}},
             {groupIndex2: ...},
             ...
         }
@@ -77,7 +80,7 @@ export default function Design(props) {
 
     function addGroup() {
         const index = Date.now().toString();
-        setData({...data, [index]: []});
+        setData({...data, [index]: {}});
     }
 
     function onAddBtnClick() {
