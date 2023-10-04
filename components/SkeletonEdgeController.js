@@ -4,28 +4,31 @@ import { Checkbox, Tag, ColorPicker, Button, Row, Col, Space } from 'antd';
 
 export default function SkeletonEdgeController(props) {
     /**
-        To configure a skeleton edge group.
-        Produce edge group data: 
-            {skeletonIndex: {
-                color: '#000000',
-                edges: [
-                    set(2, 5, ...), // can be empty set or undefined/null
-                    set(...), 
-                    ...
-                ]
-                
-            }} 
+        To configure edges for skeleton group.
+        Append edge data to skeleton btn group:
+            {groupIndex: {
+                groupType: 'skeleton',
+                ...,
+                edgeData: {
+                    color: '#000000',
+                    edges: [
+                        set(2, 5, ...), // can be empty set or undefined/null
+                        set(...), 
+                        ...
+                    ]}
+                } 
+            }
             
         Props: 
-            index: unique skeletonIndex. Required. to match the index of btn groups, to distinguish from other skeleton (if multiple skeletons). 
-            data: Required. The generated data, structure as above, will be append to it
+            index: unique skeletonIndex. Required. Used to identify btn groups to be appended to. 
+            data: Required. The data holder to append the edge data, e.g. the data used by Design component
             setData: Required. The setter of data. Use as [data, setData]=useState()
             vertices: 
                 [ 'head', 'right wing', 'left wing', 'tail' ]
             color: '#1677FF'. Optional.
             disableColorPicker: boolean. False by default, true when specified. Whether to disable color picker.
 
-            onColorChange: Callback when colorPicker changes. Takes one argument: target {index: int, index property of this object, value: str, the value of this color picker}
+            onColorChange: Callback when colorPicker changes. Will be executed after the internal funtions seting the color state vlaue. Takes one argument: target {index: int, index property of this object, value: str, the value of this color picker}
             onDoneBtnClick: When the Done btn is clicked, it will append the edge data to the data property by calling setData. 
                 Developer can also add extra function by defining this api. It will be called after the appending function.
                 Takes the edge data as the argument.
@@ -60,11 +63,11 @@ export default function SkeletonEdgeController(props) {
             color: dynamically change when user pick new value
     */
     
-    const [verticesOptions, setVerticesOptions] = useState([]);
+    const [verticesOptions, setVerticesOptions] = useState();
     const [currentVertex, setCurrentVertex] = useState(0);
     const [checkedValues, setCheckedValues] = useState();
     const edgeDataRef = useRef([]);
-    const colorRef = useRef(); 
+    const [color, setColor] = useState();
     // const prevVertex = useRef();
     // const [error, setError] = useState();
     
@@ -72,6 +75,7 @@ export default function SkeletonEdgeController(props) {
     console.log('edgeGroupController render');
 
     useEffect(()=>{
+        // console.log('[] useEffect called');
         if (!props.data || !props.setData) {
             throw Error('Property [data] and [setData] are required, cannot be null or undefined');
         }
@@ -83,15 +87,15 @@ export default function SkeletonEdgeController(props) {
 
     useEffect(() => {
         // generate input data for radioGroup when props.vertices changes
-        console.log(props.vertices);
+        // console.log('props.vertices useEffect called');
         if (props.vertices) {
             const options = props.vertices.map((item, i) => {
                 return {
-                        label: item,
+                        label: `${i+1}-${item}`,
                         value: i
                     }
             })
-            console.log(options);
+            // console.log(options);
             setVerticesOptions(options);
         }
         
@@ -99,6 +103,17 @@ export default function SkeletonEdgeController(props) {
     )
 
     useEffect(() => {
+        //initialize color state based on props
+        if (props.color) {
+            setColor(props.color);
+        } else {
+            setColor('#1677FF');
+        }
+      }, [props.color]
+    )
+
+    useEffect(() => {
+        // update ui when goes to another vertex
         if (edgeDataRef.current[currentVertex]) {
             setCheckedValues(Array.from(edgeDataRef.current[currentVertex]));
         } else {
@@ -109,7 +124,7 @@ export default function SkeletonEdgeController(props) {
     )
 
     function onCheckBoxChange(newCheckedValues) {
-        console.log('checked = ', newCheckedValues);
+        // console.log('checked = ', newCheckedValues);
         setCheckedValues(newCheckedValues);
         const existingEdges = edgeDataRef.current[currentVertex] ? edgeDataRef.current[currentVertex] : new Set();
         let neighbor, neighborEdges;
@@ -144,7 +159,9 @@ export default function SkeletonEdgeController(props) {
     }
 
     function onColorChange(value) {
-        colorRef.current = value.metaColor.originalInput;
+        if (value) {
+            setColor(value.metaColor.originalInput);
+        }
 
         const target = {
             index: props.index,
@@ -157,17 +174,24 @@ export default function SkeletonEdgeController(props) {
     }
 
     function onDoneBtnClick() {
-        const data = {
-            [props.index]: {
-                color: colorRef.current,
+        const btnGroupData = {...props.data[props.index]};
+        btnGroupData.edgeData = {
+                color: color,
                 edges: [...edgeDataRef.current],
             }
-        }
-        console.log(data);
-        props.setData({...props.data, data});
         
+        console.log(btnGroupData);
+        props.setData({...props.data, [props.index]: btnGroupData});
+        
+        const target = {
+            index: props.index,
+            value: {
+                color: color,
+                edges: [...edgeDataRef.current],
+            },
+        };
         if (props.onDoneBtnClick) {
-            props.onDoneBtnClick({...data});
+            props.onDoneBtnClick(target);
         }
     }
 
@@ -178,7 +202,7 @@ export default function SkeletonEdgeController(props) {
                 <span className='mx-2'>Add Edge</span> 
                 <ColorPicker 
                     onChange={onColorChange}
-                    defaultValue={props.color ? props.color : '#1677FF'}
+                    value={color}
                     disabled = {props.disableColorPicker}
                     size="small"
                     presets={[
@@ -206,17 +230,21 @@ export default function SkeletonEdgeController(props) {
                 <Button onClick={onNextBtnClick} size='small' className='mx-2'>Next</Button>
             </Row>
             <br />
-            <Row >
-                <Col span={12} className='d-flex justify-content-center align-items-center'>
-                    <Tag className={styles.edgeTag}>{verticesOptions[currentVertex].label}</Tag>
-                </Col>
-                <Col span={12}>
-                    <Checkbox.Group 
-                        options={verticesOptions.filter(v => v.value !== currentVertex)} 
-                        value={checkedValues}
-                        onChange={onCheckBoxChange} />
-                </Col> 
-            </Row>
+            {verticesOptions ? // verticesOptions will be calculated (useEffect) after initial render, so avoid rendering before it's ready
+                <Row >
+                    <Col span={12} className='d-flex justify-content-center align-items-center'>
+                        <Tag className={styles.edgeTag}>{verticesOptions[currentVertex].label}</Tag>
+                    </Col>
+                    <Col span={12}>
+                        <Checkbox.Group 
+                            options={verticesOptions.filter(v => v.value !== currentVertex)} 
+                            value={checkedValues}
+                            onChange={onCheckBoxChange} />
+                    </Col> 
+                </Row>
+                : null
+            }
+            
             <br />
             <Row className='my-2 d-flex justify-content-center'>
                 <Button type="primary" onClick={onDoneBtnClick} size='small'>Done</Button>

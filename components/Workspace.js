@@ -30,7 +30,36 @@ export default function Workspace(props) {
     // const [polygonIdList, setPolygonIdList] = useState({});
     // const [drawPolygon, setDrawPolygon] = useState(false);
     const [drawType, setDrawType] = useState();
-    const [btnConfigData, setBtnConfigData] = useState({})
+    const [skeletonLandmark, setSkeletonLandmark] = useState();
+    const [btnConfigData, setBtnConfigData] = useState({
+        '123456': {
+            groupType: 'skeleton',
+            btnType: 'skeleton',
+            btnNum: 4,
+            childData: [
+                {index: 0, 
+                    btnType: 'skeleton',
+                    label: 'head',
+                    color: '#1677FF'
+                    },
+                {index: 1, 
+                    btnType: 'skeleton',
+                    label: 'left wing',
+                    color: '#F5222D'
+                    },
+                {index: 2, 
+                    btnType: 'skeleton',
+                    label: 'right wing',
+                    color: '#52C41A'
+                    },
+                {index: 3, 
+                    btnType: 'skeleton',
+                    label: 'tail',
+                    color: '#EB2F96'
+                    },
+            ]
+        }
+    })
     const [btnGroups, setBtnGroups] = useState()
 
     
@@ -42,7 +71,7 @@ export default function Workspace(props) {
         saveAnnotationAndUpdateStates();
         //update totoal anno data for current video. will be replace by retrieving from DB later on.
         annotationRef.current = {};
-        prevFrameNum.current=null; 
+        prevFrameNum.current = null; 
         setFrameNum(null); // It's possible last vdieo is showing frame 0, then when switch video, frameNum won't change, then the effect below won't be called. So set frameNum to null, then when show frame 0 for the current video, the effect below will be called
         // setFrameAnnotation({});
         // console.log('videoid');
@@ -136,16 +165,20 @@ export default function Workspace(props) {
     function renderBtnGroup() {
         const groupIndices = Object.keys(btnConfigData).sort((a, b) => Number(a)-Number(b));
         const groups = groupIndices.map((index, i) => {
-                            const data = btnConfigData[index];
+                            const data = {...btnConfigData[index]};
+                            data.groupIndex = index;
                             // console.log('workspace renderBtnGroup:', index, data);
                             return <BtnGroup 
                                         key={i}
                                         data={data}
                                         frameNum={frameNum}
+                                        frameUrl={frameUrl}
                                         addAnnotationObj={addAnnotationObj}
                                         setActiveIdObj={setActiveIdObj}
                                         drawType={drawType}
                                         setDrawType={setDrawType}
+                                        skeletonLandmark={skeletonLandmark}
+                                        setSkeletonLandmark={setSkeletonLandmark}
                                         frameAnnotation={data.groupType==='skeleton' ? frameAnnotation : null}
                                         
                                     />
@@ -181,9 +214,10 @@ export default function Workspace(props) {
             <Row >
                 <Col xs={6}>
                     {btnGroups} 
-                    <BtnGroup 
+                    {/* <BtnGroup 
                         type='skeleton'
                         data={{
+                            groupIndex: '123456',
                             groupType: 'skeleton',
                             btnType: 'skeleton',
                             btnNum: 4,
@@ -211,11 +245,12 @@ export default function Workspace(props) {
                             ]
                         }}
                         frameNum={frameNum}
+                        frameUrl={frameUrl}
                         addAnnotationObj={addAnnotationObj}
                         drawType={drawType}
                         setDrawType={setDrawType}
                         frameAnnotation={frameAnnotation}
-                    />
+                    /> */}
                     {/* <Row className='mx-1 my-1'>
                         <BtnGroup 
                             child='shapeBtn'

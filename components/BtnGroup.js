@@ -14,7 +14,8 @@ export default function BtnGroup(props) {
             // labels={['fly','mouse']}. The label for each child btn
             // colors={['red', 'blue']}. The color for each child btn
             data: 
-            {
+            {   
+                groupIndex: '...',
                 groupType: 'shape',
                 btnType: 'bbox',
                 btnNum: 2,
@@ -59,6 +60,7 @@ export default function BtnGroup(props) {
                                 label={item.label}
                                 color={item.color}
                                 frameNum={props.frameNum}
+                                frameUrl={props.frameUrl}
                                 addAnnotationObj={props.addAnnotationObj}
                                 setActiveIdObj={props.setActiveIdObj}
                                 />
@@ -72,6 +74,7 @@ export default function BtnGroup(props) {
                                 label={item.label}
                                 color={item.color}
                                 frameNum={props.frameNum}
+                                frameUrl={props.frameUrl}
                                 addAnnotationObj={props.addAnnotationObj}
                                 drawType={props.drawType}
                                 setDrawType={props.setDrawType}
@@ -81,12 +84,16 @@ export default function BtnGroup(props) {
             case 'skeleton':
                 btns = [<SkeletonBtn
                             key={0}
-                            type='skeleton' 
+                            type='skeleton'
+                            groupIndex={props.data.groupIndex}
                             data={childData}
                             frameNum={props.frameNum}
+                            frameUrl={props.frameUrl}
                             addAnnotationObj={props.addAnnotationObj}
                             drawType={props.drawType}
                             setDrawType={props.setDrawType}
+                            skeletonLandmark={props.skeletonLandmark}
+                            setSkeletonLandmark={props.setSkeletonLandmark}
                             frameAnnotation={props.frameAnnotation}
                             />
                         ]

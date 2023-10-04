@@ -25,7 +25,7 @@ export default function ShapeBtn(props) {
 
     
     function clickHandler() {
-        if (Number.isInteger(props.frameNum)) {
+        if (Number.isInteger(props.frameNum) || props.frameUrl) {
             const id = Date.now().toString();
             props.setDrawType(props.type);
             props.addAnnotationObj({

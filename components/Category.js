@@ -13,7 +13,7 @@ export default function Category(props) {
     */
 
     function clickHandler() {
-        if (Number.isInteger(props.frameNum)) {
+        if (Number.isInteger(props.frameNum) || props.frameUrl) {
             const id = Date.now().toString();
             const idObj = {
                 id: id,
