@@ -9,7 +9,7 @@ const CIRCLE_RADIUS = 3;
 const STROKE_WIDTH = 2;
 const WHEEL_SENSITIVITY = 10;
 const CLICK_TOLERANCE = 5;
-const ANNOTATION_TYPES = new Set(['keyPoint', 'bbox', 'polygon']);
+const ANNOTATION_TYPES = new Set(['keyPoint', 'bbox', 'polygon', 'skeleton']);
 
 
 export default function Canvas(props) {
@@ -36,6 +36,8 @@ export default function Canvas(props) {
                 polygonPoints: [],
                 polygonLines: [],
                 bboxLines: [],
+                skeletonPoints: [],
+                skeletonLines: {}, //{'pointIndex1-pointIndex2': Line(), ...}, index1 < index2
                 hoverCursor: 'pointer',
             });
             
@@ -349,6 +351,9 @@ export default function Canvas(props) {
                 // canvas.isEditingObj = true;
                 // setActiveObjData();
                 addActiveIdObj(activeObj);
+            } else if (activeObj.type === 'skeletonPoint') {
+                //TODO: add obj to anno display
+
             }
         }
 
@@ -375,13 +380,20 @@ export default function Canvas(props) {
                 finishEditPolygon();
             } else {    
                 console.log('selected');
-                canvas.isDraggingPoint = true;
+                canvas.isDraggingPolygonPoint = true;
             }
         }
 
-        // if (!canvas.getActiveObject()) {
-        //     props.setActiveId(null);
-        // }
+        // this if must be above next if, otherwise dragSkeletonPoint will be called right after drawing the last landmark and cause error
+        if (canvas.getActiveObject() && canvas.getActiveObject().type==='skeletonPoint' && canvas.drawType !== 'skeleton') {
+            canvas.isDraggingSkeletonPoint = true;
+        }
+
+        if (props.drawType === 'skeleton') {
+            drawSkeleton();
+        }
+
+        
     }
 
     
@@ -391,7 +403,7 @@ export default function Canvas(props) {
         if (canvas.isDragging) {
             dragCanvas(e);
         }
-        if (canvas.isDraggingPoint) {
+        if (canvas.isDraggingPolygonPoint) {
             dragPolygonPoint();
         }
         if (props.drawType==='bbox' && canvas.bboxStartPosition) {
@@ -400,6 +412,9 @@ export default function Canvas(props) {
         if (canvas.activeObj && canvas.isEditingObj) {
             setActiveObjData();
             // props.setActiveIdObj(props.rectIdList[canvas.activeObj.id]);
+        }
+        if (canvas.isDraggingSkeletonPoint) {
+            dragSkeletonPoint();
         }
     }
 
@@ -439,7 +454,8 @@ export default function Canvas(props) {
         canvas.setViewportTransform(canvas.viewportTransform);
         canvas.isDragging = false;
         canvas.selection = true;
-        canvas.isDraggingPoint = false;
+        canvas.isDraggingPolygonPoint = false;
+        canvas.isDraggingSkeletonPoint = false;
         canvas.isEditingObj = false;
 
         // finish drawing bbox
@@ -455,7 +471,8 @@ export default function Canvas(props) {
     function deleteKeyHandler(e) {
         if ((e.key === 'Backspace' || e.key === 'Delete') 
         && canvasObjRef.current.getActiveObject()
-        && canvasObjRef.current.getActiveObject().type !== 'polygonPoint') {
+        && canvasObjRef.current.getActiveObject().type !== 'polygonPoint'
+        && canvasObjRef.current.getActiveObject().type !== 'skeletonPoint') {
             removeObj();
         }
         // console.log(e.key); // Backspace
@@ -499,7 +516,7 @@ export default function Canvas(props) {
         const clickPoint = canvas.getPointer();
         //console.log(clickPoint);
        
-        if (canvas.polygonPoints.length==0 && canvas.polygonLines.length==0) {
+        if (canvas.polygonPoints.length===0 && canvas.polygonLines.length===0) {
             const point = createPoint(clickPoint, idObjToDraw, 0);
             canvas.add(point).setActiveObject(point);
             canvas.polygonPoints.push(point);
@@ -540,6 +557,70 @@ export default function Canvas(props) {
                 canvas.polygonPoints.push(point);
                 canvas.polygonLines.push(line);
             }
+        }
+    }
+
+
+    function drawSkeleton() {
+        const canvas = canvasObjRef.current;
+        canvas.selection = false;
+        
+        const annoIdToDraw = getIdToDraw();
+        const annoObjToDraw = {...props.frameAnnotation[annoIdToDraw]}; //{annoId: {id: annoId, groupIndex: , frameNum: , type: 'skeleton', data: [[null, null, 2], ...}}
+        const landmarkToDraw = props.btnConfigData[annoObjToDraw.groupIndex].childData[props.skeletonLandmark]; //{index: 0, btnType: 'skeleton',label: 'head',color: '#1677FF'}
+        const landmarkInfo = {
+            id: annoIdToDraw,
+            color: landmarkToDraw.color,
+            type: landmarkToDraw.btnType,
+        }
+        // console.log('landmark', landmarkInfo);
+        const landmarkTotalNum = props.btnConfigData[annoObjToDraw.groupIndex].childData.length;
+        const edgesInfo = props.btnConfigData[annoObjToDraw.groupIndex].edgeData; // {color: '', edges: [set(), ...]}
+        
+        const clickPoint = canvas.getPointer();
+        //console.log(clickPoint);
+        //create landmark
+        const landmark = createPoint(clickPoint, landmarkInfo, props.skeletonLandmark);
+        canvas.add(landmark).setActiveObject(landmark);
+        
+        //create edges
+        const neighbors = edgesInfo.edges[props.skeletonLandmark];
+        const edgeColor = edgesInfo.color;
+        const edgeInfo = {
+            id: annoIdToDraw,
+            type: landmarkToDraw.btnType,
+            color: edgeColor,
+        }
+        // console.log('edge',edgeInfo);
+        canvas.skeletonPoints.forEach(p => {
+            if (neighbors.has(p.index)) {
+                const line = createLine(p.getCenterPoint(), landmark.getCenterPoint(), edgeInfo);
+                canvas.add(line);
+                canvas.bringToFront(landmark);
+                canvas.bringToFront(p);
+                canvas.skeletonLines[`${p.index}-${landmark.index}`] = line;
+            }
+        })
+
+        canvas.skeletonPoints.push(landmark); // must be after creating edges
+
+
+        if (props.skeletonLandmark < landmarkTotalNum - 1) { // if not done with drawing
+            props.setSkeletonLandmark(props.skeletonLandmark + 1);
+        } else { // if done
+            //add the skeleton landmarks and edges to ref
+            fabricObjListRef.current[annoIdToDraw] = {
+                landmarks: canvas.skeletonPoints,
+                edges: canvas.skeletonLines,
+            }
+            canvas.skeletonPoints = [];
+            canvas.skeletonLines = {};
+            
+            //TODO: add data to annotation
+
+            props.setSkeletonLandmark(null);
+            props.setDrawType(null);
+            canvas.selection = true;
         }
     }
 
@@ -653,17 +734,17 @@ export default function Canvas(props) {
     }
 
     
-    function createPoint(clickPoint, idObj, index) {
+    function createPoint(clickPoint, annoObj, index) {
         const point = new fabric.Circle({
-            left: clickPoint.x,  
-            top: clickPoint.y,  
+            left: clickPoint.x,  /////
+            top: clickPoint.y,  /////
             radius: CIRCLE_RADIUS,
             originX: 'center',
             originY: 'center',
             strokeWidth: 1,
             strokeUniform: true,
-            stroke: idObj.color,
-            fill: idObj.type==='keyPoint'?idObj.color:'white', //'white',//idObj.color,
+            stroke: annoObj.color,
+            fill: annoObj.type==='keyPoint'?annoObj.color:'white', //'white',//idObj.color,
             lockScalingX: true,
             lockScalingY: true,
             lockRotation: true,
@@ -671,16 +752,16 @@ export default function Canvas(props) {
             lockSkewingX: true,
             lockSkewingY: true,
             //centeredScaling: true,
-            type: idObj.type + 'Point', 
-            owner: idObj.id,
-            index: index,
+            type: annoObj.type + 'Point', 
+            owner: annoObj.id,
+            index: index, // point index for polygon or skeleton
         })
         // console.log('point', point);
         point.on('mouseover', (opt)=>{
             opt.target.set({
                 // radius: 10,
                 strokeWidth: 2,
-                fill: idObj.type==='keyPoint'?false:'white',
+                fill: annoObj.type==='keyPoint'?false:'white',
                 scaleX: 2,
                 scaleY: 2,
                 //centeredScaling: true,
@@ -691,7 +772,7 @@ export default function Canvas(props) {
             opt.target.set({
                 // radius: CIRCLE_RADIUS,
                 strokeWidth: 1,
-                fill: idObj.type==='keyPoint'?idObj.color:'white',
+                fill: annoObj.type==='keyPoint'?annoObj.color:'white',
                 scaleX: 1,
                 scaleY: 1,
                 //centeredScaling: true,
@@ -786,6 +867,37 @@ export default function Canvas(props) {
         canvas.add(newPreLine, newPostLine);
         canvas.bringToFront(polygon.pointObjects[prePointIndex]);
         canvas.bringToFront(polygon.pointObjects[postPointIndex]);
+    }
+
+    function dragSkeletonPoint() {
+        const canvas = canvasObjRef.current;
+        // console.log('dragging');
+        const point = canvas.getActiveObject();
+        const landmarks = fabricObjListRef.current[point.owner].landmarks;
+        const edgesInfo = props.btnConfigData[props.frameAnnotation[point.owner].groupIndex].edgeData; // {color: '', edges: [set(), ...]}
+        const edgeInfo = {
+            id: point.owner,
+            type: 'skeleton',
+            color: edgesInfo.color,
+        }
+        // console.log(point, landmarks, edgesInfo);
+        const neighbors = Array.from(edgesInfo.edges[point.index]);
+        neighbors.forEach(n => {
+                const edge = createLine(landmarks[n].getCenterPoint(), point.getCenterPoint(), edgeInfo);
+                let name;
+                if (n < point.index) {
+                    name = `${n}-${point.index}`;
+                } else {
+                    name = `${point.index}-${n}`;
+                }
+                const oldEdge = fabricObjListRef.current[point.owner].edges[name];
+                canvas.remove(oldEdge);
+                canvas.add(edge);
+                canvas.bringToFront(point);
+                canvas.bringToFront(landmarks[n]);
+                fabricObjListRef.current[point.owner].edges[name] = edge;
+            }
+        )
     }
 
 

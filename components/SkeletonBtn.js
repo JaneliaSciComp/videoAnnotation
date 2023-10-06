@@ -105,6 +105,8 @@ export default function SkeletonBtn(props) {
         addRadioToAnnotation(e.target.value);
     };
 
+    console.log(props.skeletonLandmark,props.skeletonLandmark?props.skeletonLandmark:0, props.skeletonLandmark?props.skeletonLandmark:0 +1);
+
 
     return (
         <div className='d-flex align-items-center'>
@@ -113,7 +115,7 @@ export default function SkeletonBtn(props) {
                 background: clicked?props.data[props.skeletonLandmark?props.skeletonLandmark:0].color:'white', 
                 border:'2px solid '+props.data[props.skeletonLandmark?props.skeletonLandmark:0].color}} 
                 onClick={clickHandler}>
-            {`${props.skeletonLandmark?props.skeletonLandmark:0+1}-${props.data[props.skeletonLandmark?props.skeletonLandmark:0].label}`}
+            {`${(props.skeletonLandmark?props.skeletonLandmark:0) +1}-${props.data[props.skeletonLandmark?props.skeletonLandmark:0].label}`}
             </Button>
 
             <Radio.Group className='ms-3' value={radioValue} onChange={onRadioChange}>

@@ -14,11 +14,11 @@ export default function Design(props) {
     /**
      * Produce btnGroup data: 
         {
-            {groupIndex1: {
+            {groupIndex1: { //The first three are used by <BtnGroup> not <Canvas>
                 groupType: 'shape',
                 btnType: 'bbox',
                 btnNum: 2,
-                childData: [
+                childData: [ // used by both <BtnGroup> and <Canvas>
                     {index: 0, 
                     btnType: 'bbox',
                     label: 'fly',
@@ -26,7 +26,12 @@ export default function Design(props) {
                     },
                     {index: 1, ...},
                     ...
-                ]}},
+                ],
+                (edgeData: [  //only for skeleton group
+                    Set(),
+                    ...
+                ])
+            }},
             {groupIndex2: ...},
             ...
         }

@@ -9,7 +9,7 @@ export default function SkeletonEdgeController(props) {
             {groupIndex: {
                 groupType: 'skeleton',
                 ...,
-                edgeData: {
+                edgeData: {  # extra entry for skeleton, other types of annotation do not have
                     color: '#000000',
                     edges: [
                         set(2, 5, ...), // can be empty set or undefined/null
