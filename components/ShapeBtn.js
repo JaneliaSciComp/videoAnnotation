@@ -1,6 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {Button} from 'react-bootstrap';
 import styles from '../styles/Button.module.css';
+import { useStates, useStateSetters } from './StatesContext';
 
 
 export default function ShapeBtn(props) {
@@ -13,15 +14,30 @@ export default function ShapeBtn(props) {
             drawType={drawType}
             setDrawType={setDrawType} 
             frameNum={frameNum}
+            frameUrl={frameUrl}
             addAnnotationObj={addAnnotationObj}
     */
     const [clicked, setClicked] = useState(false);
+    
+    const drawType = useStates().drawType;
+    const frameNum = useStates().frameNum;
+    const frameUrl = useStates().frameUrl;
+    const setDrawType = useStateSetters().setDrawType;
+    const addAnnotationObj = useStateSetters().addAnnotationObj;
+    
+    console.log(drawType, frameNum,frameUrl,setDrawType, addAnnotationObj);
+
+    // useEffect(() => {
+    //     if (!props.drawType) {
+    //         setClicked(false);
+    //     }
+    // }, [props.drawType])
 
     useEffect(() => {
-        if (!props.drawType) {
+        if (!drawType) {
             setClicked(false);
         }
-    }, [props.drawType])
+    }, [drawType])
 
     
     function clickHandler() {
@@ -31,6 +47,23 @@ export default function ShapeBtn(props) {
             props.addAnnotationObj({
                 id: id,
                 frameNum: props.frameNum,
+                label: props.label,
+                color: props.color,
+                type: props.type,         
+            });
+            // console.log('shape called', props);
+            setClicked(true);
+        }
+       
+    }
+
+    function clickHandler() {
+        if (Number.isInteger(frameNum) || frameUrl) {
+            const id = Date.now().toString();
+            setDrawType(props.type);
+            addAnnotationObj({
+                id: id,
+                frameNum: frameNum,
                 label: props.label,
                 color: props.color,
                 type: props.type,         

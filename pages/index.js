@@ -1,6 +1,7 @@
 import Head from 'next/head';
 import React, {useState, useEffect, useRef} from 'react';
 import Workspace from '../components/Workspace.js';
+import ShapeBtn from '../components/ShapeBtn.js';
 import styles from '../styles/Home.module.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 // import {fabric} from 'fabric';
@@ -41,7 +42,10 @@ export default function Home() {
       <main className={styles.workspaceContainer}>
         {/* <img ref={imgRef} width="300" height="200"  alt="No Image" />
         <canvas id='output' ref={canvasRef} width="300" height="200"></canvas> */}
-        <Workspace />
+        {/* <Workspace /> */}
+        <Workspace >
+          <ShapeBtn type='bbox' label='mouse' color='red' />
+        </Workspace>
       </main>
 
       <footer className={styles.footer}>

@@ -4,14 +4,15 @@ import Canvas from './Canvas';
 // import BoundingBox from './BoundingBox';
 // import Polygon from './Polygon';
 // import KeyPoint from './Keypoint';
-import ShapeBtn from './ShapeBtn';
-import Category from './Category';
+// import ShapeBtn from './ShapeBtn';
+// import Category from './Category';
 import AnnotationDisplay from './AnnotationDisplay';
 import VideoUploader from './VideoUploader';
 import {Row, Col} from 'react-bootstrap';
 import BtnGroup from './BtnGroup';
 // import BtnGroupController from './BtnGroupController';
 import Design from './Design';
+import { StatesProvider } from './StatesContext';
 
 
 export default function Workspace(props) {
@@ -82,9 +83,30 @@ export default function Workspace(props) {
     )
     const [btnGroups, setBtnGroups] = useState()
 
-    
 
     console.log('workspace render');
+
+    const states = {
+        videoId: videoId,
+        frameUrl: frameUrl,
+        frameNum: frameNum,
+        frameAnnotation: frameAnnotation,
+        activeIdObj: activeIdObj,
+        drawType: drawType,
+        skeletonLandmark: skeletonLandmark,
+        btnConfigData: btnConfigData,
+    }
+
+    const stateSetters = {
+        setVideoId: setVideoId,
+        setFrameUrl: setFrameUrl,
+        setFrameNum: setFrameNum,
+        setFrameAnnotation: setFrameAnnotation,
+        setActiveIdObj: setActiveIdObj,
+        setDrawType: setDrawType,
+        setSkeletonLandmark: setSkeletonLandmark,
+        setBtnConfigData: setBtnConfigData,
+    }
 
     useEffect(() => {
         //save frame anno data for last video
@@ -219,6 +241,12 @@ export default function Workspace(props) {
 
     return (
         <div className={styles.container}>
+            <main className={styles.main}>
+                <StatesProvider states={states} stateSetters={stateSetters}>
+                    {props.children}
+                </StatesProvider>
+            </main>
+
           <main className={styles.main}>
             <Row className='mx-1 my-1'>
                 <Design 
