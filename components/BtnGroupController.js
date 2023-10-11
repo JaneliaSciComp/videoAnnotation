@@ -57,8 +57,8 @@ export default function BtnGroupController(props) {
                         btnNum: btnNum
                     };
             onDelete: Callback when delete btn clicked. Takes one argument: target {index: int}
-            skeletonData: to pass to child SkeletonEdgeController to hold generated edge data if user choose 'skeleton'
-            setSkeletonData: skeletonData setter. To pass to child SkeletonEdgeController
+            // skeletonData: to pass to child SkeletonEdgeController to hold generated edge data if user choose 'skeleton'
+            // setSkeletonData: skeletonData setter. To pass to child SkeletonEdgeController
     */
         
     

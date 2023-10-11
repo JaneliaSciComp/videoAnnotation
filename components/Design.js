@@ -4,6 +4,7 @@ import BtnGroupController from './BtnGroupController';
 import { Button, Space } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import SkeletonEdgeController from './SkeletonEdgeController';
+import { useStateSetters, useStates } from './StatesContext';
 
 
 
@@ -45,31 +46,61 @@ export default function Design(props) {
                 Developer can also add extra function by defining this api. It will be called after the appending function.
                 Takes the data as the argument.
      */
-    const [data, setData] = useState({}); //To prevent too many rerenders of parent comp
+    // const [data, setData] = useState({}); //To prevent too many rerenders of parent comp
     const [children, setChildren] = useState([]);
-    const [skeletonData, setSkeletonData] = useState({});
+    // const [skeletonData, setSkeletonData] = useState({});
 
+    const btnConfigData = useStates().btnConfigData;
+    const setBtnConfigData = useStateSetters().setBtnConfigData;
+
+    // useEffect(() => {
+    //     // initialize a group when comp mount
+    //     if (Object.keys(data).length===0) {
+    //         addGroup();
+    //     }
+    //   }, []
+    // )
     useEffect(() => {
         // initialize a group when comp mount
-        if (Object.keys(data).length===0) {
+        if (Object.keys(btnConfigData).length===0) {
             addGroup();
         }
       }, []
     )
     
+    // useEffect(() => {
+    //     renderChildren();
+    //   }, [data]
+    // )
     useEffect(() => {
         renderChildren();
-      }, [data]
+      }, [btnConfigData]
     )
 
     function renderChildren() {
         const indices = Object.keys(data);
         const res = indices.map(index => 
+                // <BtnGroupController
+                //     key={index}
+                //     index={index}
+                //     data={data}
+                //     setData={setData}
+                //     groupTypePlaceHolder='Group Type'
+                //     btnTypePlaceHolder='Btn type'
+                //     enableDelete
+                //     onDelete={onDelete}
+                //     // onGroupTypeChange={onGroupTypeChange}
+                //     // onBtnTypeChange={onBtnTypeChange}
+                //     // onBtnNumChange={onBtnNumChange}
+                //     // onDownBtnClick={onDownBtnClick}
+                //     // skeletonData={skeletonData}
+                //     // setSkeletonData={setSkeletonData}
+                //     />
                 <BtnGroupController
                     key={index}
                     index={index}
-                    data={data}
-                    setData={setData}
+                    // data={data}
+                    // setData={setData}
                     groupTypePlaceHolder='Group Type'
                     btnTypePlaceHolder='Btn type'
                     enableDelete
@@ -78,16 +109,20 @@ export default function Design(props) {
                     // onBtnTypeChange={onBtnTypeChange}
                     // onBtnNumChange={onBtnNumChange}
                     // onDownBtnClick={onDownBtnClick}
-                    skeletonData={skeletonData}
-                    setSkeletonData={setSkeletonData}
+                    // skeletonData={skeletonData}
+                    // setSkeletonData={setSkeletonData}
                     />
             ); 
         setChildren(res);
     }
 
+    // function addGroup() {
+    //     const index = Date.now().toString();
+    //     setData({...data, [index]: {}});
+    // }
     function addGroup() {
         const index = Date.now().toString();
-        setData({...data, [index]: {}});
+        setBtnConfigData({...btnConfigData, [index]: {}});
     }
 
     function onAddBtnClick() {
@@ -99,11 +134,8 @@ export default function Design(props) {
     }
 
     function onCreateBtnClick() {
-        console.log(data);
-        if (!props.data || !props.setData) {
-            throw Error('Property Data and setData are required');
-        }
-        props.setData({...props.data, ...data});
+        console.log(btnConfigData);
+        setBtnConfigData({...btnConfigData, ...data});
         
         if (props.onCreateBtnClick) {
             props.onCreateBtnClick({...data});
