@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
-import { Descriptions, Empty } from 'antd';
+import { Descriptions } from 'antd';
+import { useStates } from './StatesContext';
 
 export default function AnnotationDisplay(props) {
     const emtpyInfo = [
@@ -21,22 +22,24 @@ export default function AnnotationDisplay(props) {
     ];
     const [info, setInfo] = useState(emtpyInfo);
 
+    const annoObj = useStates().activeAnnoObj;
+
     useEffect(() => {
         // console.log(props.idObj);
-        if (props.idObj) {
+        if (annoObj) {
             const tempInfo = [];
             let i = 0;
-            Object.keys(props.idObj).forEach((key) => {
+            Object.keys(annoObj).forEach((key) => {
                 const item = {};
                 switch (key) {
                     case 'label' :
-                        item.children = props.idObj[key];
+                        item.children = annoObj[key];
                         break;
                     case 'type':
-                        item.children = props.idObj[key];
+                        item.children = annoObj[key];
                         break;
                     case 'data':
-                        item.children = JSON.stringify(props.idObj[key]);
+                        item.children = JSON.stringify(annoObj[key]);
                         break;
                 }
                 if (Object.keys(item).length>0) {
@@ -51,7 +54,7 @@ export default function AnnotationDisplay(props) {
             setInfo(emtpyInfo);
         }
         
-    }, [props])
+    }, [annoObj])
     
 
     return (

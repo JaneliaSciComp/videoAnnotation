@@ -1,5 +1,6 @@
 import {Button} from 'react-bootstrap';
 import styles from '../styles/Button.module.css';
+import { useStates, useStateSetters } from './StatesContext';
 
 export default function Category(props) {
     /*
@@ -7,23 +8,31 @@ export default function Category(props) {
         Props: 
             label='chase'
             color='black'
-            frameNum={frameNum}
-            addAnnotationObj={addAnnotationObj}
-            setActiveIdObj={setActiveIdObj}
+            // frameNum={frameNum}
+            // addAnnotationObj={addAnnotationObj}
+            // setActiveIdObj={setActiveIdObj}
     */
 
+            const frameNum = useStates().frameNum;
+            const frameUrl = useStates().frameUrl;
+            // const addAnnotationObj = useStateSetters().addAnnotationObj;
+            const frameAnnotation = useStates().frameAnnotation;
+            const setFrameAnnotation = useStateSetters().setFrameAnnotation;
+            const setActiveAnnoObj = useStateSetters().setActiveAnnoObj;
+
     function clickHandler() {
-        if (Number.isInteger(props.frameNum) || props.frameUrl) {
+        if (Number.isInteger(frameNum) || frameUrl) {
             const id = Date.now().toString();
-            const idObj = {
+            const annoObj = {
                 id: id,
-                frameNum: props.frameNum,
+                frameNum: frameNum,
                 label: props.label,
                 color: props.color,
                 type: 'category',         
             };
-            props.addAnnotationObj(idObj);
-            props.setActiveIdObj(idObj);
+            // props.addAnnotationObj(idObj);
+            setFrameAnnotation({...frameAnnotation, [id]: annoObj});
+            setActiveAnnoObj(annoObj);
         }
     }
 

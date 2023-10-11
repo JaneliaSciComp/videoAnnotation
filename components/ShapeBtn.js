@@ -11,11 +11,11 @@ export default function ShapeBtn(props) {
             type='bbox'
             label='Mouse' 
             color='red'
-            drawType={drawType}
-            setDrawType={setDrawType} 
-            frameNum={frameNum}
-            frameUrl={frameUrl}
-            addAnnotationObj={addAnnotationObj}
+            // drawType={drawType}
+            // setDrawType={setDrawType} 
+            // frameNum={frameNum}
+            // frameUrl={frameUrl}
+            // addAnnotationObj={addAnnotationObj}
     */
     const [clicked, setClicked] = useState(false);
     
@@ -23,9 +23,11 @@ export default function ShapeBtn(props) {
     const frameNum = useStates().frameNum;
     const frameUrl = useStates().frameUrl;
     const setDrawType = useStateSetters().setDrawType;
-    const addAnnotationObj = useStateSetters().addAnnotationObj;
-    
-    console.log(drawType, frameNum,frameUrl,setDrawType, addAnnotationObj);
+    // const addAnnotationObj = useStateSetters().addAnnotationObj;
+    const frameAnnotation = useStates().frameAnnotation;
+    const setFrameAnnotation = useStateSetters().setFrameAnnotation;
+
+    // console.log(drawType, frameNum,frameUrl,setDrawType);
 
     // useEffect(() => {
     //     if (!props.drawType) {
@@ -40,34 +42,35 @@ export default function ShapeBtn(props) {
     }, [drawType])
 
     
-    function clickHandler() {
-        if (Number.isInteger(props.frameNum) || props.frameUrl) {
-            const id = Date.now().toString();
-            props.setDrawType(props.type);
-            props.addAnnotationObj({
-                id: id,
-                frameNum: props.frameNum,
-                label: props.label,
-                color: props.color,
-                type: props.type,         
-            });
-            // console.log('shape called', props);
-            setClicked(true);
-        }
+    // function clickHandler() {
+    //     if (Number.isInteger(props.frameNum) || props.frameUrl) {
+    //         const id = Date.now().toString();
+    //         props.setDrawType(props.type);
+    //         props.addAnnotationObj({
+    //             id: id,
+    //             frameNum: props.frameNum,
+    //             label: props.label,
+    //             color: props.color,
+    //             type: props.type,         
+    //         });
+    //         // console.log('shape called', props);
+    //         setClicked(true);
+    //     }
        
-    }
+    // }
 
     function clickHandler() {
         if (Number.isInteger(frameNum) || frameUrl) {
             const id = Date.now().toString();
             setDrawType(props.type);
-            addAnnotationObj({
+            const annoObj = {
                 id: id,
                 frameNum: frameNum,
                 label: props.label,
                 color: props.color,
                 type: props.type,         
-            });
+            };
+            setFrameAnnotation({...frameAnnotation, [id]: annoObj});
             // console.log('shape called', props);
             setClicked(true);
         }

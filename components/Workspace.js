@@ -22,7 +22,7 @@ export default function Workspace(props) {
     const prevFrameNum = useRef();
     const annotationRef = useRef({});
     const [frameAnnotation, setFrameAnnotation] = useState({});
-    const [activeIdObj, setActiveIdObj] = useState();
+    const [activeAnnoObj, setActiveAnnoObj] = useState();
     // const [categoryId, setCategoryId] = useState({});
     // const [keyPointIdList, setKeyPointIdList] = useState({});
     // const [drawKeyPoint, setDrawKeyPoint] = useState(false);
@@ -81,7 +81,8 @@ export default function Workspace(props) {
             }
         }}
     )
-    const [btnGroups, setBtnGroups] = useState()
+    const [btnGroups, setBtnGroups] = useState();
+    // const [projectType, setProjectType] = useState('image'); //'image' or 'video'
 
 
     console.log('workspace render');
@@ -91,10 +92,11 @@ export default function Workspace(props) {
         frameUrl: frameUrl,
         frameNum: frameNum,
         frameAnnotation: frameAnnotation,
-        activeIdObj: activeIdObj,
+        activeAnnoObj: activeAnnoObj,
         drawType: drawType,
         skeletonLandmark: skeletonLandmark,
         btnConfigData: btnConfigData,
+        // projectType: projectType,
     }
 
     const stateSetters = {
@@ -102,10 +104,11 @@ export default function Workspace(props) {
         setFrameUrl: setFrameUrl,
         setFrameNum: setFrameNum,
         setFrameAnnotation: setFrameAnnotation,
-        setActiveIdObj: setActiveIdObj,
+        setActiveAnnoObj: setActiveAnnoObj,
         setDrawType: setDrawType,
         setSkeletonLandmark: setSkeletonLandmark,
         setBtnConfigData: setBtnConfigData,
+        // setProjectType: setProjectType,
     }
 
     useEffect(() => {
@@ -173,7 +176,7 @@ export default function Workspace(props) {
             annotationRef.current[prevFrameNum.current] = frameAnnotation; 
         }
         prevFrameNum.current = frameNum;
-        setActiveIdObj(null);
+        setActiveAnnoObj(null);
         setDrawType(null);
     }
 
@@ -216,13 +219,12 @@ export default function Workspace(props) {
                                         frameNum={frameNum}
                                         frameUrl={frameUrl}
                                         addAnnotationObj={addAnnotationObj}
-                                        setActiveIdObj={setActiveIdObj}
+                                        setActiveAnnoObj={setActiveAnnoObj}
                                         drawType={drawType}
                                         setDrawType={setDrawType}
                                         skeletonLandmark={skeletonLandmark}
                                         setSkeletonLandmark={setSkeletonLandmark}
                                         frameAnnotation={data.groupType==='skeleton' ? frameAnnotation : null}
-                                        
                                     />
                         })
         // console.log(btnGroupIds);
@@ -248,6 +250,7 @@ export default function Workspace(props) {
             </main>
 
           <main className={styles.main}>
+          <StatesProvider states={states} stateSetters={stateSetters}>
             <Row className='mx-1 my-1'>
                 <Design 
                     data={btnConfigData}
@@ -350,7 +353,7 @@ export default function Workspace(props) {
                     </Row> */}
                 </Col>
                 <Col xs={6} >
-                    <AnnotationDisplay idObj={activeIdObj}/>
+                    <AnnotationDisplay annoObj={activeAnnoObj}/>
                 </Col>
                 
             </Row>
@@ -358,7 +361,7 @@ export default function Workspace(props) {
             <Row className='mx-1 my-1'>
                 <Canvas 
                     videoId={videoId}
-                    imgUrl={frameUrl}
+                    frameUrl={frameUrl}
                     frameNum={frameNum}
                     drawType={drawType}
                     setDrawType={setDrawType}
@@ -379,15 +382,14 @@ export default function Workspace(props) {
                     // setDrawPolygon={setDrawPolygon}
                     // polygonIdList={polygonIdList}
                     // setPolygonIdList={setPolygonIdList}
-                    setActiveIdObj={setActiveIdObj}
+                    setActiveAnnoObj={setActiveAnnoObj}
                     />
-                
             </Row>
             
             <Row className='my-3'>
                 <VideoUploader setFrameUrl={setFrameUrl} setFrameNum={setFrameNum} setVideoId={setVideoId} />
             </Row>
-            
+            </StatesProvider>
           </main>
         </div>
     )

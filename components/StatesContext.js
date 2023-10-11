@@ -1,7 +1,7 @@
 import { createContext, useContext } from 'react';
 
-export const StatesContext = createContext(null);
-export const StateSettersContext = createContext(null);
+const StatesContext = createContext(null);
+const StateSettersContext = createContext(null);
 
 export function StatesProvider({
     states,

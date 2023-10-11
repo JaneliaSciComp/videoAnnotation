@@ -45,13 +45,13 @@ export default function Design(props) {
                 Developer can also add extra function by defining this api. It will be called after the appending function.
                 Takes the data as the argument.
      */
-    const [data, setData] = useState({});
+    const [data, setData] = useState({}); //To prevent too many rerenders of parent comp
     const [children, setChildren] = useState([]);
     const [skeletonData, setSkeletonData] = useState({});
 
     useEffect(() => {
         // initialize a group when comp mount
-        if (Object.keys(data).length==0) {
+        if (Object.keys(data).length===0) {
             addGroup();
         }
       }, []
