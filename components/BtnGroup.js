@@ -29,14 +29,15 @@ export default function BtnGroup(props) {
                     ...
                 ]
             }
-            frameNum={frameNum}
-            addAnnotationObj={addAnnotationObj}
-            setActiveIdObj={setActiveIdObj}
-            drawType={drawType}
-            setDrawType={setDrawType}
+            // frameNum={frameNum}
+            // addAnnotationObj={addAnnotationObj}
+            // setActiveIdObj={setActiveIdObj}
+            // drawType={drawType}
+            // setDrawType={setDrawType}
     */
 
     const [btns, setBtns] = useState()
+
 
     useEffect(() => {
         if (props.data) {
@@ -55,46 +56,62 @@ export default function BtnGroup(props) {
         switch (props.data.groupType) {
             case 'category':
                 btns = childData.map((item, i) =>
+                            // <Category 
+                            //     key={i}
+                            //     label={item.label}
+                            //     color={item.color}
+                            //     frameNum={props.frameNum}
+                            //     frameUrl={props.frameUrl}
+                            //     addAnnotationObj={props.addAnnotationObj}
+                            //     setActiveIdObj={props.setActiveIdObj}
+                            //     />
                             <Category 
                                 key={i}
                                 label={item.label}
                                 color={item.color}
-                                frameNum={props.frameNum}
-                                frameUrl={props.frameUrl}
-                                addAnnotationObj={props.addAnnotationObj}
-                                setActiveIdObj={props.setActiveIdObj}
                                 />
                         );
                 break;
             case 'shape':
                 btns = childData.map((item, i) => 
+                            // <ShapeBtn
+                            //     key={i}
+                            //     type={item.btnType} 
+                            //     label={item.label}
+                            //     color={item.color}
+                            //     frameNum={props.frameNum}
+                            //     frameUrl={props.frameUrl}
+                            //     addAnnotationObj={props.addAnnotationObj}
+                            //     drawType={props.drawType}
+                            //     setDrawType={props.setDrawType}
+                            //     />
                             <ShapeBtn
                                 key={i}
                                 type={item.btnType} 
                                 label={item.label}
                                 color={item.color}
-                                frameNum={props.frameNum}
-                                frameUrl={props.frameUrl}
-                                addAnnotationObj={props.addAnnotationObj}
-                                drawType={props.drawType}
-                                setDrawType={props.setDrawType}
                                 />
                         );
                 break;
             case 'skeleton':
-                btns = [<SkeletonBtn
+                btns = [
+                        // <SkeletonBtn
+                        //     key={0}
+                        //     groupIndex={props.data.groupIndex}
+                        //     data={childData}
+                        //     frameNum={props.frameNum}
+                        //     frameUrl={props.frameUrl}
+                        //     addAnnotationObj={props.addAnnotationObj}
+                        //     drawType={props.drawType}
+                        //     setDrawType={props.setDrawType}
+                        //     skeletonLandmark={props.skeletonLandmark}
+                        //     setSkeletonLandmark={props.setSkeletonLandmark}
+                        //     frameAnnotation={props.frameAnnotation}
+                        //     />
+                        <SkeletonBtn
                             key={0}
-                            type='skeleton'
                             groupIndex={props.data.groupIndex}
                             data={childData}
-                            frameNum={props.frameNum}
-                            frameUrl={props.frameUrl}
-                            addAnnotationObj={props.addAnnotationObj}
-                            drawType={props.drawType}
-                            setDrawType={props.setDrawType}
-                            skeletonLandmark={props.skeletonLandmark}
-                            setSkeletonLandmark={props.setSkeletonLandmark}
-                            frameAnnotation={props.frameAnnotation}
                             />
                         ]
                 break;

@@ -1,4 +1,4 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useContext} from 'react';
 import styles from '../styles/Canvas.module.css';
 import {fabric} from 'fabric';
 import { useStates, useStateSetters } from './StatesContext';
@@ -39,10 +39,10 @@ export default function Canvas(props) {
     const skeletonLandmark = useStates().skeletonLandmark;
     const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
     const frameAnnotation = useStates().frameAnnotation;
-    // const setFrameAnnotation = useStateSetters().setFrameAnnotation;
+    const setFrameAnnotation = useStateSetters().setFrameAnnotation;
     const btnConfigData = useStates().btnConfigData;
-    const setActiveAnnoObj = useStateSetters().setActiveAnnoObj;
-    // const projectType = useStates().projectType;
+    const setActiveIdObj = useStateSetters().setActiveIdObj;
+
     
     console.log('canvas render');
 
@@ -53,8 +53,8 @@ export default function Canvas(props) {
         if (!canvasObjRef.current) {
             const canvasObj = new fabric.Canvas('canvas', {
                 //TODO
-                width: props.width ? props.width : CANVAS_WIDTH,
-                height: props.height ? props.height : CANVAS_HEIGHT,
+                width: CANVAS_WIDTH,
+                height: CANVAS_HEIGHT,
                 polygonPoints: [],
                 polygonLines: [],
                 bboxLines: [],
@@ -107,12 +107,13 @@ export default function Canvas(props) {
             document.removeEventListener("keydown", deleteKeyHandler);
             imgRef.current.removeEventListener("load", imageLoadHandler);
         }
-      }, [videoId, frameUrl, frameNum, drawType, skeletonLandmark, frameAnnotation, btnConfigData] /////check if these are enough
+      }, [props]
     )
 
 
     useEffect(()=> {
         //When switch video, remove current imgObj, create a new blank imgObj
+        // console.log('img', imgRef.current.src);
         canvasObjRef.current.remove(imageObjRef.current);
         const imageObj = new fabric.Image(imgRef.current, {
             selectable: false,
@@ -123,46 +124,41 @@ export default function Canvas(props) {
         canvasObjRef.current.renderAll();
         imageObjRef.current = imageObj;
         
-      }, [videoId]
+      }, [props.videoId]
     )
 
 
     useEffect(() => {
         // update image when url changes
-        if (frameUrl) {
-            imgRef.current.src = frameUrl;
+        if (props.frameUrl) {
+            imgRef.current.src = props.frameUrl;
         } else {
             imgRef.current.src = '';
         }
+      }, [props.frameUrl]
+    )
 
+    
+    useEffect(() => {
+        //when frame changes, update objects on canvas
+        // console.log('canvas useEffect called');
         if (Object.keys(fabricObjListRef.current).length>0) {
             Object.keys(fabricObjListRef.current).forEach(id => 
                 canvasObjRef.current.remove(fabricObjListRef.current[id]));
             fabricObjListRef.current = {};
         }
-      }, [frameUrl]
+
+        // createFabricObjBasedOnAnnotation();
+      }, [props.frameAnnotation]
     )
-
-    
-    // useEffect(() => {
-    //     //when frame changes, update objects on canvas
-    //     if (Object.keys(fabricObjListRef.current).length>0) {
-    //         Object.keys(fabricObjListRef.current).forEach(id => 
-    //             canvasObjRef.current.remove(fabricObjListRef.current[id]));
-    //         fabricObjListRef.current = {};
-    //     }
-
-    //     // createFabricObjBasedOnAnnotation();
-    //   }, [frameAnnotation]
-    // )
 
 
     function createFabricObjBasedOnAnnotation() {
-        if (Object.keys(frameAnnotation).length>0) {
+        if (Object.keys(props.frameAnnotation).length>0) {
             console.log('draw anno');
-            Object.keys(frameAnnotation).forEach(id => {
-                const annoObj = frameAnnotation[id];
-                if (annoObj.frameNum === frameNum) {
+            Object.keys(props.frameAnnotation).forEach(id => {
+                const annoObj = props.frameAnnotation[id];
+                if (annoObj.frameNum === props.frameNum) {
                     console.log(annoObj);
                     let dataToCanvas;
                     switch (annoObj.type) {
@@ -210,7 +206,7 @@ export default function Canvas(props) {
         //When new video is loaded
         //scale frame size to fit in canvas 
         // if (props.frameNum === 0) {
-        if (!frameNum) { //including frameNum==0 (new video), frameNum==null (image instead of video)
+        if (!props.frameNum) { //including frameNum==0 (new video), frameNum==null (image instead of video)
             imageObjRef.current.width = imgRef.current.width;
             imageObjRef.current.height = imgRef.current.height;
             scaleImage(canvasObjRef.current, imageObjRef.current);
@@ -331,9 +327,9 @@ export default function Canvas(props) {
             canvas.editingPolygonId = polygon.id;
 
             const newPoints = getUpdatedPolygonPoints(polygon);
-            const idObjToEdit = frameAnnotation[polygon.id];
+            const idObjToEdit = props.frameAnnotation[polygon.id];
             polygon.pointObjects = newPoints.map((p, i) => createPoint(p, idObjToEdit, i));
-            polygon.lineObjects = newPoints.map((p, i) => i<newPoints.length-1 ? createLine(p, newPoints[i+1], frameAnnotation[polygon.id]) : createLine(p, newPoints[0], idObjToEdit))
+            polygon.lineObjects = newPoints.map((p, i) => i<newPoints.length-1 ? createLine(p, newPoints[i+1], props.frameAnnotation[polygon.id]) : createLine(p, newPoints[0], idObjToEdit))
             polygon.lineObjects.forEach(obj=>canvas.add(obj));
             polygon.pointObjects.forEach(obj=>canvas.add(obj));
             canvas.remove(polygon);
@@ -354,7 +350,7 @@ export default function Canvas(props) {
 
             canvas.activeObj = null;
             canvas.isEditingObj = null;
-            setActiveAnnoObj(null);
+            props.setActiveIdObj(null);
         }
         
         if (canvas.getActiveObject()){ // when click on an obj
@@ -382,20 +378,20 @@ export default function Canvas(props) {
 
             }
         }
-        // console.log(drawType);
-        if (drawType === 'keyPoint') {
+
+        if (props.drawType === 'keyPoint') {
             const idTodraw = getIdToDraw();
-            const annoObjToDraw = {...frameAnnotation[idTodraw]};
+            const annoObjToDraw = {...props.frameAnnotation[idTodraw]};
             createKeyPoint(canvas.getPointer(), annoObjToDraw);
         }
 
-        if (drawType === 'bbox') {
+        if (props.drawType === 'bbox') {
             const idToDraw = getIdToDraw();
-            canvas.bboxIdObjToDraw = {...frameAnnotation[idToDraw]};
+            canvas.bboxIdObjToDraw = {...props.frameAnnotation[idToDraw]};
             canvas.bboxStartPosition = canvas.getPointer();
         }
         
-        if (drawType === 'polygon') {
+        if (props.drawType === 'polygon') {
             drawPolygon();
         }
 
@@ -415,7 +411,7 @@ export default function Canvas(props) {
             canvas.isDraggingSkeletonPoint = true;
         }
 
-        if (drawType === 'skeleton') {
+        if (props.drawType === 'skeleton') {
             drawSkeleton();
         }
 
@@ -432,7 +428,7 @@ export default function Canvas(props) {
         if (canvas.isDraggingPolygonPoint) {
             dragPolygonPoint();
         }
-        if (drawType==='bbox' && canvas.bboxStartPosition) {
+        if (props.drawType==='bbox' && canvas.bboxStartPosition) {
             drawBBox();
         }
         if (canvas.activeObj && canvas.isEditingObj) {
@@ -465,10 +461,10 @@ export default function Canvas(props) {
                 data = getPolygonCoordToImage(obj);
                 break;
         }
-        newIdObj = {...frameAnnotation[obj.id], data: data}; 
+        newIdObj = {...props.frameAnnotation[obj.id], data: data}; 
         // props.setFrameAnnotation({...props.frameAnnotation, [obj.id]: newIdObj});
-        frameAnnotation[obj.id] = newIdObj;
-        setActiveAnnoObj(newIdObj);
+        props.frameAnnotation[obj.id] = newIdObj;
+        props.setActiveIdObj(newIdObj);
     }
 
 
@@ -485,7 +481,7 @@ export default function Canvas(props) {
         canvas.isEditingObj = false;
 
         // finish drawing bbox
-        if (drawType === 'bbox') {
+        if (props.drawType === 'bbox') {
             canvas.bboxEndPosition = canvas.getPointer();
             finishDrawBBox();
 
@@ -537,7 +533,7 @@ export default function Canvas(props) {
         canvas.selection = false;
         
         const idToDraw = getIdToDraw();
-        const idObjToDraw = {...frameAnnotation[idToDraw]};
+        const idObjToDraw = {...props.frameAnnotation[idToDraw]};
 
         const clickPoint = canvas.getPointer();
         //console.log(clickPoint);
@@ -568,7 +564,7 @@ export default function Canvas(props) {
                 canvas.polygonPoints=[];
                 canvas.polygonLines=[];
                 canvas.selection = true;
-                setDrawType(null);
+                props.setDrawType(null);
 
                 // addActiveIdObj(polygonObj);
                 // console.log('poly',canvas.activeObj, canvas.isEditingObj);
@@ -592,25 +588,25 @@ export default function Canvas(props) {
         canvas.selection = false;
         
         const annoIdToDraw = getIdToDraw();
-        const annoObjToDraw = {...frameAnnotation[annoIdToDraw]}; //{annoId: {id: annoId, groupIndex: , frameNum: , type: 'skeleton', data: [[null, null, 2], ...}}
-        const landmarkToDraw = btnConfigData[annoObjToDraw.groupIndex].childData[skeletonLandmark]; //{index: 0, btnType: 'skeleton',label: 'head',color: '#1677FF'}
+        const annoObjToDraw = {...props.frameAnnotation[annoIdToDraw]}; //{annoId: {id: annoId, groupIndex: , frameNum: , type: 'skeleton', data: [[null, null, 2], ...}}
+        const landmarkToDraw = props.btnConfigData[annoObjToDraw.groupIndex].childData[props.skeletonLandmark]; //{index: 0, btnType: 'skeleton',label: 'head',color: '#1677FF'}
         const landmarkInfo = {
             id: annoIdToDraw,
             color: landmarkToDraw.color,
             type: landmarkToDraw.btnType,
         }
         // console.log('landmark', landmarkInfo);
-        const landmarkTotalNum = btnConfigData[annoObjToDraw.groupIndex].childData.length;
-        const edgesInfo = btnConfigData[annoObjToDraw.groupIndex].edgeData; // {color: '', edges: [set(), ...]}
+        const landmarkTotalNum = props.btnConfigData[annoObjToDraw.groupIndex].childData.length;
+        const edgesInfo = props.btnConfigData[annoObjToDraw.groupIndex].edgeData; // {color: '', edges: [set(), ...]}
         
         const clickPoint = canvas.getPointer();
         //console.log(clickPoint);
         //create landmark
-        const landmark = createPoint(clickPoint, landmarkInfo, skeletonLandmark);
+        const landmark = createPoint(clickPoint, landmarkInfo, props.skeletonLandmark);
         canvas.add(landmark).setActiveObject(landmark);
         
         //create edges
-        const neighbors = edgesInfo.edges[skeletonLandmark];
+        const neighbors = edgesInfo.edges[props.skeletonLandmark];
         const edgeColor = edgesInfo.color;
         const edgeInfo = {
             id: annoIdToDraw,
@@ -631,8 +627,8 @@ export default function Canvas(props) {
         canvas.skeletonPoints.push(landmark); // must be after creating edges
 
 
-        if (skeletonLandmark < landmarkTotalNum - 1) { // if not done with drawing
-            setSkeletonLandmark(skeletonLandmark + 1);
+        if (props.skeletonLandmark < landmarkTotalNum - 1) { // if not done with drawing
+            props.setSkeletonLandmark(props.skeletonLandmark + 1);
         } else { // if done
             //add the skeleton landmarks and edges to ref
             fabricObjListRef.current[annoIdToDraw] = {
@@ -644,8 +640,8 @@ export default function Canvas(props) {
             
             //TODO: add data to annotation
 
-            setSkeletonLandmark(null);
-            setDrawType(null);
+            props.setSkeletonLandmark(null);
+            props.setDrawType(null);
             canvas.selection = true;
         }
     }
@@ -667,10 +663,10 @@ export default function Canvas(props) {
         fabricObjListRef.current[idTodraw] = point;
         // console.log('keyPointObjListRef', keyPointObjListRef.current);
         canvas.add(point)
-        if (drawType) {
+        if (props.drawType) {
             canvas.setActiveObject(point);
             addActiveIdObj(point);
-            setDrawType(null);
+            props.setDrawType(null);
         }
         // canvas.selection = true;
     }
@@ -722,7 +718,7 @@ export default function Canvas(props) {
         canvas.bboxIdObjToDraw = null;
         canvas.bboxLines.forEach(l => canvas.remove(l));
         canvas.bboxLines = [];
-        setDrawType(null);
+        props.setDrawType(null);
         canvas.selection = true;
         // console.log('rect',canvas.activeObj, canvas.isEditingObj);
     }
@@ -744,7 +740,7 @@ export default function Canvas(props) {
             width: data.width,
             height: data.height,
             stroke: annoObjToDraw.color,
-            strokeWidth: props.stroke_width ? props.stroke_width : STROKE_WIDTH,
+            strokeWidth: STROKE_WIDTH,
             strokeUniform: true,
             fill: null,
             lockRotation: true,
@@ -764,7 +760,7 @@ export default function Canvas(props) {
         const point = new fabric.Circle({
             left: clickPoint.x,  /////
             top: clickPoint.y,  /////
-            radius: props.circle_radius ? props.circle_radius : CIRCLE_RADIUS,
+            radius: CIRCLE_RADIUS,
             originX: 'center',
             originY: 'center',
             strokeWidth: 1,
@@ -813,7 +809,7 @@ export default function Canvas(props) {
         return new fabric.Line([
             startPoint.x, startPoint.y, endPoint.x, endPoint.y
         ], {
-            strokeWidth: props.stroke_width ? props.stroke_width : STROKE_WIDTH,
+            strokeWidth: STROKE_WIDTH,
             stroke: idObj.color,
             selectable: false,
             type: idObj.type+'Line',
@@ -835,7 +831,7 @@ export default function Canvas(props) {
                 type: annoObjToDraw.type,
                 lable: annoObjToDraw.label,
                 stroke: annoObjToDraw.color,
-                strokeWidth: props.stroke_width ? props.stroke_width : STROKE_WIDTH,
+                strokeWidth: STROKE_WIDTH,
                 strokeUniform: true,
                 fill: false,
                 // lockRotation: true,
@@ -848,7 +844,7 @@ export default function Canvas(props) {
         ); 
         fabricObjListRef.current[polygon.id] = polygon;/////
         canvas.add(polygon);
-        if (drawType || canvas.editPolygon) {
+        if (props.drawType || canvas.editPolygon) {
             canvas.setActiveObject(polygon);
             addActiveIdObj(polygon);
         }  
@@ -879,7 +875,7 @@ export default function Canvas(props) {
         // console.log('point ', point, point.getCenterPoint());
         // console.log(point.calcTransformMatrix(),point.calcOwnMatrix());
         const polygon = fabricObjListRef.current[point.owner];
-        const idObjToEdit = frameAnnotation[point.owner];
+        const idObjToEdit = props.frameAnnotation[point.owner];
         // console.log('polygon ', polygon);
         const prePointIndex = point.index>0 ? point.index-1 : polygon.lineObjects.length-1;
         const postPointIndex = point.index<polygon.pointObjects.length-1 ? point.index+1 : 0;
@@ -900,7 +896,7 @@ export default function Canvas(props) {
         // console.log('dragging');
         const point = canvas.getActiveObject();
         const landmarks = fabricObjListRef.current[point.owner].landmarks;
-        const edgesInfo = btnConfigData[frameAnnotation[point.owner].groupIndex].edgeData; // {color: '', edges: [set(), ...]}
+        const edgesInfo = props.btnConfigData[props.frameAnnotation[point.owner].groupIndex].edgeData; // {color: '', edges: [set(), ...]}
         const edgeInfo = {
             id: point.owner,
             type: 'skeleton',
@@ -939,7 +935,7 @@ export default function Canvas(props) {
     function finishEditPolygon() {
         const canvas = canvasObjRef.current;
         const polygon = fabricObjListRef.current[canvas.editingPolygonId];
-        const idObjToEdit = frameAnnotation[canvas.editingPolygonId];
+        const idObjToEdit = props.frameAnnotation[canvas.editingPolygonId];
         createPolygon(polygon.pointObjects.map(p => p.getCenterPoint()),idObjToEdit);
         // fabricObjListRef.current[newPolygon.id] = newPolygon;/////
         // canvas.add(newPolygon).setActiveObject(newPolygon);
@@ -960,13 +956,13 @@ export default function Canvas(props) {
         // const annotationList = {...props.frameAnnotation};
         // delete(annotationList[activeObj.id]);
         // props.setFrameAnnotation(annotationList);
-        delete(frameAnnotation[activeObj.id]);
+        delete(props.frameAnnotation[activeObj.id]);
         
         canvas.remove(activeObj);
 
         canvas.activeObj = null;
         canvas.isEditingObj = null;
-        setActiveAnnoObj(null);
+        props.setActiveIdObj(null);
     }
 
     function addActiveIdObj(activeObj) {
@@ -980,7 +976,7 @@ export default function Canvas(props) {
 
     function getIdToDraw() {
         const existingIds = new Set(Object.keys(fabricObjListRef.current));
-        const idToDraw = Object.entries(frameAnnotation).filter(([id, annoObj]) => !existingIds.has(id) && ANNOTATION_TYPES.has(annoObj.type))[0][0];
+        const idToDraw = Object.entries(props.frameAnnotation).filter(([id, annoObj]) => !existingIds.has(id) && ANNOTATION_TYPES.has(annoObj.type))[0][0];
         return idToDraw;
     }
 
@@ -989,7 +985,7 @@ export default function Canvas(props) {
     // src={props.imgUrl}ref={imgRef} 
     return (
         
-        <div className='px-0 my-3'>
+        <div className='px-0'>
             {/* <p>{console.log('return called')}</p> */}
             <canvas id='canvas' className={styles.canvas} >
                 <img id='image' ref={imgRef} className={styles.image} alt="img"/>

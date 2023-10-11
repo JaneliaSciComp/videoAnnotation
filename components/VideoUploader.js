@@ -5,6 +5,8 @@ import videoStyles from '../styles/Video.module.css';
 import { InputNumber, Slider } from 'antd';
 import { CaretRightOutlined, PauseOutlined } from '@ant-design/icons';
 import {Row, Col, Form, Button} from 'react-bootstrap';
+import { useStateSetters } from './StatesContext';
+
 
 const FRAME_URL_ROOT = 'http://localhost:8000/api/frame';
 
@@ -19,6 +21,11 @@ export default function VideoUploader(props) {
     const [submitError, setSubmitError] = useState();
     const [frameError, setFrameError] = useState();
     const playInterval = useRef(null);
+
+    const setFrameUrl = useStateSetters().setFrameUrl;
+    const setFrameNum = useStateSetters().setFrameNum;
+    const setVideoId = useStateSetters().setVideoId;
+
 
     console.log('VideoUploader render');
 
@@ -100,7 +107,9 @@ export default function VideoUploader(props) {
         e.stopPropagation(); 
         resetVideoStatus();
         const id = new Date().getTime();
-        props.setVideoId(id);
+        // props.setVideoId(id);
+        setVideoId(id);
+
         fetch("http://localhost:8000/api/videopath", {
             method: 'POST',
             body: new FormData(e.target),
@@ -170,8 +179,10 @@ export default function VideoUploader(props) {
                     setFrameError(res['error']);
                 } else {
                     const url = URL.createObjectURL(res);
-                    props.setFrameUrl(url);
-                    props.setFrameNum(frameNum);
+                    // props.setFrameUrl(url);
+                    // props.setFrameNum(frameNum);
+                    setFrameUrl(url);
+                    setFrameNum(frameNum);
                 } 
             } 
         })
