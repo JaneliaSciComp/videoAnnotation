@@ -480,6 +480,7 @@ export default function BtnGroupController(props) {
                         vertices={generateSkeletonVerticesData()}
                         data={props.data}
                         setData={props.setData}
+                        setAddEdge={setAddEdge}
                         />
                     </div>
                     :null   

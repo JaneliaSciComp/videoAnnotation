@@ -32,53 +32,54 @@ export default function Workspace(props) {
     const [drawType, setDrawType] = useState();
     const [skeletonLandmark, setSkeletonLandmark] = useState(); // the current landmark index to draw, pass to skeletonBtn and Canvas
     const [btnConfigData, setBtnConfigData] = useState(
-        {'123456': {
-            groupType: 'skeleton',
-            btnType: 'skeleton',
-            btnNum: 5,
-            childData: [
-                {
-                    index: 0, 
-                    btnType: 'skeleton',
-                    label: 'head',
-                    color: '#1677FF'
-                    },
-                {
-                    index: 1, 
-                    btnType: 'skeleton',
-                    label: 'neck',
-                    color: '#F5222D'
-                    },
-                {
-                    index: 2, 
-                    btnType: 'skeleton',
-                    label: 'left wing',
-                    color: '#55782D'
-                    },
-                {
-                    index: 3, 
-                    btnType: 'skeleton',
-                    label: 'right wing',
-                    color: '#52C41A'
-                    },
-                {
-                    index: 4, 
-                    btnType: 'skeleton',
-                    label: 'tail',
-                    color: '#EB2F96'
-                    },
-            ],
-            edgeData: {
-                color: '#1677FF',
-                edges: [
-                    new Set([1]),
-                    new Set([0,2,3,4]),
-                    new Set([1]),
-                    new Set([1]),
-                    new Set([1])
-                ]
-            }
-        }}
+        {}
+        // {'123456': {
+        //     groupType: 'skeleton',
+        //     btnType: 'skeleton',
+        //     btnNum: 5,
+        //     childData: [
+        //         {
+        //             index: 0, 
+        //             btnType: 'skeleton',
+        //             label: 'head',
+        //             color: '#1677FF'
+        //             },
+        //         {
+        //             index: 1, 
+        //             btnType: 'skeleton',
+        //             label: 'neck',
+        //             color: '#F5222D'
+        //             },
+        //         {
+        //             index: 2, 
+        //             btnType: 'skeleton',
+        //             label: 'left wing',
+        //             color: '#55782D'
+        //             },
+        //         {
+        //             index: 3, 
+        //             btnType: 'skeleton',
+        //             label: 'right wing',
+        //             color: '#52C41A'
+        //             },
+        //         {
+        //             index: 4, 
+        //             btnType: 'skeleton',
+        //             label: 'tail',
+        //             color: '#EB2F96'
+        //             },
+        //     ],
+        //     edgeData: {
+        //         color: '#1677FF',
+        //         edges: [
+        //             new Set([1]),
+        //             new Set([0,2,3,4]),
+        //             new Set([1]),
+        //             new Set([1]),
+        //             new Set([1])
+        //         ]
+        //     }
+        // }}
     )
     const [btnGroups, setBtnGroups] = useState()
 

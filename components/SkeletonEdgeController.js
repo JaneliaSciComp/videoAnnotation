@@ -68,6 +68,7 @@ export default function SkeletonEdgeController(props) {
     const [checkedValues, setCheckedValues] = useState();
     const edgeDataRef = useRef([]);
     const [color, setColor] = useState();
+    const [edgeAdded, setEdgeAdded] = useState();
     // const prevVertex = useRef();
     // const [error, setError] = useState();
     
@@ -182,7 +183,9 @@ export default function SkeletonEdgeController(props) {
         
         console.log(btnGroupData);
         props.setData({...props.data, [props.index]: btnGroupData});
-        
+        // props.setAddEdge(false);
+        setEdgeAdded(true);
+
         const target = {
             index: props.index,
             value: {
@@ -249,6 +252,12 @@ export default function SkeletonEdgeController(props) {
             <Row className='my-2 d-flex justify-content-center'>
                 <Button type="primary" onClick={onDoneBtnClick} size='small'>Done</Button>
             </Row>
+            {edgeAdded ? 
+                <Row className='my-2 d-flex justify-content-center'>
+                    <p>Edge info Added</p>
+                </Row>
+                :null
+            }
 
             {/* <Space.Compact block className='my-3 d-flex justify-content-center'>
                 <ColorPicker className={styles.edgeColorPicker}
