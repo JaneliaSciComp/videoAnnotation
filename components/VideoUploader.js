@@ -5,7 +5,7 @@ import videoStyles from '../styles/Video.module.css';
 import { InputNumber, Slider } from 'antd';
 import { CaretRightOutlined, PauseOutlined } from '@ant-design/icons';
 import {Row, Col, Form, Button} from 'react-bootstrap';
-import { useStateSetters } from './StatesContext';
+import { useStateSetters } from './AppContext';
 
 
 const FRAME_URL_ROOT = 'http://localhost:8000/api/frame';

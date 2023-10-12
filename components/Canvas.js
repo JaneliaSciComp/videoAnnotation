@@ -1,7 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 import styles from '../styles/Canvas.module.css';
 import {fabric} from 'fabric';
-import { useStates, useStateSetters } from './StatesContext';
+import { useStates, useStateSetters } from './AppContext';
 
 
 const CANVAS_WIDTH = 600;

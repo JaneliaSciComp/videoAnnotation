@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {Button} from 'react-bootstrap';
 import styles from '../styles/Button.module.css';
-import { useStates, useStateSetters } from './StatesContext';
+import { useStates, useStateSetters } from './AppContext';
 
 
 export default function ShapeBtn(props) {

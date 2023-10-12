@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { Descriptions } from 'antd';
-import { useStates } from './StatesContext';
+import { useStates } from './AppContext';
 
 export default function AnnotationDisplay(props) {
     const emtpyInfo = [

@@ -2,7 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import {Button} from 'react-bootstrap';
 import { Radio, Space } from 'antd';
 import styles from '../styles/Button.module.css';
-import { useStateSetters, useStates } from './StatesContext';
+import { useStateSetters, useStates } from './AppContext';
 
 
 export default function SkeletonBtn(props) {

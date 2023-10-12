@@ -12,7 +12,7 @@ import {Row, Col} from 'react-bootstrap';
 import BtnGroup from './BtnGroup';
 // import BtnGroupController from './BtnGroupController';
 import Design from './Design';
-import { StatesProvider } from './StatesContext';
+import { StatesProvider } from './AppContext';
 
 
 export default function Workspace(props) {

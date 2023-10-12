@@ -4,7 +4,7 @@ import BtnGroupController from './BtnGroupController';
 import { Button, Space } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import SkeletonEdgeController from './SkeletonEdgeController';
-import { useStateSetters, useStates } from './StatesContext';
+import { useStateSetters, useStates } from './AppContext';
 
 
 
@@ -38,20 +38,22 @@ export default function Design(props) {
         }
     
         props:
-            data: Required. The generated data, structure as above, will be append to it. 
-            setData: Required. The setter of data. Will be called in the Create btn click handler to append data.
+            // data: Required. The generated data, structure as above, will be append to it. 
+            // setData: Required. The setter of data. Will be called in the Create btn click handler to append data.
             onAddBtnClick: When the Add btn is clicked, it will add a btnGroupController. Developer can also add extra function by defining this api. 
                 It will be called after the prebuilt function.
             onCreateBtnClick: When the Create btn is clicked, it will append the btn data to the data property by calling setData. 
                 Developer can also add extra function by defining this api. It will be called after the appending function.
                 Takes the data as the argument.
      */
-    // const [data, setData] = useState({}); //To prevent too many rerenders of parent comp
-    const [children, setChildren] = useState([]);
+    // const [data, setData] = useState({}); //To prevent too many rerenders of parent comp. feel like it's not useful, as the btnGroupController can directly modify Workspace's btnConfigData, and Design can do that too.
+    // const [children, setChildren] = useState([]);
     // const [skeletonData, setSkeletonData] = useState({});
+    const [getData, setGetData] = useState(false);
 
+    // get context
     const btnConfigData = useStates().btnConfigData;
-    const setBtnConfigData = useStateSetters().setBtnConfigData;
+    const setBtnConfigData = useStateSetters().setBtnConfigData;    
 
     // useEffect(() => {
     //     // initialize a group when comp mount
@@ -72,49 +74,29 @@ export default function Design(props) {
     //     renderChildren();
     //   }, [data]
     // )
-    useEffect(() => {
-        renderChildren();
-      }, [btnConfigData]
-    )
 
-    function renderChildren() {
-        const indices = Object.keys(data);
-        const res = indices.map(index => 
-                // <BtnGroupController
-                //     key={index}
-                //     index={index}
-                //     data={data}
-                //     setData={setData}
-                //     groupTypePlaceHolder='Group Type'
-                //     btnTypePlaceHolder='Btn type'
-                //     enableDelete
-                //     onDelete={onDelete}
-                //     // onGroupTypeChange={onGroupTypeChange}
-                //     // onBtnTypeChange={onBtnTypeChange}
-                //     // onBtnNumChange={onBtnNumChange}
-                //     // onDownBtnClick={onDownBtnClick}
-                //     // skeletonData={skeletonData}
-                //     // setSkeletonData={setSkeletonData}
-                //     />
-                <BtnGroupController
-                    key={index}
-                    index={index}
-                    // data={data}
-                    // setData={setData}
-                    groupTypePlaceHolder='Group Type'
-                    btnTypePlaceHolder='Btn type'
-                    enableDelete
-                    onDelete={onDelete}
-                    // onGroupTypeChange={onGroupTypeChange}
-                    // onBtnTypeChange={onBtnTypeChange}
-                    // onBtnNumChange={onBtnNumChange}
-                    // onDownBtnClick={onDownBtnClick}
-                    // skeletonData={skeletonData}
-                    // setSkeletonData={setSkeletonData}
-                    />
-            ); 
-        setChildren(res);
-    }
+    // function renderChildren() {
+    //     const res = Object.keys(data).map(index => 
+    //             <BtnGroupController
+    //                 key={index}
+    //                 index={index}
+    //                 // data={data}
+    //                 // setData={setData}
+    //                 groupTypePlaceHolder='Group Type'
+    //                 btnTypePlaceHolder='Btn type'
+    //                 enableDelete
+    //                 onDelete={onDelete}
+    //                 // onGroupTypeChange={onGroupTypeChange}
+    //                 // onBtnTypeChange={onBtnTypeChange}
+    //                 // onBtnNumChange={onBtnNumChange}
+    //                 // onDownBtnClick={onDownBtnClick}
+    //                 // skeletonData={skeletonData}
+    //                 // setSkeletonData={setSkeletonData}
+    //                 />
+    //         ); 
+    //     setChildren(res);
+    // }
+
 
     // function addGroup() {
     //     const index = Date.now().toString();
@@ -125,6 +107,7 @@ export default function Design(props) {
         setBtnConfigData({...btnConfigData, [index]: {}});
     }
 
+
     function onAddBtnClick() {
         addGroup();
 
@@ -133,19 +116,21 @@ export default function Design(props) {
         }
     }
 
+
     function onCreateBtnClick() {
         console.log(btnConfigData);
-        setBtnConfigData({...btnConfigData, ...data});
-        
+        // setBtnConfigData({...btnConfigData, ...data});
+        setGetData(true);
+
         if (props.onCreateBtnClick) {
-            props.onCreateBtnClick({...data});
+            props.onCreateBtnClick({...btnConfigData});
         }
     }
 
     function onDelete(target) {
-        const dataCopy = {...data};
+        const dataCopy = {...btnConfigData};
         delete(dataCopy[target.index]);
-        setData(dataCopy);
+        setBtnConfigData(dataCopy);
     }
 
     // function onGroupTypeChange(target) {
@@ -164,14 +149,36 @@ export default function Design(props) {
     //     console.log('downBtn', target);
     // }
 
-    const edgesOptions = ['head', 'left wing', 'right wing','tail'];
 
     return (
         <div className={styles.designContainer}>
             <p className='my-2'>Customize Annotation Buttons</p>
-            <Space direction='vertical'>
-                {children}
-            </Space>
+            {/* <ConfigProvider configData={data} configDataSetter={setData}> */}
+                <Space direction='vertical'>
+                    {/* {children} */}
+                    {Object.keys(btnConfigData).map(index => 
+                        <BtnGroupController
+                            key={index}
+                            index={index}
+                            // data={data}
+                            // setData={setData}
+                            groupTypePlaceHolder='Group Type'
+                            btnTypePlaceHolder='Btn type'
+                            enableDelete
+                            onDelete={onDelete}
+                            getData={getData}
+                            disableDoneBtn
+                            // onGroupTypeChange={onGroupTypeChange}
+                            // onBtnTypeChange={onBtnTypeChange}
+                            // onBtnNumChange={onBtnNumChange}
+                            // onDownBtnClick={onDownBtnClick}
+                            // skeletonData={skeletonData}
+                            // setSkeletonData={setSkeletonData}
+                            />
+                    )}
+                </Space>
+            {/* </ConfigProvider> */}
+            
             <br />
             {/* <Space>
                 <SkeletonEdgeController 
