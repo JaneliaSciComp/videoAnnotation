@@ -53,3 +53,8 @@
     display: flex;
     justify-content: center;
 }
+
+.errorInfo {
+    margin-left: 2em;
+    color: red
+}

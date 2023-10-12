@@ -49,7 +49,7 @@ export default function Design(props) {
     // const [data, setData] = useState({}); //To prevent too many rerenders of parent comp. feel like it's not useful, as the btnGroupController can directly modify Workspace's btnConfigData, and Design can do that too.
     // const [children, setChildren] = useState([]);
     // const [skeletonData, setSkeletonData] = useState({});
-    const [getData, setGetData] = useState(false);
+    const [getData, setGetData] = useState({}); // {btnGroupIndex1: false, index2: false, ...}
 
     // get context
     const btnConfigData = useStates().btnConfigData;
@@ -104,6 +104,7 @@ export default function Design(props) {
     // }
     function addGroup() {
         const index = Date.now().toString();
+        setGetData({...getData, [index]:false});
         setBtnConfigData({...btnConfigData, [index]: {}});
     }
 
@@ -118,9 +119,11 @@ export default function Design(props) {
 
 
     function onCreateBtnClick() {
-        console.log(btnConfigData);
-        // setBtnConfigData({...btnConfigData, ...data});
-        setGetData(true);
+        const newGetData = {};
+        for (let i in getData) {
+            newGetData[i] = true;
+        }
+        setGetData(newGetData);
 
         if (props.onCreateBtnClick) {
             props.onCreateBtnClick({...btnConfigData});
@@ -167,6 +170,7 @@ export default function Design(props) {
                             enableDelete
                             onDelete={onDelete}
                             getData={getData}
+                            setGetData={setGetData}
                             disableDoneBtn
                             // onGroupTypeChange={onGroupTypeChange}
                             // onBtnTypeChange={onBtnTypeChange}

@@ -10,6 +10,8 @@ import Canvas from '../components/Canvas.js';
 import VideoUploader from '../components/VideoUploader.js';
 import AnnotationDisplay from '../components/AnnotationDisplay.js';
 import Design from '../components/Design.js';
+import BtnGroupController from '../components/BtnGroupController';
+
 // import {fabric} from 'fabric';
 
 
@@ -98,7 +100,7 @@ export default function Home() {
         {/* <img ref={imgRef} width="300" height="200"  alt="No Image" />
         <canvas id='output' ref={canvasRef} width="300" height="200"></canvas> */}
         {/* <Workspace /> */}
-        <Workspace >
+        <Workspace btnConfigData={btnConfigData}>
           <Category label='c' color='blue'/>
           <ShapeBtn type='keyPoint' label='k' color='blue' />
           <ShapeBtn type='bbox' label='mouse' color='red' />
@@ -113,6 +115,7 @@ export default function Home() {
           <Canvas />
           <VideoUploader />
           <Design />
+          <BtnGroupController groupType='category' disableGroupTypeSelect />
         </Workspace>
       </main>
 

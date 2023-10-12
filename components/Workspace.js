@@ -112,6 +112,12 @@ export default function Workspace(props) {
         // setProjectType: setProjectType,
     }
 
+    useEffect(()=> {
+        if (props.btnConfigData) {
+            setBtnConfigData({...props.btnConfigData});
+        }
+    }, [props.btnConfigData])
+
     useEffect(() => {
         //save frame anno data for last video
         saveAnnotationAndUpdateStates();
@@ -201,9 +207,7 @@ export default function Workspace(props) {
     // }
 
     useEffect(() => {
-        console.log('1');
         if (btnConfigData) {
-            console.log('2');
             renderBtnGroup();
         }
       }, [btnConfigData, frameNum, frameAnnotation, drawType, skeletonLandmark]

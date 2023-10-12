@@ -42,8 +42,8 @@ export default function SkeletonBtn(props) {
     const [clicked, setClicked] = useState(false);
     const [radioValue, setRadioValue] = useState(2);
     const annotationIdRef = useRef(); // to remember the annotation id created by clicking the btn, to retrieve anno data so that can add visibility info 
-    // const [currentLandmark, setCurrentLandmark] = useState(0); //null: not read for drawing; 0: drawing the first landmark; ...
 
+    // get context
     const drawType = useStates().drawType;
     const frameNum = useStates().frameNum;
     const frameUrl = useStates().frameUrl;
@@ -55,7 +55,7 @@ export default function SkeletonBtn(props) {
     const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
     
     // console.log('skeleton', props);
-    
+
     // useEffect(() => {
     //     if (!props.drawType) { //canvas set drawType=null when drawing is done
     //         setClicked(false);
@@ -72,6 +72,13 @@ export default function SkeletonBtn(props) {
         } 
     }, [drawType])
 
+    useEffect(()=> {
+        // when in drawing mode, when go to another landmark, set radio value to be 2 
+        if (clicked) {
+            setRadioValue(2);
+        }
+    }, [skeletonLandmark])
+
 
     // function addRadioToAnnotation(value) {
     //     // update radio value to annotation
@@ -87,7 +94,8 @@ export default function SkeletonBtn(props) {
         if (clicked) { // only if already activated draw mode
             const annotation = {...frameAnnotation[annotationIdRef.current]};
             annotation.data[skeletonLandmark][2]=value;
-            frameAnnotation[annotationIdRef.current] = annotation;
+            console.log(annotation.data);
+            setFrameAnnotation({...frameAnnotation, [annotationIdRef.current]: annotation});
         }
     }
 
@@ -119,6 +127,7 @@ export default function SkeletonBtn(props) {
             annotationIdRef.current = id;
             setDrawType('skeleton'); // drawType changed, useEffect will add default radio value
             setSkeletonLandmark(0);
+            setRadioValue(2);
             const initData = props.data.map(_ => [null, null, 2]); // initialize data holder and default visibility (2) to each landmark anno arr
             const annoObj = {
                 id: id,
@@ -137,6 +146,17 @@ export default function SkeletonBtn(props) {
         // console.log('radio checked', e.target.value);
         setRadioValue(e.target.value);
         addRadioToAnnotation(e.target.value);
+
+        // when set radio to invisible, should immediately go to next landmark
+        if (clicked && e.target.value===0) { 
+            if (skeletonLandmark < props.data.length-1) { // this is not the last landmark
+                setSkeletonLandmark(skeletonLandmark+1);
+            } else { // if this is the last landmark
+                setDrawType(null);
+                setSkeletonLandmark(0);
+            }
+            
+        }
     };
 
     // console.log(props.skeletonLandmark,props.skeletonLandmark?props.skeletonLandmark:0, props.skeletonLandmark?props.skeletonLandmark:0 +1);

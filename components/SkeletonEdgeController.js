@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styles from '../styles/Controller.module.css';
 import { Checkbox, Tag, ColorPicker, Button, Row, Col, Space } from 'antd';
+import { useStateSetters, useStates } from './AppContext';
+
 
 export default function SkeletonEdgeController(props) {
     /**
@@ -34,25 +36,6 @@ export default function SkeletonEdgeController(props) {
                 Takes the edge data as the argument.
 
 
-            disableGroupTypeSelect: boolean. False by default, true when specified. Whether to disable groupType selcet.
-            disableBtnTypeSelect: boolean. False by default, true when specified. Whether to disable btnType select.
-            disableBtnNumInput: boolean. False by default, true when specified. Whether to disable btn num input.
-            // enableGenerateBtn: boolean. False by defualt, true when specified. Whether to include the generate btn
-            enableDelete: boolean. False by default, true when specified. Whether to include the delete btn.
-            onGroupTypeChange: Callback when group type select changes
-            onBtnTypeChange: Callback when btn type select changes
-            onBtnNumChange: Callback when btn num input changes
-            onDownBtnClick: When the down btn is clicked, it will generate the btnController children. 
-                Developer can also add extra function by defining this api. It will be called after the generating function.
-                Takes one argument: target
-                    {
-                        index: getSelfIndex(),
-                        groupType: groupType,
-                        btnType: btnType,
-                        btnNum: btnNum
-                    };
-            onDelete: Callback when delete btn clicked. Takes one argument: target {index: int}
-     
         Ref:
             edgeDataRef: dynamically change when checkbox or last/next btn is clicked. To prevent too frequent change on props.data
                 [
@@ -71,17 +54,18 @@ export default function SkeletonEdgeController(props) {
     const [edgeAdded, setEdgeAdded] = useState();
     // const prevVertex = useRef();
     // const [error, setError] = useState();
+
+    //get context
+    const btnConfigData = useStates().btnConfigData;
+    const setBtnConfigData = useStateSetters().setBtnConfigData;
     
 
     console.log('edgeGroupController render');
 
     useEffect(()=>{
         // console.log('[] useEffect called');
-        if (!props.data || !props.setData) {
-            throw Error('Property [data] and [setData] are required, cannot be null or undefined');
-        }
         if (!props.index) {
-            throw Error('Property [Index] and setData are required');
+            throw Error('Property Index is required');
         }
       },[]
     )
@@ -175,14 +159,14 @@ export default function SkeletonEdgeController(props) {
     }
 
     function onDoneBtnClick() {
-        const btnGroupData = {...props.data[props.index]};
+        const btnGroupData = {...btnConfigData[props.index]};
         btnGroupData.edgeData = {
                 color: color,
                 edges: [...edgeDataRef.current],
             }
         
         console.log(btnGroupData);
-        props.setData({...props.data, [props.index]: btnGroupData});
+        setBtnConfigData({...btnConfigData, [props.index]: btnGroupData});
         // props.setAddEdge(false);
         setEdgeAdded(true);
 
