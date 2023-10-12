@@ -35,26 +35,25 @@ export function useStateSetters() {
 }
 
 
-const ConfigContext = createContext(null);
-// const StateSettersContext = createContext(null);
+// const ConfigContext = createContext(null);
 
-export function ConfigProvider({
-    configData,
-    configDataSetter,
-    children
-}) {
+// export function ConfigProvider({
+//     configData,
+//     configDataSetter,
+//     children
+// }) {
   
-    return (
-      <ConfigContext.Provider value={{configData, configDataSetter}}>
-          {children}
-      </ConfigContext.Provider>
-    );
-}
+//     return (
+//       <ConfigContext.Provider value={{configData, configDataSetter}}>
+//           {children}
+//       </ConfigContext.Provider>
+//     );
+// }
 
-export function useConfig() {
-    const context = useContext(ConfigContext);
-    if (context === undefined) {
-      throw new Error("useConfig must be used within a ConfigProvider");
-    }
-    return context;
-}
+// export function useConfig() {
+//     const context = useContext(ConfigContext);
+//     if (context === undefined) {
+//       throw new Error("useConfig must be used within a ConfigProvider");
+//     }
+//     return context;
+// }

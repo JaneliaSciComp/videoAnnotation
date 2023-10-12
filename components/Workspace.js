@@ -201,7 +201,9 @@ export default function Workspace(props) {
     // }
 
     useEffect(() => {
+        console.log('1');
         if (btnConfigData) {
+            console.log('2');
             renderBtnGroup();
         }
       }, [btnConfigData, frameNum, frameAnnotation, drawType, skeletonLandmark]

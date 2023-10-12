@@ -40,6 +40,9 @@
 } */
 
 .designContainer {
+    margin: 1em auto;
+    padding-left: 1em;
+    padding-right: 1em; 
     border: 1px solid rgb(222, 226, 230);
     border-radius: 6px;
 }

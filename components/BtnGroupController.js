@@ -69,7 +69,7 @@ export default function BtnGroupController(props) {
             // setSkeletonData: skeletonData setter. To pass to child SkeletonEdgeController
     */
         
-    const [groupData, setGroupData] = useState();
+    const [groupData, setGroupData] = useState([]);
     const [index, setIndex] = useState();
     const [groupType, setGroupType] = useState();
     const [btnType, setBtnType] = useState();
@@ -284,12 +284,12 @@ export default function BtnGroupController(props) {
     //     return data; //arr
     // }
     function getData() {
-        const index = getSelfIndex();
+        // const index = getSelfIndex();
         let data = groupData;
         if (!data) {
             data=[]
         }
-        return data; //arr
+        return groupData; //arr
     }
 
     function getSelfIndex() {

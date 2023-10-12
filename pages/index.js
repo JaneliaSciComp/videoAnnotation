@@ -9,6 +9,7 @@ import SkeletonBtn from '../components/SkeletonBtn.js';
 import Canvas from '../components/Canvas.js';
 import VideoUploader from '../components/VideoUploader.js';
 import AnnotationDisplay from '../components/AnnotationDisplay.js';
+import Design from '../components/Design.js';
 // import {fabric} from 'fabric';
 
 
@@ -111,7 +112,7 @@ export default function Home() {
           
           <Canvas />
           <VideoUploader />
-
+          <Design />
         </Workspace>
       </main>
 
