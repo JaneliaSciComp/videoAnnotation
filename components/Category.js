@@ -1,3 +1,4 @@
+import React, {useState, useEffect} from 'react';
 import {Button} from 'react-bootstrap';
 import styles from '../styles/Button.module.css';
 import { useStates, useStateSetters } from './AppContext';
@@ -12,13 +13,20 @@ export default function Category(props) {
             // addAnnotationObj={addAnnotationObj}
             // setActiveIdObj={setActiveIdObj}
     */
+    const [color, setColor] = useState('black');
+    
+    const frameNum = useStates().frameNum;
+    const frameUrl = useStates().frameUrl;
+    // const addAnnotationObj = useStateSetters().addAnnotationObj;
+    const frameAnnotation = useStates().frameAnnotation;
+    const setFrameAnnotation = useStateSetters().setFrameAnnotation;
+    const setActiveAnnoObj = useStateSetters().setActiveAnnoObj;
 
-            const frameNum = useStates().frameNum;
-            const frameUrl = useStates().frameUrl;
-            // const addAnnotationObj = useStateSetters().addAnnotationObj;
-            const frameAnnotation = useStates().frameAnnotation;
-            const setFrameAnnotation = useStateSetters().setFrameAnnotation;
-            const setActiveAnnoObj = useStateSetters().setActiveAnnoObj;
+    useEffect(()=> {
+        if (props.color) {
+            setColor(props.color);
+        }
+    }, [props.color])
 
     function clickHandler() {
         if (Number.isInteger(frameNum) || frameUrl) {
@@ -27,7 +35,7 @@ export default function Category(props) {
                 id: id,
                 frameNum: frameNum,
                 label: props.label,
-                color: props.color,
+                color: color,
                 type: 'category',         
             };
             // props.addAnnotationObj(idObj);
@@ -38,7 +46,7 @@ export default function Category(props) {
 
     return (
         <Button className={`${styles["btn-category"]} ${styles.btn}`} 
-            style={{color: props.color, background: 'white', border:'2px solid '+props.color}} 
+            style={{color: color, background: 'white', border:'2px solid '+color}} 
             onClick={clickHandler}>
         {props.label}
         </Button>

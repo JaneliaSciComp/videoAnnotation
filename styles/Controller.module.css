@@ -40,7 +40,8 @@
 } */
 
 .designContainer {
-    margin: 1em auto;
+    width: 35em;
+    margin: 2em 0;
     padding-left: 1em;
     padding-right: 1em; 
     border: 1px solid rgb(222, 226, 230);
@@ -57,4 +58,9 @@
 .errorInfo {
     margin-left: 2em;
     color: red
+}
+
+.btnGroupControllerContainer {
+    width: 30em;
+    margin: 0.5em 0;
 }

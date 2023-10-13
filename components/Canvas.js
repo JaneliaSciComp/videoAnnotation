@@ -18,9 +18,9 @@ export default function Canvas(props) {
      * props:
      *      width: canvas width
      *      height: canvas height
-     *      circle_radius: radius for keypoint, skeleton landmark, polygon point
-     *      stroke_width: thinkness of line
-     *      wheel_sensitivity: wheel sensitivity for zooming
+     *      circleRadius: radius for keypoint, skeleton landmark, polygon point
+     *      strokeWidth: thinkness of line
+     *      wheelSensitivity: wheel sensitivity for zooming
      *       
      */
     const imgRef = useRef();
@@ -48,8 +48,6 @@ export default function Canvas(props) {
 
     //Set up canvas
     useEffect(() => {
-        // console.log(imgRef.current);
-
         if (!canvasObjRef.current) {
             const canvasObj = new fabric.Canvas('canvas', {
                 //TODO
@@ -68,44 +66,37 @@ export default function Canvas(props) {
             // );
 
             canvasObjRef.current = canvasObj;
-        }
-
-        
-        // imgRef.current.addEventListener("load", imageLoadHandler)
-        // canvasObjRef.current.on('mouse:wheel', wheelHandler);
-        // canvasObjRef.current.on('mouse:down', mouseDownHandler);
-        // canvasObjRef.current.on('mouse:dblclick', mouseDblclickHandler);
-        // canvasObjRef.current.on('mouse:move', mouseMoveHandler);
-        // canvasObjRef.current.on('mouse:up', mouseUpHandler);
-        // document.addEventListener("keydown", deleteKeyHandler); // add delete key event listener
-
-        // // console.log(canvasObjRef.current.__eventListeners);
-
-        // return () => {
-        //     const eventListeners = canvasObjRef.current.__eventListeners;
-        //     Object.keys(eventListeners).forEach(key => eventListeners[key]=[]);
-        //     document.removeEventListener("keydown", deleteKeyHandler);
-        // }
+        } 
       }, []
     )
 
-    
+
     useEffect(() => {
-        imgRef.current.addEventListener("load", imageLoadHandler);
-        canvasObjRef.current.on('mouse:wheel', wheelHandler);
-        canvasObjRef.current.on('mouse:down', mouseDownHandler);
-        canvasObjRef.current.on('mouse:dblclick', mouseDblclickHandler);
-        canvasObjRef.current.on('mouse:move', mouseMoveHandler);
-        canvasObjRef.current.on('mouse:up', mouseUpHandler);
+        if (imgRef.current) {
+            imgRef.current.addEventListener("load", imageLoadHandler);
+        }
+        // if (canvasObjRef.current) {
+            canvasObjRef.current.on('mouse:wheel', wheelHandler);
+            canvasObjRef.current.on('mouse:down', mouseDownHandler);
+            canvasObjRef.current.on('mouse:dblclick', mouseDblclickHandler);
+            canvasObjRef.current.on('mouse:move', mouseMoveHandler);
+            canvasObjRef.current.on('mouse:up', mouseUpHandler);
+        // }
         document.addEventListener("keydown", deleteKeyHandler); // add delete key event listener
 
         // console.log(canvasObjRef.current.__eventListeners);
 
         return () => {
-            const eventListeners = canvasObjRef.current.__eventListeners;
-            Object.keys(eventListeners).forEach(key => eventListeners[key]=[]);
+            // if (canvasObjRef.current) {
+                const eventListeners = canvasObjRef.current.__eventListeners;
+                // if (eventListeners) {
+                    Object.keys(eventListeners).forEach(key => eventListeners[key]=[]);
+                // }
+            // }
             document.removeEventListener("keydown", deleteKeyHandler);
-            imgRef.current.removeEventListener("load", imageLoadHandler);
+            if (imgRef.current) {
+                imgRef.current.removeEventListener("load", imageLoadHandler);
+            }
         }
       }, [videoId, frameUrl, frameNum, drawType, skeletonLandmark, frameAnnotation, btnConfigData] /////check if these are enough
     )
@@ -125,6 +116,7 @@ export default function Canvas(props) {
         
       }, [videoId]
     )
+
 
 
     useEffect(() => {
@@ -307,7 +299,8 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
         let zoom = canvas.getZoom();
         // zoom *= 0.999 ** (-opt.e.deltaY);
-        zoom += e.deltaY * WHEEL_SENSITIVITY /10000;
+        const sensitivity = props.wheelSensitivity ? props.wheelSensitivity : WHEEL_SENSITIVITY;
+        zoom += e.deltaY * sensitivity /10000;
         zoom = Math.max(1, zoom);
         canvas.zoomToPoint({x: e.offsetX, y: e.offsetY}, zoom);
         if (zoom == 1) { //recenter canvas
@@ -744,7 +737,7 @@ export default function Canvas(props) {
             width: data.width,
             height: data.height,
             stroke: annoObjToDraw.color,
-            strokeWidth: props.stroke_width ? props.stroke_width : STROKE_WIDTH,
+            strokeWidth: props.strokeWidth ? props.strokeWidth : STROKE_WIDTH,
             strokeUniform: true,
             fill: null,
             lockRotation: true,
@@ -764,7 +757,7 @@ export default function Canvas(props) {
         const point = new fabric.Circle({
             left: clickPoint.x,  /////
             top: clickPoint.y,  /////
-            radius: props.circle_radius ? props.circle_radius : CIRCLE_RADIUS,
+            radius: props.circleRadius ? props.circleRadius : CIRCLE_RADIUS,
             originX: 'center',
             originY: 'center',
             strokeWidth: 1,
@@ -813,7 +806,7 @@ export default function Canvas(props) {
         return new fabric.Line([
             startPoint.x, startPoint.y, endPoint.x, endPoint.y
         ], {
-            strokeWidth: props.stroke_width ? props.stroke_width : STROKE_WIDTH,
+            strokeWidth: props.strokeWidth ? props.strokeWidth : STROKE_WIDTH,
             stroke: idObj.color,
             selectable: false,
             type: idObj.type+'Line',
@@ -835,7 +828,7 @@ export default function Canvas(props) {
                 type: annoObjToDraw.type,
                 lable: annoObjToDraw.label,
                 stroke: annoObjToDraw.color,
-                strokeWidth: props.stroke_width ? props.stroke_width : STROKE_WIDTH,
+                strokeWidth: props.strokeWidth ? props.strokeWidth : STROKE_WIDTH,
                 strokeUniform: true,
                 fill: false,
                 // lockRotation: true,

@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
 // import { saveAs } from 'file-saver';
 // import JSZip from "jszip";
-import videoStyles from '../styles/Video.module.css';
+import styles from '../styles/Video.module.css';
 import { InputNumber, Slider } from 'antd';
 import { CaretRightOutlined, PauseOutlined } from '@ant-design/icons';
 import {Row, Col, Form, Button} from 'react-bootstrap';
@@ -203,12 +203,12 @@ export default function VideoUploader(props) {
 
 
     return (
-        <>
+        <div className={styles.videoUploaderContainer}>
             {/* <input type='file' id='videoInput' accept='.jpg, .mp4, .mov, .avi' onChange={submitVideoHandler}></input> */}
             <Row >
                 <Col sm={5} className='mt-2 '>
                     <span className='me-1'>FPS</span>
-                    <InputNumber className={videoStyles.playFpsInput} 
+                    <InputNumber className={styles.playFpsInput} 
                         min={totalFrameCount==0 ? 0 : 1}
                         max={fps==0 ? 0 : 2*fps} //TODO
                         value={playFps}
@@ -216,7 +216,7 @@ export default function VideoUploader(props) {
                         size="small"/>
                     <CaretRightOutlined className=' ms-1' onClick={playClickHandler}/>
                     <PauseOutlined className=' ms-1' onClick={pauseClickHandler} />
-                    <InputNumber className={videoStyles.sliderValueInput} size='small'
+                    <InputNumber className={styles.sliderValueInput} size='small'
                         min={0}
                         max={totalFrameCount}
                         defaultValue={0}
@@ -255,7 +255,7 @@ export default function VideoUploader(props) {
                     
                 </Form>
             </Row>
-        </>
+        </div>
     )
 
 }

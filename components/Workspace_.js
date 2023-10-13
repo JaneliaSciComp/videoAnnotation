@@ -17,11 +17,6 @@ import { StatesProvider } from './AppContext';
 
 
 export default function Workspace(props) {
-    /**
-     * props:
-     *      btnConfigData
-     *      url: image url or video url // or put this in Canvas
-     */
     const [videoId, setVideoId] = useState();
     const [frameUrl, setFrameUrl] = useState('/fly.png'); //'/fly.png'
     const [frameNum, setFrameNum] = useState();
@@ -126,7 +121,6 @@ export default function Workspace(props) {
         }
     }, [props.btnConfigData])
 
-
     useEffect(() => {
         //save frame anno data for last video
         saveAnnotationAndUpdateStates();
@@ -216,6 +210,7 @@ export default function Workspace(props) {
     // }
 
     useEffect(() => {
+        console.log('create btns');
         if (btnConfigData) {
             renderBtnGroup();
         }
@@ -243,7 +238,7 @@ export default function Workspace(props) {
                                         frameAnnotation={data.groupType==='skeleton' ? frameAnnotation : null}
                                     />
                         })
-        // console.log(btnGroupIds);
+        console.log('createBtns2');
         setBtnGroups(groups);
     }
 
@@ -265,7 +260,7 @@ export default function Workspace(props) {
                 </StatesProvider>
             </main>
 
-          {/* <main className={styles.main}>
+          <main className={styles.main}>
           <StatesProvider states={states} stateSetters={stateSetters}>
             <Row className='mx-1 my-1'>
                 <Design 
@@ -278,7 +273,7 @@ export default function Workspace(props) {
     
             <Row >
                 <Col xs={6}>
-                    {btnGroups}  */}
+                    {btnGroups} 
                     
                     {/* <Row className='mx-1 my-1'>
                         <BtnGroup 
@@ -365,7 +360,7 @@ export default function Workspace(props) {
                             addAnnotationObj={addAnnotationObj}
                             />
                     </Row> */}
-                {/* </Col>
+                </Col>
                 <Col xs={6} >
                     <AnnotationDisplay annoObj={activeAnnoObj}/>
                 </Col>
@@ -404,7 +399,7 @@ export default function Workspace(props) {
                 <VideoUploader setFrameUrl={setFrameUrl} setFrameNum={setFrameNum} setVideoId={setVideoId} />
             </Row>
             </StatesProvider>
-          </main> */}
+          </main>
         </div>
     )
 }

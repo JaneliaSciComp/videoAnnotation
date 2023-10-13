@@ -533,7 +533,10 @@ export default function BtnGroupController(props) {
                 btnNum: btnNum,
                 childData: [...groupData]
             };
-            const edgeData = btnConfigData[index].edgeData; //if already set edge data for skeleton
+            let edgeData;
+            if (btnConfigData[index]) {
+                const edgeData = btnConfigData[index].edgeData; //if already set edge data for skeleton
+            }
             if (edgeData) {
                 newData.edgeData = {...edgeData};
             }
@@ -547,8 +550,8 @@ export default function BtnGroupController(props) {
 
 
     return (
-        <div className='my-1'>
-            <div className='my-2 d-inline-flex'>
+        <div className={styles.btnGroupControllerContainer}>
+            <div className=' d-inline-flex'>
                 <Space.Compact block className='px-0'>
                     <Select className={styles.groupSelect}
                         defaultValue={props.defaultGroupType}
@@ -603,7 +606,7 @@ export default function BtnGroupController(props) {
                 <p className={styles.errorInfo}>{error}</p>
                 : null
             }
-            <div className='ms-3'>
+            <div className='ms-3 my-2'>
                 {children ?
                     <Space direction='vertical'>
                         {children}

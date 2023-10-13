@@ -8,11 +8,6 @@ export default function BtnGroup(props) {
     /*
         To bundle a group of annotating btns of the same type.
         Props: 
-            // groupType='shapeBtn'
-            // btnType='bbox'. Omit for 'category' btns
-            // numOfBtn={2}
-            // labels={['fly','mouse']}. The label for each child btn
-            // colors={['red', 'blue']}. The color for each child btn
             data: 
             {   
                 groupIndex: '...',
@@ -29,11 +24,6 @@ export default function BtnGroup(props) {
                     ...
                 ]
             }
-            // frameNum={frameNum}
-            // addAnnotationObj={addAnnotationObj}
-            // setActiveIdObj={setActiveIdObj}
-            // drawType={drawType}
-            // setDrawType={setDrawType}
     */
 
     const [btns, setBtns] = useState()

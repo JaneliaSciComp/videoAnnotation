@@ -1,4 +1,5 @@
 import React, {useState, useEffect} from 'react';
+import styles from '../styles/Workspace.module.css';
 import { Descriptions } from 'antd';
 import { useStates } from './AppContext';
 
@@ -60,7 +61,7 @@ export default function AnnotationDisplay(props) {
     return (
         <Descriptions 
             className='my-2 px-2 py-2 border rounded'
-            style={{height: '200px', overflow: 'scroll', padding: '1em 0'}} 
+            style={{width: '25em', height: '200px', overflow: 'scroll', padding: '1em 0'}} 
             title="Annotation" 
             items={info} 
             />
