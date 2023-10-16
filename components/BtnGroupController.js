@@ -132,6 +132,7 @@ export default function BtnGroupController(props) {
     useEffect(()=>{
         //when Design set getData to true, add the groupData to btnConfigData
         const index = getSelfIndex();
+        console.log(index, props.getData);
         if (index && props.getData && props.getData[index]) { 
             // const labelsValid = checkLabels(); 
             // if (labelsValid) {
@@ -524,7 +525,7 @@ export default function BtnGroupController(props) {
     function addDataToBtnConfigData() {
         const index = getSelfIndex();
         const labelsValid = checkLabels(); 
-        console.log(labelsValid);
+        console.log(index, 'pass data');
         
         if (labelsValid) {
             const newData = {
@@ -535,7 +536,7 @@ export default function BtnGroupController(props) {
             };
             let edgeData;
             if (btnConfigData[index]) {
-                const edgeData = btnConfigData[index].edgeData; //if already set edge data for skeleton
+                edgeData = btnConfigData[index].edgeData; //if already set edge data for skeleton
             }
             if (edgeData) {
                 newData.edgeData = {...edgeData};
@@ -550,7 +551,8 @@ export default function BtnGroupController(props) {
 
 
     return (
-        <div className={styles.btnGroupControllerContainer}>
+        <div className={props.bordered?styles.btnGroupControllerContainerBordered : styles.btnGroupControllerContainer} 
+            style={{}}>
             <div className=' d-inline-flex'>
                 <Space.Compact block className='px-0'>
                     <Select className={styles.groupSelect}

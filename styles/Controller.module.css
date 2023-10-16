@@ -61,6 +61,15 @@
 }
 
 .btnGroupControllerContainer {
-    width: 30em;
+    width: 35em;
     margin: 0.5em 0;
+    padding: 1em;
+}
+
+.btnGroupControllerContainerBordered {
+    width: 35em;
+    margin: 0.5em 0;
+    padding: 1em;
+    border: 1px solid rgb(222, 226, 230);
+    border-radius: 6px;
 }

@@ -40,6 +40,15 @@ export default function Design(props) {
         props:
             // data: Required. The generated data, structure as above, will be append to it. 
             // setData: Required. The setter of data. Will be called in the Create btn click handler to append data.
+            defaultGroupType: 'category'/'shape'/'skeleton'. Optional. When specified, the btnType dropdown will be generated accordingly; otherwise, use general list.
+            groupType: set groupType for each child btnGroupController
+            defaultBtnType: set defaultGroupType for each child btnGroupController
+            btnType: set btnType for each child btnGroupController
+            defaultBtnNum: set defaultBtnNum for each child btnGroupController
+            btnNum: set btnNum for each child btnGroupController
+            disableGroupTypeSelect: disable child btnGroupController's groupTypeSelect
+            disableBtnTypeSelect: disable child btnGroupController's btnTypeSelect
+            disableBtnNumInput: disable child btnGroupController's btnNumInput
             onAddBtnClick: When the Add btn is clicked, it will add a btnGroupController. Developer can also add extra function by defining this api. 
                 It will be called after the prebuilt function.
             onCreateBtnClick: When the Create btn is clicked, it will append the btn data to the data property by calling setData. 
@@ -120,9 +129,12 @@ export default function Design(props) {
 
     function onCreateBtnClick() {
         const newGetData = {};
+        console.log(getData);
         for (let i in getData) {
+            console.log(i);
             newGetData[i] = true;
         }
+        console.log(newGetData)
         setGetData(newGetData);
 
         if (props.onCreateBtnClick) {
@@ -167,6 +179,15 @@ export default function Design(props) {
                             // setData={setData}
                             groupTypePlaceHolder='Group Type'
                             btnTypePlaceHolder='Btn type'
+                            defaultGroupType={props.defaultGroupType}
+                            groupType={props.groupType}
+                            defaultBtnType={props.defualtBtnType}
+                            btnType={props.btnType}
+                            defaultBtnNum={props.defaultBtnNum}
+                            btnNum={props.btnNum}
+                            disableGroupTypeSelect={props.disableGroupTypeSelect}
+                            disableBtnTypeSelect={props.disableBtnTypeSelect}
+                            disableBtnNumInput={props.disableBtnNumInput}
                             enableDelete
                             onDelete={onDelete}
                             getData={getData}

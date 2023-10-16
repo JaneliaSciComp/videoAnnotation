@@ -36,10 +36,32 @@ export default function Home() {
   // }
   // // , [props.opencvReady]
   // )
+
+  const groupData = {
+    groupIndex:'123',
+    groupType: 'shape',
+    btnType: 'bbox',
+    btnNum: 2,
+    childData: [
+        {
+            index: 0, 
+            btnType: 'bbox',
+            label: 'head',
+            color: '#1677FF'
+            },
+        {
+            index: 1, 
+            btnType: 'bbox',
+            label: 'neck',
+            color: '#F5222D'
+            },
+    ]
+  }
+  
   const btnConfigData = {'123456': {
     groupType: 'skeleton',
     btnType: 'skeleton',
-    btnNum: 5,
+    btnNum: 2,
     childData: [
         {
             index: 0, 
@@ -68,9 +90,15 @@ export default function Home() {
         {
             index: 4, 
             btnType: 'skeleton',
-            label: 'tail',
+            label: 'body',
             color: '#EB2F96'
             },
+        {
+          index: 5, 
+          btnType: 'skeleton',
+          label: 'tail',
+          color: '#342F96'
+          },
     ],
     edgeData: {
         color: '#1677FF',
@@ -79,13 +107,13 @@ export default function Home() {
             new Set([0,2,3,4]),
             new Set([1]),
             new Set([1]),
-            new Set([1])
+            new Set([1, 5]),
+            new Set([4])
         ]
     }
 }}
 
-// console.log('index', btnConfigData[Object.keys(btnConfigData)[0]].childData);
-
+// /Users/pengxi/video/numbered.mp4
   
 
 

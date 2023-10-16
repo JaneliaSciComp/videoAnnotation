@@ -121,6 +121,7 @@ export default function Workspace(props) {
     }
 
     useEffect(()=> {
+        console.log('btnConfigData', btnConfigData);
         if (props.btnConfigData) {
             setBtnConfigData({...props.btnConfigData});
         }
