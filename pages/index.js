@@ -10,6 +10,7 @@ import Design from '../components/Design.js';
 import BtnGroupController from '../components/BtnGroupController';
 import BtnContainer from '../components/BtnContainer.js';
 import BtnGroup from '../components/BtnGroup.js';
+import {Row, Col} from 'react-bootstrap';
 
 
 
@@ -92,14 +93,23 @@ export default function Home() {
 
   return (
     <div>
-      <Workspace >
+      <Workspace btnConfigData={btnConfigData}>
         {/* <Category label='chase'/>
         <ShapeBtn type='bbox' label='fly' color='red' /> */}
         {/* <BtnGroup data={groupData} /> */}
         {/* <BtnGroupController index='12345' groupType='skeleton' btnType='skeleton' disableGroupTypeSelect disableBtnTypeSelect /> */}
-        <Design />
-        <BtnContainer />
-        <AnnotationDisplay />
+        {/* <Design /> */}
+        <Row >
+          <Col>
+            <BtnContainer />
+            <ShapeBtn type='keyPoint' label='test' color='red' />
+          </Col>
+          <Col>
+            <AnnotationDisplay />
+          </Col>
+          
+        </Row>
+        
         <Canvas />
         <VideoUploader />
       </Workspace>

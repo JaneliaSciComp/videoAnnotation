@@ -29,7 +29,7 @@ export default function Canvas(props) {
     // const keyPointObjListRef = useRef({});
     // const bboxObjListRef = useRef({});
     // const polygonObjListRef = useRef({});
-    const fabricObjListRef = useRef({});
+    const fabricObjListRef = useRef({}); // for skeleton: annoId: {id: annoId, type: 'skeleton', landmarks: [KeyPoints (if not labelled, then that entry is empty)], edges: {'0-1': Line, ...} }
 
     const videoId = useStates().videoId;
     const frameUrl = useStates().frameUrl;
@@ -149,6 +149,16 @@ export default function Canvas(props) {
     // )
 
 
+    useEffect(() => {
+        // Two places can change drawType, drawSkeleton() after drawing the last landmark, and skeletonBtn after user choose the last landmark as 'not labelled'
+        const canvas = canvasObjRef.current;
+        if (!drawType && canvas.isDrawingSkeleton) {
+            finishDrawSkeleton(); //pass skeletonObj to fabricObjListRef
+            canvas.isDrawingSkeleton=false;
+        }
+    }, [drawType])
+
+
     function createFabricObjBasedOnAnnotation() {
         if (Object.keys(frameAnnotation).length>0) {
             console.log('draw anno');
@@ -214,7 +224,7 @@ export default function Canvas(props) {
     }
 
 
-    /*  For the next four functions
+    /*  For the next five functions
         obj contains coordinates/width/height relative to canvas plane
         convert to coordinates relative to img plane 
     */
@@ -246,6 +256,21 @@ export default function Canvas(props) {
         const newPoints = getUpdatedPolygonPoints(obj);
         const res = newPoints.map(p=>getPointCoordToImage(p));
         return Object.assign({}, res);
+    }
+
+    function getSkeletonCoordToImage(obj) { //obj is the skeleton obj in fabricObjRef: {id: , type:'skeleton', landmarks: [...], edges: {'0-1': Line, ...}}
+        const oldData = frameAnnotation[obj.id].data; // anno data is already created before skeleton finish drawing
+        const newData = oldData.map((coorArr,i) => { //coorArr:[x,y,v]. Loop through oldData, not obj.landmarks, because landmark could be unlabelled in obj.landmarks, but has to be existed in oldData
+            const p = obj.landmarks[i];
+            if (p) { //p could be unlabelled, thus undefined
+                const newPoint = getPointCoordToImage(p.getCenterPoint());
+                return [newPoint.x, newPoint.y, coorArr[2]];
+            } else {
+                return coorArr;
+            }
+        });
+        console.log(oldData, newData);
+        return newData;
     }
 
     function getUpdatedPolygonPoints(polygon) {
@@ -351,30 +376,15 @@ export default function Canvas(props) {
         }
         
         if (canvas.getActiveObject()){ // when click on an obj
-            // if (canvas.activeObj) { // if click on the same active obj, use is editing it
-            //     canvas.isEditingObj = true;
-            //     console.log('canvas activeObj2', canvas.activeObj);
-            // } else { // if click on a new obj, use is choosing the obj
-            //     canvas.activeObj = canvas.getActiveObject();
-            //     console.log('canvas activeObj1', canvas.activeObj);
-            //     // let activeObjId = null;
-            //     // switch (canvas.activeObj.type) {
-            //     //     case 'keyPoint':
-            //     //         activeObjId = props.keyPointIdList
-            //     // }
-            //     // props.setActiveIdObj(activeObjId);
-            // }
             const activeObj = canvas.getActiveObject();
             if (ANNOTATION_TYPES.has(activeObj.type)) {
-                // canvas.activeObj = activeObj;
-                // canvas.isEditingObj = true;
-                // setActiveObjData();
                 addActiveIdObj(activeObj);
             } else if (activeObj.type === 'skeletonPoint') {
-                //TODO: add obj to anno display
-
+                const skeletonObj = fabricObjListRef.current[activeObj.owner];
+                addActiveIdObj(skeletonObj);
             }
         }
+
         // console.log(drawType);
         if (drawType === 'keyPoint') {
             const idTodraw = getIdToDraw();
@@ -398,17 +408,18 @@ export default function Canvas(props) {
             || canvas.getActiveObject().owner != canvas.editingPolygonId) {
                 finishEditPolygon();
             } else {    
-                console.log('selected');
                 canvas.isDraggingPolygonPoint = true;
             }
         }
 
         // this if must be above next if, otherwise dragSkeletonPoint will be called right after drawing the last landmark and cause error
-        if (canvas.getActiveObject() && canvas.getActiveObject().type==='skeletonPoint' && canvas.drawType !== 'skeleton') {
+        if (canvas.getActiveObject() && canvas.getActiveObject().type==='skeletonPoint' && drawType !== 'skeleton') {
             canvas.isDraggingSkeletonPoint = true;
+            console.log(canvas.isDraggingSkeletonPoint);
         }
 
         if (drawType === 'skeleton') {
+            canvas.isDrawingSkeleton = true;
             drawSkeleton();
         }
 
@@ -428,11 +439,11 @@ export default function Canvas(props) {
         if (drawType==='bbox' && canvas.bboxStartPosition) {
             drawBBox();
         }
-        if (canvas.activeObj && canvas.isEditingObj) {
+        if (canvas.activeObj && canvas.isEditingObj) { //when drag, rotate, scale obj, update coord
             setActiveObjData();
             // props.setActiveIdObj(props.rectIdList[canvas.activeObj.id]);
         }
-        if (canvas.isDraggingSkeletonPoint) {
+        if (canvas.isDraggingSkeletonPoint) { //when drag skeletonPoint, the if above also holds, so will update coord when drag skeletonPoint
             dragSkeletonPoint();
         }
     }
@@ -445,7 +456,7 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
         const obj = canvas.activeObj;
         let data = {};
-        let newIdObj = {};
+        let newAnnoObj = {};
         // console.log('setActiveObjData');
         switch (obj.type) {
             case 'keyPoint':
@@ -457,11 +468,14 @@ export default function Canvas(props) {
             case 'polygon':
                 data = getPolygonCoordToImage(obj);
                 break;
+            case 'skeleton':
+                data = getSkeletonCoordToImage(obj);
+                break;
         }
-        newIdObj = {...frameAnnotation[obj.id], data: data}; 
+        newAnnoObj = {...frameAnnotation[obj.id], data: data}; 
         // props.setFrameAnnotation({...props.frameAnnotation, [obj.id]: newIdObj});
-        frameAnnotation[obj.id] = newIdObj;
-        setActiveAnnoObj(newIdObj);
+        frameAnnotation[obj.id] = newAnnoObj;
+        setActiveAnnoObj(newAnnoObj);
     }
 
 
@@ -600,6 +614,7 @@ export default function Canvas(props) {
         //console.log(clickPoint);
         //create landmark
         const landmark = createPoint(clickPoint, landmarkInfo, skeletonLandmark);
+        
         canvas.add(landmark).setActiveObject(landmark);
         
         //create edges
@@ -621,26 +636,51 @@ export default function Canvas(props) {
             }
         })
 
-        canvas.skeletonPoints.push(landmark); // must be after creating edges
+        canvas.skeletonPoints[skeletonLandmark] = (landmark); // must be after creating edges
 
 
         if (skeletonLandmark < landmarkTotalNum - 1) { // if not done with drawing
             setSkeletonLandmark(skeletonLandmark + 1);
         } else { // if done
             //add the skeleton landmarks and edges to ref
-            fabricObjListRef.current[annoIdToDraw] = {
-                landmarks: canvas.skeletonPoints,
-                edges: canvas.skeletonLines,
-            }
-            canvas.skeletonPoints = [];
-            canvas.skeletonLines = {};
+            // fabricObjListRef.current[annoIdToDraw] = {
+            //     landmarks: canvas.skeletonPoints,
+            //     edges: canvas.skeletonLines,
+            // }
+            // canvas.skeletonPoints = [];
+            // canvas.skeletonLines = {};
             
-            //TODO: add data to annotation
+            // //TODO: add data to annotation
 
+            // setSkeletonLandmark(null);
+            // setDrawType(null);
+            // canvas.selection = true;
             setSkeletonLandmark(null);
-            setDrawType(null);
-            canvas.selection = true;
+            setDrawType(null); // will trigger useEffect to call finishDrawSkeleton() 
         }
+    }
+
+
+    function finishDrawSkeleton() {
+        // pass skeletonObj to fabricObjListRef
+        // called by useEffect (monitor drawType)
+        const canvas = canvasObjRef.current;
+        canvas.skeletonPoints.forEach(p => {p.lockMovementX=false, p.lockMovementY=false});
+        const annoIdToDraw = getIdToDraw();
+        const skeletonObj = {
+            id: annoIdToDraw,
+            type: 'skeleton',
+            landmarks: canvas.skeletonPoints,
+            edges: canvas.skeletonLines,
+        };
+        fabricObjListRef.current[annoIdToDraw] = skeletonObj;
+        canvas.skeletonPoints = [];
+        canvas.skeletonLines = {};
+        
+        //TODO: add data to annotation
+        addActiveIdObj(skeletonObj);
+        
+        // canvas.selection = true;
     }
 
 
@@ -754,6 +794,7 @@ export default function Canvas(props) {
 
     
     function createPoint(clickPoint, annoObj, index) {
+        // console.log(annoObj.type==='skeleton'||annoObj.type==='polygon');
         const point = new fabric.Circle({
             left: clickPoint.x,  /////
             top: clickPoint.y,  /////
@@ -770,6 +811,9 @@ export default function Canvas(props) {
             lockScalingFlip: true,
             lockSkewingX: true,
             lockSkewingY: true,
+            hasControls: false,
+            lockMovementX: annoObj.type==='skeleton'||annoObj.type==='polygon' ? true : false,
+            lockMovementY: annoObj.type==='skeleton'||annoObj.type==='polygon' ? true : false,
             //centeredScaling: true,
             type: annoObj.type + 'Point', 
             owner: annoObj.id,
@@ -890,7 +934,7 @@ export default function Canvas(props) {
 
     function dragSkeletonPoint() {
         const canvas = canvasObjRef.current;
-        // console.log('dragging');
+        console.log('dragging skeleton point');
         const point = canvas.getActiveObject();
         const landmarks = fabricObjListRef.current[point.owner].landmarks;
         const edgesInfo = btnConfigData[frameAnnotation[point.owner].groupIndex].edgeData; // {color: '', edges: [set(), ...]}
@@ -902,19 +946,23 @@ export default function Canvas(props) {
         // console.log(point, landmarks, edgesInfo);
         const neighbors = Array.from(edgesInfo.edges[point.index]);
         neighbors.forEach(n => {
-                const edge = createLine(landmarks[n].getCenterPoint(), point.getCenterPoint(), edgeInfo);
-                let name;
-                if (n < point.index) {
-                    name = `${n}-${point.index}`;
-                } else {
-                    name = `${point.index}-${n}`;
+                const neighborObj = landmarks[n];
+                if (neighborObj) {
+                    const edge = createLine(neighborObj.getCenterPoint(), point.getCenterPoint(), edgeInfo);
+                    let name;
+                    if (n < point.index) {
+                        name = `${n}-${point.index}`;
+                    } else {
+                        name = `${point.index}-${n}`;
+                    }
+                    const oldEdge = fabricObjListRef.current[point.owner].edges[name];
+                    canvas.remove(oldEdge);
+                    canvas.add(edge);
+                    canvas.bringToFront(point);
+                    canvas.bringToFront(landmarks[n]);
+                    fabricObjListRef.current[point.owner].edges[name] = edge;
                 }
-                const oldEdge = fabricObjListRef.current[point.owner].edges[name];
-                canvas.remove(oldEdge);
-                canvas.add(edge);
-                canvas.bringToFront(point);
-                canvas.bringToFront(landmarks[n]);
-                fabricObjListRef.current[point.owner].edges[name] = edge;
+                
             }
         )
     }
@@ -962,11 +1010,11 @@ export default function Canvas(props) {
         setActiveAnnoObj(null);
     }
 
-    function addActiveIdObj(activeObj) {
+    function addActiveIdObj(activeObj) { // for skeleton: the skeleton Obj in fabricObjListRef
         // these commands will be used at multiple places, when create, choose, edit, and delete an object
         const canvas = canvasObjRef.current;
         canvas.activeObj = activeObj;
-        canvas.isEditingObj = true;
+        canvas.isEditingObj = true; // when drag, rotate, scale obj
         setActiveObjData();
     }
 
