@@ -269,7 +269,7 @@ export default function Canvas(props) {
                 return coorArr;
             }
         });
-        console.log(oldData, newData);
+        // console.log(oldData, newData);
         return newData;
     }
 
@@ -415,7 +415,7 @@ export default function Canvas(props) {
         // this if must be above next if, otherwise dragSkeletonPoint will be called right after drawing the last landmark and cause error
         if (canvas.getActiveObject() && canvas.getActiveObject().type==='skeletonPoint' && drawType !== 'skeleton') {
             canvas.isDraggingSkeletonPoint = true;
-            console.log(canvas.isDraggingSkeletonPoint);
+            // console.log(canvas.isDraggingSkeletonPoint);
         }
 
         if (drawType === 'skeleton') {
@@ -505,7 +505,8 @@ export default function Canvas(props) {
         if ((e.key === 'Backspace' || e.key === 'Delete') 
         && canvasObjRef.current.getActiveObject()
         && canvasObjRef.current.getActiveObject().type !== 'polygonPoint'
-        && canvasObjRef.current.getActiveObject().type !== 'skeletonPoint') {
+        // && canvasObjRef.current.getActiveObject().type !== 'skeletonPoint'
+        ) {
             removeObj();
         }
         // console.log(e.key); // Backspace
@@ -997,13 +998,26 @@ export default function Canvas(props) {
         // remove obj from canvas, objListRef, remove idObj in parent
         const canvas = canvasObjRef.current;
         const activeObj = canvas.getActiveObject();
-        delete(fabricObjListRef.current[activeObj.id]);
-        // const annotationList = {...props.frameAnnotation};
-        // delete(annotationList[activeObj.id]);
-        // props.setFrameAnnotation(annotationList);
-        delete(frameAnnotation[activeObj.id]);
         
-        canvas.remove(activeObj);
+        if (activeObj.type === 'skeletonPoint') {
+            if (!drawType) { // if already finished drawing, allow deleting, and will delete the entire skeleton
+                console.log('called');
+                const annoId = activeObj.owner;
+                const skeletonObj = fabricObjListRef.current[annoId];
+                skeletonObj.landmarks.forEach(p => canvas.remove(p));
+                Object.entries(skeletonObj.edges).forEach(([_, line]) => canvas.remove(line));
+                delete(fabricObjListRef.current[annoId]);
+                delete(frameAnnotation[annoId]);
+            }
+        } else {
+            delete(fabricObjListRef.current[activeObj.id]);
+            // const annotationList = {...props.frameAnnotation};
+            // delete(annotationList[activeObj.id]);
+            // props.setFrameAnnotation(annotationList);
+            delete(frameAnnotation[activeObj.id]);
+            
+            canvas.remove(activeObj);
+        }
 
         canvas.activeObj = null;
         canvas.isEditingObj = null;
