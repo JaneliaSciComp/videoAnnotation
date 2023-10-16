@@ -92,11 +92,12 @@ export default function Home() {
 
   return (
     <div>
-      <Workspace btnConfigData={btnConfigData}>
+      <Workspace >
         {/* <Category label='chase'/>
         <ShapeBtn type='bbox' label='fly' color='red' /> */}
         {/* <BtnGroup data={groupData} /> */}
         {/* <BtnGroupController index='12345' groupType='skeleton' btnType='skeleton' disableGroupTypeSelect disableBtnTypeSelect /> */}
+        <Design />
         <BtnContainer />
         <AnnotationDisplay />
         <Canvas />

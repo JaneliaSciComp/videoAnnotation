@@ -132,7 +132,7 @@ export default function BtnGroupController(props) {
     useEffect(()=>{
         //when Design set getData to true, add the groupData to btnConfigData
         const index = getSelfIndex();
-        console.log(index, props.getData);
+        // console.log(index, props.getData);
         if (index && props.getData && props.getData[index]) { 
             // const labelsValid = checkLabels(); 
             // if (labelsValid) {
@@ -148,7 +148,7 @@ export default function BtnGroupController(props) {
             //     setError('Labels cannot be empty!');
             // }
             addDataToBtnConfigData();
-            props.setGetData({...getData, [index]: false});
+            props.setGetData({...props.getData, [index]: false});
         }
       }, [props.getData]
     )
@@ -551,8 +551,7 @@ export default function BtnGroupController(props) {
 
 
     return (
-        <div className={props.bordered?styles.btnGroupControllerContainerBordered : styles.btnGroupControllerContainer} 
-            style={{}}>
+        <div className={props.bordered?styles.btnGroupControllerContainerBordered : styles.btnGroupControllerContainer} >
             <div className=' d-inline-flex'>
                 <Space.Compact block className='px-0'>
                     <Select className={styles.groupSelect}

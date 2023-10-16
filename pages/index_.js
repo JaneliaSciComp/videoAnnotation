@@ -137,11 +137,8 @@ export default function Home() {
               />
           
           <AnnotationDisplay />
-          
           <Canvas />
           <VideoUploader />
-          <Design />
-          <BtnGroupController groupType='category' disableGroupTypeSelect />
         </Workspace>
       </main>
 
