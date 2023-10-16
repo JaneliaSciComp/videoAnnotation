@@ -948,7 +948,7 @@ export default function Canvas(props) {
         const neighbors = Array.from(edgesInfo.edges[point.index]);
         neighbors.forEach(n => {
                 const neighborObj = landmarks[n];
-                if (neighborObj) {
+                if (neighborObj) { // check if neighbor exists, if not labelled, then undefined
                     const edge = createLine(neighborObj.getCenterPoint(), point.getCenterPoint(), edgeInfo);
                     let name;
                     if (n < point.index) {
@@ -1001,7 +1001,6 @@ export default function Canvas(props) {
         
         if (activeObj.type === 'skeletonPoint') {
             if (!drawType) { // if already finished drawing, allow deleting, and will delete the entire skeleton
-                console.log('called');
                 const annoId = activeObj.owner;
                 const skeletonObj = fabricObjListRef.current[annoId];
                 skeletonObj.landmarks.forEach(p => canvas.remove(p));

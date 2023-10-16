@@ -131,10 +131,10 @@ export default function SkeletonBtn(props) {
             const initData = props.data.map(_ => [null, null, 2]); // initialize data holder and default visibility (2) to each landmark anno arr
             const annoObj = {
                 id: id,
+                type: 'skeleton',   
+                groupIndex: props.groupIndex, 
                 frameNum: frameNum,
                 data: initData,
-                type: 'skeleton',   
-                groupIndex: props.groupIndex,      
             };
             // console.log('shape called', props);
             setFrameAnnotation({...frameAnnotation, [id]: annoObj});
