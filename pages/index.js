@@ -1,4 +1,5 @@
 import React from 'react';
+import Head from 'next/head';
 import Workspace from '../components/Workspace.js';
 import ShapeBtn from '../components/ShapeBtn.js';
 import Category from '../components/Category.js';
@@ -93,6 +94,11 @@ export default function Home() {
 
   return (
     <div>
+      <Head>
+        <title>Annotator</title>
+        <link rel="icon" href="/favicon.ico" />
+      </Head>
+
       <Workspace btnConfigData={btnConfigData}>
         {/* <Category label='chase'/>
         <ShapeBtn type='bbox' label='fly' color='red' /> */}

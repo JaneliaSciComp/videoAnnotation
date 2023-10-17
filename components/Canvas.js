@@ -29,7 +29,7 @@ export default function Canvas(props) {
     // const keyPointObjListRef = useRef({});
     // const bboxObjListRef = useRef({});
     // const polygonObjListRef = useRef({});
-    const fabricObjListRef = useRef({}); // for skeleton: annoId: {id: annoId, type: 'skeleton', landmarks: [KeyPoints (if not labelled, then that entry is empty)], edges: {'0-1': Line, ...} }
+    const fabricObjListRef = useRef({}); // for skeleton: annoId: {id: annoId, type: 'skeleton', landmarks: [KeyPoints (if not labelled, then that entry is empty/undefined)], edges: {'0-1': Line, ...} }
 
     const videoId = useStates().videoId;
     const frameUrl = useStates().frameUrl;
@@ -50,7 +50,6 @@ export default function Canvas(props) {
     useEffect(() => {
         if (!canvasObjRef.current) {
             const canvasObj = new fabric.Canvas('canvas', {
-                //TODO
                 width: props.width ? props.width : CANVAS_WIDTH,
                 height: props.height ? props.height : CANVAS_HEIGHT,
                 polygonPoints: [],
@@ -128,8 +127,20 @@ export default function Canvas(props) {
         }
 
         if (Object.keys(fabricObjListRef.current).length>0) {
-            Object.keys(fabricObjListRef.current).forEach(id => 
-                canvasObjRef.current.remove(fabricObjListRef.current[id]));
+            Object.keys(fabricObjListRef.current).forEach(id => {
+                const canvas = canvasObjRef.current;
+                const obj = fabricObjListRef.current[id];
+                if (obj.type==='skeleton') {
+                    obj.landmarks.forEach(l => {
+                        if (l) { //if l is labelled
+                            canvas.remove(l);
+                        };
+                    });
+                    Object.entries(obj.edges).forEach(([_, line])=>canvas.remove(line));
+                } else {
+                    canvas.remove(obj);
+                }} 
+            );
             fabricObjListRef.current = {};
         }
       }, [frameUrl]
@@ -183,6 +194,11 @@ export default function Canvas(props) {
                             // console.log('polygon', dataToCanvas);
                             createPolygon(dataToCanvas, annoObj);
                             break;
+                        case 'skeleton':
+                            dataToCanvas = getSkeletonCoordToCanvas(annoObj);
+                            console.log('skeleton', dataToCanvas);
+                            createSkeleton(dataToCanvas, annoObj);
+                            break;
                     }
                 }
             });
@@ -224,7 +240,7 @@ export default function Canvas(props) {
     }
 
 
-    /*  For the next five functions
+    /*  For the next six functions
         obj contains coordinates/width/height relative to canvas plane
         convert to coordinates relative to img plane 
     */
@@ -258,6 +274,13 @@ export default function Canvas(props) {
         return Object.assign({}, res);
     }
 
+    function getUpdatedPolygonPoints(polygon) {
+        const matrix = polygon.calcTransformMatrix();
+        const newPoints = polygon.points.map(p => new fabric.Point(p.x - polygon.pathOffset.x, p.y - polygon.pathOffset.y))
+            .map(p => fabric.util.transformPoint(p, matrix));
+        return newPoints;
+    }
+
     function getSkeletonCoordToImage(obj) { //obj is the skeleton obj in fabricObjRef: {id: , type:'skeleton', landmarks: [...], edges: {'0-1': Line, ...}}
         const oldData = frameAnnotation[obj.id].data; // anno data is already created before skeleton finish drawing
         const newData = oldData.map((coorArr,i) => { //coorArr:[x,y,v]. Loop through oldData, not obj.landmarks, because landmark could be unlabelled in obj.landmarks, but has to be existed in oldData
@@ -273,15 +296,10 @@ export default function Canvas(props) {
         return newData;
     }
 
-    function getUpdatedPolygonPoints(polygon) {
-        const matrix = polygon.calcTransformMatrix();
-        const newPoints = polygon.points.map(p => new fabric.Point(p.x - polygon.pathOffset.x, p.y - polygon.pathOffset.y))
-            .map(p => fabric.util.transformPoint(p, matrix));
-        return newPoints;
-    }
+    
 
 
-    /*  For the next four functions
+    /*  For the next five functions
         obj contains coordinates/width/height relative to img plane
         convert to coordinates relative to canvas plane 
     */
@@ -289,7 +307,7 @@ export default function Canvas(props) {
         // point: {x:..., y:...}, the coord relative to img plane 
         const img = imageObjRef.current;
         return ({
-            x: point.x * img.scaleX + img.left,
+            x: point.x * img.scaleX + img.left, 
             y: point.y * img.scaleY + img.top,
         });
     }
@@ -316,6 +334,15 @@ export default function Canvas(props) {
         return Object.keys(obj.data).map(i => getPointCoordToCanvas(obj.data[i]));
     }
 
+    function getSkeletonCoordToCanvas(obj) {
+        return obj.data.map(([x,y,v]) => {
+            if (v===0) {
+                return {x:null, y:null};
+            } else {
+                return getPointCoordToCanvas({x:x, y:y});
+            }
+        });
+    }
 
 
     function wheelHandler(opt) {
@@ -379,7 +406,7 @@ export default function Canvas(props) {
             const activeObj = canvas.getActiveObject();
             if (ANNOTATION_TYPES.has(activeObj.type)) {
                 addActiveIdObj(activeObj);
-            } else if (activeObj.type === 'skeletonPoint') {
+            } else if (activeObj.type === 'skeletonPoint' && !drawType) {
                 const skeletonObj = fabricObjListRef.current[activeObj.owner];
                 addActiveIdObj(skeletonObj);
             }
@@ -643,19 +670,6 @@ export default function Canvas(props) {
         if (skeletonLandmark < landmarkTotalNum - 1) { // if not done with drawing
             setSkeletonLandmark(skeletonLandmark + 1);
         } else { // if done
-            //add the skeleton landmarks and edges to ref
-            // fabricObjListRef.current[annoIdToDraw] = {
-            //     landmarks: canvas.skeletonPoints,
-            //     edges: canvas.skeletonLines,
-            // }
-            // canvas.skeletonPoints = [];
-            // canvas.skeletonLines = {};
-            
-            // //TODO: add data to annotation
-
-            // setSkeletonLandmark(null);
-            // setDrawType(null);
-            // canvas.selection = true;
             setSkeletonLandmark(null);
             setDrawType(null); // will trigger useEffect to call finishDrawSkeleton() 
         }
@@ -666,7 +680,7 @@ export default function Canvas(props) {
         // pass skeletonObj to fabricObjListRef
         // called by useEffect (monitor drawType)
         const canvas = canvasObjRef.current;
-        canvas.skeletonPoints.forEach(p => {p.lockMovementX=false, p.lockMovementY=false});
+        canvas.skeletonPoints.forEach(p => {p.lockMovementX=false; p.lockMovementY=false});
         const annoIdToDraw = getIdToDraw();
         const skeletonObj = {
             id: annoIdToDraw,
@@ -678,7 +692,7 @@ export default function Canvas(props) {
         canvas.skeletonPoints = [];
         canvas.skeletonLines = {};
         
-        //TODO: add data to annotation
+        //add coord data to annotation
         addActiveIdObj(skeletonObj);
         
         // canvas.selection = true;
@@ -892,6 +906,57 @@ export default function Canvas(props) {
         }  
     }
 
+    function createSkeleton(points, annoObjToDraw) {
+        // called only when go a frame with skeleton annotation, to draw skeleton landmarks and edges
+        // points: arr of point. [{x1: , y1: }, {x2:, y2: }, ...]
+        const canvas = canvasObjRef.current;
+        const id = annoObjToDraw.id;
+        const landmarksToDraw = btnConfigData[annoObjToDraw.groupIndex].childData; //[{index: 0, btnType: 'skeleton',label: 'head',color: '#1677FF'}, ...]
+        const edgesInfo = btnConfigData[annoObjToDraw.groupIndex].edgeData; // {color: '', edges: [set(), ...]}
+        const landmarksDrawn = [];
+        const edgesDrawn = {};
+
+        points.forEach((point, i) => { //point: {x: , y: }
+            if (point.x!==null && point.y!==null) { //to exclude unlabelled landmark
+                const landmarkInfo = {
+                    id: id,
+                    color: landmarksToDraw[i].color,
+                    type: landmarksToDraw[i].btnType,
+                }
+                const landmark = createPoint(point, landmarkInfo, i);
+                canvas.add(landmark);
+                landmarksDrawn[i] = landmark;
+    
+                const neighbors = edgesInfo.edges[i];
+                const edgeColor = edgesInfo.color;
+                const edgeInfo = {
+                    id: id,
+                    type: landmarksToDraw[i].btnType,
+                    color: edgeColor,
+                }
+                for (let n=0; n<i; n++) {
+                    if (landmarksDrawn[n] && neighbors.has(n)) { // the landmark is labelled and is a neighbor
+                        const line = createLine(point, points[n], edgeInfo);
+                        canvas.add(line);
+                        edgesDrawn[`${landmarksDrawn[n].index}-${landmark.index}`] = line;
+                    }
+                }
+            }
+        })
+        landmarksDrawn.forEach(p => {
+            p.lockMovementX=false; 
+            p.lockMovementY=false;
+            canvas.bringToFront(p);});
+
+        const skeletonObj = {
+            id: id,
+            type: 'skeleton',
+            landmarks: landmarksDrawn,
+            edges: edgesDrawn,
+        };
+        fabricObjListRef.current[id] = skeletonObj; /////
+    }
+
 
     function dragCanvas(e) {
         const canvas = canvasObjRef.current;
@@ -935,7 +1000,7 @@ export default function Canvas(props) {
 
     function dragSkeletonPoint() {
         const canvas = canvasObjRef.current;
-        console.log('dragging skeleton point');
+        // console.log('dragging skeleton point');
         const point = canvas.getActiveObject();
         const landmarks = fabricObjListRef.current[point.owner].landmarks;
         const edgesInfo = btnConfigData[frameAnnotation[point.owner].groupIndex].edgeData; // {color: '', edges: [set(), ...]}
@@ -999,7 +1064,7 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
         const activeObj = canvas.getActiveObject();
         
-        if (activeObj.type === 'skeletonPoint') {
+        if (activeObj.type === 'skeletonPoint') { //for skeleton
             if (!drawType) { // if already finished drawing, allow deleting, and will delete the entire skeleton
                 const annoId = activeObj.owner;
                 const skeletonObj = fabricObjListRef.current[annoId];
@@ -1008,7 +1073,7 @@ export default function Canvas(props) {
                 delete(fabricObjListRef.current[annoId]);
                 delete(frameAnnotation[annoId]);
             }
-        } else {
+        } else { // for other shapes
             delete(fabricObjListRef.current[activeObj.id]);
             // const annotationList = {...props.frameAnnotation};
             // delete(annotationList[activeObj.id]);
