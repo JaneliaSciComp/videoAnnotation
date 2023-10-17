@@ -92,6 +92,8 @@ export default function Home() {
     }
 }}
 
+//btnConfigData={btnConfigData}
+
   return (
     <div>
       <Head>
@@ -99,11 +101,11 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Workspace btnConfigData={btnConfigData}>
+      <Workspace > 
         {/* <Category label='chase'/>
         <ShapeBtn type='bbox' label='fly' color='red' /> */}
         {/* <BtnGroup data={groupData} /> */}
-        {/* <BtnGroupController index='12345' groupType='skeleton' btnType='skeleton' disableGroupTypeSelect disableBtnTypeSelect /> */}
+        <BtnGroupController />
         {/* <Design /> */}
         <Row >
           <Col>

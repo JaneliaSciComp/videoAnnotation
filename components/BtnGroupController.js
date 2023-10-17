@@ -6,7 +6,7 @@ import { Select, InputNumber, Button, Space } from 'antd';
 import { DownOutlined, DeleteOutlined} from '@ant-design/icons';
 // import {Button} from 'react-bootstrap';
 import { useStateSetters, useStates } from './AppContext';
-
+import { btnGroupTypeOptions, btnTypeOptions } from '../utils/utils';
 
 const BTNNUM_MAX=50
 
@@ -100,33 +100,6 @@ export default function BtnGroupController(props) {
     const setBtnConfigData = useStateSetters().setBtnConfigData;
 
     console.log('btnGroupController render');
-
-    const btnGroupOptions = [
-        {value: 'shape', label: 'Shape'},
-        {value: 'category', label: 'Category'},
-        {value: 'skeleton', label: 'Skeleton'},
-    ]
-
-    const btnOptions = {
-        category: [
-            {value: 'category', label: 'Category'}
-        ],
-        shape: [
-            {value: 'keyPoint', label: 'Key Point'},
-            {value: 'bbox', label: 'Bounding Box'},
-            {value: 'polygon', label: 'Polygon'},
-        ],
-        skeleton: [
-            {value: 'skeleton', label: 'Skeleton'}
-        ],
-        general: [
-            {value: 'category', label: 'Category'},
-            {value: 'keyPoint', label: 'Key Point'},
-            {value: 'bbox', label: 'Bounding Box'},
-            {value: 'polygon', label: 'Polygon'},
-            {value: 'skeleton', label: 'Skeleton'},
-        ]
-    }
 
 
     useEffect(()=>{
@@ -228,7 +201,7 @@ export default function BtnGroupController(props) {
         // console.log(newValue);
         // console.log(btnOptions[newValue]);
         setGroupType(newValue);
-        setBtnType(btnOptions[newValue][0]['value']);
+        setBtnType(btnTypeOptions[newValue][0]['value']);
 
         // if user has defined custom callback
         if (props.onGroupTypeChange) {
@@ -558,7 +531,7 @@ export default function BtnGroupController(props) {
                         defaultValue={props.defaultGroupType}
                         value={groupType}
                         onChange={onGroupTypeChange}
-                        options={btnGroupOptions}
+                        options={btnGroupTypeOptions}
                         placeholder={props.groupTypePlaceHolder}
                         disabled={props.disableGroupTypeSelect}
                         />
@@ -566,7 +539,7 @@ export default function BtnGroupController(props) {
                         defaultValue={props.defaultBtnType}
                         value={btnType}
                         onChange={onBtnTypeChange}
-                        options={groupType ? btnOptions[groupType] : btnOptions.general}
+                        options={groupType ? btnTypeOptions[groupType] : btnTypeOptions.general}
                         // placeholder={props.btnTypePlaceHolder}
                         disabled={props.disableBtnTypeSelect}
                         />

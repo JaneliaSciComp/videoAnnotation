@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import styles from '../styles/Controller.module.css';
 import { Checkbox, Tag, ColorPicker, Button, Row, Col, Space } from 'antd';
 import { useStateSetters, useStates } from './AppContext';
+import {predefinedColors} from '../utils/utils.js';
 
 
 export default function SkeletonEdgeController(props) {
@@ -194,18 +195,7 @@ export default function SkeletonEdgeController(props) {
                     size="small"
                     presets={[
                         { label: 'Recommended',
-                        colors: [
-                            '#F5222D',
-                            '#FA8C16',
-                            '#FADB14',
-                            '#8BBB11',
-                            '#52C41A',
-                            '#13A8A8',
-                            '#1677FF',
-                            '#2F54EB',
-                            '#722ED1',
-                            '#EB2F96',
-                        ],
+                        colors: predefinedColors,
                         },
                     ]}
                     />
@@ -242,34 +232,6 @@ export default function SkeletonEdgeController(props) {
                 </Row>
                 :null
             }
-
-            {/* <Space.Compact block className='my-3 d-flex justify-content-center'>
-                <ColorPicker className={styles.edgeColorPicker}
-                        onChange={onColorChange}
-                        defaultValue='#1677FF'
-                        disabled = {props.disableColorPicker}
-                        size="small"
-                        presets={[
-                            { label: 'Recommended',
-                            colors: [
-                                '#F5222D',
-                                '#FA8C16',
-                                '#FADB14',
-                                '#8BBB11',
-                                '#52C41A',
-                                '#13A8A8',
-                                '#1677FF',
-                                '#2F54EB',
-                                '#722ED1',
-                                '#EB2F96',
-                            ],
-                            },
-                        ]}
-                        />
-                <Button onClick={onLastBtnClick} size='small'>Last</Button>
-                <Button onClick={onNextBtnClick} size='small'>Next</Button>
-                <Button type="primary" onClick={onDoneBtnClick} size='small'>Done</Button>
-            </Space.Compact> */}
             
         </div>
     )

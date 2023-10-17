@@ -3,6 +3,7 @@ import styles from '../styles/Controller.module.css';
 import { Select, Button, Input, ColorPicker, Space } from 'antd';
 import { DeleteOutlined} from '@ant-design/icons';
 // import {Button} from 'react-bootstrap';
+import {predefinedColors, btnTypeOptions} from '../utils/utils.js';
 
 export default function BtnController(props) {
     /** 
@@ -32,26 +33,6 @@ export default function BtnController(props) {
             onDelete: Callback when delete btn clicked. Takes one argument: target {index: int, index property of this object}
     */
     // console.log('btnController render', props.index);
-
-    const btnOptions = {
-        category: [
-            {value: 'category', label: 'Category'}
-        ],
-        shape: [
-            {value: 'keyPoint', label: 'Key Point'},
-            {value: 'bbox', label: 'Bounding Box'},
-            {value: 'polygon', label: 'Polygon'},
-        ],
-        skeleton: [
-            {value: 'skeleton', label: 'Skeleton'}
-        ],
-        general: [
-            {value: 'category', label: 'Category'},
-            {value: 'keyPoint', label: 'Key Point'},
-            {value: 'bbox', label: 'Bounding Box'},
-            {value: 'polygon', label: 'Polygon'},
-        ]
-    }
 
 
     function onBtnTypeChange(value, opt) {
@@ -113,7 +94,7 @@ export default function BtnController(props) {
                 <Select className={styles.btnSelect}
                     value={props.btnType ? props.btnType : null}
                     onChange={onBtnTypeChange}
-                    options={props.groupType?btnOptions[props.groupType]:btnOptions.general}
+                    options={props.groupType?btnTypeOptions[props.groupType]:btnTypeOptions.general}
                     placeholder={props.typeSelectPlaceHolder}
                     disabled={props.disableTypeSelect}
                     />
@@ -134,38 +115,7 @@ export default function BtnController(props) {
                     // size="small"
                     presets={[
                         { label: 'Recommended',
-                          colors: [
-                            // '#000000',
-                            // '#000000E0',
-                            // '#000000A6',
-                            // '#00000073',
-                            // '#00000040',
-                            // '#00000026',
-                            // '#0000001A',
-                            // '#00000012',
-                            // '#0000000A',
-                            // '#00000005',
-                            '#F5222D',
-                            '#FA8C16',
-                            '#FADB14',
-                            '#8BBB11',
-                            '#52C41A',
-                            '#13A8A8',
-                            '#1677FF',
-                            '#2F54EB',
-                            '#722ED1',
-                            '#EB2F96',
-                            // '#F5222D4D',
-                            // '#FA8C164D',
-                            // '#FADB144D',
-                            // '#8BBB114D',
-                            // '#52C41A4D',
-                            // '#13A8A84D',
-                            // '#1677FF4D',
-                            // '#2F54EB4D',
-                            // '#722ED14D',
-                            // '#EB2F964D',
-                          ],
+                          colors: predefinedColors,
                         },
                     ]}
                     />
