@@ -917,7 +917,7 @@ export default function Canvas(props) {
         const edgesDrawn = {};
 
         points.forEach((point, i) => { //point: {x: , y: }
-            if (point.x!==null && point.y!==null) { //to exclude unlabelled landmark
+            if (annoObjToDraw.data[i][2]!==0) { //to exclude unlabelled landmark
                 const landmarkInfo = {
                     id: id,
                     color: landmarksToDraw[i].color,
