@@ -1,10 +1,13 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {Button} from 'react-bootstrap';
+import { Button, Row, Col} from 'react-bootstrap';
 import { Space, Radio, Slider } from 'antd';
+import { ClearOutlined } from '@ant-design/icons';
 import styles from '../styles/Button.module.css';
 import { useStateSetters, useStates } from './AppContext';
+import {defaultColor} from '../utils/utils.js';
 
-const DEFAULT_COLOR = '#1677FF';
+
+// const defaultColor = '#1677FF';
 const MIN_THICKNESS = 1;
 const MAX_THICKNESS = 20;
 
@@ -22,7 +25,7 @@ export default function BrushBtn(props) {
      * Props: 
             type: 'brush'
             label: 'Mouse'. Required 
-            color: 'red'. Optional. If not provided, use DEFAULT_COLOR
+            color: 'red'. Optional. If not provided, use defaultColor
             minThinkness: int. To set the min value of slider to config the thickness of brush. Optional. If not provided, use MIN_THICKNESS
             maxThickness: int. To set the max value of slider to config the thickness of brush. Optional. If not provided, use MAX_THICKNESS
 
@@ -39,7 +42,9 @@ export default function BrushBtn(props) {
     // const addAnnotationObj = useStateSetters().addAnnotationObj;
     const frameAnnotation = useStates().frameAnnotation;
     const setFrameAnnotation = useStateSetters().setFrameAnnotation;
-
+    const useEraser = useStates().useEraser;
+    const setUseEraser = useStateSetters().setUseEraser;
+    const setBrushThickness = useStateSetters().setBrushThickness;
 
     useEffect(()=>{
         if (!props.label) {
@@ -59,23 +64,25 @@ export default function BrushBtn(props) {
         // draw brush, finish draw brush, can only be decided by clicking the btn, not by canvas
         if (drawType===null) {
             setDrawType('brush');
+            
+            if (Number.isInteger(frameNum) || frameUrl) {
+                // create anno obj, add to frameAnno, activate draw mode
+                const id = Date.now().toString();
+                annotationIdRef.current = id;
+                setDrawType('brush'); // drawType changed, useEffect will add default radio value
+                const annoObj = {
+                    id: id,
+                    type: 'brush',   
+                    frameNum: frameNum,
+                    data: [],
+                    crowded: 0
+                };
+                setFrameAnnotation({...frameAnnotation, [id]: annoObj});
+            }
+
         } else if (drawType==='brush') {
             setDrawType(null);
-        }
-        
-        if (Number.isInteger(frameNum) || frameUrl) {
-            // create anno obj, add to frameAnno, activate draw mode
-            const id = Date.now().toString();
-            annotationIdRef.current = id;
-            setDrawType('brush'); // drawType changed, useEffect will add default radio value
-            const annoObj = {
-                id: id,
-                type: 'brush',   
-                frameNum: frameNum,
-                data: [],
-                crowded: 0
-            };
-            setFrameAnnotation({...frameAnnotation, [id]: annoObj});
+            setUseEraser(null);
         }
     }
 
@@ -95,33 +102,62 @@ export default function BrushBtn(props) {
         setThickness(newValue);
     }
 
+    function onEraserBtnClick() {
+        if (drawType==='brush' && useEraser) {
+            setUseEraser(null);
+        } else if (drawType==='brush' && !useEraser) {
+            setUseEraser(true);
+        }
+    }
+
     //direction="vertical"
 
     return (
-        <div>
-            <Button className={styles.btn}
-                style={{color:drawType==='brush'?'white':(props.color?props.color:DEFAULT_COLOR), 
-                        background: drawType==='brush'?(props.color?props.color:DEFAULT_COLOR):'white', 
-                        border:'2px solid '+(props.color?props.color:DEFAULT_COLOR)}} 
-                onClick={clickHandler}>
-                {props.label}
-            </Button> 
+        <Row className=''>
+            <Col >
+                <Button className={styles.btn}
+                    style={{color:drawType==='brush'?'white':(props.color?props.color:defaultColor), 
+                            background: drawType==='brush'?(props.color?props.color:defaultColor):'white', 
+                            border:'2px solid '+(props.color?props.color:defaultColor)}} 
+                    onClick={clickHandler}>
+                    {props.label}
+                </Button> 
+            </Col>
+            
+            <Col>
+                <Row>
+                    <Radio.Group value={radioValue} onChange={onRadioChange}>
+                        <Space >
+                            <Radio value={0}>single</Radio>
+                            <Radio value={1}>crowded</Radio>
+                        </Space>
+                    </Radio.Group>
+                </Row>
 
-            <Radio.Group className='ms-3' value={radioValue} onChange={onRadioChange}>
-                <Space >
-                    <Radio value={0}>single</Radio>
-                    <Radio value={1}>crowded</Radio>
-                </Space>
-            </Radio.Group>
+                <Row>
+                    <Button className={styles.eraserBtn}
+                        size='sm'
+                        variant="light"
+                        style={{color:useEraser?'white':'rgb(100, 100, 100)', 
+                                background: useEraser?defaultColor:'white', 
+                                border: useEraser?('1px solid'+defaultColor):'1px solid rgb(100, 100, 100)'}} 
+                        onClick={onEraserBtnClick} 
+                        >
+                            <ClearOutlined />
+                    </Button>
+                    
+                    <Slider className='ms-1'
+                    min={props.minThickness?props.minThickness:MIN_THICKNESS}
+                    max={props.maxThickness?props.maxThickness:MAX_THICKNESS}
+                    // marks={{0:'0', []:`${totalFrameCount}`}}
+                    onChange={sliderChangeHandler}
+                    value={thickness}
+                    />
+                </Row>
+                
+            </Col>
+            
 
-            <Slider className='ms-1'
-                min={props.minThickness?props.minThickness:MIN_THICKNESS}
-                max={props.maxThickness?props.maxThickness:MAX_THICKNESS}
-                // marks={{0:'0', []:`${totalFrameCount}`}}
-                onChange={sliderChangeHandler}
-                value={thickness}
-                />
-
-        </div>
+        </Row>
     )
 }

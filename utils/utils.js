@@ -1,3 +1,6 @@
+export const defaultColor = '#1677FF';
+
+
 export const predefinedColors = [
     '#000000',
     // '#000000E0',

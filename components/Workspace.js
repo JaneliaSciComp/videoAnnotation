@@ -38,6 +38,8 @@ export default function Workspace(props) {
     // const [drawPolygon, setDrawPolygon] = useState(false);
     const [drawType, setDrawType] = useState();
     const [skeletonLandmark, setSkeletonLandmark] = useState(); // the current landmark index to draw, pass to skeletonBtn and Canvas
+    const [useEraser, setUseEraser] = useState(); //for brush, boolean
+    const [brushThickness, setBrushThickness] = useState(); //for brush
     const [btnConfigData, setBtnConfigData] = useState({});
     const [btnGroups, setBtnGroups] = useState();
     // const [projectType, setProjectType] = useState('image'); //'image' or 'video'
@@ -53,6 +55,8 @@ export default function Workspace(props) {
         activeAnnoObj: activeAnnoObj,
         drawType: drawType,
         skeletonLandmark: skeletonLandmark,
+        useEraser: useEraser,
+        brushThickness: brushThickness,
         btnConfigData: btnConfigData,
         btnGroups: btnGroups,
         // projectType: projectType,
@@ -66,6 +70,8 @@ export default function Workspace(props) {
         setActiveAnnoObj: setActiveAnnoObj,
         setDrawType: setDrawType,
         setSkeletonLandmark: setSkeletonLandmark,
+        setUseEraser: setUseEraser,
+        setBrushThickness: setBrushThickness,
         setBtnConfigData: setBtnConfigData,
         setBtnGroups: setBtnGroups,
         // setProjectType: setProjectType,
