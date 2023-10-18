@@ -28,7 +28,6 @@ export const predefinedColors = [
     '#FA5CE5', //
     '#CE5D97', //
     '#EB2F96',
-    
     // '#F5222D4D',
     // '#FA8C164D',
     // '#FADB144D',
@@ -56,6 +55,7 @@ export const btnTypeOptions = {
         {value: 'keyPoint', label: 'Key Point'},
         {value: 'bbox', label: 'Bounding Box'},
         {value: 'polygon', label: 'Polygon'},
+        {value: 'brush', label: 'Brush'}
     ],
     skeleton: [
         {value: 'skeleton', label: 'Skeleton'}
@@ -65,6 +65,7 @@ export const btnTypeOptions = {
         {value: 'keyPoint', label: 'Key Point'},
         {value: 'bbox', label: 'Bounding Box'},
         {value: 'polygon', label: 'Polygon'},
+        {value: 'brush', label: 'Brush'},
         {value: 'skeleton', label: 'Skeleton'},
     ]
 }

@@ -11,6 +11,7 @@ import Design from '../components/Design.js';
 import BtnGroupController from '../components/BtnGroupController';
 import BtnContainer from '../components/BtnContainer.js';
 import BtnGroup from '../components/BtnGroup.js';
+import BrushBtn from '../components/BrushBtn.js';
 import {Row, Col} from 'react-bootstrap';
 
 
@@ -105,12 +106,13 @@ export default function Home() {
         {/* <Category label='chase'/>
         <ShapeBtn type='bbox' label='fly' color='red' /> */}
         {/* <BtnGroup data={groupData} /> */}
-        <BtnGroupController />
+        {/* <BtnGroupController /> */}
         {/* <Design /> */}
         <Row >
           <Col>
             <BtnContainer />
-            <ShapeBtn type='keyPoint' label='test' color='red' />
+            {/* <ShapeBtn type='keyPoint' label='test' color='red' /> */}
+            <BrushBtn label='mouse' />
           </Col>
           <Col>
             <AnnotationDisplay />
