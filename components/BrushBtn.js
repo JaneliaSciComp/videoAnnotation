@@ -28,10 +28,10 @@ export default function BrushBtn(props) {
             color: 'red'. Optional. If not provided, use defaultColor
             minThinkness: int. To set the min value of slider to config the thickness of brush. Optional. If not provided, use MIN_THICKNESS
             maxThickness: int. To set the max value of slider to config the thickness of brush. Optional. If not provided, use MAX_THICKNESS
-
+            enableCrowdedRadio
      */
     const [radioValue, setRadioValue] = useState(0);
-    const [thickness, setThickness] = useState(5);
+    // const [thickness, setThickness] = useState(5);
     const annotationIdRef = useRef(); // to remember the annotation id created by clicking the btn, to retrieve anno data so that can add crowded info 
 
     // get context
@@ -44,11 +44,17 @@ export default function BrushBtn(props) {
     const setFrameAnnotation = useStateSetters().setFrameAnnotation;
     const useEraser = useStates().useEraser;
     const setUseEraser = useStateSetters().setUseEraser;
+    const brushThickness = useStates().brushThickness;
     const setBrushThickness = useStateSetters().setBrushThickness;
 
     useEffect(()=>{
         if (!props.label) {
             throw Error('Label cannot be empty');
+        }
+
+        // initialize brushThickness
+        if (!brushThickness) {
+            setBrushThickness(5);
         }
     }, [])
 
@@ -86,12 +92,10 @@ export default function BrushBtn(props) {
         }
     }
 
-    function onRadioChange(e) {
-        // console.log('radio checked', e.target.value);
-        setRadioValue(e.target.value);
-        
+    function onRadioChange(e) {        
         // update radio value to annotation
         if (drawType==='brush') { // only if already activated draw mode
+            setRadioValue(e.target.value);
             const annotation = {...frameAnnotation[annotationIdRef.current]};
             annotation.crowded=e.target.value;
             setFrameAnnotation({...frameAnnotation, [annotationIdRef.current]: annotation});
@@ -99,7 +103,9 @@ export default function BrushBtn(props) {
     };
 
     function sliderChangeHandler(newValue) {
-        setThickness(newValue);
+        if (drawType==='brush') {
+            setBrushThickness(newValue);
+        }
     }
 
     function onEraserBtnClick() {
@@ -113,8 +119,10 @@ export default function BrushBtn(props) {
     //direction="vertical"
 
     return (
-        <Row className=''>
-            <Col >
+        // <Row >
+        <div className={styles.brushBtnContainer}>
+            {/* <Col md={4} className={styles.brushBtn}> */}
+            <div className={styles.brushBtn}>
                 <Button className={styles.btn}
                     style={{color:drawType==='brush'?'white':(props.color?props.color:defaultColor), 
                             background: drawType==='brush'?(props.color?props.color:defaultColor):'white', 
@@ -122,42 +130,55 @@ export default function BrushBtn(props) {
                     onClick={clickHandler}>
                     {props.label}
                 </Button> 
-            </Col>
+            </div>
+            {/* </Col>
             
-            <Col>
-                <Row>
-                    <Radio.Group value={radioValue} onChange={onRadioChange}>
-                        <Space >
-                            <Radio value={0}>single</Radio>
-                            <Radio value={1}>crowded</Radio>
-                        </Space>
-                    </Radio.Group>
-                </Row>
-
-                <Row>
-                    <Button className={styles.eraserBtn}
-                        size='sm'
-                        variant="light"
-                        style={{color:useEraser?'white':'rgb(100, 100, 100)', 
-                                background: useEraser?defaultColor:'white', 
-                                border: useEraser?('1px solid'+defaultColor):'1px solid rgb(100, 100, 100)'}} 
-                        onClick={onEraserBtnClick} 
-                        >
-                            <ClearOutlined />
-                    </Button>
-                    
-                    <Slider className='ms-1'
-                    min={props.minThickness?props.minThickness:MIN_THICKNESS}
-                    max={props.maxThickness?props.maxThickness:MAX_THICKNESS}
-                    // marks={{0:'0', []:`${totalFrameCount}`}}
-                    onChange={sliderChangeHandler}
-                    value={thickness}
-                    />
-                </Row>
+            <Col md={6}> */}
+            <div >
+                {/* <Row > */}
+                <div className={styles.brushToolContainer}>
+                    <Col xs={2} className={styles.eraserBtnContainer}>
+                        <Button className={styles.eraserBtn}
+                            size='sm'
+                            variant="light"
+                            style={{color:useEraser?'white':'rgb(100, 100, 100)', 
+                                    background: useEraser?defaultColor:'white', 
+                                    border: useEraser?('1px solid'+defaultColor):'1px solid rgb(100, 100, 100)'}} 
+                            onClick={onEraserBtnClick} 
+                            >
+                                <ClearOutlined />
+                        </Button>
+                    </Col>
+                    <Col xs={10} className='px-1'>
+                        <Slider 
+                            min={props.minThickness?props.minThickness:MIN_THICKNESS}
+                            max={props.maxThickness?props.maxThickness:MAX_THICKNESS}
+                            // marks={{0:'0', []:`${totalFrameCount}`}}
+                            onChange={sliderChangeHandler}
+                            value={brushThickness}
+                            />
+                    </Col>
+                </div>
+                {/* </Row> */}
+                {props.enableCrowdedRadio ?
+                    // <Row>
+                    <div>
+                        <Radio.Group value={radioValue} onChange={onRadioChange}>
+                            <Space >
+                                <Radio value={0}>single</Radio>
+                                <Radio value={1}>crowded</Radio>
+                            </Space>
+                        </Radio.Group>
+                    {/* </Row>  */}
+                    </div>
+                    : null 
+                }
                 
-            </Col>
-            
 
-        </Row>
+            </div>    
+            {/* </Col> */}
+            
+        </div>
+        // </Row>
     )
 }

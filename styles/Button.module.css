@@ -13,12 +13,39 @@
     transform: translateY(3px);
 }
 
-.eraserBtn {
-    width: 30px;
-    height: 30px;
-    padding: auto auto;
-    border-radius: 15px;
+.brushBtnContainer {
+    max-width: 400px;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: start;
+}
+
+.brushBtn {
+    margin-right: 15px;
+    display: flex;
+    align-items: center;
+}
+
+.eraserBtnContainer {
     display: flex;
     align-items: center;
     justify-content:center;
 }
+
+.eraserBtn {
+    width: 25px;
+    height: 25px;
+    padding: auto auto;
+    border-radius: 12.5px;
+    display: flex;
+    align-items: center;
+    justify-content:center;
+}
+
+.brushToolContainer {
+    width: 180px;
+    margin: 5px 0 5px 0;
+    display: flex;
+}
+

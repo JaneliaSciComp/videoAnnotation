@@ -112,7 +112,7 @@ export default function Home() {
           <Col>
             <BtnContainer />
             {/* <ShapeBtn type='keyPoint' label='test' color='red' /> */}
-            <BrushBtn label='mouse' />
+            <BrushBtn label='mouse' enableCrowdedRadio/>
           </Col>
           <Col>
             <AnnotationDisplay />

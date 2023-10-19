@@ -42,6 +42,8 @@ export default function Canvas(props) {
     // const setFrameAnnotation = useStateSetters().setFrameAnnotation;
     const btnConfigData = useStates().btnConfigData;
     const setActiveAnnoObj = useStateSetters().setActiveAnnoObj;
+    const brushThickness = useStates().brushThickness;
+    const useEraser = useStates().useEraser;
     // const projectType = useStates().projectType;
     
     console.log('canvas render');
