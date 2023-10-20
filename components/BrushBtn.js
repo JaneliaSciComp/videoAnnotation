@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
 import { Button, Row, Col} from 'react-bootstrap';
 import { Space, Radio, Slider } from 'antd';
-import { ClearOutlined } from '@ant-design/icons';
+import { ClearOutlined, RollbackOutlined } from '@ant-design/icons';
 import styles from '../styles/Button.module.css';
 import { useStateSetters, useStates } from './AppContext';
 import {defaultColor} from '../utils/utils.js';
@@ -42,12 +42,15 @@ export default function BrushBtn(props) {
     // const addAnnotationObj = useStateSetters().addAnnotationObj;
     const frameAnnotation = useStates().frameAnnotation;
     const setFrameAnnotation = useStateSetters().setFrameAnnotation;
-    const useEraser = useStates().useEraser;
-    const setUseEraser = useStateSetters().setUseEraser;
+    // const useEraser = useStates().useEraser;
+    // const setUseEraser = useStateSetters().setUseEraser;
     const brushThickness = useStates().brushThickness;
     const setBrushThickness = useStateSetters().setBrushThickness;
+    const undo = useStates().undo;
+    const setUndo = useStateSetters().setUndo;
     const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
 
+    
     useEffect(()=>{
         if (!props.label) {
             throw Error('Label cannot be empty');
@@ -94,7 +97,7 @@ export default function BrushBtn(props) {
 
         } else if (drawType==='brush') {
             setDrawType(null);
-            setUseEraser(null);
+            // setUseEraser(null);
         }
     }
 
@@ -114,13 +117,19 @@ export default function BrushBtn(props) {
         }
     }
 
-    function onEraserBtnClick() {
-        if (drawType==='brush' && useEraser) {
-            setUseEraser(null);
-        } else if (drawType==='brush' && !useEraser) {
-            setUseEraser(true);
-        }
+    // function onEraserBtnClick() {
+    //     if (drawType==='brush' && useEraser) {
+    //         setUseEraser(null);
+    //     } else if (drawType==='brush' && !useEraser) {
+    //         setUseEraser(true);
+    //     }
+    // }
+    function undoClickHandler() {
+        if (drawType==='brush') {
+            setUndo(undo+1); //TODO: overflow?
+        } 
     }
+
 
     //direction="vertical"
 
@@ -143,19 +152,21 @@ export default function BrushBtn(props) {
             <div >
                 {/* <Row > */}
                 <div className={styles.brushToolContainer}>
-                    <Col xs={2} className={styles.eraserBtnContainer}>
-                        <Button className={styles.eraserBtn}
+                    <Col xs={2} className={styles.undoBtnContainer}> 
+                        <Button className={[styles.undoBtn, styles.btn]}
                             size='sm'
                             variant="light"
-                            style={{color:useEraser?'white':'rgb(100, 100, 100)', 
-                                    background: useEraser?defaultColor:'white', 
-                                    border: useEraser?('1px solid'+defaultColor):'1px solid rgb(100, 100, 100)'}} 
-                            onClick={onEraserBtnClick} 
+                            // style={{color:useEraser?'white':'rgb(100, 100, 100)', 
+                            //         background: useEraser?defaultColor:'white', 
+                            //         border: useEraser?('1px solid'+defaultColor):'1px solid rgb(100, 100, 100)'}} 
+                            onClick={undoClickHandler}
+                            // {onEraserBtnClick} 
                             >
-                                <ClearOutlined />
+                                {/* <ClearOutlined /> */}
+                                <RollbackOutlined />
                         </Button>
                     </Col>
-                    <Col xs={10} className='px-1'>
+                    <Col xs={10} className='px-2'>
                         <Slider 
                             min={props.minThickness?props.minThickness:MIN_THICKNESS}
                             max={props.maxThickness?props.maxThickness:MAX_THICKNESS}
@@ -172,14 +183,13 @@ export default function BrushBtn(props) {
                         <Radio.Group value={radioValue} onChange={onRadioChange}>
                             <Space >
                                 <Radio value={0}>single</Radio>
-                                <Radio value={1}>is crowd</Radio>
+                                <Radio value={1}>crowd</Radio>
                             </Space>
                         </Radio.Group>
                     {/* </Row>  */}
                     </div>
                     : null 
                 }
-                
 
             </div>    
             {/* </Col> */}

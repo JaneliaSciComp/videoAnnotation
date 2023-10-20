@@ -27,7 +27,7 @@
     align-items: center;
 }
 
-.eraserBtnContainer {
+/* .eraserBtnContainer {
     display: flex;
     align-items: center;
     justify-content:center;
@@ -41,6 +41,29 @@
     display: flex;
     align-items: center;
     justify-content:center;
+} */
+
+.undoBtnContainer {
+    display: flex;
+    align-items: center;
+    justify-content:center;
+}
+
+.undoBtn {
+    width: 28px !important;
+    height: 28px;
+    padding: auto auto;
+    border: 1px solid rgb(100, 100, 100);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.undoBtn:active {
+    color: white !important;
+    background: black !important;
+    /* transform: translateY(3px); */
 }
 
 .brushToolContainer {

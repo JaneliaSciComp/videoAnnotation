@@ -44,6 +44,8 @@ export default function Canvas(props) {
     const setActiveAnnoObj = useStateSetters().setActiveAnnoObj;
     const brushThickness = useStates().brushThickness;
     const useEraser = useStates().useEraser;
+    const undo = useStates().undo;
+    const setUndo = useStateSetters().setUndo;
     const annoIdToDraw = useStates().annoIdToDraw;
     // const projectType = useStates().projectType;
     
@@ -102,7 +104,7 @@ export default function Canvas(props) {
                 imgRef.current.removeEventListener("load", imageLoadHandler);
             }
         }
-      }, [videoId, frameUrl, frameNum, drawType, skeletonLandmark, frameAnnotation, btnConfigData, useEraser, brushThickness] /////check if these are enough
+      }, [videoId, frameUrl, frameNum, drawType, skeletonLandmark, frameAnnotation, btnConfigData, useEraser, brushThickness, undo] /////check if these are enough
     )
 
 
@@ -173,7 +175,8 @@ export default function Canvas(props) {
             canvas.isDrawingSkeleton=false;
         }
 
-        if (drawType==='brush' && !useEraser) {
+        // if (drawType==='brush' && !useEraser) {
+        if (drawType==='brush') {
             setBrush();
         }
         if (!drawType) {
@@ -189,16 +192,28 @@ export default function Canvas(props) {
         }
     },[brushThickness])
 
-    useEffect(()=>{
-        if (drawType==='brush') {
-            if (useEraser) {
-                resetBrush();
-            } else {
-                setBrush();
-            }
-        }        
+    // useEffect(()=>{
+    //     if (drawType==='brush') {
+    //         if (useEraser) {
+    //             resetBrush();
+    //         } else {
+    //             setBrush();
+    //         }
+    //     }        
         
-    }, [useEraser])
+    // }, [useEraser])
+
+    useEffect(() => {
+        if (drawType==='brush' && undo>0) {
+            const brushObj = fabricObjListRef.current[annoIdToDraw];
+            if (brushObj) {
+                const path = brushObj.pathes.pop();
+                if (path) {
+                    canvasObjRef.current.remove(path);
+                }   
+            }
+        }
+    }, [undo])
 
 
     function setBrush() {
@@ -499,10 +514,10 @@ export default function Canvas(props) {
             drawSkeleton();
         }
 
-        if (drawType === 'brush' && useEraser) {
-            eraseBrush();
-            canvas.isErasing = true;
-        }
+        // if (drawType === 'brush' && useEraser) {
+        //     eraseBrush();
+        //     canvas.isErasing = true;
+        // }
     }
 
 
@@ -526,9 +541,9 @@ export default function Canvas(props) {
         if (canvas.isDraggingSkeletonPoint) { //when drag skeletonPoint, the if above also holds, so will update coord when drag skeletonPoint
             dragSkeletonPoint();
         }
-        if (canvas.isErasing) {
-            eraseBrush();
-        }
+        // if (canvas.isErasing) {
+        //     eraseBrush();
+        // }
     }
 
 
@@ -573,7 +588,7 @@ export default function Canvas(props) {
         canvas.isDraggingPolygonPoint = false;
         canvas.isDraggingSkeletonPoint = false;
         canvas.isEditingObj = false;
-        canvas.isErasing = false;
+        // canvas.isErasing = false;
 
         // finish drawing bbox
         if (drawType === 'bbox') {
@@ -607,19 +622,20 @@ export default function Canvas(props) {
             if (!existingIds.has(annoIdToDraw)) {
                 const brushObj = {
                     id: annoIdToDraw,
-                    paths: [],
-                    eraserPaths: []
+                    pathes: [],
+                    // eraserPaths: []
                 }
                 fabricObjListRef.current[annoIdToDraw] = brushObj;
             }
 
             const brushObj = {...fabricObjListRef.current[annoIdToDraw]};
+            
             //TODO
-            if (useEraser) {
-                brushObj.eraserPaths.push(e.path);
-            } else {
-                brushObj.paths.push(e.path);
-            }
+            // if (useEraser) {
+            //     brushObj.eraserPaths.push(e.path);
+            // } else {
+                brushObj.pathes.push(e.path);
+            // }
             fabricObjListRef.current = {...fabricObjListRef.current, [annoIdToDraw]:brushObj};
         }
     }
