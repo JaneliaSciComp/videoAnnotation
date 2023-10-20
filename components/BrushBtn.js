@@ -9,7 +9,7 @@ import {defaultColor} from '../utils/utils.js';
 
 // const defaultColor = '#1677FF';
 const MIN_THICKNESS = 1;
-const MAX_THICKNESS = 20;
+const MAX_THICKNESS = 100;
 
 export default function BrushBtn(props) {
     /**
@@ -28,11 +28,11 @@ export default function BrushBtn(props) {
             color: 'red'. Optional. If not provided, use defaultColor
             minThinkness: int. To set the min value of slider to config the thickness of brush. Optional. If not provided, use MIN_THICKNESS
             maxThickness: int. To set the max value of slider to config the thickness of brush. Optional. If not provided, use MAX_THICKNESS
-            enableCrowdedRadio
+            enableCrowdRadio
      */
     const [radioValue, setRadioValue] = useState(0);
     // const [thickness, setThickness] = useState(5);
-    const annotationIdRef = useRef(); // to remember the annotation id created by clicking the btn, to retrieve anno data so that can add crowded info 
+    const annotationIdRef = useRef(); // to remember the annotation id for this brush btn, to retrieve anno data so that can add crowded info, to reset annoIdtoDraw for parent 
 
     // get context
     const drawType = useStates().drawType;
@@ -46,6 +46,7 @@ export default function BrushBtn(props) {
     const setUseEraser = useStateSetters().setUseEraser;
     const brushThickness = useStates().brushThickness;
     const setBrushThickness = useStateSetters().setBrushThickness;
+    const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
 
     useEffect(()=>{
         if (!props.label) {
@@ -59,11 +60,11 @@ export default function BrushBtn(props) {
     }, [])
 
 
-    useEffect(() => {
-        if (!drawType) { 
-            annotationIdRef.current = null;
-        } 
-    }, [drawType])
+    // useEffect(() => {
+    //     if (!drawType) { 
+    //         annotationIdRef.current = null;
+    //     } 
+    // }, [drawType])
 
 
     function clickHandler() {
@@ -72,18 +73,23 @@ export default function BrushBtn(props) {
             setDrawType('brush');
             
             if (Number.isInteger(frameNum) || frameUrl) {
-                // create anno obj, add to frameAnno, activate draw mode
-                const id = Date.now().toString();
-                annotationIdRef.current = id;
-                setDrawType('brush'); // drawType changed, useEffect will add default radio value
-                const annoObj = {
-                    id: id,
-                    type: 'brush',   
-                    frameNum: frameNum,
-                    data: [],
-                    crowded: 0
-                };
-                setFrameAnnotation({...frameAnnotation, [id]: annoObj});
+                if (!annotationIdRef.current) { // brush seg reuse the same annoObj, so only initialize annoObj when first time click
+                    // create anno obj, add to frameAnno, activate draw mode
+                    const id = Date.now().toString();
+                    annotationIdRef.current = id;
+                    setDrawType('brush'); // drawType changed, useEffect will add default radio value
+                    const annoObj = {
+                        id: id,
+                        type: 'brush',   
+                        frameNum: frameNum,
+                        label: props.label,
+                        color: props.color ? props.color : defaultColor,
+                        data: [],
+                        isCrowd: 0
+                    };
+                    setFrameAnnotation({...frameAnnotation, [id]: annoObj});
+                }
+                setAnnoIdToDraw(annotationIdRef.current)
             }
 
         } else if (drawType==='brush') {
@@ -97,7 +103,7 @@ export default function BrushBtn(props) {
         if (drawType==='brush') { // only if already activated draw mode
             setRadioValue(e.target.value);
             const annotation = {...frameAnnotation[annotationIdRef.current]};
-            annotation.crowded=e.target.value;
+            annotation.isCrowd=e.target.value;
             setFrameAnnotation({...frameAnnotation, [annotationIdRef.current]: annotation});
         }
     };
@@ -160,13 +166,13 @@ export default function BrushBtn(props) {
                     </Col>
                 </div>
                 {/* </Row> */}
-                {props.enableCrowdedRadio ?
+                {props.enableCrowdRadio ?
                     // <Row>
                     <div>
                         <Radio.Group value={radioValue} onChange={onRadioChange}>
                             <Space >
                                 <Radio value={0}>single</Radio>
-                                <Radio value={1}>crowded</Radio>
+                                <Radio value={1}>is crowd</Radio>
                             </Space>
                         </Radio.Group>
                     {/* </Row>  */}

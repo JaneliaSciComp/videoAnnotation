@@ -10,7 +10,7 @@ const CIRCLE_RADIUS = 3;
 const STROKE_WIDTH = 2;
 const WHEEL_SENSITIVITY = 10;
 const CLICK_TOLERANCE = 5;
-const ANNOTATION_TYPES = new Set(['keyPoint', 'bbox', 'polygon', 'skeleton']);
+const ANNOTATION_TYPES = new Set(['keyPoint', 'bbox', 'polygon', 'skeleton', 'brush']);
 
 
 export default function Canvas(props) {
@@ -44,6 +44,7 @@ export default function Canvas(props) {
     const setActiveAnnoObj = useStateSetters().setActiveAnnoObj;
     const brushThickness = useStates().brushThickness;
     const useEraser = useStates().useEraser;
+    const annoIdToDraw = useStates().annoIdToDraw;
     // const projectType = useStates().projectType;
     
     console.log('canvas render');
@@ -82,6 +83,8 @@ export default function Canvas(props) {
             canvasObjRef.current.on('mouse:dblclick', mouseDblclickHandler);
             canvasObjRef.current.on('mouse:move', mouseMoveHandler);
             canvasObjRef.current.on('mouse:up', mouseUpHandler);
+            canvasObjRef.current.on("path:created", pathCreateHandler); // make draw brush unselectable
+                
         // }
         document.addEventListener("keydown", deleteKeyHandler); // add delete key event listener
 
@@ -99,7 +102,7 @@ export default function Canvas(props) {
                 imgRef.current.removeEventListener("load", imageLoadHandler);
             }
         }
-      }, [videoId, frameUrl, frameNum, drawType, skeletonLandmark, frameAnnotation, btnConfigData] /////check if these are enough
+      }, [videoId, frameUrl, frameNum, drawType, skeletonLandmark, frameAnnotation, btnConfigData, useEraser, brushThickness] /////check if these are enough
     )
 
 
@@ -169,7 +172,51 @@ export default function Canvas(props) {
             finishDrawSkeleton(); //pass skeletonObj to fabricObjListRef
             canvas.isDrawingSkeleton=false;
         }
+
+        if (drawType==='brush' && !useEraser) {
+            setBrush();
+        }
+        if (!drawType) {
+            resetBrush();
+            // canvas.clear();
+        }
     }, [drawType])
+
+    useEffect(()=>{
+        const canvas = canvasObjRef.current;
+        if (canvas.freeDrawingBrush) {
+            canvas.freeDrawingBrush.width = brushThickness;
+        }
+    },[brushThickness])
+
+    useEffect(()=>{
+        if (drawType==='brush') {
+            if (useEraser) {
+                resetBrush();
+            } else {
+                setBrush();
+            }
+        }        
+        
+    }, [useEraser])
+
+
+    function setBrush() {
+        const canvas = canvasObjRef.current;
+        const annoObj = frameAnnotation[annoIdToDraw];
+        canvas.isDrawingMode = true;
+        canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
+        // console.log('drawBrush');
+        canvas.freeDrawingBrush.limitedToCanvasSize = true; //When `true`, the free drawing is limited to the whiteboard size
+        canvas.freeDrawingBrush.color = annoObj.color+'80';
+        canvas.freeDrawingBrush.width = brushThickness;
+    }
+
+    function resetBrush() {
+        const canvas = canvasObjRef.current;
+        canvas.isDrawingMode = false;
+        canvas.freeDrawingBrush = null;
+    }
 
 
     function createFabricObjBasedOnAnnotation() {
@@ -452,8 +499,12 @@ export default function Canvas(props) {
             drawSkeleton();
         }
 
-        
+        if (drawType === 'brush' && useEraser) {
+            eraseBrush();
+            canvas.isErasing = true;
+        }
     }
+
 
     
     function mouseMoveHandler(opt) {
@@ -474,6 +525,9 @@ export default function Canvas(props) {
         }
         if (canvas.isDraggingSkeletonPoint) { //when drag skeletonPoint, the if above also holds, so will update coord when drag skeletonPoint
             dragSkeletonPoint();
+        }
+        if (canvas.isErasing) {
+            eraseBrush();
         }
     }
 
@@ -519,6 +573,7 @@ export default function Canvas(props) {
         canvas.isDraggingPolygonPoint = false;
         canvas.isDraggingSkeletonPoint = false;
         canvas.isEditingObj = false;
+        canvas.isErasing = false;
 
         // finish drawing bbox
         if (drawType === 'bbox') {
@@ -540,6 +595,33 @@ export default function Canvas(props) {
         }
         // console.log(e.key); // Backspace
         // console.log(e.keyCode); // 8
+    }
+
+
+    function pathCreateHandler(e) {
+        if (drawType==='brush') {
+            e.path.selectable=false;
+
+            // check if fabricObjListRef has this brush obj, if not, create one
+            const existingIds = new Set(Object.keys(fabricObjListRef.current));
+            if (!existingIds.has(annoIdToDraw)) {
+                const brushObj = {
+                    id: annoIdToDraw,
+                    paths: [],
+                    eraserPaths: []
+                }
+                fabricObjListRef.current[annoIdToDraw] = brushObj;
+            }
+
+            const brushObj = {...fabricObjListRef.current[annoIdToDraw]};
+            //TODO
+            if (useEraser) {
+                brushObj.eraserPaths.push(e.path);
+            } else {
+                brushObj.paths.push(e.path);
+            }
+            fabricObjListRef.current = {...fabricObjListRef.current, [annoIdToDraw]:brushObj};
+        }
     }
 
 
@@ -628,11 +710,11 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
         canvas.selection = false;
         
-        const annoIdToDraw = getIdToDraw();
-        const annoObjToDraw = {...frameAnnotation[annoIdToDraw]}; //{annoId: {id: annoId, groupIndex: , frameNum: , type: 'skeleton', data: [[null, null, 2], ...}}
+        const idToDraw = getIdToDraw();
+        const annoObjToDraw = {...frameAnnotation[idToDraw]}; //{annoId: {id: annoId, groupIndex: , frameNum: , type: 'skeleton', data: [[null, null, 2], ...}}
         const landmarkToDraw = btnConfigData[annoObjToDraw.groupIndex].childData[skeletonLandmark]; //{index: 0, btnType: 'skeleton',label: 'head',color: '#1677FF'}
         const landmarkInfo = {
-            id: annoIdToDraw,
+            id: idToDraw,
             color: landmarkToDraw.color,
             type: landmarkToDraw.btnType,
         }
@@ -651,7 +733,7 @@ export default function Canvas(props) {
         const neighbors = edgesInfo.edges[skeletonLandmark];
         const edgeColor = edgesInfo.color;
         const edgeInfo = {
-            id: annoIdToDraw,
+            id: idToDraw,
             type: landmarkToDraw.btnType,
             color: edgeColor,
         }
@@ -683,14 +765,14 @@ export default function Canvas(props) {
         // called by useEffect (monitor drawType)
         const canvas = canvasObjRef.current;
         canvas.skeletonPoints.forEach(p => {p.lockMovementX=false; p.lockMovementY=false});
-        const annoIdToDraw = getIdToDraw();
+        const idToDraw = getIdToDraw();
         const skeletonObj = {
-            id: annoIdToDraw,
+            id: idToDraw,
             type: 'skeleton',
             landmarks: canvas.skeletonPoints,
             edges: canvas.skeletonLines,
         };
-        fabricObjListRef.current[annoIdToDraw] = skeletonObj;
+        fabricObjListRef.current[idToDraw] = skeletonObj;
         canvas.skeletonPoints = [];
         canvas.skeletonLines = {};
         
@@ -698,6 +780,72 @@ export default function Canvas(props) {
         addActiveIdObj(skeletonObj);
         
         // canvas.selection = true;
+    }
+
+
+    function drawBrush() {
+        const canvas = canvasObjRef.current;
+        const annoObj = frameAnnotation[annoIdToDraw];
+        const pos = canvas.getPointer();
+        const circle = new fabric.Circle({
+            left: pos.x,  /////
+            top: pos.y,  /////
+            radius: brushThickness,
+            originX: 'center',
+            originY: 'center',
+            // strokeWidth: 1,
+            // strokeUniform: true,
+            // stroke: annoObj.color,
+            fill: annoObj.color+'80',
+            lockScalingX: true,
+            lockScalingY: true,
+            lockRotation: true,
+            lockScalingFlip: true,
+            lockSkewingX: true,
+            lockSkewingY: true,
+            hasControls: false,
+            selectable:false,
+            lockMovementX: true,
+            lockMovementY: true,
+            //centeredScaling: true,
+            type: annoObj.type + 'Circle', 
+            owner: annoObj.id,
+        })
+        canvas.add(circle);
+    }
+
+    function eraseBrush() {
+        // const canvas = canvasObjRef.current;
+        // const annoObj = frameAnnotation[annoIdToDraw];
+        // const pos = canvas.getPointer();
+        // const circle = new fabric.Circle({
+        //     left: pos.x,  /////
+        //     top: pos.y,  /////
+        //     radius: brushThickness,
+        //     originX: 'center',
+        //     originY: 'center',
+        //     strokeWidth: 1,
+        //     strokeUniform: true,
+        //     stroke: 'black',
+        //     // fill: annoObj.color+'80',
+        //     lockScalingX: true,
+        //     lockScalingY: true,
+        //     lockRotation: true,
+        //     lockScalingFlip: true,
+        //     lockSkewingX: true,
+        //     lockSkewingY: true,
+        //     hasControls: false,
+        //     selectable:false,
+        //     lockMovementX: true,
+        //     lockMovementY: true,
+        //     //centeredScaling: true,
+        //     type: annoObj.type + 'Eraser', 
+        //     owner: annoObj.id,
+        // })
+        // circle.filters.push({color: annoObj.color+'80'});
+        // circle.applyFilters();
+        // canvas.add(circle);
+
     }
 
 
@@ -1098,10 +1246,15 @@ export default function Canvas(props) {
         setActiveObjData();
     }
 
-
+    //TODO: remove this func, replace by annoIdToDraw context, but need to change btn clickHandler to set the context
     function getIdToDraw() {
         const existingIds = new Set(Object.keys(fabricObjListRef.current));
-        const idToDraw = Object.entries(frameAnnotation).filter(([id, annoObj]) => !existingIds.has(id) && ANNOTATION_TYPES.has(annoObj.type))[0][0];
+        let idToDraw;
+        // if (drawType==='brush') {
+
+        // } else {
+            idToDraw = Object.entries(frameAnnotation).filter(([id, annoObj]) => !existingIds.has(id) && ANNOTATION_TYPES.has(annoObj.type))[0][0];
+        // } 
         return idToDraw;
     }
 
