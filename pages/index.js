@@ -119,7 +119,7 @@ export default function Home() {
           </Col>
         </Row>
         
-        <Canvas />
+        <Canvas width={300} height={200}/>
         <VideoUploader />
       </Workspace>
     </div>

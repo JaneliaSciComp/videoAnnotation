@@ -78,7 +78,7 @@ export default function BrushBtn(props) {
             if (Number.isInteger(frameNum) || frameUrl) {
                 if (!annotationIdRef.current) { // brush seg reuse the same annoObj, so only initialize annoObj when first time click
                     // create anno obj, add to frameAnno, activate draw mode
-                    const id = Date.now().toString();
+                    const id ='123'; // Date.now().toString();
                     annotationIdRef.current = id;
                     setDrawType('brush'); // drawType changed, useEffect will add default radio value
                     const annoObj = {

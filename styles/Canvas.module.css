@@ -1,10 +1,27 @@
+.canvasContainer {
+    /* position: absolute; */
+    margin: 1em 0 1em 0;
+    /* border: 1px solid blue; */
+}
+
 .canvas {
     margin: auto auto;
     border: solid;
+    /* background-color: rgba(138,187,255,255); */
     /* width: 600px;
     height: 450px; */
-    display: flex;
+    /* display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: center; */
 }
 
+.brushCanvas {
+    position: absolute;
+    z-index: 1;
+    margin: auto auto;
+    border: 1px solid red;
+}
+
+/* .image {
+    position: absolute;
+} */
