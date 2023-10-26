@@ -48,9 +48,10 @@ export default function BrushBtn(props) {
     const setBrushThickness = useStateSetters().setBrushThickness;
     const undo = useStates().undo;
     const setUndo = useStateSetters().setUndo;
+    const annoIdToDraw = useStates().annoIdToDraw;
     const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
 
-    
+
     useEffect(()=>{
         if (!props.label) {
             throw Error('Label cannot be empty');
@@ -63,11 +64,20 @@ export default function BrushBtn(props) {
     }, [])
 
 
-    // useEffect(() => {
-    //     if (!drawType) { 
-    //         annotationIdRef.current = null;
-    //     } 
-    // }, [drawType])
+    useEffect(() => {
+        /** when switch to a new frame or img, this btn should be ready to create another annoObj, so change annoIdRef to null;
+         *  when switch to a previous frame, it should first see if there is created annoObj. If yes, use that annoId; if not, set annoIdRef to null 
+         */ 
+        if (frameAnnotation && props.label) {
+            const annoObj = Object.values(frameAnnotation).filter(obj=> obj.type==='brush' && obj.label===props.label)[0];
+            if (annoObj) {
+                annotationIdRef.current = annoObj.id;
+            } else {
+                annotationIdRef.current = null;
+            }
+        }
+       
+    }, [frameNum, frameUrl])
 
 
     function clickHandler() {
@@ -78,7 +88,7 @@ export default function BrushBtn(props) {
             if (Number.isInteger(frameNum) || frameUrl) {
                 if (!annotationIdRef.current) { // brush seg reuse the same annoObj, so only initialize annoObj when first time click
                     // create anno obj, add to frameAnno, activate draw mode
-                    const id ='123'; // Date.now().toString();
+                    const id =Date.now().toString(); //'123'; // 
                     annotationIdRef.current = id;
                     setDrawType('brush'); // drawType changed, useEffect will add default radio value
                     const annoObj = {
@@ -103,7 +113,7 @@ export default function BrushBtn(props) {
 
     function onRadioChange(e) {        
         // update radio value to annotation
-        if (drawType==='brush') { // only if already activated draw mode
+        if (drawType==='brush' && annoIdToDraw===annotationIdRef.current) { // only if draw mode is activated, and this btn is activated 
             setRadioValue(e.target.value);
             const annotation = {...frameAnnotation[annotationIdRef.current]};
             annotation.isCrowd=e.target.value;
@@ -139,8 +149,8 @@ export default function BrushBtn(props) {
             {/* <Col md={4} className={styles.brushBtn}> */}
             <div className={styles.brushBtn}>
                 <Button className={styles.btn}
-                    style={{color:drawType==='brush'?'white':(props.color?props.color:defaultColor), 
-                            background: drawType==='brush'?(props.color?props.color:defaultColor):'white', 
+                    style={{color: annoIdToDraw===annotationIdRef.current?'white':(props.color?props.color:defaultColor), 
+                            background: annoIdToDraw===annotationIdRef.current?(props.color?props.color:defaultColor):'white', 
                             border:'2px solid '+(props.color?props.color:defaultColor)}} 
                     onClick={clickHandler}>
                     {props.label}

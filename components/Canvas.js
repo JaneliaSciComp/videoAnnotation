@@ -11,7 +11,7 @@ const STROKE_WIDTH = 2;
 
 const WHEEL_SENSITIVITY = 10;
 const CLICK_TOLERANCE = 5;
-const COLOR_TOLERANCE = 5; //TODO
+const COLOR_TOLERANCE = 10; //TODO
 const ANNOTATION_TYPES = new Set(['keyPoint', 'bbox', 'polygon', 'skeleton', 'brush']);
 
 
@@ -29,14 +29,13 @@ export default function Canvas(props) {
     const imageObjRef = useRef();
     const canvasRef = useRef();
     const canvasObjRef = useRef();
-    // const brushCanvasRef = useRef();
-    // const brushCanvasObjRef = useRef();
     const testCanvasRef = useRef();
     // const keyPointObjListRef = useRef({});
     // const bboxObjListRef = useRef({});
     // const polygonObjListRef = useRef({});
     const fabricObjListRef = useRef({}); // for skeleton: annoId: {id: annoId, type: 'skeleton', landmarks: [KeyPoints (if not labelled, then that entry is empty/undefined)], edges: {'0-1': Line, ...} }
-
+                                         // for brush: annoId: {id: annoId, type: 'brush', pathes: [], rle: []}
+    
     const videoId = useStates().videoId;
     const frameUrl = useStates().frameUrl;
     const frameNum = useStates().frameNum;
@@ -218,8 +217,7 @@ export default function Canvas(props) {
             // console.log('imgData', img.left, img.top, img.width,img.scaleX, img.height,img.scaleY, img);
             // console.log( imageData, imageData.data.filter(n=>n>0));
             
-            console.log('paths', fabricObjListRef.current);
-            
+            // console.log('paths', fabricObjListRef.current);
             getBrushData();
             
         }
@@ -227,61 +225,125 @@ export default function Canvas(props) {
 
     async function getBrushData() {
         const canvas = canvasObjRef.current;
+        const img = imageObjRef.current;
         const upperCanvasCtx = canvas.getSelectionContext();
-        
-        if (fabricObjListRef.current['123']) {
+        const brushObjArr = getBrushObj();
+        console.log(brushObjArr);
+
+        if (brushObjArr.length > 0) {
+            let offscreen = new OffscreenCanvas(img.width, img.height);
+            const offscreenCtx = offscreen.getContext('2d');
+            
             const vptCopy = [...canvas.viewportTransform];
             // canvas.zoom = 1;
             let vpt = [...canvas.viewportTransform];
-            const img = imageObjRef.current;
             // canvas.set({width: img.width, height: img.height}); // useless, only update when refresh page
-            vpt[0] = 1; //1/img.scaleX;
-            vpt[3] = 1; //1/img.scaleY;
-            vpt[4] = -img.left;// -img.left/img.scaleX;
-            vpt[5] = -img.top; //-img.top/img.scaleY;
+            vpt[0] = 1; 
+            vpt[3] = 1; 
+            vpt[4] = -img.left;
+            vpt[5] = -img.top; 
             canvas.setViewportTransform(vpt);
-            canvas.renderAll(); // must have, otherwise only get current view
+            canvas.renderAll(); // must have
             // console.log(zoomCopy, vptCopy, widthCopy, heightCopy, canvas);
             
+            const pixelDataCollection = {};
+            for (let brushObj of brushObjArr) {
+                canvas.clearContext(upperCanvasCtx);
+                canvas.renderCanvas(upperCanvasCtx, brushObj.pathes);
+                const upperCanvasData = upperCanvasCtx.getImageData(0,0,img.width*img.scaleX,img.height*img.scaleY);
+                // const upperCanvasData = canvasRef.current.getContext("2d").getImageData(0,0,img.width*img.scaleX,img.height*img.scaleY);
+                pixelDataCollection[brushObj.id] = upperCanvasData;
+            }
             canvas.clearContext(upperCanvasCtx);
-            canvas.renderCanvas(upperCanvasCtx, fabricObjListRef.current['123'].pathes);
-            const upperCanvasData = upperCanvasCtx.getImageData(0,0,img.width*img.scaleX,img.height*img.scaleY);
-            // const upperCanvasData = canvasRef.current.getContext("2d").getImageData(0,0,img.width*img.scaleX,img.height*img.scaleY);
-            canvas.clearContext(upperCanvasCtx);
-            
             canvas.setViewportTransform(vptCopy);
-            // canvas.renderAll();
+
+            for (let id in pixelDataCollection) {
+                const upperCanvasData = pixelDataCollection[id];
+                const resizedData = await window.createImageBitmap(upperCanvasData, 0, 0, img.width*img.scaleX,img.height*img.scaleY, {resizeWidth: img.width, resizeHeight: img.height});
+
+                offscreenCtx.drawImage(resizedData, 0, 0);
+                const offscreenData = offscreenCtx.getImageData(0,0,img.width, img.height);
+                console.log('offscreen data', id, offscreenData);
+                offscreenCtx.clearRect(0, 0, img.width, img.height); //clear ctx for redrawing
+
+                const pixelData = offscreenData.data;
+                const pixelDataFiltered = new Uint8ClampedArray(offscreenData.data); //for testing
+                const rle = [];
+                const [r,g,b] = convertColorHexToBit(frameAnnotation[annoIdToDraw].color); 
+                // const alpha = (props.alpha ? props.alpha : defaultAlpha) * 255;
+                console.log('rgb', r, g, b);
+                let count = 1;
+                let inSeg = false;
+                for (let i=0; i<pixelData.length; i=i+4) {
+                    if (Math.abs(pixelData[i]-r) <= COLOR_TOLERANCE 
+                    && Math.abs(pixelData[i+1]-g) <= COLOR_TOLERANCE 
+                    && Math.abs(pixelData[i+2]-b) <= COLOR_TOLERANCE) {
+                        // if (i<200) {
+                        //     console.log(i, 'true');
+                        //     console.log(Math.abs(pixelData[i]-r),Math.abs(pixelData[i+1]-g), Math.abs(pixelData[i+2]-b));
+                        // }
+                        
+                        if (i===0) {
+                            inSeg = true;
+                        } else {
+                            if (inSeg) {
+                                count++;
+                            } else {
+                                rle.push(count);
+                                count = 1;
+                                inSeg = true;
+                            }
+                        }
+                    } else {
+                        // if (i<200) {
+                        //     console.log(i, 'false');
+                        // }
+                        
+                        if (i===0) {
+                            inSeg = false;
+                        } else {
+                            if (!inSeg) {
+                                count++;
+                            } else {
+                                rle.push(count);
+                                count = 1;
+                                inSeg = false;
+                            }
+                        }
+
+                        //for testing
+                        pixelDataFiltered[i] = 0;
+                        pixelDataFiltered[i+1] = 0;
+                        pixelDataFiltered[i+2] = 0;
+                        pixelDataFiltered[i+3] = 0;
+                    }
+                }
+                rle.push(count);
+                console.log(id, rle);
+                fabricObjListRef.current[id].rle = rle;
+
+                //for testing
+                // console.log(pixelDataFiltered, img.width);
+                const imageDataFiltered = new ImageData(pixelDataFiltered, img.width, img.height) ;
+                testCanvasRef.current.width = img.width; //*img.scaleX;
+                testCanvasRef.current.height = img.height; //*img.scaleY;
+                const testCtx = testCanvasRef.current.getContext("2d");
+                // testCtx.scale(img.scaleX, img.scaleY);
+                // testCtx.putImageData(upperCanvasData, 0, 0);
+                // testCtx.drawImage(resizedData, 0, 0);
+                // console.log(img.width*img.scaleX,img.height*img.scaleY);
+                // console.log('canvas', upperCanvasData, resizedData);
+                testCtx.putImageData(imageDataFiltered, 0,0);
+            }
+            offscreen = null; // delete offscreen canvas when done
+            console.log(fabricObjListRef.current);
             
-            const resizedData = await window.createImageBitmap(upperCanvasData, 0, 0, img.width*img.scaleX,img.height*img.scaleY, {resizeWidth: img.width, resizeHeight: img.height});
-            testCanvasRef.current.width = img.width; //*img.scaleX;
-            testCanvasRef.current.height = img.height; //*img.scaleY;
-            const testCtx = testCanvasRef.current.getContext("2d");
-            // testCtx.scale(img.scaleX, img.scaleY);
-            // testCtx.putImageData(upperCanvasData, 0, 0);
-            // testCtx.drawImage(resizedData, 0, 0);
-            // console.log(img.width*img.scaleX,img.height*img.scaleY);
-            // console.log('canvas', upperCanvasData, resizedData);
-        
-            
-
-            const offscreen = new OffscreenCanvas(img.width, img.height);
-            const offscreenCtx = offscreen.getContext('2d');
-            offscreenCtx.drawImage(resizedData, 0, 0);
-            const offscreenData = offscreenCtx.getImageData(0,0,img.width, img.height);
-            console.log('offscreen', offscreenData);
-
-            const data = new Uint8ClampedArray(); //offscreenData.data;
-            const rle = [];
-            const [r,g,b] = convertColorHexToBit(frameAnnotation[annoIdToDraw].color); 
-            // const alpha = (props.alpha ? props.alpha : defaultAlpha) * 255;
-            console.log('rgb', r, g, b);
-
-            // for (let i=0; i<offscreenData.data.length; i+4) {
-
-            // }
-
-            testCtx.putImageData(offscreenData, 0,0);
         }
+    }
+
+    function getBrushObj() {
+        const brushObjArr = Object.values(fabricObjListRef.current).filter(obj=>obj.type==='brush');
+        return brushObjArr;
     }
 
     useEffect(()=>{
@@ -326,6 +388,38 @@ export default function Canvas(props) {
         canvas.freeDrawingBrush.color = annoObj.color + convertAlphaFloatToHex(alphaFloat);
         // console.log('setBrush', canvas.freeDrawingBrush.color);
         canvas.freeDrawingBrush.width = brushThickness;
+    }
+
+
+
+    function pathCreateHandler(e) {
+        if (drawType==='brush') {
+            e.path.selectable=false;
+            // console.log(e.path);
+
+            // check if fabricObjListRef has this brush obj, if not, create one
+            const existingIds = new Set(Object.keys(fabricObjListRef.current));
+            if (!existingIds.has(annoIdToDraw)) {
+                const brushObj = {
+                    id: annoIdToDraw,
+                    type: 'brush',
+                    pathes: [],
+                    // eraserPaths: []
+                }
+                fabricObjListRef.current[annoIdToDraw] = brushObj;
+            }
+
+            const brushObj = {...fabricObjListRef.current[annoIdToDraw]};
+            
+            //TODO
+            // if (useEraser) {
+            //     brushObj.eraserPaths.push(e.path);
+            // } else {
+                brushObj.pathes.push(e.path);
+            // }
+            fabricObjListRef.current = {...fabricObjListRef.current, [annoIdToDraw]:brushObj};
+        
+        }
     }
 
     function resetBrush() {
@@ -741,48 +835,6 @@ export default function Canvas(props) {
         }
         // console.log(e.key); // Backspace
         // console.log(e.keyCode); // 8
-    }
-
-
-    function pathCreateHandler(e) {
-        if (drawType==='brush') {
-            e.path.selectable=false;
-            // console.log(e.path);
-
-            // check if fabricObjListRef has this brush obj, if not, create one
-            const existingIds = new Set(Object.keys(fabricObjListRef.current));
-            if (!existingIds.has(annoIdToDraw)) {
-                const brushObj = {
-                    id: annoIdToDraw,
-                    pathes: [],
-                    // eraserPaths: []
-                }
-                fabricObjListRef.current[annoIdToDraw] = brushObj;
-            }
-
-            const brushObj = {...fabricObjListRef.current[annoIdToDraw]};
-            
-            //TODO
-            // if (useEraser) {
-            //     brushObj.eraserPaths.push(e.path);
-            // } else {
-                brushObj.pathes.push(e.path);
-            // }
-            fabricObjListRef.current = {...fabricObjListRef.current, [annoIdToDraw]:brushObj};
-        
-            //add path Obj to brushCanvas
-            // const brushCanvas = brushCanvasObjRef.current;
-            // const pathCopy = {...e.path};
-            // pathCopy.canvas = brushCanvas;
-            // console.log(canvasObjRef.current, brushCanvas);
-            // console.log(pathCopy);
-            // brushCanvas.add(e.path);
-
-            // const canvas = canvasObjRef.current;
-            // const upperCanvasCtx = canvas.getSelectionContext();
-            
-            // canvas.renderCanvas(upperCanvasCtx, [e.path]);
-        }
     }
 
 
