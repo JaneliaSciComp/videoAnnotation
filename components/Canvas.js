@@ -1,15 +1,17 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useEffect, useRef} from 'react';
 import styles from '../styles/Canvas.module.css';
 import {fabric} from 'fabric';
 import { useStates, useStateSetters } from './AppContext';
-
+import { defaultAlpha, hexArr, hexMap } from '../utils/utils';
 
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 500;
 const CIRCLE_RADIUS = 3;
 const STROKE_WIDTH = 2;
+
 const WHEEL_SENSITIVITY = 10;
 const CLICK_TOLERANCE = 5;
+const COLOR_TOLERANCE = 5; //TODO
 const ANNOTATION_TYPES = new Set(['keyPoint', 'bbox', 'polygon', 'skeleton', 'brush']);
 
 
@@ -21,20 +23,19 @@ export default function Canvas(props) {
      *      circleRadius: radius for keypoint, skeleton landmark, polygon point
      *      strokeWidth: thinkness of line
      *      wheelSensitivity: wheel sensitivity for zooming
-     *       
+     *      alpha: number, [0,1]. transparency for segementation (brush) drawing
      */
     const imgRef = useRef();
     const imageObjRef = useRef();
     const canvasRef = useRef();
     const canvasObjRef = useRef();
-    const brushCanvasRef = useRef();
-    const brushCanvasObjRef = useRef();
+    // const brushCanvasRef = useRef();
+    // const brushCanvasObjRef = useRef();
     const testCanvasRef = useRef();
     // const keyPointObjListRef = useRef({});
     // const bboxObjListRef = useRef({});
     // const polygonObjListRef = useRef({});
     const fabricObjListRef = useRef({}); // for skeleton: annoId: {id: annoId, type: 'skeleton', landmarks: [KeyPoints (if not labelled, then that entry is empty/undefined)], edges: {'0-1': Line, ...} }
-    const [testW, setTestW]= useState(300);
 
     const videoId = useStates().videoId;
     const frameUrl = useStates().frameUrl;
@@ -48,7 +49,7 @@ export default function Canvas(props) {
     const btnConfigData = useStates().btnConfigData;
     const setActiveAnnoObj = useStateSetters().setActiveAnnoObj;
     const brushThickness = useStates().brushThickness;
-    const useEraser = useStates().useEraser;
+    // const useEraser = useStates().useEraser;
     const undo = useStates().undo;
     // const setUndo = useStateSetters().setUndo;
     const annoIdToDraw = useStates().annoIdToDraw;
@@ -60,11 +61,11 @@ export default function Canvas(props) {
     useEffect(() => {
         if (!canvasObjRef.current) {
             // activate brushCanvas
-            const brushCanvasObj = new fabric.Canvas('brushCanvas', {
-                width: props.width ? props.width : CANVAS_WIDTH,
-                height: props.height ? props.height : CANVAS_HEIGHT,
-            })
-            brushCanvasObjRef.current = brushCanvasObj;
+            // const brushCanvasObj = new fabric.Canvas('brushCanvas', {
+            //     width: props.width ? props.width : CANVAS_WIDTH,
+            //     height: props.height ? props.height : CANVAS_HEIGHT,
+            // })
+            // brushCanvasObjRef.current = brushCanvasObj;
 
             const canvasObj = new fabric.Canvas('canvas', {
                 width: props.width ? props.width : CANVAS_WIDTH,
@@ -97,6 +98,12 @@ export default function Canvas(props) {
       }, []
     )
 
+    useEffect(()=>{
+        if (props.alpha && (props.alpha < 0 || props.alpha > 1)) {
+            throw Error('Alpha should be in the range [0, 1].');
+        }
+    }, [props.alpha])
+
 
     useEffect(() => {
         if (imgRef.current) {
@@ -127,7 +134,7 @@ export default function Canvas(props) {
                 imgRef.current.removeEventListener("load", imageLoadHandler);
             }
         }
-      }, [videoId, frameUrl, frameNum, drawType, skeletonLandmark, frameAnnotation, btnConfigData, useEraser, brushThickness, undo] /////check if these are enough
+      }, [videoId, frameUrl, frameNum, drawType, skeletonLandmark, frameAnnotation, btnConfigData, brushThickness, undo] /////check if these are enough
     )
 
 
@@ -200,17 +207,16 @@ export default function Canvas(props) {
 
         // if (drawType==='brush' && !useEraser) {
         if (drawType==='brush') {
-            // setTestW(testW*2);
             setBrush();
         }
         if (!drawType) {
             resetBrush();
             // canvas.clear();
-            const ctx = canvasRef.current.getContext("2d");
-            const img = imageObjRef.current;
-            const imageData = ctx.getImageData(0,0,500,50);
-            console.log('imgData main Canvas', img.left, img.top, img.width,img.scaleX, img.height,img.scaleY, img);
-            console.log( imageData, imageData.data.filter(n=>n>0));
+            // const ctx = canvasRef.current.getContext("2d");
+            // const img = imageObjRef.current;
+            // const imageData = ctx.getImageData(0,0,500,50);
+            // console.log('imgData main Canvas', img.left, img.top, img.width,img.scaleX, img.height,img.scaleY, img);
+            // console.log( imageData, imageData.data.filter(n=>n>0));
             
             // const brushCtx = brushCanvasRef.current.getContext("2d");
             // const brushData = brushCtx.getImageData(0,0,300,2);
@@ -225,55 +231,58 @@ export default function Canvas(props) {
 
     async function getBrushData() {
         const canvas = canvasObjRef.current;
-            const upperCanvasCtx = canvas.getSelectionContext();
-            
-            if (fabricObjListRef.current['123']) {
-                // canvas.clearContext(upperCanvasCtx);
-                // canvas.renderCanvas(upperCanvasCtx, fabricObjListRef.current['123'].pathes);
-                
-                // const upperCanvasData = upperCanvasCtx.getImageData(0,0,500,50);
-                // testCtx.putImageData(upperCanvasData, 0, 0);
-                // console.log('canvas',canvasObjRef.current, upperCanvasData, upperCanvasData.data.filter(n=>n>0));
-                // canvas.clearContext(upperCanvasCtx);
+        const upperCanvasCtx = canvas.getSelectionContext();
+        
+        if (fabricObjListRef.current['123']) {
+            const vptCopy = [...canvas.viewportTransform];
+            // canvas.zoom = 1;
+            let vpt = [...canvas.viewportTransform];
+            const img = imageObjRef.current;
+            // canvas.set({width: img.width, height: img.height}); // useless, only update when refresh page
+            vpt[0] = 1; //1/img.scaleX;
+            vpt[3] = 1; //1/img.scaleY;
+            vpt[4] = -img.left;// -img.left/img.scaleX;
+            vpt[5] = -img.top; //-img.top/img.scaleY;
+            canvas.setViewportTransform(vpt);
+            canvas.renderAll(); // must have, otherwise only get current view
+            // console.log(zoomCopy, vptCopy, widthCopy, heightCopy, canvas);
+            canvas.clearContext(upperCanvasCtx);
+            canvas.renderCanvas(upperCanvasCtx, fabricObjListRef.current['123'].pathes);
 
-                // const brushCtx = brushCanvasRef.current.getContext("2d");
-                // brushCtx.putImageData(upperCanvasData, 0, 0);
-                // const brushCanvas = brushCanvasObjRef.current;
-                const vptCopy = [...canvas.viewportTransform];
-                const zoomCopy = canvas.getZoom();
-                const widthCopy = canvas.width;
-                const heightCopy = canvas.height;
-                // canvas.zoom = 1;
-                let vpt = [...canvas.viewportTransform];
-                const img = imageObjRef.current;
-                // canvas.set({width: img.width, height: img.height}); // useless, only update when refresh page
-                vpt[0] = 1; //1/img.scaleX;
-                vpt[3] = 1; //1/img.scaleY;
-                vpt[4] = -img.left;// -img.left/img.scaleX;
-                vpt[5] = -img.top; //-img.top/img.scaleY;
-                canvas.setViewportTransform(vpt);
-                canvas.renderAll();
-                // console.log(zoomCopy, vptCopy, widthCopy, heightCopy, canvas);
-                canvas.clearContext(upperCanvasCtx);
-                canvas.renderCanvas(upperCanvasCtx, fabricObjListRef.current['123'].pathes);
-                
+            const upperCanvasData = upperCanvasCtx.getImageData(0,0,img.width*img.scaleX,img.height*img.scaleY);
+            // const upperCanvasData = canvasRef.current.getContext("2d").getImageData(0,0,img.width*img.scaleX,img.height*img.scaleY);
+            const resizedData = await window.createImageBitmap(upperCanvasData, 0, 0, img.width*img.scaleX,img.height*img.scaleY, {resizeWidth: img.width, resizeHeight: img.height});
+            testCanvasRef.current.width = img.width; //*img.scaleX;
+            testCanvasRef.current.height = img.height; //*img.scaleY;
+            const testCtx = testCanvasRef.current.getContext("2d");
+            // testCtx.scale(img.scaleX, img.scaleY);
+            // testCtx.putImageData(upperCanvasData, 0, 0);
+            // testCtx.drawImage(resizedData, 0, 0);
+            // console.log(img.width*img.scaleX,img.height*img.scaleY);
+            // console.log('canvas', upperCanvasData, resizedData);
+        
+            canvas.clearContext(upperCanvasCtx);
+            canvas.setViewportTransform(vptCopy);
+            // canvas.renderAll();
 
-                // const upperCanvasData = upperCanvasCtx.getImageData(0,0,img.width*img.scaleX,img.height*img.scaleY);
-                const upperCanvasData = canvasRef.current.getContext("2d").getImageData(0,0,img.width*img.scaleX,img.height*img.scaleY);
-                const resizedData = await window.createImageBitmap(upperCanvasData, 0, 0, img.width*img.scaleX,img.height*img.scaleY, {resizeWidth: img.width, resizeHeight: img.height});
-                testCanvasRef.current.width = img.width; //*img.scaleX;
-                testCanvasRef.current.height = img.height; //*img.scaleY;
-                const testCtx = testCanvasRef.current.getContext("2d");
-                // testCtx.scale(img.scaleX, img.scaleY);
-                // testCtx.putImageData(upperCanvasData, 0, 0);
-                testCtx.drawImage(resizedData, 0, 0);
-                console.log(img.width*img.scaleX,img.height*img.scaleY);
-                console.log('canvas',canvasObjRef.current, upperCanvasData, upperCanvasData.data.filter(n=>n>0));
-            
-                // canvas.clearContext(upperCanvasCtx);
-                // canvas.setViewportTransform(vptCopy);
-                // canvas.renderAll();
-            }
+            const offscreen = new OffscreenCanvas(img.width, img.height);
+            const offscreenCtx = offscreen.getContext('2d');
+            offscreenCtx.drawImage(resizedData, 0, 0);
+            const offscreenData = offscreenCtx.getImageData(0,0,img.width, img.height);
+            console.log('offscreen', offscreenData);
+
+            const data = new Uint8ClampedArray(); //offscreenData.data;
+            const rle = [];
+            const [r,g,b] = convertColorHexToBit(frameAnnotation[annoIdToDraw].color); 
+            // const alpha = (props.alpha ? props.alpha : defaultAlpha) * 255;
+            console.log('rgb', r, g, b);
+
+            // for (let i=0; i<offscreenData.data.length; i+4) {
+
+            // }
+
+            testCtx.putImageData(offscreenData, 0,0);
+        }
     }
 
     useEffect(()=>{
@@ -314,20 +323,34 @@ export default function Canvas(props) {
         canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
         // console.log('drawBrush');
         canvas.freeDrawingBrush.limitedToCanvasSize = true; //When `true`, the free drawing is limited to the whiteboard size
-        canvas.freeDrawingBrush.color = annoObj.color+'80';
+        const alphaFloat = props.alpha?props.alpha:defaultAlpha;
+        canvas.freeDrawingBrush.color = annoObj.color + convertAlphaFloatToHex(alphaFloat);
+        // console.log('setBrush', canvas.freeDrawingBrush.color);
         canvas.freeDrawingBrush.width = brushThickness;
-
-        
-        // const brushCanvas = document.createElement("canvas");
-        // brushCanvas.width = props.width ? props.width : CANVAS_WIDTH;
-        // brushCanvas.height = props.height ? props.height : CANVAS_HEIGHT;
-        // brushCanvas
     }
 
     function resetBrush() {
         const canvas = canvasObjRef.current;
         canvas.isDrawingMode = false;
         canvas.freeDrawingBrush = null;
+    }
+
+    function convertAlphaFloatToHex(alphaFloat) {
+        // convert alpha float to hex string, e.g. 0.5 return '7F'
+        const alphaBit = alphaFloat * 255;
+        const secondDigit = Math.floor(alphaBit / 16);
+        const firstDigit = Math.floor(alphaBit % 16);
+        const res = hexArr[secondDigit] + hexArr[firstDigit];
+        return res;
+    }
+
+    function convertColorHexToBit(colorHex) {
+        // convert color hex string to bit, e.g. '#FFFFFF' return [255, 255, 255]
+        const charArr = colorHex.split('');
+        const r = hexMap[charArr[1]] * 16 + hexMap[charArr[2]];
+        const g = hexMap[charArr[3]] * 16 + hexMap[charArr[4]];
+        const b = hexMap[charArr[5]] * 16 + hexMap[charArr[6]];
+        return [r, g, b];
     }
 
 
@@ -394,16 +417,16 @@ export default function Canvas(props) {
             imageObjRef.current.height = imgRef.current.height;
             scaleImage(canvasObjRef.current, imageObjRef.current);
         }
-        const rect = new fabric.Rect({
-            left:100,
-            top:0,
-            width: 50,
-            height:30,
-            // strokeWidth: STROKE_WIDTH,
-            stroke: `rgba(135,183,255,${255/255})`,
-            fill: `rgba(135,183,255,${255/255})`
-        })
-        canvasObjRef.current.add(rect).renderAll();
+        // const rect = new fabric.Rect({
+        //     left:100,
+        //     top:0,
+        //     width: 50,
+        //     height:30,
+        //     // strokeWidth: STROKE_WIDTH,
+        //     stroke: `rgba(135,183,255,${255/255})`,
+        //     fill: `rgba(135,183,255,${255/255})`
+        // })
+        // canvasObjRef.current.add(rect).renderAll();
 
         //Draw fabric objects according to annotation
         createFabricObjBasedOnAnnotation();
@@ -1403,7 +1426,7 @@ export default function Canvas(props) {
         <>
         <div className={styles.canvasContainer}
              style={{width: props.width?props.width:CANVAS_WIDTH, height: props.height?props.height:CANVAS_HEIGHT}}>
-            <canvas id='brushCanvas' ref={brushCanvasRef} className={styles.brushCanvas} />
+            {/* <canvas id='brushCanvas' ref={brushCanvasRef} className={styles.brushCanvas} /> */}
             <canvas id='canvas' ref={canvasRef} className={styles.canvas}>
                 <img id='image' ref={imgRef} className={styles.image} alt="img"/>
             </canvas>
