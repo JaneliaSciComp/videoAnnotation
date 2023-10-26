@@ -94,7 +94,6 @@ export default function SkeletonBtn(props) {
         if (clicked) { // only if already activated draw mode
             const annotation = {...frameAnnotation[annotationIdRef.current]};
             annotation.data[skeletonLandmark][2]=value;
-            console.log(annotation.data);
             setFrameAnnotation({...frameAnnotation, [annotationIdRef.current]: annotation});
         }
     }

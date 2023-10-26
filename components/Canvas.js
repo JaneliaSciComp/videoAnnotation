@@ -215,12 +215,8 @@ export default function Canvas(props) {
             // const ctx = canvasRef.current.getContext("2d");
             // const img = imageObjRef.current;
             // const imageData = ctx.getImageData(0,0,500,50);
-            // console.log('imgData main Canvas', img.left, img.top, img.width,img.scaleX, img.height,img.scaleY, img);
+            // console.log('imgData', img.left, img.top, img.width,img.scaleX, img.height,img.scaleY, img);
             // console.log( imageData, imageData.data.filter(n=>n>0));
-            
-            // const brushCtx = brushCanvasRef.current.getContext("2d");
-            // const brushData = brushCtx.getImageData(0,0,300,2);
-            // console.log('imgData brush Canvas',brushData, brushData.data.filter(n=>n>0));
             
             console.log('paths', fabricObjListRef.current);
             
@@ -246,11 +242,16 @@ export default function Canvas(props) {
             canvas.setViewportTransform(vpt);
             canvas.renderAll(); // must have, otherwise only get current view
             // console.log(zoomCopy, vptCopy, widthCopy, heightCopy, canvas);
+            
             canvas.clearContext(upperCanvasCtx);
             canvas.renderCanvas(upperCanvasCtx, fabricObjListRef.current['123'].pathes);
-
             const upperCanvasData = upperCanvasCtx.getImageData(0,0,img.width*img.scaleX,img.height*img.scaleY);
             // const upperCanvasData = canvasRef.current.getContext("2d").getImageData(0,0,img.width*img.scaleX,img.height*img.scaleY);
+            canvas.clearContext(upperCanvasCtx);
+            
+            canvas.setViewportTransform(vptCopy);
+            // canvas.renderAll();
+            
             const resizedData = await window.createImageBitmap(upperCanvasData, 0, 0, img.width*img.scaleX,img.height*img.scaleY, {resizeWidth: img.width, resizeHeight: img.height});
             testCanvasRef.current.width = img.width; //*img.scaleX;
             testCanvasRef.current.height = img.height; //*img.scaleY;
@@ -261,9 +262,7 @@ export default function Canvas(props) {
             // console.log(img.width*img.scaleX,img.height*img.scaleY);
             // console.log('canvas', upperCanvasData, resizedData);
         
-            canvas.clearContext(upperCanvasCtx);
-            canvas.setViewportTransform(vptCopy);
-            // canvas.renderAll();
+            
 
             const offscreen = new OffscreenCanvas(img.width, img.height);
             const offscreenCtx = offscreen.getContext('2d');
@@ -748,6 +747,7 @@ export default function Canvas(props) {
     function pathCreateHandler(e) {
         if (drawType==='brush') {
             e.path.selectable=false;
+            // console.log(e.path);
 
             // check if fabricObjListRef has this brush obj, if not, create one
             const existingIds = new Set(Object.keys(fabricObjListRef.current));
@@ -770,7 +770,7 @@ export default function Canvas(props) {
             // }
             fabricObjListRef.current = {...fabricObjListRef.current, [annoIdToDraw]:brushObj};
         
-            // add path Obj to brushCanvas
+            //add path Obj to brushCanvas
             // const brushCanvas = brushCanvasObjRef.current;
             // const pathCopy = {...e.path};
             // pathCopy.canvas = brushCanvas;
