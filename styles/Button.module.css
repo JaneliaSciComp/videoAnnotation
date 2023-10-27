@@ -27,34 +27,28 @@
     align-items: center;
 }
 
-/* .eraserBtnContainer {
+.brushToolContainer {
+    width: 300px;
+    margin: 0.5em 0 0.5em 0;
+    display: flex;
+    /* align-items: start;
+    justify-content: start;  */
+}
+
+.iconBtnContainer {
+    margin: auto auto;
     display: flex;
     align-items: center;
     justify-content:center;
 }
 
-.eraserBtn {
-    width: 25px;
-    height: 25px;
-    padding: auto auto;
-    border-radius: 12.5px;
-    display: flex;
-    align-items: center;
-    justify-content:center;
-} */
-
-.undoBtnContainer {
-    display: flex;
-    align-items: center;
-    justify-content:center;
-}
-
-.undoBtn {
-    width: 28px !important;
-    height: 28px;
+.iconBtn {
+    width: 24px !important;
+    height: 24px;
+    margin: auto auto;
     padding: auto auto;
     border: 1px solid rgb(100, 100, 100);
-    border-radius: 14px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -66,9 +60,17 @@
     /* transform: translateY(3px); */
 }
 
-.brushToolContainer {
-    width: 180px;
-    margin: 5px 0 5px 0;
+.eraserBtn {
+    width: 25px;
+    height: 25px;
+    padding: auto auto;
+    border-radius: 12.5px;
     display: flex;
-}
+    align-items: center;
+    justify-content:center;
+} 
 
+.brushSliderContainer {
+    margin: auto 0.5em;
+    /* padding: auto 1em; */
+}

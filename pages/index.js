@@ -12,6 +12,7 @@ import BtnGroupController from '../components/BtnGroupController';
 import BtnContainer from '../components/BtnContainer.js';
 import BtnGroup from '../components/BtnGroup.js';
 import BrushBtn from '../components/BrushBtn.js';
+import BrushTool from '../components/BrushTool.js';
 import {Row, Col} from 'react-bootstrap';
 
 
@@ -112,6 +113,7 @@ export default function Home() {
           <Col>
             <BtnContainer />
             {/* <ShapeBtn type='keyPoint' label='test' color='red' /> */}
+            <BrushTool />
             <BrushBtn label='mouse' enableCrowdRadio />
             {/* <BrushBtn label='fly' color='#FF0000' enableCrowdRadio /> */}
           </Col>

@@ -8,8 +8,7 @@ import {defaultColor} from '../utils/utils.js';
 
 
 // const defaultColor = '#1677FF';
-const MIN_THICKNESS = 1;
-const MAX_THICKNESS = 100;
+
 
 export default function BrushBtn(props) {
     /**
@@ -44,10 +43,10 @@ export default function BrushBtn(props) {
     const setFrameAnnotation = useStateSetters().setFrameAnnotation;
     // const useEraser = useStates().useEraser;
     // const setUseEraser = useStateSetters().setUseEraser;
-    const brushThickness = useStates().brushThickness;
-    const setBrushThickness = useStateSetters().setBrushThickness;
-    const undo = useStates().undo;
-    const setUndo = useStateSetters().setUndo;
+    // const brushThickness = useStates().brushThickness;
+    // const setBrushThickness = useStateSetters().setBrushThickness;
+    // const undo = useStates().undo;
+    // const setUndo = useStateSetters().setUndo;
     const annoIdToDraw = useStates().annoIdToDraw;
     const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
 
@@ -57,10 +56,10 @@ export default function BrushBtn(props) {
             throw Error('Label cannot be empty');
         }
 
-        // initialize brushThickness
-        if (!brushThickness) {
-            setBrushThickness(5);
-        }
+        // // initialize brushThickness
+        // if (!brushThickness) {
+        //     setBrushThickness(5);
+        // }
     }, [])
 
 
@@ -121,25 +120,6 @@ export default function BrushBtn(props) {
         }
     };
 
-    function sliderChangeHandler(newValue) {
-        if (drawType==='brush') {
-            setBrushThickness(newValue);
-        }
-    }
-
-    // function onEraserBtnClick() {
-    //     if (drawType==='brush' && useEraser) {
-    //         setUseEraser(null);
-    //     } else if (drawType==='brush' && !useEraser) {
-    //         setUseEraser(true);
-    //     }
-    // }
-    function undoClickHandler() {
-        if (drawType==='brush') {
-            setUndo(undo+1); //TODO: overflow?
-        } 
-    }
-
 
     //direction="vertical"
 
@@ -161,32 +141,7 @@ export default function BrushBtn(props) {
             <Col md={6}> */}
             <div >
                 {/* <Row > */}
-                <div className={styles.brushToolContainer}>
-                    <Col xs={2} className={styles.undoBtnContainer}> 
-                        <Button className={[styles.undoBtn, styles.btn]}
-                            size='sm'
-                            variant="light"
-                            // style={{color:useEraser?'white':'rgb(100, 100, 100)', 
-                            //         background: useEraser?defaultColor:'white', 
-                            //         border: useEraser?('1px solid'+defaultColor):'1px solid rgb(100, 100, 100)'}} 
-                            onClick={undoClickHandler}
-                            // {onEraserBtnClick} 
-                            >
-                                {/* <ClearOutlined /> */}
-                                <RollbackOutlined />
-                        </Button>
-                    </Col>
-                    <Col xs={10} className='px-2'>
-                        <Slider 
-                            min={props.minThickness?props.minThickness:MIN_THICKNESS}
-                            max={props.maxThickness?props.maxThickness:MAX_THICKNESS}
-                            // marks={{0:'0', []:`${totalFrameCount}`}}
-                            onChange={sliderChangeHandler}
-                            value={brushThickness}
-                            />
-                    </Col>
-                </div>
-                {/* </Row> */}
+                
                 {props.enableCrowdRadio ?
                     // <Row>
                     <div>
