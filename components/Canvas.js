@@ -294,6 +294,11 @@ export default function Canvas(props) {
                                 inSeg = true;
                             }
                         }
+                        //for testing
+                        pixelDataFiltered[i] = r;
+                        pixelDataFiltered[i+1] = g;
+                        pixelDataFiltered[i+2] = b;
+                        pixelDataFiltered[i+3] = (props.alpha?props.alpha:defaultAlpha)*255;
                     } else {
                         // if (i<200) {
                         //     console.log(i, 'false');
