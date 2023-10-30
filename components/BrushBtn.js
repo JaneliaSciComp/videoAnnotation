@@ -4,6 +4,7 @@ import { Space, Radio, Slider } from 'antd';
 import { ClearOutlined, RollbackOutlined } from '@ant-design/icons';
 import styles from '../styles/Button.module.css';
 import { useStateSetters, useStates } from './AppContext';
+import BrushTool from './BrushTool';
 import {defaultColor} from '../utils/utils.js';
 
 
@@ -27,6 +28,7 @@ export default function BrushBtn(props) {
             color: 'red'. Optional. If not provided, use defaultColor
             minThinkness: int. To set the min value of slider to config the thickness of brush. Optional. If not provided, use MIN_THICKNESS
             maxThickness: int. To set the max value of slider to config the thickness of brush. Optional. If not provided, use MAX_THICKNESS
+            enableBrushTool
             enableCrowdRadio
      */
     const [radioValue, setRadioValue] = useState(0);
@@ -81,33 +83,45 @@ export default function BrushBtn(props) {
 
     function clickHandler() {
         // draw brush, finish draw brush, can only be decided by clicking the btn, not by canvas
-        if (drawType===null) {
-            setDrawType('brush');
-            
-            if (Number.isInteger(frameNum) || frameUrl) {
-                if (!annotationIdRef.current) { // brush seg reuse the same annoObj, so only initialize annoObj when first time click
-                    // create anno obj, add to frameAnno, activate draw mode
-                    const id =Date.now().toString(); //'123'; // 
-                    annotationIdRef.current = id;
-                    setDrawType('brush'); // drawType changed, useEffect will add default radio value
-                    const annoObj = {
-                        id: id,
-                        type: 'brush',   
-                        frameNum: frameNum,
-                        label: props.label,
-                        color: props.color ? props.color : defaultColor,
-                        data: [],
-                        isCrowd: 0
-                    };
-                    setFrameAnnotation({...frameAnnotation, [id]: annoObj});
+        if (Number.isInteger(frameNum) || frameUrl) {
+            if (drawType === null || drawType !== 'brush') { // no btn is activated or non-brush btn is activated               
+                if (!annotationIdRef.current) { // brushBtn reuse the same annoObj, so only initialize annoObj when first time click
+                    createNewAnnoObj();
                 }
                 setAnnoIdToDraw(annotationIdRef.current)
+                setDrawType('brush'); // drawType changed, useEffect will add default radio value
+    
+            } else if (drawType==='brush') { 
+                if (annoIdToDraw === annotationIdRef.current) { // this btn is the activated brush btn, should deactivate it
+                    setDrawType(null);
+                    setAnnoIdToDraw(null); // should be set canvas, since canvas needs annoId to generate rle 
+                    // setUseEraser(null);
+                } else { // this is an inactivated btn, should activate it
+                    if (!annotationIdRef.current) {
+                        createNewAnnoObj();
+                    }
+                    setAnnoIdToDraw(annotationIdRef.current);
+                }
             }
-
-        } else if (drawType==='brush') {
-            setDrawType(null);
-            // setUseEraser(null);
         }
+       
+    }
+
+    function createNewAnnoObj() {
+        // create anno obj, add to frameAnno, activate draw mode
+        const id =Date.now().toString(); //'123'; // 
+        annotationIdRef.current = id;
+        const annoObj = {
+            id: id,
+            type: 'brush',   
+            frameNum: frameNum,
+            label: props.label,
+            color: props.color ? props.color : defaultColor,
+            data: [],
+            first: null,
+            isCrowd: 0
+        };
+        setFrameAnnotation({...frameAnnotation, [id]: annoObj});
     }
 
     function onRadioChange(e) {        
@@ -129,8 +143,8 @@ export default function BrushBtn(props) {
             {/* <Col md={4} className={styles.brushBtn}> */}
             <div className={styles.brushBtn}>
                 <Button className={styles.btn}
-                    style={{color: annoIdToDraw===annotationIdRef.current?'white':(props.color?props.color:defaultColor), 
-                            background: annoIdToDraw===annotationIdRef.current?(props.color?props.color:defaultColor):'white', 
+                    style={{color: (drawType==='brush'&&annoIdToDraw===annotationIdRef.current)?'white':(props.color?props.color:defaultColor), 
+                            background: (drawType==='brush'&&annoIdToDraw===annotationIdRef.current)?(props.color?props.color:defaultColor):'white', 
                             border:'2px solid '+(props.color?props.color:defaultColor)}} 
                     onClick={clickHandler}>
                     {props.label}
@@ -141,15 +155,20 @@ export default function BrushBtn(props) {
             <Col md={6}> */}
             <div >
                 {/* <Row > */}
+                {props.enableBrushTool ? <BrushTool /> : null}
                 
                 {props.enableCrowdRadio ?
                     // <Row>
                     <div>
-                        <Radio.Group value={radioValue} onChange={onRadioChange}>
-                            <Space >
+                        <Radio.Group 
+                            value={radioValue} 
+                            onChange={onRadioChange} 
+                            disabled={!(drawType==='brush'&&annoIdToDraw===annotationIdRef.current)}
+                            >
+                            {/* <Space > */}
                                 <Radio value={0}>single</Radio>
                                 <Radio value={1}>crowd</Radio>
-                            </Space>
+                            {/* </Space> */}
                         </Radio.Group>
                     {/* </Row>  */}
                     </div>

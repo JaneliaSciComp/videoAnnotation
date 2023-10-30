@@ -18,6 +18,8 @@ export default function BrushTool(props) {
     const setUseEraser = useStateSetters().setUseEraser;
     const undo = useStates().undo;
     const setUndo = useStateSetters().setUndo;
+    const annoIdToDraw = useStates().annoIdToDraw;
+    const frameAnnotation = useStates().frameAnnotation;
 
     function undoClickHandler() {
         if (drawType==='brush') {
@@ -34,11 +36,13 @@ export default function BrushTool(props) {
     }
 
     function sliderChangeHandler(newValue) {
-        if (drawType==='brush') {
+        // if (drawType==='brush') {
             setBrushThickness(newValue);
-        }
+        // }
     }
 
+    //disabled={frameAnnotation[annoIdToDraw]?.type==='brush'?false:true}
+// disabled={drawType==='brush'}
     return (
         <div className={styles.brushToolContainer}>
             <Col xs={1} className={styles.iconBtnContainer}> 
@@ -46,6 +50,7 @@ export default function BrushTool(props) {
                     size='sm'
                     variant="light"
                     onClick={undoClickHandler}
+                    // disabled={drawType==='brush'}
                     >
                         <RollbackOutlined />
                 </Button>

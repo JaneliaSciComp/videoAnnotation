@@ -148,15 +148,40 @@ export default function Workspace(props) {
         // }
       }, [frameNum]
     )
-
+    
+    function clearUnfinishedAnnotation() {
+        // when switch frame or video, for skeleton, polygon and brush seg, they may not be finished (for brush, no data at all), remove such annoObj from frameAnnotation
+        if (Object.keys(frameAnnotation).length > 0) {
+            const annoCopy = {...frameAnnotation};
+            const unfinished = object.keys(annoCopy).filter(id=>{
+                const annoObj = annoCopy[id];
+                if (annoObj.type ==='polygon' && !annoObj.data) {
+                    return true
+                } else if (annoObj.type === 'skeleton') {
+                    const unDraw = annoObj.data.filter(arr => arr[0]===null && arr[1]===null && arr[2]!==0)
+                    if (unDraw.length>0) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                } else if (annoObj.type === 'brush' && annoObj.data.length===0) {
+                    return true;
+                }
+            })
+            unfinished.forEach(id => delete(annoCopy[id]));
+            setFrameAnnotation(annoCopy);
+        }
+    }
 
     function saveAnnotationAndUpdateStates() {
         if (Number.isInteger(prevFrameNum.current) && Object.keys(frameAnnotation).length > 0) {
+            clearUnfinishedAnnotation();
             annotationRef.current[prevFrameNum.current] = frameAnnotation; 
         }
         prevFrameNum.current = frameNum;
         setActiveAnnoObj(null);
         setDrawType(null);
+        //annoIdToDraw will be reset in canvas after getBrushData()
     }
 
 

@@ -114,8 +114,8 @@ export default function Home() {
             <BtnContainer />
             {/* <ShapeBtn type='keyPoint' label='test' color='red' /> */}
             <BrushTool />
-            <BrushBtn label='mouse' enableCrowdRadio />
-            {/* <BrushBtn label='fly' color='#FF0000' enableCrowdRadio /> */}
+            <BrushBtn label='mouse' enableBrushTool enableCrowdRadio />
+            <BrushBtn label='fly' color='#FF0000' enableCrowdRadio />
           </Col>
           <Col>
             <AnnotationDisplay />

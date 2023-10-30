@@ -18,25 +18,26 @@
     display: flex;
     flex-wrap: wrap;
     align-items: center;
-    justify-content: start;
+    /* justify-content: start; */
 }
 
 .brushBtn {
     margin-right: 15px;
-    display: flex;
-    align-items: center;
+    /* display: flex;
+    align-items: center; */
 }
 
 .brushToolContainer {
-    width: 300px;
+    max-width: 300px;
     margin: 0.5em 0 0.5em 0;
     display: flex;
-    /* align-items: start;
-    justify-content: start;  */
+    /* flex-wrap: wrap; */
+    /* align-items: start; */
+    /* justify-content: start;  */
 }
 
 .iconBtnContainer {
-    margin: auto auto;
+    margin: auto 0.5em;
     display: flex;
     align-items: center;
     justify-content:center;

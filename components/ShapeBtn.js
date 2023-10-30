@@ -73,6 +73,7 @@ export default function ShapeBtn(props) {
             setFrameAnnotation({...frameAnnotation, [id]: annoObj});
             // console.log('shape called', props);
             setClicked(true);
+            setAnnoIdToDraw(id);
         }
        
     }

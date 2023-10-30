@@ -138,6 +138,8 @@ export default function SkeletonBtn(props) {
             // console.log('shape called', props);
             setFrameAnnotation({...frameAnnotation, [id]: annoObj});
             setClicked(true);
+
+            setAnnoIdToDraw(id);
         }
     }
 
@@ -153,6 +155,8 @@ export default function SkeletonBtn(props) {
             } else { // if this is the last landmark
                 setDrawType(null);
                 setSkeletonLandmark(0);
+                
+                setAnnoIdToDraw(null);
             }
             
         }
