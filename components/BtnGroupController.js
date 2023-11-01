@@ -99,7 +99,7 @@ export default function BtnGroupController(props) {
     const btnConfigData = useStates().btnConfigData;
     const setBtnConfigData = useStateSetters().setBtnConfigData;
 
-    console.log('btnGroupController render');
+    // console.log('btnGroupController render');
 
 
     useEffect(()=>{
@@ -161,7 +161,7 @@ export default function BtnGroupController(props) {
     useEffect(() => {
         // to update callback's scope when data changes
         // rerender addEdge btn when disableEdgeBtn state changes
-        console.log('useEffect called');
+        // console.log('useEffect called');
         if (groupData && getSelfIndex()) { // avoid calling when component just mounted
             renderChildren(); //update callback's scope
         } 
@@ -335,7 +335,7 @@ export default function BtnGroupController(props) {
 
 
     function renderChildren() {
-        console.log('renderChildren called');
+        // console.log('renderChildren called');
         const childrenData = getData();
         // console.log(childrenData);
         let res = [];

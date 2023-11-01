@@ -61,7 +61,7 @@ export default function SkeletonEdgeController(props) {
     const setBtnConfigData = useStateSetters().setBtnConfigData;
     
 
-    console.log('edgeGroupController render');
+    // console.log('edgeGroupController render');
 
     useEffect(()=>{
         // console.log('[] useEffect called');

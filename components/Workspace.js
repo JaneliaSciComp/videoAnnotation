@@ -126,7 +126,7 @@ export default function Workspace(props) {
         /* when videouploader switch to a new frame, save the annotation for current frame
            then retrieve the annotation for the new frame
          */
-        // console.log('frameNum called ', prevFrameNum.current, frameNum, frameAnnotation);
+        console.log('workspace frameNum useEffect: save frameAnnotation ', prevFrameNum.current, frameNum, frameAnnotation);
         //save cuurent frame anno data
         saveAnnotationAndUpdateStates();
         //retrieve next frame anno data
@@ -152,9 +152,9 @@ export default function Workspace(props) {
     function clearUnfinishedAnnotation() {
         // when switch frame or video, for skeleton, polygon and brush seg, they may not be finished (for brush, no data at all), remove such annoObj from frameAnnotation
         if (Object.keys(frameAnnotation).length > 0) {
-            const annoCopy = {...frameAnnotation};
-            const unfinished = object.keys(annoCopy).filter(id=>{
-                const annoObj = annoCopy[id];
+            const unfinished = Object.keys(frameAnnotation).filter(id=>{
+                const annoObj = frameAnnotation[id];
+                console.log('clear', annoObj, annoObj.type, annoObj.data, annoObj.first, annoObj.pathes);
                 if (annoObj.type ==='polygon' && !annoObj.data) {
                     return true
                 } else if (annoObj.type === 'skeleton') {
@@ -164,23 +164,39 @@ export default function Workspace(props) {
                     } else {
                         return false;
                     }
-                } else if (annoObj.type === 'brush' && annoObj.data.length===0) {
-                    return true;
+                } else if (annoObj.type === 'brush' && annoObj.pathes.length === 0) {
+                    return true;                    
+                } else {
+                    return false;
                 }
             })
+            const annoCopy = {...frameAnnotation};
             unfinished.forEach(id => delete(annoCopy[id]));
-            setFrameAnnotation(annoCopy);
+            return annoCopy;
+            // setFrameAnnotation(annoCopy);
         }
     }
 
     function saveAnnotationAndUpdateStates() {
-        if (Number.isInteger(prevFrameNum.current) && Object.keys(frameAnnotation).length > 0) {
-            clearUnfinishedAnnotation();
-            annotationRef.current[prevFrameNum.current] = frameAnnotation; 
+        // console.log('save anno');
+        if (Number.isInteger(prevFrameNum.current)) {
+            if ( Object.keys(frameAnnotation).length > 0) {
+                const newFrameAnno = clearUnfinishedAnnotation();
+                if (Object.keys(newFrameAnno).length > 0) {
+                    annotationRef.current[prevFrameNum.current] = newFrameAnno; 
+                } else {
+                    delete(annotationRef.current[prevFrameNum.current]);
+                }
+                // console.log(newFrameAnno);
+            } else {
+                delete(annotationRef.current[prevFrameNum.current]);
+            }
         }
         prevFrameNum.current = frameNum;
         setActiveAnnoObj(null);
         setDrawType(null);
+        setSkeletonLandmark(null);
+        setUndo(0);
         //annoIdToDraw will be reset in canvas after getBrushData()
     }
 

@@ -103,7 +103,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Workspace > 
+      <Workspace btnConfigData={btnConfigData}> 
         {/* <Category label='chase'/>
         <ShapeBtn type='bbox' label='fly' color='red' /> */}
         {/* <BtnGroup data={groupData} /> */}
@@ -112,10 +112,11 @@ export default function Home() {
         <Row >
           <Col>
             <BtnContainer />
-            {/* <ShapeBtn type='keyPoint' label='test' color='red' /> */}
+            <ShapeBtn type='polygon' label='p' color='red' />
             <BrushTool />
             <BrushBtn label='mouse' enableBrushTool enableCrowdRadio />
             <BrushBtn label='fly' color='#FF0000' enableCrowdRadio />
+            
           </Col>
           <Col>
             <AnnotationDisplay />

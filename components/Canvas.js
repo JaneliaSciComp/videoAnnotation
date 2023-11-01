@@ -45,7 +45,7 @@ export default function Canvas(props) {
     const skeletonLandmark = useStates().skeletonLandmark;
     const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
     const frameAnnotation = useStates().frameAnnotation;
-    // const setFrameAnnotation = useStateSetters().setFrameAnnotation;
+    const setFrameAnnotation = useStateSetters().setFrameAnnotation;
     const btnConfigData = useStates().btnConfigData;
     const setActiveAnnoObj = useStateSetters().setActiveAnnoObj;
     const brushThickness = useStates().brushThickness;
@@ -157,6 +157,8 @@ export default function Canvas(props) {
 
 
     useEffect(() => {
+        console.log('canvas frameUrl useEffect: canvas clear');
+
         // update image when url changes
         if (frameUrl) {
             imgRef.current.src = frameUrl;
@@ -164,9 +166,13 @@ export default function Canvas(props) {
             imgRef.current.src = '';
         }
 
+        // when switch frame, get brush data before clear canvas
+        getBrushData();
+
+        // remove fabric object
+        const canvas = canvasObjRef.current;
         if (Object.keys(fabricObjListRef.current).length>0) {
             Object.keys(fabricObjListRef.current).forEach(id => {
-                const canvas = canvasObjRef.current;
                 const obj = fabricObjListRef.current[id];
                 if (obj.type==='skeleton') {
                     obj.landmarks.forEach(l => {
@@ -181,6 +187,36 @@ export default function Canvas(props) {
             );
             fabricObjListRef.current = {};
         }
+
+        // remove unfinished objects
+        canvas.polygonPoints.forEach(p=>canvas.remove(p));
+        canvas.polygonLines.forEach(l=>canvas.remove(l));
+        canvas.bboxLines.forEach(l=>canvas.remove(l));
+        canvas.skeletonPoints.forEach(p=>canvas.remove(p));
+        Object.keys(canvas.skeletonLines).forEach(name=>canvas.remove(canvas.skeletonLines[name]));
+        canvas.polygonPoints = [];
+        canvas.polygonLines = [];
+        canvas.bboxLines = [];
+        canvas.skeletonPoints = [];
+        canvas.skeletonLines = {};
+        
+        //reset all drawing/editing/dragging property
+        canvas.isDragging = null;
+        canvas.lastPosX = null;
+        canvas.lastPosY = null;
+        canvas.bboxStartPosition = null;
+        canvas.bboxEndPosition = null;
+        canvas.bboxIdObjToDraw = null;
+        canvas.isDrawingSkeleton = null;
+        canvas.isDraggingSkeletonPoint = false;
+        canvas.editPolygon = null;
+        canvas.editingPolygonId = null;
+        canvas.isDraggingPolygonPoint = false;
+        canvas.isEditingObj = null;
+        canvas.activeObj = null;
+        prevDrawTypeRef.current = null;
+        resetBrush();
+
       }, [frameUrl]
     )
 
@@ -199,6 +235,7 @@ export default function Canvas(props) {
 
 
     useEffect(() => {
+        console.log('canvas drawtype useEffect');
         const canvas = canvasObjRef.current;
 
         if (!drawType) {
@@ -293,11 +330,12 @@ export default function Canvas(props) {
 
 
     async function getBrushData() {
+        console.log('get brush data');
         const canvas = canvasObjRef.current;
         const img = imageObjRef.current;
         const upperCanvasCtx = canvas.getSelectionContext();
         const brushObjArr = getBrushObj();
-        console.log(brushObjArr);
+        // console.log(brushObjArr);
 
         if (brushObjArr.length > 0) {
             let offscreen = new OffscreenCanvas(img.width, img.height);
@@ -393,7 +431,11 @@ export default function Canvas(props) {
                 rle.push(count);
                 console.log(id, rle);
                 // fabricObjListRef.current[id].rle = rle;
-                frameAnnotation[id].rle = rle;
+                // const annoObj = {...frameAnnotation[id]};
+                // annoObj.data = rle;
+                // annoObj.first = first;
+                // setFrameAnnotation({...frameAnnotation, [id]: annoObj});
+                frameAnnotation[id].data = rle;
                 frameAnnotation[id].first = first;
 
                 //for testing
@@ -412,7 +454,7 @@ export default function Canvas(props) {
             offscreen = null; // delete offscreen canvas when done
             // console.log();
             
-
+            
 
         }
     }
@@ -474,11 +516,11 @@ export default function Canvas(props) {
 
     function createFabricObjBasedOnAnnotation() {
         if (Object.keys(frameAnnotation).length>0) {
-            console.log('draw anno');
+            // console.log('draw anno');
             Object.keys(frameAnnotation).forEach(id => {
                 const annoObj = frameAnnotation[id];
                 if (annoObj.frameNum === frameNum) {
-                    console.log(annoObj);
+                    // console.log(annoObj);
                     let dataToCanvas;
                     switch (annoObj.type) {
                         case 'keyPoint':
@@ -691,6 +733,7 @@ export default function Canvas(props) {
             const newPoints = getUpdatedPolygonPoints(polygon);
             const idObjToEdit = frameAnnotation[polygon.id];
             polygon.pointObjects = newPoints.map((p, i) => createPoint(p, idObjToEdit, i));
+            polygon.pointObjects.forEach(p => {p.lockMovementX=false; p.lockMovementY=false});
             polygon.lineObjects = newPoints.map((p, i) => i<newPoints.length-1 ? createLine(p, newPoints[i+1], frameAnnotation[polygon.id]) : createLine(p, newPoints[0], idObjToEdit))
             polygon.lineObjects.forEach(obj=>canvas.add(obj));
             polygon.pointObjects.forEach(obj=>canvas.add(obj));
@@ -714,7 +757,7 @@ export default function Canvas(props) {
             canvas.isEditingObj = null;
             setActiveAnnoObj(null);
         }
-        
+
         if (canvas.getActiveObject()){ // when click on an obj
             const activeObj = canvas.getActiveObject();
             if (ANNOTATION_TYPES.has(activeObj.type)) {
@@ -743,19 +786,32 @@ export default function Canvas(props) {
         }
 
         if (canvas.editPolygon) {
-            // console.log(polygon);
-            if (!canvas.getActiveObject() || canvas.getActiveObject().type !== 'polygonPoint'
-            || canvas.getActiveObject().owner != canvas.editingPolygonId) {
+            // console.log('mouse down', canvas.getActiveObject(), drawType);
+            if (!canvas.getActiveObject()) {
                 finishEditPolygon();
+            } else if (canvas.getActiveObject()?.type !== 'polygonPoint'
+            || canvas.getActiveObject()?.owner != canvas.editingPolygonId){
+                const activeObj = canvas.getActiveObject();
+                finishEditPolygon();
+                // canvas.setActiveObject(null);
+                if (ANNOTATION_TYPES.has(activeObj.type)) {
+                    addActiveIdObj(activeObj);
+                } else if (activeObj.type==='skeletonPoint' && drawType !== 'skeleton') {
+                    canvas.isDraggingSkeletonPoint = true;
+                    canvas.setActiveObject(activeObj);
+                } else {
+                    canvas.setActiveObject(null);
+                }
             } else {    
                 canvas.isDraggingPolygonPoint = true;
             }
         }
 
+        // console.log('mouse down', canvas.getActiveObject(), drawType);
         // this if must be above next if, otherwise dragSkeletonPoint will be called right after drawing the last landmark and cause error
         if (canvas.getActiveObject() && canvas.getActiveObject().type==='skeletonPoint' && drawType !== 'skeleton') {
             canvas.isDraggingSkeletonPoint = true;
-            // console.log(canvas.isDraggingSkeletonPoint);
+            console.log(canvas.isDraggingSkeletonPoint);
         }
 
         if (drawType === 'skeleton') {
@@ -788,6 +844,7 @@ export default function Canvas(props) {
             setActiveObjData();
             // props.setActiveIdObj(props.rectIdList[canvas.activeObj.id]);
         }
+        // console.log('mouse move')
         if (canvas.isDraggingSkeletonPoint) { //when drag skeletonPoint, the if above also holds, so will update coord when drag skeletonPoint
             dragSkeletonPoint();
         }
@@ -897,13 +954,13 @@ export default function Canvas(props) {
         const idObjToDraw = {...frameAnnotation[idToDraw]};
 
         const clickPoint = canvas.getPointer();
-        //console.log(clickPoint);
+        // console.log('draw polygon', canvas.polygonPoints, canvas.polygonLines);
        
         if (canvas.polygonPoints.length===0 && canvas.polygonLines.length===0) {
             const point = createPoint(clickPoint, idObjToDraw, 0);
             canvas.add(point).setActiveObject(point);
             canvas.polygonPoints.push(point);
-            // console.log(point.getCenterPoint(), point.getCoords());
+            // console.log('first',point.getCenterPoint(), point.getCoords());
         } else if (canvas.polygonPoints.length - canvas.polygonLines.length == 1) {
             const startPoint = canvas.polygonPoints[0].getCenterPoint();
             //if user click on the startPoint, then finish drawing
@@ -1392,7 +1449,7 @@ export default function Canvas(props) {
 
     function dragSkeletonPoint() {
         const canvas = canvasObjRef.current;
-        // console.log('dragging skeleton point');
+        console.log('dragging skeleton point');
         const point = canvas.getActiveObject();
         const landmarks = fabricObjListRef.current[point.owner].landmarks;
         const edgesInfo = btnConfigData[frameAnnotation[point.owner].groupIndex].edgeData; // {color: '', edges: [set(), ...]}

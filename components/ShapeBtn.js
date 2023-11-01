@@ -26,6 +26,8 @@ export default function ShapeBtn(props) {
     // const addAnnotationObj = useStateSetters().addAnnotationObj;
     const frameAnnotation = useStates().frameAnnotation;
     const setFrameAnnotation = useStateSetters().setFrameAnnotation;
+    const annoIdToDraw = useStates().annoIdToDraw;
+    const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
 
     // console.log(drawType, frameNum,frameUrl,setDrawType);
 
@@ -36,7 +38,7 @@ export default function ShapeBtn(props) {
     // }, [props.drawType])
 
     useEffect(() => {
-        if (!drawType) {
+        if (!drawType || drawType !== props.type || frameAnnotation[annoIdToDraw].label !== props.label) {
             setClicked(false);
         }
     }, [drawType])

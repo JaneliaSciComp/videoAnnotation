@@ -53,7 +53,10 @@ export default function SkeletonBtn(props) {
     const setFrameAnnotation = useStateSetters().setFrameAnnotation;
     const skeletonLandmark = useStates().skeletonLandmark;
     const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
-    
+    const annoIdToDraw = useStates().annoIdToDraw;
+    const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
+
+
     // console.log('skeleton', props);
 
     // useEffect(() => {
@@ -65,7 +68,7 @@ export default function SkeletonBtn(props) {
     // }, [props.drawType])
 
     useEffect(() => {
-        if (!drawType) { //canvas set drawType=null when drawing is done
+        if (!drawType || drawType!=='skeleton' || annotationIdRef.current!==annoIdToDraw) { //canvas set drawType=null when drawing is done
             setClicked(false);
             annotationIdRef.current = null;
             // setCurrentLandmark(null);

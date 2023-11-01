@@ -14,12 +14,16 @@ import {defaultColor} from '../utils/utils.js';
 export default function BrushBtn(props) {
     /**
      * To activate/deactivate brush segmentation drawing on canvas. Contains eraser btn and brush thichness slider
+     * Each frame/img each label only has one brush annotation obj.
      * Brush segmentation annotation data structure:
      *      {id: {
                 type: 'brush',
                 color: '#000000',
                 label: 'mouse',
-                data: [128, 29, ...] //RLE format
+                iscrowd: 0 or 1. Indicates the segmentation covers single or multiple target objects.
+                first: 0 or 1. Indicates the first number in data(rle) is inside (1) segmentation or not (0)
+                data: [128, 29, ...]. RLE format
+                pathes: [[], [], ...]. The instruction to create fabric path objs for this brush btn.
             }}
      * 
      * Props: 
