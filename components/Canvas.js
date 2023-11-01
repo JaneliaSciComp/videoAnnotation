@@ -45,7 +45,7 @@ export default function Canvas(props) {
     const skeletonLandmark = useStates().skeletonLandmark;
     const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
     const frameAnnotation = useStates().frameAnnotation;
-    const setFrameAnnotation = useStateSetters().setFrameAnnotation;
+    // const setFrameAnnotation = useStateSetters().setFrameAnnotation;
     const btnConfigData = useStates().btnConfigData;
     const setActiveAnnoObj = useStateSetters().setActiveAnnoObj;
     const brushThickness = useStates().brushThickness;
@@ -181,6 +181,8 @@ export default function Canvas(props) {
                         };
                     });
                     Object.entries(obj.edges).forEach(([_, line])=>canvas.remove(line));
+                } else if (obj.type==='brush') {
+                    obj.pathes.forEach( p => canvas.remove(p));
                 } else {
                     canvas.remove(obj);
                 }} 
@@ -288,7 +290,7 @@ export default function Canvas(props) {
         canvas.freeDrawingBrush.limitedToCanvasSize = true; //When `true`, the free drawing is limited to the whiteboard size
         const alphaFloat = props.alpha?props.alpha:defaultAlpha;
         canvas.freeDrawingBrush.color = annoObj.color + convertAlphaFloatToHex(alphaFloat);
-        console.log('setBrush', annoObj,canvas.freeDrawingBrush.color);
+        // console.log('setBrush', annoObj,canvas.freeDrawingBrush.color);
         canvas.freeDrawingBrush.width = brushThickness;
     }
 
@@ -453,7 +455,7 @@ export default function Canvas(props) {
             }
             offscreen = null; // delete offscreen canvas when done
             // console.log();
-            
+            setAnnoIdToDraw(null);
             
 
         }

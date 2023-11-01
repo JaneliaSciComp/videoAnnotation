@@ -38,6 +38,7 @@ export default function BrushBtn(props) {
     const [radioValue, setRadioValue] = useState(0);
     // const [thickness, setThickness] = useState(5);
     const annotationIdRef = useRef(); // to remember the annotation id for this brush btn, to retrieve anno data so that can add crowded info, to reset annoIdtoDraw for parent 
+    const prevFrameUrlRef = useRef();
 
     // get context
     const drawType = useStates().drawType;
@@ -73,16 +74,39 @@ export default function BrushBtn(props) {
         /** when switch to a new frame or img, this btn should be ready to create another annoObj, so change annoIdRef to null;
          *  when switch to a previous frame, it should first see if there is created annoObj. If yes, use that annoId; if not, set annoIdRef to null 
          */ 
-        if (frameAnnotation && props.label) {
-            const annoObj = Object.values(frameAnnotation).filter(obj=> obj.type==='brush' && obj.label===props.label)[0];
-            if (annoObj) {
-                annotationIdRef.current = annoObj.id;
-            } else {
-                annotationIdRef.current = null;
+        // console.log('brushbtn1', annotationIdRef.current); 
+        if (frameUrl !== prevFrameUrlRef.current) {
+            annotationIdRef.current = null;
+            if (frameAnnotation) {
+                const annoObj = Object.values(frameAnnotation).filter(obj=> obj.type==='brush' && obj.label===props.label)[0];
+                if (annoObj) {
+                    annotationIdRef.current = annoObj.id;
+                }
             }
+            prevFrameUrlRef.current = frameUrl;
         }
+        console.log('brushbtn frameAnno useEffect', annotationIdRef.current); 
        
-    }, [frameNum, frameUrl])
+    }, [frameAnnotation])
+
+    // useEffect(() => {
+    //     /** when switch to a new frame or img, this btn should be ready to create another annoObj, so change annoIdRef to null;
+    //      *  when switch to a previous frame, it should first see if there is created annoObj. If yes, use that annoId; if not, set annoIdRef to null 
+    //      */ 
+    //     // console.log('brushbtn1', annotationIdRef.current); 
+    //     prevFrameUrlRef.current = 
+    //     // console.log('brushbtn frameUrl useEffect', annotationIdRef.current); 
+    //     // if (frameAnnotation) {
+    //     //     const annoObj = Object.values(frameAnnotation).filter(obj=> obj.type==='brush' && obj.label===props.label)[0];
+    //     //     if (annoObj) {
+    //     //         annotationIdRef.current = annoObj.id;
+    //     //     }
+    //     // }
+    //     // console.log('brushbtn3', annotationIdRef.current); 
+       
+    // }, [frameUrl])
+
+    
 
 
     function clickHandler() {
