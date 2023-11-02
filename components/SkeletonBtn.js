@@ -128,7 +128,6 @@ export default function SkeletonBtn(props) {
         if (Number.isInteger(frameNum) || frameUrl) {
             // clear unfinished polygon and skeleton annoObj before setting new annoIdToDraw
             const annoCopy = clearUnfinishedAnnotation(frameAnnotation);
-            console.log(annoCopy);
             // setFrameAnnotation(annoCopy);
             
             // create anno obj, add to frameAnno, activate draw mode

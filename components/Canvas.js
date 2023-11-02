@@ -57,6 +57,7 @@ export default function Canvas(props) {
     // const projectType = useStates().projectType;
     
     console.log('canvas render');
+    fabric.Object.prototype.erasable = false;
 
     //Set up canvas
     useEffect(() => {
@@ -247,7 +248,6 @@ export default function Canvas(props) {
         canvas.skeletonPoints = [];
         canvas.skeletonLines = {};
         canvas.isDrawingSkeleton = null;
-        console.log('cavnas', canvas);
         canvas.renderAll();
         
     }, [frameAnnotation])
@@ -300,8 +300,8 @@ export default function Canvas(props) {
         }
 
         return ()=>{
-            if (annoIdToDraw && frameAnnotation[annoIdToDraw]?.type==='brush' && prevDrawTypeRef.current==='brush'){
-                getBrushData(); //get brush data before annoIdToDraw changes
+            if (annoIdToDraw && frameAnnotation[annoIdToDraw]?.type==='brush'){ //annoIdToDraw hasn't changed, should point to prev brush annoObj
+                getBrushData(); 
             }
         }
     }, [annoIdToDraw])
@@ -329,6 +329,7 @@ export default function Canvas(props) {
     function pathCreateHandler(e) {
         if (drawType==='brush') {
             e.path.selectable=false;
+            e.path.erasable=true;
             // console.log(e.path);
 
             // check if fabricObjListRef has this brush obj, if not, create one
@@ -363,7 +364,7 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
         const img = imageObjRef.current;
         const upperCanvasCtx = canvas.getSelectionContext();
-        const brushObjArr = getBrushObj();
+        const brushObjArr = Object.values(fabricObjListRef.current).filter(obj=>obj.type==='brush');
         // console.log(brushObjArr);
 
         if (brushObjArr.length > 0) {
@@ -390,10 +391,7 @@ export default function Canvas(props) {
                 // const upperCanvasData = canvasRef.current.getContext("2d").getImageData(0,0,img.width*img.scaleX,img.height*img.scaleY);
                 pixelDataCollection[brushObj.id] = upperCanvasData;
 
-                const pathesInstruction = brushObj.pathes.map(obj => [...obj.path]);
-                const pathesCoord = brushObj.pathes.map(obj => [obj.left, obj.top]);
-                frameAnnotation[brushObj.id].pathes = pathesInstruction;
-                frameAnnotation[brushObj.id].pathesCoord = pathesCoord;
+                frameAnnotation[brushObj.id].pathes = getPathInfo(brushObj);
             }
             canvas.clearContext(upperCanvasCtx);
             canvas.setViewportTransform(vptCopy);
@@ -490,9 +488,24 @@ export default function Canvas(props) {
         }
     }
 
-    function getBrushObj() {
-        const brushObjArr = Object.values(fabricObjListRef.current).filter(obj=>obj.type==='brush');
-        return brushObjArr;
+    function getPathInfo(brushObj) {
+        return brushObj.pathes.map(obj => {
+            const subStr = obj.path.map((p) => p.join(' '));
+            const joinedStr = subStr.join(' ');
+            return {
+                steps: joinedStr,
+                left: obj.left,
+                top: obj.top,
+                width: obj.width,
+                height: obj.height,
+                stroke: obj.stroke,
+                strokeWidth: obj.strokeWidth,
+                strokeDashArray: obj.strokeDashArray,
+                strokeLineCap: obj.strokeLineCap,
+                strokeLineJoin: obj.strokeLineJoin,
+                strokeMiterLimit: obj.strokeMiterLimit,
+            }
+        })
     }
 
     useEffect(()=>{
@@ -1448,18 +1461,26 @@ export default function Canvas(props) {
             type: 'brush',
             pathes: [],
         }
-        fabricObjListRef.current[annoObjToDraw.id] = brushObj;
         annoObjToDraw.pathes.forEach((p, i) => {
-            const joinedSubStr = p.map(subP => subP.join(' '));
-            const joinedStr = joinedSubStr.join(' ');
-            console.log(joinedStr, typeof(joinedStr));
-            const pathObj = new fabric.Path(joinedStr);
-            const coord = annoObjToDraw.pathesCoord[i];
-            pathObj.set({ left: coord[0], top: coord[1] })
+            console.log(p);
+            const pathObj = new fabric.Path(p.steps);
+            pathObj.set({ 
+                left: p.left,
+                top: p.top,
+                width: p.width,
+                height: p.height,
+                stroke: p.stroke,
+                strokeWidth: p.strokeWidth,
+                strokeDashArray: p.strokeDashArray,
+                strokeLineCap: p.strokeLineCap,
+                strokeLineJoin: p.strokeLineJoin,
+                strokeMiterLimit: p.strokeMiterLimit,
+            })
             console.log(pathObj);
-            fabricObjListRef.current[annoObjToDraw.id].pathes.push(pathObj);
+            brushObj.pathes.push(pathObj);
             canvas.add(pathObj); 
         })
+        fabricObjListRef.current[annoObjToDraw.id] = brushObj;
     }
 
 

@@ -113,7 +113,6 @@ export default function BrushBtn(props) {
     function clickHandler() {
         // draw brush, finish draw brush, can only be decided by clicking the btn, not by canvas
         if (Number.isInteger(frameNum) || frameUrl) {
-            // clear unfinished polygon and skeleton annoObj before setting new annoIdToDraw
             let annoCopy = clearUnfinishedAnnotation(frameAnnotation);
 
             if (drawType === null || drawType !== 'brush') { // no btn is activated or non-brush btn is activated               
@@ -125,16 +124,13 @@ export default function BrushBtn(props) {
     
             } else if (drawType==='brush') { 
                 if (annoIdToDraw === annotationIdRef.current) { // this btn is the activated brush btn, should deactivate it
-                    // console.log('drawType brush 1');
                     setDrawType(null);
                     setAnnoIdToDraw(null); // should be set canvas, since canvas needs annoId to generate rle 
                     // setUseEraser(null);
                 } else { // this is an inactivated btn, should activate it
                     if (!annotationIdRef.current) {
-                        // console.log('drawType brush 2');
                         annoCopy = createNewAnnoObj(annoCopy);
                     }
-                    // console.log('drawType brush 3', annotationIdRef.current);
                     setAnnoIdToDraw(annotationIdRef.current);
                 }
             }
@@ -161,10 +157,6 @@ export default function BrushBtn(props) {
         };
         annoCopy[id] = annoObj;
         return annoCopy;
-       
-        // setFrameAnnotation({...frameAnnotation, [id]: annoObj});
-
-        
     }
 
     function onRadioChange(e) {        

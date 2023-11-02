@@ -157,7 +157,10 @@ export default function Workspace(props) {
             unfinished = Object.keys(frameAnnotation).filter(id=>{
                 const annoObj = frameAnnotation[id];
                 console.log('clear', annoObj, annoObj.type, annoObj.data, annoObj.first, annoObj.pathes);
-                if (annoObj.type ==='polygon' && !annoObj.data) {
+                if ((annoObj.type ==='polygon' 
+                    || annoObj.type==='keyPoint' 
+                    || annoObj.type==='bbox')
+                        && !annoObj.data) {
                     return true
                 } else if (annoObj.type === 'skeleton') {
                     const unDraw = annoObj.data.filter(arr => arr[0]===null && arr[1]===null && arr[2]!==0)
@@ -172,8 +175,6 @@ export default function Workspace(props) {
                     return false;
                 }
             })
-            
-            // setFrameAnnotation(annoCopy);
         }
         const annoCopy = {...frameAnnotation};
         unfinished.forEach(id => delete(annoCopy[id]));
@@ -272,7 +273,7 @@ export default function Workspace(props) {
             <main className={styles.main}>
                 <StatesProvider states={states} stateSetters={stateSetters}>
                     {props.children}
-                    <Button onClick={clickHandler}>anno</Button>
+                    {/* <Button onClick={clickHandler}>anno</Button> */}
                 </StatesProvider>
             </main>
 

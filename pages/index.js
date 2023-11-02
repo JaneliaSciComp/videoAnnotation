@@ -112,9 +112,9 @@ export default function Home() {
         <Row >
           <Col>
             
-            <Category label='chase'/>
-            <ShapeBtn type='bbox' label='fly' color='red' />
-            <ShapeBtn type='polygon' label='p' color='red' />
+            <Category label='category-'/>
+            <ShapeBtn type='bbox' label='bbox-' color='red' />
+            <ShapeBtn type='polygon' label='polygon-' color='red' />
             <BtnContainer />
             <BrushTool />
             <BrushBtn label='mouse' enableBrushTool enableCrowdRadio />

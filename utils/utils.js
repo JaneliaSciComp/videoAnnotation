@@ -86,11 +86,14 @@ export function clearUnfinishedAnnotation(frameAnnotation) {
         unfinished = Object.keys(frameAnnotation).filter(id=>{
             const annoObj = frameAnnotation[id];
             console.log('clear', annoObj);
-            if ((annoObj.type ==='polygon' || annoObj.type==='keyPoint' || annoObj.type==='bbox')
+            if ((annoObj.type ==='polygon' 
+            || annoObj.type==='keyPoint' 
+            || annoObj.type==='bbox')
              && !annoObj.data) {
                 return true
             } else if (annoObj.type === 'skeleton') {
-                const unDraw = annoObj.data.filter(arr => arr[0]===null && arr[1]===null && arr[2]!==0)
+                const unDraw = annoObj.data.filter(
+                    arr => arr[0]===null && arr[1]===null && arr[2]!==0)
                 if (unDraw.length>0) {
                     return true;
                 } else {
@@ -99,7 +102,6 @@ export function clearUnfinishedAnnotation(frameAnnotation) {
             } else {
                 return false;
             }
-            
         })
     }
     const annoCopy = {...frameAnnotation};
