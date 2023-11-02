@@ -121,13 +121,16 @@ export default function BrushBtn(props) {
     
             } else if (drawType==='brush') { 
                 if (annoIdToDraw === annotationIdRef.current) { // this btn is the activated brush btn, should deactivate it
+                    // console.log('drawType brush 1');
                     setDrawType(null);
                     setAnnoIdToDraw(null); // should be set canvas, since canvas needs annoId to generate rle 
                     // setUseEraser(null);
                 } else { // this is an inactivated btn, should activate it
                     if (!annotationIdRef.current) {
+                        // console.log('drawType brush 2');
                         createNewAnnoObj();
                     }
+                    // console.log('drawType brush 3', annotationIdRef.current);
                     setAnnoIdToDraw(annotationIdRef.current);
                 }
             }

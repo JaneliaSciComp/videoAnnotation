@@ -135,7 +135,7 @@ export default function Canvas(props) {
                 imgRef.current.removeEventListener("load", imageLoadHandler);
             }
         }
-      }, [videoId, frameUrl, frameNum, drawType, skeletonLandmark, frameAnnotation, btnConfigData, brushThickness, undo] /////check if these are enough
+      }, [videoId, frameUrl, frameNum, drawType, skeletonLandmark, frameAnnotation, btnConfigData, brushThickness, undo, annoIdToDraw] /////check if these are enough
     )
 
 
@@ -246,7 +246,7 @@ export default function Canvas(props) {
                 canvas.isDrawingSkeleton=false;
             }
 
-            if (prevDrawTypeRef.current==='brush') {
+            if (prevDrawTypeRef.current==='brush') { // user click on the same brush btn to inactivate it
                 resetBrush();
                 // canvas.clear();
                 // const ctx = canvasRef.current.getContext("2d");
@@ -257,29 +257,37 @@ export default function Canvas(props) {
                 
                 // console.log('paths', fabricObjListRef.current);
                 getBrushData();
-                // setAnnoIdToDraw(null); // should not be set too early, since need annoId to generate rle 
+                setAnnoIdToDraw(null); // should not be set too early, since need annoId to generate rle 
             }
         }
-        else if (drawType==='brush') {
+        else if (drawType==='brush') { // when other anno is being drawn, user clicked on brush btn
             setBrush();
         }
         else {
-            if (prevDrawTypeRef.current==='brush') {
+            if (prevDrawTypeRef.current==='brush') { // when brush btn is activated, user click on another draw btn
                 resetBrush();
                 getBrushData();
-                // setAnnoIdToDraw(null); // should not be set too early, since need annoId to generate rle 
+                // setAnnoIdToDraw(null); // should not use. the other draw btn already set annoIdToDraw to their id
             }
         }
         prevDrawTypeRef.current = drawType;
     }, [drawType])
 
+    
     useEffect(()=> {
         // when a brushBtn is clicked, user click on another brushBtn, thus change annoIdToDraw but keep drawType 'brush', should call getBrushData()
         if (annoIdToDraw && frameAnnotation[annoIdToDraw].type==='brush' && prevDrawTypeRef.current==='brush') {
-            getBrushData();
+            resetBrush();
             setBrush();
         }
+
+        return ()=>{
+            if (annoIdToDraw && frameAnnotation[annoIdToDraw].type==='brush' && prevDrawTypeRef.current==='brush'){
+                getBrushData(); //get brush data before annoIdToDraw changes
+            }
+        }
     }, [annoIdToDraw])
+
 
     function setBrush() {
         const canvas = canvasObjRef.current;
@@ -317,16 +325,17 @@ export default function Canvas(props) {
                 fabricObjListRef.current[annoIdToDraw] = brushObj;
             }
 
-            const brushObj = {...fabricObjListRef.current[annoIdToDraw]};
+            // const brushObj = {...fabricObjListRef.current[annoIdToDraw]};
             
             //TODO
             // if (useEraser) {
             //     brushObj.eraserPaths.push(e.path);
             // } else {
-                brushObj.pathes.push(e.path);
+                // brushObj.pathes.push(e.path);
             // }
-            fabricObjListRef.current = {...fabricObjListRef.current, [annoIdToDraw]:brushObj};
-        
+            // fabricObjListRef.current = {...fabricObjListRef.current, [annoIdToDraw]:brushObj};
+            fabricObjListRef.current[annoIdToDraw].pathes.push(e.path);
+            console.log('brushObj', annoIdToDraw, fabricObjListRef.current[annoIdToDraw]);
         }
     }
 
@@ -363,8 +372,10 @@ export default function Canvas(props) {
                 // const upperCanvasData = canvasRef.current.getContext("2d").getImageData(0,0,img.width*img.scaleX,img.height*img.scaleY);
                 pixelDataCollection[brushObj.id] = upperCanvasData;
 
-                const pathesInstruction = brushObj.pathes.map(obj => obj.path);
+                const pathesInstruction = brushObj.pathes.map(obj => [...obj.path]);
+                const pathesCoord = brushObj.pathes.map(obj => [obj.left, obj.top]);
                 frameAnnotation[brushObj.id].pathes = pathesInstruction;
+                frameAnnotation[brushObj.id].pathesCoord = pathesCoord;
             }
             canvas.clearContext(upperCanvasCtx);
             canvas.setViewportTransform(vptCopy);
@@ -455,7 +466,7 @@ export default function Canvas(props) {
             }
             offscreen = null; // delete offscreen canvas when done
             // console.log();
-            setAnnoIdToDraw(null);
+            // setAnnoIdToDraw(null);
             
 
         }
@@ -544,6 +555,9 @@ export default function Canvas(props) {
                             dataToCanvas = getSkeletonCoordToCanvas(annoObj);
                             console.log('skeleton', dataToCanvas);
                             createSkeleton(dataToCanvas, annoObj);
+                            break;
+                        case 'brush':
+                            createPathes(annoObj);
                             break;
                     }
                 }
@@ -1334,21 +1348,20 @@ export default function Canvas(props) {
     function createPolygon(points, annoObjToDraw) {
         const canvas = canvasObjRef.current;
         const polygon = new fabric.Polygon(points, {
-                id: annoObjToDraw.id, 
-                type: annoObjToDraw.type,
-                lable: annoObjToDraw.label,
-                stroke: annoObjToDraw.color,
-                strokeWidth: props.strokeWidth ? props.strokeWidth : STROKE_WIDTH,
-                strokeUniform: true,
-                fill: false,
-                // lockRotation: true,
-                lockScalingFlip: true,
-                lockSkewingX: true,
-                lockSkewingY: true,
-                // lockScalingX: true,
-                // lockScalingY: true,
-            }
-        ); 
+            id: annoObjToDraw.id, 
+            type: annoObjToDraw.type,
+            lable: annoObjToDraw.label,
+            stroke: annoObjToDraw.color,
+            strokeWidth: props.strokeWidth ? props.strokeWidth : STROKE_WIDTH,
+            strokeUniform: true,
+            fill: false,
+            // lockRotation: true,
+            lockScalingFlip: true,
+            lockSkewingX: true,
+            lockSkewingY: true,
+            // lockScalingX: true,
+            // lockScalingY: true,
+        }); 
         fabricObjListRef.current[polygon.id] = polygon;/////
         canvas.add(polygon);
         if (drawType || canvas.editPolygon) {
@@ -1408,6 +1421,28 @@ export default function Canvas(props) {
         fabricObjListRef.current[id] = skeletonObj; /////
     }
 
+    function createPathes(annoObjToDraw) {
+        // called only when go to a frame with brush annotation, to draw brush pathes
+        const canvas = canvasObjRef.current;
+        const brushObj = {
+            id: annoObjToDraw.id,
+            type: 'brush',
+            pathes: [],
+        }
+        fabricObjListRef.current[annoObjToDraw.id] = brushObj;
+        annoObjToDraw.pathes.forEach((p, i) => {
+            const joinedSubStr = p.map(subP => subP.join(' '));
+            const joinedStr = joinedSubStr.join(' ');
+            console.log(joinedStr, typeof(joinedStr));
+            const pathObj = new fabric.Path(joinedStr);
+            const coord = annoObjToDraw.pathesCoord[i];
+            pathObj.set({ left: coord[0], top: coord[1] })
+            console.log(pathObj);
+            fabricObjListRef.current[annoObjToDraw.id].pathes.push(pathObj);
+            canvas.add(pathObj); 
+        })
+    }
+
 
     function dragCanvas(e) {
         const canvas = canvasObjRef.current;
@@ -1463,25 +1498,23 @@ export default function Canvas(props) {
         // console.log(point, landmarks, edgesInfo);
         const neighbors = Array.from(edgesInfo.edges[point.index]);
         neighbors.forEach(n => {
-                const neighborObj = landmarks[n];
-                if (neighborObj) { // check if neighbor exists, if not labelled, then undefined
-                    const edge = createLine(neighborObj.getCenterPoint(), point.getCenterPoint(), edgeInfo);
-                    let name;
-                    if (n < point.index) {
-                        name = `${n}-${point.index}`;
-                    } else {
-                        name = `${point.index}-${n}`;
-                    }
-                    const oldEdge = fabricObjListRef.current[point.owner].edges[name];
-                    canvas.remove(oldEdge);
-                    canvas.add(edge);
-                    canvas.bringToFront(point);
-                    canvas.bringToFront(landmarks[n]);
-                    fabricObjListRef.current[point.owner].edges[name] = edge;
+            const neighborObj = landmarks[n];
+            if (neighborObj) { // check if neighbor exists, if not labelled, then undefined
+                const edge = createLine(neighborObj.getCenterPoint(), point.getCenterPoint(), edgeInfo);
+                let name;
+                if (n < point.index) {
+                    name = `${n}-${point.index}`;
+                } else {
+                    name = `${point.index}-${n}`;
                 }
-                
+                const oldEdge = fabricObjListRef.current[point.owner].edges[name];
+                canvas.remove(oldEdge);
+                canvas.add(edge);
+                canvas.bringToFront(point);
+                canvas.bringToFront(landmarks[n]);
+                fabricObjListRef.current[point.owner].edges[name] = edge;
             }
-        )
+        })
     }
 
 
