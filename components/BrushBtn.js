@@ -6,7 +6,7 @@ import styles from '../styles/Button.module.css';
 import { useStateSetters, useStates } from './AppContext';
 import BrushTool from './BrushTool';
 import {defaultColor} from '../utils/utils.js';
-
+import { clearUnfinishedAnnotation } from '../utils/utils.js';
 
 // const defaultColor = '#1677FF';
 
@@ -56,7 +56,8 @@ export default function BrushBtn(props) {
     // const setUndo = useStateSetters().setUndo;
     const annoIdToDraw = useStates().annoIdToDraw;
     const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
-
+    const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
+    const setUndo = useStateSetters().setUndo;
 
     useEffect(()=>{
         if (!props.label) {
@@ -112,9 +113,12 @@ export default function BrushBtn(props) {
     function clickHandler() {
         // draw brush, finish draw brush, can only be decided by clicking the btn, not by canvas
         if (Number.isInteger(frameNum) || frameUrl) {
+            // clear unfinished polygon and skeleton annoObj before setting new annoIdToDraw
+            let annoCopy = clearUnfinishedAnnotation(frameAnnotation);
+
             if (drawType === null || drawType !== 'brush') { // no btn is activated or non-brush btn is activated               
                 if (!annotationIdRef.current) { // brushBtn reuse the same annoObj, so only initialize annoObj when first time click
-                    createNewAnnoObj();
+                    annoCopy = createNewAnnoObj(annoCopy);
                 }
                 setAnnoIdToDraw(annotationIdRef.current)
                 setDrawType('brush'); // drawType changed, useEffect will add default radio value
@@ -128,17 +132,20 @@ export default function BrushBtn(props) {
                 } else { // this is an inactivated btn, should activate it
                     if (!annotationIdRef.current) {
                         // console.log('drawType brush 2');
-                        createNewAnnoObj();
+                        annoCopy = createNewAnnoObj(annoCopy);
                     }
                     // console.log('drawType brush 3', annotationIdRef.current);
                     setAnnoIdToDraw(annotationIdRef.current);
                 }
             }
+            setFrameAnnotation(annoCopy);
+            setSkeletonLandmark(null);
+            setUndo(0);
         }
        
     }
 
-    function createNewAnnoObj() {
+    function createNewAnnoObj(annoCopy) {
         // create anno obj, add to frameAnno, activate draw mode
         const id =Date.now().toString(); //'123'; // 
         annotationIdRef.current = id;
@@ -152,7 +159,12 @@ export default function BrushBtn(props) {
             first: null,
             isCrowd: 0
         };
-        setFrameAnnotation({...frameAnnotation, [id]: annoObj});
+        annoCopy[id] = annoObj;
+        return annoCopy;
+       
+        // setFrameAnnotation({...frameAnnotation, [id]: annoObj});
+
+        
     }
 
     function onRadioChange(e) {        

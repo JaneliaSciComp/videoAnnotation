@@ -235,6 +235,23 @@ export default function Canvas(props) {
     //   }, [frameAnnotation]
     // )
 
+    useEffect(() => {
+        const canvas = canvasObjRef.current;
+        // remove unfinished objects
+        canvas.polygonPoints.forEach(p=>canvas.remove(p));
+        canvas.polygonLines.forEach(l=>canvas.remove(l));
+        canvas.skeletonPoints.forEach(p=>canvas.remove(p));
+        Object.keys(canvas.skeletonLines).forEach(name=>canvas.remove(canvas.skeletonLines[name]));
+        canvas.polygonPoints = [];
+        canvas.polygonLines = [];
+        canvas.skeletonPoints = [];
+        canvas.skeletonLines = {};
+        canvas.isDrawingSkeleton = null;
+        console.log('cavnas', canvas);
+        canvas.renderAll();
+        
+    }, [frameAnnotation])
+
 
     useEffect(() => {
         console.log('canvas drawtype useEffect');
@@ -276,13 +293,14 @@ export default function Canvas(props) {
     
     useEffect(()=> {
         // when a brushBtn is clicked, user click on another brushBtn, thus change annoIdToDraw but keep drawType 'brush', should call getBrushData()
-        if (annoIdToDraw && frameAnnotation[annoIdToDraw].type==='brush' && prevDrawTypeRef.current==='brush') {
+        console.log(annoIdToDraw, frameAnnotation, frameAnnotation[annoIdToDraw]);
+        if (annoIdToDraw && frameAnnotation[annoIdToDraw]?.type==='brush' && prevDrawTypeRef.current==='brush') {
             resetBrush();
             setBrush();
         }
 
         return ()=>{
-            if (annoIdToDraw && frameAnnotation[annoIdToDraw].type==='brush' && prevDrawTypeRef.current==='brush'){
+            if (annoIdToDraw && frameAnnotation[annoIdToDraw]?.type==='brush' && prevDrawTypeRef.current==='brush'){
                 getBrushData(); //get brush data before annoIdToDraw changes
             }
         }
@@ -1022,8 +1040,9 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
         canvas.selection = false;
         
-        const idToDraw = getIdToDraw();
+        const idToDraw = annoIdToDraw //getIdToDraw();
         const annoObjToDraw = {...frameAnnotation[idToDraw]}; //{annoId: {id: annoId, groupIndex: , frameNum: , type: 'skeleton', data: [[null, null, 2], ...}}
+        // console.log(annoObjToDraw);
         const landmarkToDraw = btnConfigData[annoObjToDraw.groupIndex].childData[skeletonLandmark]; //{index: 0, btnType: 'skeleton',label: 'head',color: '#1677FF'}
         const landmarkInfo = {
             id: idToDraw,

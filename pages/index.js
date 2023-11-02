@@ -111,8 +111,11 @@ export default function Home() {
         {/* <Design /> */}
         <Row >
           <Col>
-            <BtnContainer />
+            
+            <Category label='chase'/>
+            <ShapeBtn type='bbox' label='fly' color='red' />
             <ShapeBtn type='polygon' label='p' color='red' />
+            <BtnContainer />
             <BrushTool />
             <BrushBtn label='mouse' enableBrushTool enableCrowdRadio />
             <BrushBtn label='fly' color='#FF0000' enableCrowdRadio />

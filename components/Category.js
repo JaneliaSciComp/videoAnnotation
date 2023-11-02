@@ -2,6 +2,8 @@ import React, {useState, useEffect} from 'react';
 import {Button} from 'react-bootstrap';
 import styles from '../styles/Button.module.css';
 import { useStates, useStateSetters } from './AppContext';
+import { clearUnfinishedAnnotation } from '../utils/utils.js';
+
 
 export default function Category(props) {
     /*
@@ -21,6 +23,9 @@ export default function Category(props) {
     const frameAnnotation = useStates().frameAnnotation;
     const setFrameAnnotation = useStateSetters().setFrameAnnotation;
     const setActiveAnnoObj = useStateSetters().setActiveAnnoObj;
+    const setDrawType = useStateSetters().setDrawType;
+    const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
+    const setUndo = useStateSetters().setUndo;
 
     useEffect(()=> {
         if (props.color) {
@@ -30,6 +35,9 @@ export default function Category(props) {
 
     function clickHandler() {
         if (Number.isInteger(frameNum) || frameUrl) {
+            // clear unfinished polygon and skeleton annoObj before setting new annoIdToDraw
+            const annoCopy = clearUnfinishedAnnotation(frameAnnotation);
+
             const id = Date.now().toString();
             const annoObj = {
                 id: id,
@@ -39,8 +47,12 @@ export default function Category(props) {
                 type: 'category',         
             };
             // props.addAnnotationObj(idObj);
-            setFrameAnnotation({...frameAnnotation, [id]: annoObj});
+            annoCopy[id] = annoObj;
+            setFrameAnnotation(annoCopy);
             setActiveAnnoObj(annoObj);
+            setDrawType(null);
+            setSkeletonLandmark(null);
+            setUndo(0);
         }
     }
 

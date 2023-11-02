@@ -74,3 +74,36 @@ export const btnTypeOptions = {
         {value: 'skeleton', label: 'Skeleton'},
     ]
 }
+
+
+export function clearUnfinishedAnnotation(frameAnnotation) {
+    /**
+     * when click on a annoBtn, before annoIdToDraw changes,
+     * clear unfinished shape and skeleton annoObj before setting new annoIdToDraw
+     *  */ 
+    let unfinished = [];
+    if (Object.keys(frameAnnotation).length > 0) {
+        unfinished = Object.keys(frameAnnotation).filter(id=>{
+            const annoObj = frameAnnotation[id];
+            console.log('clear', annoObj);
+            if ((annoObj.type ==='polygon' || annoObj.type==='keyPoint' || annoObj.type==='bbox')
+             && !annoObj.data) {
+                return true
+            } else if (annoObj.type === 'skeleton') {
+                const unDraw = annoObj.data.filter(arr => arr[0]===null && arr[1]===null && arr[2]!==0)
+                if (unDraw.length>0) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+            
+        })
+    }
+    const annoCopy = {...frameAnnotation};
+    unfinished.forEach(id => delete(annoCopy[id]));
+    console.log(annoCopy)
+    return annoCopy;
+}

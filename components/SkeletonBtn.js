@@ -3,6 +3,8 @@ import {Button} from 'react-bootstrap';
 import { Radio, Space } from 'antd';
 import styles from '../styles/Button.module.css';
 import { useStateSetters, useStates } from './AppContext';
+import { clearUnfinishedAnnotation } from '../utils/utils.js';
+
 
 
 export default function SkeletonBtn(props) {
@@ -55,7 +57,7 @@ export default function SkeletonBtn(props) {
     const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
     const annoIdToDraw = useStates().annoIdToDraw;
     const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
-
+    const setUndo = useStateSetters().setUndo;
 
     // console.log('skeleton', props);
 
@@ -124,6 +126,11 @@ export default function SkeletonBtn(props) {
 
     function clickHandler() {
         if (Number.isInteger(frameNum) || frameUrl) {
+            // clear unfinished polygon and skeleton annoObj before setting new annoIdToDraw
+            const annoCopy = clearUnfinishedAnnotation(frameAnnotation);
+            console.log(annoCopy);
+            // setFrameAnnotation(annoCopy);
+            
             // create anno obj, add to frameAnno, activate draw mode
             const id = Date.now().toString();
             annotationIdRef.current = id;
@@ -139,10 +146,13 @@ export default function SkeletonBtn(props) {
                 data: initData,
             };
             // console.log('shape called', props);
-            setFrameAnnotation({...frameAnnotation, [id]: annoObj});
+            annoCopy[id] = annoObj;
+            setFrameAnnotation(annoCopy);
+            // setFrameAnnotation({...frameAnnotation, [id]: annoObj});
             setClicked(true);
 
             setAnnoIdToDraw(id);
+            setUndo(0);
         }
     }
 

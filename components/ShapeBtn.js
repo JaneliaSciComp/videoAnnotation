@@ -2,6 +2,8 @@ import React, {useState, useEffect} from 'react';
 import {Button} from 'react-bootstrap';
 import styles from '../styles/Button.module.css';
 import { useStates, useStateSetters } from './AppContext';
+import { clearUnfinishedAnnotation } from '../utils/utils.js';
+
 
 
 export default function ShapeBtn(props) {
@@ -28,6 +30,8 @@ export default function ShapeBtn(props) {
     const setFrameAnnotation = useStateSetters().setFrameAnnotation;
     const annoIdToDraw = useStates().annoIdToDraw;
     const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
+    const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
+    const setUndo = useStateSetters().setUndo;
 
     // console.log(drawType, frameNum,frameUrl,setDrawType);
 
@@ -63,6 +67,10 @@ export default function ShapeBtn(props) {
 
     function clickHandler() {
         if (Number.isInteger(frameNum) || frameUrl) {
+            // clear unfinished polygon and skeleton annoObj before setting new annoIdToDraw
+            const annoCopy = clearUnfinishedAnnotation(frameAnnotation);
+            // setFrameAnnotation(annoCopy);
+
             const id = Date.now().toString();
             setDrawType(props.type);
             const annoObj = {
@@ -72,10 +80,16 @@ export default function ShapeBtn(props) {
                 color: props.color,
                 type: props.type,         
             };
-            setFrameAnnotation({...frameAnnotation, [id]: annoObj});
+            annoCopy[id] = annoObj;
+            setFrameAnnotation(annoCopy);
+            // setFrameAnnotation({...frameAnnotation, [id]: annoObj});
             // console.log('shape called', props);
             setClicked(true);
             setAnnoIdToDraw(id);
+            setSkeletonLandmark(null);
+            setUndo(0);
+
+            
         }
        
     }

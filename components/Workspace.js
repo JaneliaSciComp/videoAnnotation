@@ -9,11 +9,12 @@ import Canvas from './Canvas';
 // import Category from './Category';
 import AnnotationDisplay from './AnnotationDisplay';
 import VideoUploader from './VideoUploader';
-import {Row, Col} from 'react-bootstrap';
+import {Row, Col, Button} from 'react-bootstrap';
 import BtnGroup from './BtnGroup';
 // import BtnGroupController from './BtnGroupController';
 import Design from './Design';
 import { StatesProvider } from './AppContext';
+// import { clearUnfinishedAnnotation } from '../utils/utils';
 
 
 export default function Workspace(props) {
@@ -151,8 +152,9 @@ export default function Workspace(props) {
     
     function clearUnfinishedAnnotation() {
         // when switch frame or video, for skeleton, polygon and brush seg, they may not be finished (for brush, no data at all), remove such annoObj from frameAnnotation
+        let unfinished =[];
         if (Object.keys(frameAnnotation).length > 0) {
-            const unfinished = Object.keys(frameAnnotation).filter(id=>{
+            unfinished = Object.keys(frameAnnotation).filter(id=>{
                 const annoObj = frameAnnotation[id];
                 console.log('clear', annoObj, annoObj.type, annoObj.data, annoObj.first, annoObj.pathes);
                 if (annoObj.type ==='polygon' && !annoObj.data) {
@@ -170,11 +172,12 @@ export default function Workspace(props) {
                     return false;
                 }
             })
-            const annoCopy = {...frameAnnotation};
-            unfinished.forEach(id => delete(annoCopy[id]));
-            return annoCopy;
+            
             // setFrameAnnotation(annoCopy);
         }
+        const annoCopy = {...frameAnnotation};
+        unfinished.forEach(id => delete(annoCopy[id]));
+        return annoCopy;
     }
 
     function saveAnnotationAndUpdateStates() {
@@ -260,12 +263,16 @@ export default function Workspace(props) {
         console.log('create', data);
     }
     
+    function clickHandler() {
+        console.log('anno', frameAnnotation);
+    }
 
     return (
         <div className={styles.container}>
             <main className={styles.main}>
                 <StatesProvider states={states} stateSetters={stateSetters}>
                     {props.children}
+                    <Button onClick={clickHandler}>anno</Button>
                 </StatesProvider>
             </main>
 
