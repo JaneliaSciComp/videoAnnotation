@@ -39,7 +39,7 @@ export default function Workspace(props) {
     // const [drawPolygon, setDrawPolygon] = useState(false);
     const [drawType, setDrawType] = useState();
     const [skeletonLandmark, setSkeletonLandmark] = useState(); // the current landmark index to draw, pass to skeletonBtn and Canvas
-    // const [useEraser, setUseEraser] = useState(); //for brush, boolean
+    const [useEraser, setUseEraser] = useState(); //for brush, boolean
     const [brushThickness, setBrushThickness] = useState(); //for brush
     const [undo, setUndo] = useState(0); // int, for brush, when undo+1 (by BrushBtn), remove the latest path with the same annoId (by Canvas).
     const [annoIdToDraw, setAnnoIdToDraw] = useState();
@@ -58,7 +58,7 @@ export default function Workspace(props) {
         activeAnnoObj: activeAnnoObj,
         drawType: drawType,
         skeletonLandmark: skeletonLandmark,
-        // useEraser: useEraser,
+        useEraser: useEraser,
         brushThickness: brushThickness,
         undo: undo,
         annoIdToDraw: annoIdToDraw,
@@ -75,7 +75,7 @@ export default function Workspace(props) {
         setActiveAnnoObj: setActiveAnnoObj,
         setDrawType: setDrawType,
         setSkeletonLandmark: setSkeletonLandmark,
-        // setUseEraser: setUseEraser,
+        setUseEraser: setUseEraser,
         setUndo: setUndo,
         setAnnoIdToDraw: setAnnoIdToDraw,
         setBrushThickness: setBrushThickness,

@@ -32,6 +32,7 @@ export default function ShapeBtn(props) {
     const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
     const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
     const setUndo = useStateSetters().setUndo;
+    const setUseEraser = useStateSetters().setUseEraser;
 
     // console.log(drawType, frameNum,frameUrl,setDrawType);
 
@@ -88,7 +89,7 @@ export default function ShapeBtn(props) {
             setAnnoIdToDraw(id);
             setSkeletonLandmark(null);
             setUndo(0);
-
+            setUseEraser(null);
             
         }
        

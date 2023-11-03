@@ -28,10 +28,8 @@ export default function BrushTool(props) {
     }
 
     function onEraserBtnClick() {
-        if (drawType==='brush' && useEraser) {
-            setUseEraser(null);
-        } else if (drawType==='brush' && !useEraser) {
-            setUseEraser(true);
+        if (drawType==='brush') {
+            setUseEraser(!useEraser); // !useEraser is true when useEraser is false, null, undefined
         }
     }
 

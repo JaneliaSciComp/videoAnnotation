@@ -58,6 +58,7 @@ export default function SkeletonBtn(props) {
     const annoIdToDraw = useStates().annoIdToDraw;
     const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
     const setUndo = useStateSetters().setUndo;
+    const setUseEraser = useStateSetters().setUseEraser;
 
     // console.log('skeleton', props);
 
@@ -152,6 +153,7 @@ export default function SkeletonBtn(props) {
 
             setAnnoIdToDraw(id);
             setUndo(0);
+            setUseEraser(null);
         }
     }
 

@@ -49,7 +49,7 @@ export default function Canvas(props) {
     const btnConfigData = useStates().btnConfigData;
     const setActiveAnnoObj = useStateSetters().setActiveAnnoObj;
     const brushThickness = useStates().brushThickness;
-    // const useEraser = useStates().useEraser;
+    const useEraser = useStates().useEraser;
     const undo = useStates().undo;
     // const setUndo = useStateSetters().setUndo;
     const annoIdToDraw = useStates().annoIdToDraw;
@@ -57,7 +57,7 @@ export default function Canvas(props) {
     // const projectType = useStates().projectType;
     
     console.log('canvas render');
-    fabric.Object.prototype.erasable = false;
+    // fabric.Object.prototype.erasable = false;
 
     //Set up canvas
     useEffect(() => {
@@ -136,7 +136,7 @@ export default function Canvas(props) {
                 imgRef.current.removeEventListener("load", imageLoadHandler);
             }
         }
-      }, [videoId, frameUrl, frameNum, drawType, skeletonLandmark, frameAnnotation, btnConfigData, brushThickness, undo, annoIdToDraw] /////check if these are enough
+      }, [videoId, frameUrl, frameNum, drawType, skeletonLandmark, frameAnnotation, btnConfigData, brushThickness, undo, annoIdToDraw, useEraser] /////check if these are enough
     )
 
 
@@ -278,7 +278,7 @@ export default function Canvas(props) {
             }
         }
         else if (drawType==='brush') { // when other anno is being drawn, user clicked on brush btn
-            setBrush();
+            setPencilBrush();
         }
         else {
             if (prevDrawTypeRef.current==='brush') { // when brush btn is activated, user click on another draw btn
@@ -296,7 +296,7 @@ export default function Canvas(props) {
         console.log(annoIdToDraw, frameAnnotation, frameAnnotation[annoIdToDraw]);
         if (annoIdToDraw && frameAnnotation[annoIdToDraw]?.type==='brush' && prevDrawTypeRef.current==='brush') {
             resetBrush();
-            setBrush();
+            setPencilBrush();
         }
 
         return ()=>{
@@ -307,7 +307,7 @@ export default function Canvas(props) {
     }, [annoIdToDraw])
 
 
-    function setBrush() {
+    function setPencilBrush() {
         const canvas = canvasObjRef.current;
         const annoObj = frameAnnotation[annoIdToDraw];
         canvas.isDrawingMode = true;
@@ -324,6 +324,30 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
         canvas.isDrawingMode = false;
         canvas.freeDrawingBrush = null;
+    }
+
+    useEffect(()=>{
+        if (drawType==='brush') {
+            if (useEraser) {
+                setEraserBrush();
+            } else {
+                setPencilBrush();
+            }
+        }        
+        
+    }, [useEraser])
+
+    function setEraserBrush() {
+        const canvas = canvasObjRef.current;
+        // const annoObj = frameAnnotation[annoIdToDraw];
+        canvas.isDrawingMode = true;
+        canvas.freeDrawingBrush = new fabric.EraserBrush(canvas);
+        console.log('setEraserBrush');
+        // canvas.freeDrawingBrush.limitedToCanvasSize = true; //When `true`, the free drawing is limited to the whiteboard size
+        // const alphaFloat = props.alpha?props.alpha:defaultAlpha;
+        // canvas.freeDrawingBrush.color = annoObj.color + convertAlphaFloatToHex(alphaFloat);
+        // console.log('setBrush', annoObj,canvas.freeDrawingBrush.color);
+        canvas.freeDrawingBrush.width = brushThickness;
     }
 
     function pathCreateHandler(e) {
@@ -515,16 +539,6 @@ export default function Canvas(props) {
         }
     },[brushThickness])
 
-    // useEffect(()=>{
-    //     if (drawType==='brush') {
-    //         if (useEraser) {
-    //             resetBrush();
-    //         } else {
-    //             setBrush();
-    //         }
-    //     }        
-        
-    // }, [useEraser])
 
     useEffect(() => {
         if (drawType==='brush' && undo>0) {

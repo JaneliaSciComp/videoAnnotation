@@ -26,6 +26,7 @@ export default function Category(props) {
     const setDrawType = useStateSetters().setDrawType;
     const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
     const setUndo = useStateSetters().setUndo;
+    const setUseEraser = useStateSetters().setUseEraser;
 
     useEffect(()=> {
         if (props.color) {
@@ -53,6 +54,7 @@ export default function Category(props) {
             setDrawType(null);
             setSkeletonLandmark(null);
             setUndo(0);
+            setUseEraser(null);
         }
     }
 
