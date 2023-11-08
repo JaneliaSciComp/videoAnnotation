@@ -13,6 +13,11 @@ import { clearUnfinishedAnnotation } from '../utils/utils.js';
 
 export default function BrushBtn(props) {
     /**
+     * Note: for developer, creating multiple BrushBtn of a same label will result in error, 
+     * because these BrushBtn use label to distinguish from each other.
+     *     For annotator, when use BtnGroupController, Design to configuire BrushBtns, 
+     * using a same label for multiple BrushBtns will result in error too.
+     * 
      * To activate/deactivate brush segmentation drawing on canvas. Contains eraser btn and brush thichness slider
      * Each frame/img each label only has one brush annotation obj.
      * Brush segmentation annotation data structure:
@@ -49,7 +54,7 @@ export default function BrushBtn(props) {
     const frameAnnotation = useStates().frameAnnotation;
     const setFrameAnnotation = useStateSetters().setFrameAnnotation;
     // const useEraser = useStates().useEraser;
-    // const setUseEraser = useStateSetters().setUseEraser;
+    const setUseEraser = useStateSetters().setUseEraser;
     // const brushThickness = useStates().brushThickness;
     // const setBrushThickness = useStateSetters().setBrushThickness;
     // const undo = useStates().undo;
@@ -86,7 +91,7 @@ export default function BrushBtn(props) {
             }
             prevFrameUrlRef.current = frameUrl;
         }
-        console.log('brushbtn frameAnno useEffect', annotationIdRef.current); 
+        // console.log('brushbtn frameAnno useEffect', annotationIdRef.current); 
        
     }, [frameAnnotation])
 
@@ -126,12 +131,13 @@ export default function BrushBtn(props) {
                 if (annoIdToDraw === annotationIdRef.current) { // this btn is the activated brush btn, should deactivate it
                     setDrawType(null);
                     setAnnoIdToDraw(null); // should be set canvas, since canvas needs annoId to generate rle 
-                    // setUseEraser(null);
+                    setUseEraser(null);
                 } else { // this is an inactivated btn, should activate it
                     if (!annotationIdRef.current) {
                         annoCopy = createNewAnnoObj(annoCopy);
                     }
                     setAnnoIdToDraw(annotationIdRef.current);
+                    setUseEraser(null);
                 }
             }
             setFrameAnnotation(annoCopy);
@@ -153,7 +159,8 @@ export default function BrushBtn(props) {
             color: props.color ? props.color : defaultColor,
             data: [],
             first: null,
-            isCrowd: 0
+            isCrowd: 0,
+            hasPath: false // indicate if at least one path obj is created for this annoObj
         };
         annoCopy[id] = annoObj;
         return annoCopy;

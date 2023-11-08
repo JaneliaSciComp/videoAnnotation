@@ -1,6 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 import styles from '../styles/Canvas.module.css';
-import {fabric} from 'fabric';
+// import {fabric} from 'fabric';
+import {fabric} from 'fabric-with-erasing';
 import { useStates, useStateSetters } from './AppContext';
 import { defaultAlpha, hexArr, hexMap } from '../utils/utils';
 
@@ -29,7 +30,8 @@ export default function Canvas(props) {
     const imageObjRef = useRef();
     const canvasRef = useRef();
     const canvasObjRef = useRef();
-    const testCanvasRef = useRef();
+    const testCanvasRef1 = useRef();
+    const testCanvasRef2 = useRef();
     // const keyPointObjListRef = useRef({});
     // const bboxObjListRef = useRef({});
     // const polygonObjListRef = useRef({});
@@ -54,10 +56,12 @@ export default function Canvas(props) {
     // const setUndo = useStateSetters().setUndo;
     const annoIdToDraw = useStates().annoIdToDraw;
     const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
+    const annotationRef = useStates().annotationRef;
     // const projectType = useStates().projectType;
+
     
     console.log('canvas render');
-    // fabric.Object.prototype.erasable = false;
+    fabric.Object.prototype.erasable = false;
 
     //Set up canvas
     useEffect(() => {
@@ -136,7 +140,7 @@ export default function Canvas(props) {
                 imgRef.current.removeEventListener("load", imageLoadHandler);
             }
         }
-      }, [videoId, frameUrl, frameNum, drawType, skeletonLandmark, frameAnnotation, btnConfigData, brushThickness, undo, annoIdToDraw, useEraser] /////check if these are enough
+      }, [videoId, frameUrl, frameNum, drawType, skeletonLandmark, frameAnnotation, btnConfigData, brushThickness, undo, annoIdToDraw, useEraser, annotationRef] /////check if these are enough
     )
 
 
@@ -147,6 +151,7 @@ export default function Canvas(props) {
             selectable: false,
             width: canvasObjRef.current.width,
             height: canvasObjRef.current.height,
+            erasable:false
         });
         canvasObjRef.current.add(imageObj);
         canvasObjRef.current.renderAll();
@@ -158,20 +163,13 @@ export default function Canvas(props) {
 
 
     useEffect(() => {
-        console.log('canvas frameUrl useEffect: canvas clear');
-
-        // update image when url changes
-        if (frameUrl) {
-            imgRef.current.src = frameUrl;
-        } else {
-            imgRef.current.src = '';
-        }
+        const canvas = canvasObjRef.current;
+        // console.log('canvas frameUrl useEffect: canvas clear', canvas, JSON.stringify(canvas));
 
         // when switch frame, get brush data before clear canvas
         getBrushData();
 
         // remove fabric object
-        const canvas = canvasObjRef.current;
         if (Object.keys(fabricObjListRef.current).length>0) {
             Object.keys(fabricObjListRef.current).forEach(id => {
                 const obj = fabricObjListRef.current[id];
@@ -220,6 +218,16 @@ export default function Canvas(props) {
         prevDrawTypeRef.current = null;
         resetBrush();
 
+        // recreate path obj before img load for less work
+        createPathes();
+
+        // update image when url changes
+        if (frameUrl) {
+            imgRef.current.src = frameUrl;
+        } else {
+            imgRef.current.src = '';
+        }
+
       }, [frameUrl]
     )
 
@@ -237,6 +245,11 @@ export default function Canvas(props) {
     // )
 
     useEffect(() => {
+        console.log('frameAnno useEffect');
+        // // sometimes frameAnnotation changes before img load handler is called
+        // // so put createFabricObj here. It will check current frameAnno has the same frameNum as the updated frameNum
+        // createFabricObjBasedOnAnnotation(); // doesn't work, will be called everytime clicking on anno btn, result in error
+
         const canvas = canvasObjRef.current;
         // remove unfinished objects
         canvas.polygonPoints.forEach(p=>canvas.remove(p));
@@ -249,6 +262,10 @@ export default function Canvas(props) {
         canvas.skeletonLines = {};
         canvas.isDrawingSkeleton = null;
         canvas.renderAll();
+
+        return ()=>{
+            console.log('frameAnno return func')
+        }
         
     }, [frameAnnotation])
 
@@ -293,7 +310,7 @@ export default function Canvas(props) {
     
     useEffect(()=> {
         // when a brushBtn is clicked, user click on another brushBtn, thus change annoIdToDraw but keep drawType 'brush', should call getBrushData()
-        console.log(annoIdToDraw, frameAnnotation, frameAnnotation[annoIdToDraw]);
+        // console.log(annoIdToDraw, frameAnnotation, frameAnnotation[annoIdToDraw]);
         if (annoIdToDraw && frameAnnotation[annoIdToDraw]?.type==='brush' && prevDrawTypeRef.current==='brush') {
             resetBrush();
             setPencilBrush();
@@ -354,38 +371,42 @@ export default function Canvas(props) {
         if (drawType==='brush') {
             e.path.selectable=false;
             e.path.erasable=true;
+            e.path.id = annoIdToDraw;
             // console.log(e.path);
+            frameAnnotation[annoIdToDraw].hasPath = true;
 
-            // check if fabricObjListRef has this brush obj, if not, create one
-            const existingIds = new Set(Object.keys(fabricObjListRef.current));
-            if (!existingIds.has(annoIdToDraw)) {
-                const brushObj = {
-                    id: annoIdToDraw,
-                    type: 'brush',
-                    pathes: [],
-                    // eraserPaths: []
-                }
-                fabricObjListRef.current[annoIdToDraw] = brushObj;
-            }
-
-            // const brushObj = {...fabricObjListRef.current[annoIdToDraw]};
-            
-            //TODO
-            // if (useEraser) {
-            //     brushObj.eraserPaths.push(e.path);
-            // } else {
-                // brushObj.pathes.push(e.path);
-            // }
-            // fabricObjListRef.current = {...fabricObjListRef.current, [annoIdToDraw]:brushObj};
-            fabricObjListRef.current[annoIdToDraw].pathes.push(e.path);
-            console.log('brushObj', annoIdToDraw, fabricObjListRef.current[annoIdToDraw]);
+            addPathObjToRef(e.path);
         }
     }
+
+    function addPathObjToRef(pathObj){
+        // the eraser path has a prop globalCompositeOperation='destination-out'
+        // other objects (img, pencilPath) has globalCompositeOperation='source-over'
+        // use this to distinguish them. 
+        // The eraser path is already included in the pencilPath obj's prop 'eraser', 
+        // no need to add to fabricObjRef. if added, it will be drawn as a redundant black path and visible on canvas
+        if (pathObj.globalCompositeOperation!=="destination-out") { 
+            // check if fabricObjListRef has this brush obj, if not, create one
+            const existingIds = new Set(Object.keys(fabricObjListRef.current));
+            if (!existingIds.has(pathObj.id)) {
+                const brushObj = {
+                    id: pathObj.id,
+                    type: 'brush',
+                    pathes: [],
+                }
+                fabricObjListRef.current[pathObj.id] = brushObj;
+            }
+            fabricObjListRef.current[pathObj.id].pathes.push(pathObj);
+        }
+    }
+        
 
 
     async function getBrushData() {
         console.log('get brush data');
         const canvas = canvasObjRef.current;
+        canvas.discardActiveObject(); //remove active object's control border
+        
         const img = imageObjRef.current;
         const upperCanvasCtx = canvas.getSelectionContext();
         const brushObjArr = Object.values(fabricObjListRef.current).filter(obj=>obj.type==='brush');
@@ -408,6 +429,10 @@ export default function Canvas(props) {
             // console.log(zoomCopy, vptCopy, widthCopy, heightCopy, canvas);
             
             const pixelDataCollection = {};
+            // const pathStrArr = []; 
+            
+            frameAnnotation['pathStrArr'] = [];
+            
             for (let brushObj of brushObjArr) {
                 canvas.clearContext(upperCanvasCtx);
                 canvas.renderCanvas(upperCanvasCtx, brushObj.pathes);
@@ -415,11 +440,22 @@ export default function Canvas(props) {
                 // const upperCanvasData = canvasRef.current.getContext("2d").getImageData(0,0,img.width*img.scaleX,img.height*img.scaleY);
                 pixelDataCollection[brushObj.id] = upperCanvasData;
 
-                frameAnnotation[brushObj.id].pathes = getPathInfo(brushObj);
+                // frameAnnotation[brushObj.id].pathes = getPathInfo(brushObj);
+                // pathStrArr.push(getPathInfo(brushObj));
+                frameAnnotation['pathStrArr'].push(getPathInfo(brushObj));
+                frameAnnotation[brushObj.id].hasPath=true;
             }
+            
+            // frameAnnotation['pathStrArr'].push(pathStrArr);
             canvas.clearContext(upperCanvasCtx);
             canvas.setViewportTransform(vptCopy);
 
+            const testCanvasCollection = {};
+            let i = 1;
+            for (let id in pixelDataCollection) {
+                testCanvasCollection[id] = i===1?testCanvasRef1.current:testCanvasRef2.current;
+                i++;
+            }
             for (let id in pixelDataCollection) {
                 const upperCanvasData = pixelDataCollection[id];
                 const resizedData = await window.createImageBitmap(upperCanvasData, 0, 0, img.width*img.scaleX,img.height*img.scaleY, {resizeWidth: img.width, resizeHeight: img.height});
@@ -494,9 +530,10 @@ export default function Canvas(props) {
                 //for testing
                 // console.log(pixelDataFiltered, img.width);
                 const imageDataFiltered = new ImageData(pixelDataFiltered, img.width, img.height) ;
-                testCanvasRef.current.width = img.width; //*img.scaleX;
-                testCanvasRef.current.height = img.height; //*img.scaleY;
-                const testCtx = testCanvasRef.current.getContext("2d");
+                const testCanvas = testCanvasCollection[id];
+                testCanvas.width = img.width; //*img.scaleX;
+                testCanvas.height = img.height; //*img.scaleY;
+                const testCtx = testCanvas.getContext("2d");
                 // testCtx.scale(img.scaleX, img.scaleY);
                 // testCtx.putImageData(upperCanvasData, 0, 0);
                 // testCtx.drawImage(resizedData, 0, 0);
@@ -507,13 +544,15 @@ export default function Canvas(props) {
             offscreen = null; // delete offscreen canvas when done
             // console.log();
             // setAnnoIdToDraw(null);
-            
-
+        } else {
+            delete(frameAnnotation['pathStrArr']);
         }
     }
 
     function getPathInfo(brushObj) {
         return brushObj.pathes.map(obj => {
+            return JSON.stringify(obj.toJSON(["id"]));
+
             const subStr = obj.path.map((p) => p.join(' '));
             const joinedStr = subStr.join(' ');
             return {
@@ -528,8 +567,11 @@ export default function Canvas(props) {
                 strokeLineCap: obj.strokeLineCap,
                 strokeLineJoin: obj.strokeLineJoin,
                 strokeMiterLimit: obj.strokeMiterLimit,
+                erasable: obj.erasable,
+                eraser: obj.eraser
             }
-        })
+          }
+        )
     }
 
     useEffect(()=>{
@@ -545,6 +587,20 @@ export default function Canvas(props) {
             const brushObj = fabricObjListRef.current[annoIdToDraw];
             if (brushObj) {
                 const path = brushObj.pathes.pop();
+                if (brushObj.pathes.length === 0) {
+                    delete(fabricObjListRef.current[annoIdToDraw]);
+                    frameAnnotation[annoIdToDraw].hasPath = false;
+                    let hasPath = false;
+                    for (let id in frameAnnotation) {
+                        const annoObj = frameAnnotation[id];
+                        if (annoObj.type === 'brush' && annoObj.hasPath) {
+                            hasPath = true;
+                        }
+                    }
+                    if (!hasPath) {
+                        delete(frameAnnotation['pathStrArr']);
+                    }
+                }
                 if (path) {
                     canvasObjRef.current.remove(path);
                 }   
@@ -573,12 +629,14 @@ export default function Canvas(props) {
 
 
     function createFabricObjBasedOnAnnotation() {
-        if (Object.keys(frameAnnotation).length>0) {
-            // console.log('draw anno');
-            Object.keys(frameAnnotation).forEach(id => {
-                const annoObj = frameAnnotation[id];
+        // console.log(frameNum, annotationRef.current);
+        const nextFrameAnno = annotationRef.current[frameNum];
+        if (nextFrameAnno && Object.keys(nextFrameAnno).length>0) {
+            Object.keys(nextFrameAnno).forEach(id => {
+                const annoObj = nextFrameAnno[id];
+                // console.log('1', annoObj);
                 if (annoObj.frameNum === frameNum) {
-                    // console.log(annoObj);
+                    // console.log('2', annoObj);
                     let dataToCanvas;
                     switch (annoObj.type) {
                         case 'keyPoint':
@@ -601,12 +659,29 @@ export default function Canvas(props) {
                             console.log('skeleton', dataToCanvas);
                             createSkeleton(dataToCanvas, annoObj);
                             break;
-                        case 'brush':
-                            createPathes(annoObj);
-                            break;
                     }
                 }
             });
+
+            const canvas = canvasObjRef.current;
+            canvas.getObjects().forEach(obj=>{
+                if (obj.id) { // only path obj has id
+                    console.log(obj);
+                    canvas.bringToFront(obj);
+                }
+            });
+            console.log(canvas, canvas.getObjects());
+            console.log(JSON.stringify(canvas));
+
+            // const firstId = Object.keys(nextFrameAnno)[0];
+            // if (nextFrameAnno[firstId].frameNum === frameNum) {
+            //     Object.keys(nextFrameAnno).forEach(id => {
+            //         if (id === 'pathStrArr') {
+            //             createPathes(nextFrameAnno[id]);
+            //         }
+            //     })
+            // }
+            // createPathes();
         }
     }
 
@@ -638,6 +713,7 @@ export default function Canvas(props) {
             imageObjRef.current.height = imgRef.current.height;
             scaleImage(canvasObjRef.current, imageObjRef.current);
         }
+        console.log('img load handler');
         // const rect = new fabric.Rect({
         //     left:100,
         //     top:0,
@@ -1467,7 +1543,48 @@ export default function Canvas(props) {
         fabricObjListRef.current[id] = skeletonObj; /////
     }
 
-    function createPathes(annoObjToDraw) {
+    function createPathes() {
+        /** 
+         *  {'pathStrArr': [pathObjStr1, pathObjStr2]}
+        */
+       console.log('createPath');
+        const nextFrameAnno = annotationRef.current[frameNum];
+        let pathStrArr;
+        if (nextFrameAnno && Object.keys(nextFrameAnno).length>0) {
+            const firstId = Object.keys(nextFrameAnno)[0];
+            if (nextFrameAnno[firstId].frameNum === frameNum) {
+                Object.keys(nextFrameAnno).forEach(id => {
+                    if (id === 'pathStrArr') {
+                        pathStrArr = nextFrameAnno['pathStrArr'];
+                    }
+                })
+            }
+        }
+        console.log(pathStrArr);
+        if (pathStrArr && pathStrArr.length > 0) {
+            const canvas = canvasObjRef.current;
+            canvas.remove(imageObjRef.current);
+            let pathStr = pathStrArr.reduce((res, p) => res+p+',', '');
+            pathStr = pathStr.slice(0, -1);
+            console.log('path',pathStr);
+            const canvasStr = JSON.stringify(canvas);
+            console.log('before add path',canvasStr);
+            // canvas.loadFromJSON(canvasStr);
+            const prefix = canvasStr.search('objects');
+            const newCanvasStr = canvasStr.slice(0, prefix-1) + '"objects":[' + pathStr +canvasStr.slice(prefix+10); //+ ','
+            console.log('after add path',newCanvasStr);
+            canvas.loadFromJSON(newCanvasStr,canvas.renderAll.bind(canvas));
+            const pathes = canvas.getObjects();
+            pathes.forEach(obj=>{
+                addPathObjToRef(obj);
+            });
+            console.log(canvas.getObjects());
+            canvas.add(imageObjRef.current);
+            // canvas.renderAll();
+        }         
+    }
+
+    function createPathes_(annoObjToDraw) {
         // called only when go to a frame with brush annotation, to draw brush pathes
         const canvas = canvasObjRef.current;
         const brushObj = {
@@ -1475,25 +1592,43 @@ export default function Canvas(props) {
             type: 'brush',
             pathes: [],
         }
-        annoObjToDraw.pathes.forEach((p, i) => {
-            console.log(p);
-            const pathObj = new fabric.Path(p.steps);
-            pathObj.set({ 
-                left: p.left,
-                top: p.top,
-                width: p.width,
-                height: p.height,
-                stroke: p.stroke,
-                strokeWidth: p.strokeWidth,
-                strokeDashArray: p.strokeDashArray,
-                strokeLineCap: p.strokeLineCap,
-                strokeLineJoin: p.strokeLineJoin,
-                strokeMiterLimit: p.strokeMiterLimit,
-            })
-            console.log(pathObj);
-            brushObj.pathes.push(pathObj);
-            canvas.add(pathObj); 
-        })
+        // const canvasSec = new fabric.Canvas('c');
+        // console.log(canvasSec);
+        
+        let objStr = annoObjToDraw.pathes.reduce((res, p) => res+p, '');
+        console.log(objStr);
+        objStr = `{"objects":[${objStr}],"background":"rgba(0, 0, 0, 0)"}`
+        console.log(objStr);
+        canvas.loadFromJSON(objStr);
+        // canvas.getActiveObject
+        
+        // canvasSec.loadFromJSON(objStr);
+        // console.log(canvasSec.getObjects());
+        // const path = canvasSec.getObjects()[0];
+        // canvas.add(path);
+        // canvas.renderAll();
+        
+        // annoObjToDraw.pathes.forEach((p, i) => {
+            // const pathObj = new fabric.Path(p.steps);
+            // // pathObj.loadFromJSON(p);
+            // pathObj.set({ 
+            //     left: p.left,
+            //     top: p.top,
+            //     width: p.width,
+            //     height: p.height,
+            //     stroke: p.stroke,
+            //     strokeWidth: p.strokeWidth,
+            //     strokeDashArray: p.strokeDashArray,
+            //     strokeLineCap: p.strokeLineCap,
+            //     strokeLineJoin: p.strokeLineJoin,
+            //     strokeMiterLimit: p.strokeMiterLimit,
+            //     erasable: p.erasable,
+            //     eraser: p.eraser
+            // })
+            // console.log(pathObj);
+            // brushObj.pathes.push(pathObj);
+            // canvas.add(pathObj); 
+        // })
         fabricObjListRef.current[annoObjToDraw.id] = brushObj;
     }
 
@@ -1659,7 +1794,11 @@ export default function Canvas(props) {
             </canvas>
             
         </div>
-        <canvas ref={testCanvasRef} style={{border: 'solid'}}></canvas>
+        <div style={{display: 'flex', flexWrap: 'row'}}>
+            <canvas ref={testCanvasRef1} style={{border: 'solid'}}></canvas>
+            <canvas ref={testCanvasRef2} style={{border: 'solid'}}></canvas>
+        </div>
+        
         {/* width:300, height:200,  */}
         </>
       )

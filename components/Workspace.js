@@ -47,7 +47,6 @@ export default function Workspace(props) {
     const [btnGroups, setBtnGroups] = useState();
     // const [projectType, setProjectType] = useState('image'); //'image' or 'video'
 
-
     console.log('workspace render');
 
     const states = {
@@ -64,6 +63,7 @@ export default function Workspace(props) {
         annoIdToDraw: annoIdToDraw,
         btnConfigData: btnConfigData,
         btnGroups: btnGroups,
+        annotationRef: annotationRef,
         // projectType: projectType,
     }
 
@@ -122,6 +122,7 @@ export default function Workspace(props) {
     //     }
     //   }, [frameNum]
     // )
+   
 
     useEffect(() => {
         /* when videouploader switch to a new frame, save the annotation for current frame
@@ -169,9 +170,10 @@ export default function Workspace(props) {
                     } else {
                         return false;
                     }
-                } else if (annoObj.type === 'brush' && annoObj.pathes.length === 0) {
+                } else if (annoObj.type === 'brush' && !annoObj.hasPath) {
                     return true;                    
-                } else {
+                } 
+                else {
                     return false;
                 }
             })
