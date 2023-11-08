@@ -170,7 +170,7 @@ export default function Workspace(props) {
                     } else {
                         return false;
                     }
-                } else if (annoObj.type === 'brush' && !annoObj.hasPath) {
+                } else if (annoObj.type === 'brush' && (!annoObj.pathes || annoObj.pathes.length===0)) {
                     return true;                    
                 } 
                 else {
@@ -203,6 +203,7 @@ export default function Workspace(props) {
         setDrawType(null);
         setSkeletonLandmark(null);
         setUndo(0);
+        setUseEraser(null);
         //annoIdToDraw will be reset in canvas after getBrushData()
     }
 

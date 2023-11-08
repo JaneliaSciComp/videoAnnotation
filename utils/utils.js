@@ -85,7 +85,7 @@ export function clearUnfinishedAnnotation(frameAnnotation) {
     if (Object.keys(frameAnnotation).length > 0) {
         unfinished = Object.keys(frameAnnotation).filter(id=>{
             const annoObj = frameAnnotation[id];
-            console.log('clear', annoObj);
+            // console.log('clear', annoObj);
             if ((annoObj.type ==='polygon' 
             || annoObj.type==='keyPoint' 
             || annoObj.type==='bbox')
@@ -106,6 +106,6 @@ export function clearUnfinishedAnnotation(frameAnnotation) {
     }
     const annoCopy = {...frameAnnotation};
     unfinished.forEach(id => delete(annoCopy[id]));
-    console.log(annoCopy)
+    // console.log(annoCopy)
     return annoCopy;
 }
