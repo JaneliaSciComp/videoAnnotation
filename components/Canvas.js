@@ -39,6 +39,7 @@ export default function Canvas(props) {
                                          // for brush: annoId: {id: annoId, type: 'brush', pathes: []}
     const prevDrawTypeRef = useRef({});
 
+    // context
     const videoId = useStates().videoId;
     const frameUrl = useStates().frameUrl;
     const frameNum = useStates().frameNum;
@@ -56,6 +57,9 @@ export default function Canvas(props) {
     // const setUndo = useStateSetters().setUndo;
     const annoIdToDraw = useStates().annoIdToDraw;
     const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
+    const annoIdToDelete = useStates().annoIdToDelete;
+    const setAnnoIdToDelete = useStateSetters().setAnnoIdToDelete;
+    const annoIdToShow = useStates().annoIdToShow;
     const annotationRef = useStates().annotationRef;
     // const projectType = useStates().projectType;
 
@@ -133,8 +137,29 @@ export default function Canvas(props) {
                 imgRef.current.removeEventListener("load", imageLoadHandler);
             }
         }
-      }, [videoId, frameUrl, frameNum, drawType, skeletonLandmark, frameAnnotation, btnConfigData, brushThickness, undo, annoIdToDraw, useEraser, annotationRef] /////check if these are enough
+      }, [useStates()] /////check if these are enough
     )
+
+
+    useEffect(() => {
+        // delete obj from canvas and fabricObjRef when delete annoObj in AnnotationTable
+        if (annoIdToDelete) {
+            removeObjFromCanvasById(annoIdToDelete);
+            delete(fabricObjListRef.current[annoIdToDelete]);
+            setAnnoIdToDelete(null);
+        }
+    }, [annoIdToDelete])
+
+    useEffect(() => {
+        console.log('annoIdToShow useEffect', annoIdToShow);
+        // only show selected obj on canvas when select annoObj in AnnotationTable
+        Object.keys(fabricObjListRef.current).forEach(id => {
+            removeObjFromCanvasById(id);
+        });
+        annoIdToShow.forEach(id => {
+            addObjToCanvasById(id);
+        })
+    }, [annoIdToShow])
 
 
     useEffect(()=> {
@@ -165,20 +190,8 @@ export default function Canvas(props) {
         // remove fabric object
         if (Object.keys(fabricObjListRef.current).length>0) {
             Object.keys(fabricObjListRef.current).forEach(id => {
-                const obj = fabricObjListRef.current[id];
-                if (obj.type==='skeleton') {
-                    obj.landmarks.forEach(l => {
-                        if (l) { //if l is labelled
-                            canvas.remove(l);
-                        };
-                    });
-                    Object.entries(obj.edges).forEach(([_, line])=>canvas.remove(line));
-                } else if (obj.type==='brush') {
-                    obj.pathes.forEach( p => canvas.remove(p));
-                } else {
-                    canvas.remove(obj);
-                }} 
-            );
+                removeObjFromCanvasById(id);
+            });
             fabricObjListRef.current = {};
         }
 
@@ -224,6 +237,44 @@ export default function Canvas(props) {
       }, [frameUrl]
     )
 
+    function removeObjFromCanvasById(id) {
+        const canvas = canvasObjRef.current;
+        const obj = fabricObjListRef.current[id];
+        if (obj) { // when delete from AnnotationTable, annoObj may be Category, or may hasn't been finished, so doesn't have corresponding obj in fabricObjRef
+            if (obj.type==='skeleton') {
+                obj.landmarks.forEach(l => {
+                    if (l) { //if l is labelled
+                        canvas.remove(l);
+                    };
+                });
+                Object.entries(obj.edges).forEach(([_, line])=>canvas.remove(line));
+            } else if (obj.type==='brush') {
+                obj.pathes.forEach( p => canvas.remove(p));
+            } else {
+                canvas.remove(obj);
+            }
+        } 
+    }
+
+    function addObjToCanvasById(id) {
+        const canvas = canvasObjRef.current;
+        const obj = fabricObjListRef.current[id];
+        if (obj) { // when select in AnnotationTable, annoObj may be Category, or may hasn't been finished, so doesn't have corresponding obj in fabricObjRef
+            if (obj.type==='skeleton') {
+                obj.landmarks.forEach(l => {
+                    if (l) { //if l is labelled
+                        canvas.add(l);
+                    };
+                });
+                Object.entries(obj.edges).forEach(([_, line])=>canvas.add(line));
+            } else if (obj.type==='brush') {
+                obj.pathes.forEach( p => canvas.add(p));
+            } else {
+                canvas.add(obj);
+            }
+        } 
+    }
+
     
     // useEffect(() => {
     //     //when frame changes, update objects on canvas
@@ -244,6 +295,7 @@ export default function Canvas(props) {
         // createFabricObjBasedOnAnnotation(); // doesn't work, will be called everytime clicking on anno btn, result in error
 
         const canvas = canvasObjRef.current;
+        
         // remove unfinished objects
         canvas.polygonPoints.forEach(p=>canvas.remove(p));
         canvas.polygonLines.forEach(l=>canvas.remove(l));
@@ -254,6 +306,7 @@ export default function Canvas(props) {
         canvas.skeletonPoints = [];
         canvas.skeletonLines = {};
         canvas.isDrawingSkeleton = null;
+        
         canvas.renderAll();
 
         return ()=>{
@@ -455,12 +508,12 @@ export default function Canvas(props) {
             canvas.clearContext(upperCanvasCtx);
             canvas.setViewportTransform(vptCopy);
 
-            const testCanvasCollection = {};
-            let i = 1;
-            for (let id in pixelDataCollection) {
-                testCanvasCollection[id] = i===1?testCanvasRef1.current:testCanvasRef2.current;
-                i++;
-            }
+            // const testCanvasCollection = {};
+            // let i = 1;
+            // for (let id in pixelDataCollection) {
+            //     testCanvasCollection[id] = i===1?testCanvasRef1.current:testCanvasRef2.current;
+            //     i++;
+            // }
             for (let id in pixelDataCollection) {
                 const upperCanvasData = pixelDataCollection[id];
                 const resizedData = await window.createImageBitmap(upperCanvasData, 0, 0, img.width*img.scaleX,img.height*img.scaleY, {resizeWidth: img.width, resizeHeight: img.height});
@@ -534,17 +587,17 @@ export default function Canvas(props) {
 
                 //for testing
                 // console.log(pixelDataFiltered, img.width);
-                const imageDataFiltered = new ImageData(pixelDataFiltered, img.width, img.height) ;
-                const testCanvas = testCanvasCollection[id];
-                testCanvas.width = img.width; //*img.scaleX;
-                testCanvas.height = img.height; //*img.scaleY;
-                const testCtx = testCanvas.getContext("2d");
-                // testCtx.scale(img.scaleX, img.scaleY);
-                // testCtx.putImageData(upperCanvasData, 0, 0);
-                // testCtx.drawImage(resizedData, 0, 0);
-                // console.log(img.width*img.scaleX,img.height*img.scaleY);
-                // console.log('canvas', upperCanvasData, resizedData);
-                testCtx.putImageData(imageDataFiltered, 0,0);
+                // const imageDataFiltered = new ImageData(pixelDataFiltered, img.width, img.height) ;
+                // const testCanvas = testCanvasCollection[id];
+                // testCanvas.width = img.width; //*img.scaleX;
+                // testCanvas.height = img.height; //*img.scaleY;
+                // const testCtx = testCanvas.getContext("2d");
+                // // testCtx.scale(img.scaleX, img.scaleY);
+                // // testCtx.putImageData(upperCanvasData, 0, 0);
+                // // testCtx.drawImage(resizedData, 0, 0);
+                // // console.log(img.width*img.scaleX,img.height*img.scaleY);
+                // // console.log('canvas', upperCanvasData, resizedData);
+                // testCtx.putImageData(imageDataFiltered, 0,0);
             }
             offscreen = null; // delete offscreen canvas when done
             // console.log();
@@ -1750,10 +1803,10 @@ export default function Canvas(props) {
             </canvas>
             
         </div>
-        <div style={{display: 'flex', flexWrap: 'row'}}>
+        {/* <div style={{display: 'flex', flexWrap: 'row'}}>
             <canvas ref={testCanvasRef1} style={{border: 'solid'}}></canvas>
             <canvas ref={testCanvasRef2} style={{border: 'solid'}}></canvas>
-        </div>
+        </div> */}
         
         {/* width:300, height:200,  */}
         </>

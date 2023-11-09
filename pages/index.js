@@ -6,13 +6,14 @@ import Category from '../components/Category.js';
 import SkeletonBtn from '../components/SkeletonBtn.js';
 import Canvas from '../components/Canvas.js';
 import VideoUploader from '../components/VideoUploader.js';
-import AnnotationDisplay from '../components/AnnotationDisplay.js';
+import ActiveAnnotation from '../components/ActiveAnnotation.js';
 import Design from '../components/Design.js';
 import BtnGroupController from '../components/BtnGroupController';
 import BtnContainer from '../components/BtnContainer.js';
 import BtnGroup from '../components/BtnGroup.js';
 import BrushBtn from '../components/BrushBtn.js';
 import BrushTool from '../components/BrushTool.js';
+import AnnotationTable from '../components/AnnotationTable.js';
 import {Row, Col} from 'react-bootstrap';
 
 
@@ -103,7 +104,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Workspace btnConfigData={btnConfigData}> 
+      <Workspace > 
         {/* <Category label='chase'/>
         <ShapeBtn type='bbox' label='fly' color='red' /> */}
         {/* <BtnGroup data={groupData} /> */}
@@ -122,11 +123,18 @@ export default function Home() {
             
           </Col>
           <Col>
-            <AnnotationDisplay />
+            <ActiveAnnotation />
           </Col>
         </Row>
+        <Row >
+          <Col>
+            <Canvas width={300} height={200}/>
+          </Col>
+          <Col>
+            <AnnotationTable />
+          </Col>
         
-        <Canvas width={300} height={200}/>
+        </Row>
         <VideoUploader />
       </Workspace>
     </div>

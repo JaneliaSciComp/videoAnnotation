@@ -7,7 +7,7 @@ import Canvas from './Canvas';
 // import KeyPoint from './Keypoint';
 // import ShapeBtn from './ShapeBtn';
 // import Category from './Category';
-import AnnotationDisplay from './AnnotationDisplay';
+import ActiveAnnotation from './ActiveAnnotation';
 import VideoUploader from './VideoUploader';
 import {Row, Col, Button} from 'react-bootstrap';
 import BtnGroup from './BtnGroup';
@@ -44,6 +44,8 @@ export default function Workspace(props) {
     const [brushThickness, setBrushThickness] = useState(); //for brush
     const [undo, setUndo] = useState(0); // int, for brush, when undo+1 (by BrushBtn), remove the latest path with the same annoId (by Canvas).
     const [annoIdToDraw, setAnnoIdToDraw] = useState();
+    const [annoIdToDelete, setAnnoIdToDelete] = useState(); // set by AnnotationTable, reset to null by Canvas after deleting from canvas and fabricObjRef
+    const [annoIdToShow, setAnnoIdToShow] = useState([]);
     const [btnConfigData, setBtnConfigData] = useState({});
     const [btnGroups, setBtnGroups] = useState();
     // const [projectType, setProjectType] = useState('image'); //'image' or 'video'
@@ -62,6 +64,8 @@ export default function Workspace(props) {
         brushThickness: brushThickness,
         undo: undo,
         annoIdToDraw: annoIdToDraw,
+        annoIdToDelete: annoIdToDelete,
+        annoIdToShow: annoIdToShow,
         btnConfigData: btnConfigData,
         btnGroups: btnGroups,
         annotationRef: annotationRef,
@@ -79,6 +83,8 @@ export default function Workspace(props) {
         setUseEraser: setUseEraser,
         setUndo: setUndo,
         setAnnoIdToDraw: setAnnoIdToDraw,
+        setAnnoIdToDelete: setAnnoIdToDelete,
+        setAnnoIdToShow: setAnnoIdToShow,
         setBrushThickness: setBrushThickness,
         setBtnConfigData: setBtnConfigData,
         setBtnGroups: setBtnGroups,
@@ -206,6 +212,8 @@ export default function Workspace(props) {
         setUndo(0);
         setUseEraser(null);
         //annoIdToDraw will be reset in canvas after getBrushData()
+        setAnnoIdToDelete(null);
+        setAnnoIdToShow([]);
     }
 
 

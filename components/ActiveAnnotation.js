@@ -3,7 +3,7 @@ import styles from '../styles/Workspace.module.css';
 import { Descriptions } from 'antd';
 import { useStates } from './AppContext';
 
-export default function AnnotationDisplay(props) {
+export default function ActiveAnnotation(props) {
     const emtpyInfo = [
         {
             key: '1',
