@@ -213,7 +213,7 @@ export default function SkeletonEdgeController(props) {
                         <Tag className={styles.edgeTag}>{verticesOptions[currentVertex].label}</Tag>
                     </Col>
                     <Col span={12}>
-                        <Checkbox.Group 
+                        <Checkbox.Group
                             options={verticesOptions.filter(v => v.value !== currentVertex)} 
                             value={checkedValues}
                             onChange={onCheckBoxChange} />

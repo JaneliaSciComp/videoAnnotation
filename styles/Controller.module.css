@@ -49,10 +49,12 @@
 }
 
 .edgeTag {
-    width: 8em;
-    overflow-x: scroll;
-    display: flex;
-    justify-content: center;
+    max-width: 8em;
+    white-space: nowrap;
+    overflow-x: auto;
+    text-align: center;
+    /* display: flex;
+    justify-content: center; */
 }
 
 .errorInfo {

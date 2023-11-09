@@ -623,12 +623,12 @@ export default function BtnGroupController(props) {
                     <div className='my-2'>
                         <Button type="primary" onClick={onDoneBtnClick}>Done</Button>
                     </div>
-                    {dataAdded ? 
+                    {/* {dataAdded ? 
                         <div className='my-2'>
                             <p>Btn group configuration saved</p>
                         </div>
                         :null
-                    }
+                    } */}
                 </div> : null
             }
         </div>

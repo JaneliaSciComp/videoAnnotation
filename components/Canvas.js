@@ -93,13 +93,6 @@ export default function Canvas(props) {
 
             canvasObjRef.current = canvasObj;
 
-            // activate brushCanvas
-            // const brushCanvasObj = new fabric.Canvas('brushCanvas', {
-            //     width: props.width ? props.width : CANVAS_WIDTH,
-            //     height: props.height ? props.height : CANVAS_HEIGHT,
-            // })
-            // brushCanvasObjRef.current = brushCanvasObj;
-
         } 
       }, []
     )

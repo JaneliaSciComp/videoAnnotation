@@ -194,7 +194,7 @@ export default function SkeletonBtn(props) {
                 background: clicked?props.data[skeletonLandmark?skeletonLandmark:0].color:'white', 
                 border:'2px solid '+props.data[skeletonLandmark?skeletonLandmark:0].color}} 
                 onClick={clickHandler}>
-            {`${(skeletonLandmark?skeletonLandmark:0) +1}-${props.data[skeletonLandmark?skeletonLandmark:0].label}`}
+            {`${(skeletonLandmark?skeletonLandmark:0) +1} ${props.data[skeletonLandmark?skeletonLandmark:0].label}`}
             </Button>
 
             <Radio.Group className='ms-3' value={radioValue} onChange={onRadioChange}>

@@ -15,9 +15,15 @@ a {
   box-sizing: border-box;
 }
 
-.canvas-container {
+/* .canvas-container {
   position: absolute !important;
   z-index: 5;
+} */
+
+.ant-checkbox-wrapper {
+  max-width: 10em;
+  white-space: nowrap;
+  overflow-x: hidden;
 }
 
 /* @media (prefers-color-scheme: dark) {
