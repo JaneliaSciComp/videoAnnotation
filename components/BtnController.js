@@ -3,7 +3,7 @@ import styles from '../styles/Controller.module.css';
 import { Select, Button, Input, ColorPicker, Space } from 'antd';
 import { DeleteOutlined} from '@ant-design/icons';
 // import {Button} from 'react-bootstrap';
-import {predefinedColors, btnTypeOptions} from '../utils/utils.js';
+import {predefinedColors, btnTypeOptions, crowdSelectOptions} from '../utils/utils.js';
 
 export default function BtnController(props) {
     /** 
@@ -12,7 +12,8 @@ export default function BtnController(props) {
             {index: 0,
              btnType: 'bbox',
              label: 'fly',
-             color: '#FFFFFF'
+             color: '#FFFFFF',
+             disableCrowdRadio: false, // only available when btnType='brush'
             },
         Props: 
             index: integer. Required when define the event listeners. To distinguish from other btnController
@@ -23,7 +24,7 @@ export default function BtnController(props) {
             label: 'mouse'. Optional.
             typeSelectPlaceHolder: 'Btn type'
             labelPlaceHolder: 'mouse'
-            disableTypeSelect: boolean. False by default, true when specified. Whether to disable type selcet.
+            disableTypeSelect: boolean. False by default, true when specified. Whether to disable type select.
             disableLabelInput: boolean. False by default, true when specified. Whether to disable label input.
             disableColorPicker: boolean. False by default, true when specified. Whether to disable color picker.
             enableDelete: boolean. False by default, true when specified. Whether to include the delete btn.
@@ -31,6 +32,9 @@ export default function BtnController(props) {
             onLabelEnter: Callback when label input changes. Takes one argument: target {index: int, index property of this object, value: str, the value of this label input}
             onColorChange: Callback when colorPicker changes. Takes one argument: target {index: int, index property of this object, value: str, the value of this color picker}
             onDelete: Callback when delete btn clicked. Takes one argument: target {index: int, index property of this object}
+            // Below props are only for crowd select. Crowd select only visible when btnType='brush', so these props only useful when btnType='brush'
+            hasCrowdOption: 'yes' or 'no'. //When specified, the default value of the crowd select will be set. 
+            disableCrowdSelect: boolean.  False by default, true when specified. Whether to disable crowd select.
     */
     // console.log('btnController render', props.index);
 
@@ -76,6 +80,20 @@ export default function BtnController(props) {
         }
     }
 
+    
+    function onCrowdChange(value, opt) {
+        console.log('crowd', value, opt);
+        // no need to use if (props.onLabelChange), because the developer has to use props to set up the callback
+        const target = {
+            index: props.index,
+            value: value,
+            // label: opt.label
+        };
+        
+        if (props.onCrowdChange) {
+            props.onCrowdChange(target);
+        } 
+    }
 
     function onDelete() {
         const target = {
@@ -107,6 +125,17 @@ export default function BtnController(props) {
                     placeholder={props.labelPlaceHolder}
                     disabled = {props.disableLabelInput}
                     />
+                {props.btnType==='brush' ?
+                    <Select className={styles.crowdSelect}
+                        value={props.hasCrowdOption}
+                        onChange={onCrowdChange}
+                        options={crowdSelectOptions}
+                        placeholder='Crowd Option'
+                        disabled={props.disableCrowdSelect}
+                        /> 
+                    : null
+                }
+                
                 <ColorPicker className={styles.colorPicker}
                     // className={videoStyles.playFpsInput} 
                     value={props.color ? props.color : '#1677FF'}

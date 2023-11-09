@@ -11,6 +11,7 @@ import AnnotationDisplay from './AnnotationDisplay';
 import VideoUploader from './VideoUploader';
 import {Row, Col, Button} from 'react-bootstrap';
 import BtnGroup from './BtnGroup';
+import BrushTool from './BrushTool';
 // import BtnGroupController from './BtnGroupController';
 import Design from './Design';
 import { StatesProvider } from './AppContext';
@@ -235,25 +236,35 @@ export default function Workspace(props) {
 
 
     function renderBtnGroup() {
+        console.log(btnConfigData);
         const groupIndices = Object.keys(btnConfigData).sort((a, b) => Number(a)-Number(b));
-        const groups = groupIndices.map((index, i) => {
-                            const data = {...btnConfigData[index]};
-                            data.groupIndex = index;
-                            // console.log('workspace renderBtnGroup:', index, data);
-                            return <BtnGroup 
-                                        key={i}
-                                        data={data}
-                                        frameNum={frameNum}
-                                        frameUrl={frameUrl}
-                                        addAnnotationObj={addAnnotationObj}
-                                        setActiveAnnoObj={setActiveAnnoObj}
-                                        drawType={drawType}
-                                        setDrawType={setDrawType}
-                                        skeletonLandmark={skeletonLandmark}
-                                        setSkeletonLandmark={setSkeletonLandmark}
-                                        frameAnnotation={data.groupType==='skeleton' ? frameAnnotation : null}
-                                    />
-                        })
+        const groups = []; 
+        let k = 0;
+        let addedBrushTool = false;
+        groupIndices.forEach(index => {
+            const data = {...btnConfigData[index]};
+            data.groupIndex = index;
+            // console.log('workspace renderBtnGroup:', index, data);
+            if (data.groupType === 'brush' && !addedBrushTool) {
+                groups.push(<BrushTool key={k++} />);
+                addedBrushTool = true;
+            }
+            groups.push(
+                <BtnGroup 
+                    key={k++}
+                    data={data}
+                    frameNum={frameNum}
+                    frameUrl={frameUrl}
+                    addAnnotationObj={addAnnotationObj}
+                    setActiveAnnoObj={setActiveAnnoObj}
+                    drawType={drawType}
+                    setDrawType={setDrawType}
+                    skeletonLandmark={skeletonLandmark}
+                    setSkeletonLandmark={setSkeletonLandmark}
+                    frameAnnotation={data.groupType==='skeleton' ? frameAnnotation : null}
+                />
+            )
+        })
         // console.log(btnGroupIds);
         setBtnGroups(groups);
     }

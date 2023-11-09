@@ -199,8 +199,8 @@ export default function Design(props) {
                             // onDownBtnClick={onDownBtnClick}
                             // skeletonData={skeletonData}
                             // setSkeletonData={setSkeletonData}
-                            />
-                    )}
+                            />)
+                    }
                 </Space>
             {/* </ConfigProvider> */}
             

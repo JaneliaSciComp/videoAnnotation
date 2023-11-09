@@ -70,6 +70,7 @@ export default function BtnGroupController(props) {
                         btnNum: btnNum,
                         childData: [...groupData]
                     }};
+            
             // below props be treated differently when placing this comp in a Desgin comp or not
             enableDelete: True when specified. Whether to make the delete btn visible. Should not be specified when using this comp independently
             onDelete: Callback when delete btn clicked. Takes one argument: target {index: int}
@@ -80,8 +81,11 @@ export default function BtnGroupController(props) {
                 It will be called after the prebuilt function.
             // skeletonData: to pass to child SkeletonEdgeController to hold generated edge data if user choose 'skeleton'
             // setSkeletonData: skeletonData setter. To pass to child SkeletonEdgeController
+            
+            // below props are only for groupType='brush'
+            // includeBrushTool: boolean. False by default, true when speicified. When true, include an extra brushToolController to configure BrushTool comp. When false, no BrushTool comp will be generated.
     */
-    const [groupData, setGroupData] = useState([]); // cannotb e replaced by ref, ref cannot trigger useEffect immediately
+    const [groupData, setGroupData] = useState([]); // cannot be replaced by ref, ref cannot trigger useEffect immediately
     const [index, setIndex] = useState();
     const [groupType, setGroupType] = useState();
     const [btnType, setBtnType] = useState();
@@ -356,6 +360,7 @@ export default function BtnGroupController(props) {
                     // onTypeChange={onChildTypeChange}
                     onLabelChange={onChildLabelChange}
                     onColorChange={onChildColorChange}
+                    onCrowdChange={onChildCrowdChange}
                     onDelete={onChildDelete}
                     />); 
         }
@@ -373,6 +378,7 @@ export default function BtnGroupController(props) {
             //              />
                     );
         }
+
         // console.log(res);
         setChildren(res);
     }
@@ -427,6 +433,18 @@ export default function BtnGroupController(props) {
         //     btnNum: btnNum,
         //     childData: childrenDataCopy
         // } });
+        setGroupData(childrenDataCopy);
+    }
+
+    function onChildCrowdChange(target) {
+        // const index = getSelfIndex();
+        const childrenData = getData();
+        const data = {...childrenData[target.index]};
+        // console.log('color', childrenData);
+        data.disableCrowdRadio = target.value==='yes'?false : true;
+        // console.log(data);
+        const childrenDataCopy = [...childrenData];
+        childrenDataCopy[target.index] = data;
         setGroupData(childrenDataCopy);
     }
 

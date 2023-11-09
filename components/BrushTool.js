@@ -10,6 +10,12 @@ const MIN_THICKNESS = 1;
 const MAX_THICKNESS = 100;
 
 export default function BrushTool(props) {
+    /**
+     *  props:
+     *      minThinkness: int. To set the min value of slider to config the thickness of brush. Optional. If not provided, use MIN_THICKNESS
+            maxThickness: int. To set the max value of slider to config the thickness of brush. Optional. If not provided, use MAX_THICKNESS
+     */
+
     // get context
     const drawType = useStates().drawType;
     const brushThickness = useStates().brushThickness;
@@ -18,8 +24,8 @@ export default function BrushTool(props) {
     const setUseEraser = useStateSetters().setUseEraser;
     const undo = useStates().undo;
     const setUndo = useStateSetters().setUndo;
-    const annoIdToDraw = useStates().annoIdToDraw;
-    const frameAnnotation = useStates().frameAnnotation;
+    // const annoIdToDraw = useStates().annoIdToDraw;
+    // const frameAnnotation = useStates().frameAnnotation;
 
     function undoClickHandler() {
         if (drawType==='brush') {

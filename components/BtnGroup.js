@@ -1,6 +1,8 @@
 import ShapeBtn from './ShapeBtn';
 import Category from './Category';
 import SkeletonBtn from './SkeletonBtn';
+import BrushBtn from './BrushBtn';
+import BrushTool from './BrushTool';
 import { useState, useEffect } from 'react';
 import {Row} from 'react-bootstrap';
 
@@ -9,21 +11,22 @@ export default function BtnGroup(props) {
         To bundle a group of annotating btns of the same type.
         Props: 
             data: 
-            {   
-                groupIndex: '...',
-                groupType: 'shape',
-                btnType: 'bbox',
-                btnNum: 2,
-                childData: [
-                    {index: 0, 
+                {   
+                    groupIndex: '...',
+                    groupType: 'shape',
                     btnType: 'bbox',
-                    label: 'fly',
-                    color: '#FFFFFF'
-                    },
-                    {index: 1, ...},
-                    ...
-                ]
-            }
+                    btnNum: 2,
+                    childData: [
+                        {index: 0, 
+                        btnType: 'bbox',
+                        label: 'fly',
+                        color: '#FFFFFF'
+                        },
+                        {index: 1, ...},
+                        ...
+                    ]
+                },
+            enableBrushTool: boolean. True when specified. Whether to add BrushTool comp when the children are BrushBtns.
     */
 
     const [btns, setBtns] = useState()
@@ -43,68 +46,90 @@ export default function BtnGroup(props) {
         // console.log(props.data);
         // console.log(props.data.childData);
         let btns;
-        switch (props.data.groupType) {
-            case 'category':
-                btns = childData.map((item, i) =>
-                            // <Category 
-                            //     key={i}
-                            //     label={item.label}
-                            //     color={item.color}
-                            //     frameNum={props.frameNum}
-                            //     frameUrl={props.frameUrl}
-                            //     addAnnotationObj={props.addAnnotationObj}
-                            //     setActiveIdObj={props.setActiveIdObj}
-                            //     />
-                            <Category 
-                                key={i}
-                                label={item.label}
-                                color={item.color}
-                                />
-                        );
-                break;
-            case 'shape':
-                btns = childData.map((item, i) => 
-                            // <ShapeBtn
-                            //     key={i}
-                            //     type={item.btnType} 
-                            //     label={item.label}
-                            //     color={item.color}
+        if (childData && props.data.groupType) {
+            switch (props.data.groupType) {
+                case 'category':
+                    btns = childData.map((item, i) =>
+                                // <Category 
+                                //     key={i}
+                                //     label={item.label}
+                                //     color={item.color}
+                                //     frameNum={props.frameNum}
+                                //     frameUrl={props.frameUrl}
+                                //     addAnnotationObj={props.addAnnotationObj}
+                                //     setActiveIdObj={props.setActiveIdObj}
+                                //     />
+                                <Category 
+                                    key={i}
+                                    label={item.label}
+                                    color={item.color}
+                                    />
+                            );
+                    break;
+                case 'shape':
+                    btns = childData.map((item, i) => 
+                                // <ShapeBtn
+                                //     key={i}
+                                //     type={item.btnType} 
+                                //     label={item.label}
+                                //     color={item.color}
+                                //     frameNum={props.frameNum}
+                                //     frameUrl={props.frameUrl}
+                                //     addAnnotationObj={props.addAnnotationObj}
+                                //     drawType={props.drawType}
+                                //     setDrawType={props.setDrawType}
+                                //     />
+                                <ShapeBtn
+                                    key={i}
+                                    type={item.btnType} 
+                                    label={item.label}
+                                    color={item.color}
+                                    />
+                            );
+                    break;
+                case 'skeleton':
+                    btns = [
+                            // <SkeletonBtn
+                            //     key={0}
+                            //     groupIndex={props.data.groupIndex}
+                            //     data={childData}
                             //     frameNum={props.frameNum}
                             //     frameUrl={props.frameUrl}
                             //     addAnnotationObj={props.addAnnotationObj}
                             //     drawType={props.drawType}
                             //     setDrawType={props.setDrawType}
+                            //     skeletonLandmark={props.skeletonLandmark}
+                            //     setSkeletonLandmark={props.setSkeletonLandmark}
+                            //     frameAnnotation={props.frameAnnotation}
                             //     />
-                            <ShapeBtn
-                                key={i}
-                                type={item.btnType} 
-                                label={item.label}
-                                color={item.color}
+                            <SkeletonBtn
+                                key={0}
+                                groupIndex={props.data.groupIndex}
+                                data={childData}
                                 />
-                        );
-                break;
-            case 'skeleton':
-                btns = [
-                        // <SkeletonBtn
-                        //     key={0}
-                        //     groupIndex={props.data.groupIndex}
-                        //     data={childData}
-                        //     frameNum={props.frameNum}
-                        //     frameUrl={props.frameUrl}
-                        //     addAnnotationObj={props.addAnnotationObj}
-                        //     drawType={props.drawType}
-                        //     setDrawType={props.setDrawType}
-                        //     skeletonLandmark={props.skeletonLandmark}
-                        //     setSkeletonLandmark={props.setSkeletonLandmark}
-                        //     frameAnnotation={props.frameAnnotation}
-                        //     />
-                        <SkeletonBtn
-                            key={0}
-                            groupIndex={props.data.groupIndex}
-                            data={childData}
-                            />
-                        ]
-                break;
+                            ]
+                    break;
+                case 'brush':
+                    btns = [];
+                    let k = 0;
+                    if (props.enableBrushTool) {
+                        btns.push(<BrushTool key={k++}/>);
+                    }
+                    const brushBtns = childData.map((item, i) => 
+                                        <BrushBtn
+                                            key={i}
+                                            label={item.label}
+                                            color={item.color}
+                                            disableCrowdRadio={item.disableCrowdRadio}
+                                            />
+                                    )
+                    btns.push(
+                        <div key={k} style={{display: 'flex', flexWrap: 'wrap'}}>
+                            {brushBtns}
+                        </div>
+                    )
+                    break;                    
+            }
         }
         
         return btns;
@@ -112,7 +137,7 @@ export default function BtnGroup(props) {
 
     return (
         // <Fragment>
-        <div className='my-1'>
+        <div className='my-1' >
             {btns? btns:null}
         </div>
         // </Fragment>

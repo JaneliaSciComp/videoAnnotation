@@ -24,7 +24,7 @@
 }
 
 .labelText {
-    width: 20em;
+    width: 15em;
     border-radius: 0;
 }
 
@@ -72,4 +72,9 @@
     padding: 0.5em;
     border: 1px solid rgb(222, 226, 230);
     border-radius: 6px;
+}
+
+.crowdSelect {
+    /* margin: 0 2px; */
+    width: 10em;
 }

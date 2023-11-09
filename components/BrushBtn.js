@@ -28,17 +28,16 @@ export default function BrushBtn(props) {
                 iscrowd: 0 or 1. Indicates the segmentation covers single or multiple target objects.
                 first: 0 or 1. Indicates the first number in data(rle) is inside (1) segmentation or not (0)
                 data: [128, 29, ...]. RLE format
-                pathes: [[], [], ...]. The instruction to create fabric path objs for this brush btn.
+                pathes: [pathStr1, pathStr2, ...]. The stringified fabric path objs for this brush btn.
             }}
      * 
      * Props: 
-            type: 'brush'
             label: 'Mouse'. Required 
             color: 'red'. Optional. If not provided, use defaultColor
             minThinkness: int. To set the min value of slider to config the thickness of brush. Optional. If not provided, use MIN_THICKNESS
             maxThickness: int. To set the max value of slider to config the thickness of brush. Optional. If not provided, use MAX_THICKNESS
-            enableBrushTool
-            enableCrowdRadio
+            enableBrushTool: useful when there is only one brush btn. not recommended for multiple brush btns since one brushTool controls all brush drawing. 
+            disableCrowdRadio
      */
     const [radioValue, setRadioValue] = useState(0);
     // const [thickness, setThickness] = useState(5);
@@ -180,7 +179,8 @@ export default function BrushBtn(props) {
 
     return (
         // <Row >
-        <div className={styles.brushBtnContainer}>
+        <div className={styles.brushBtnContainer}
+            style={{margin: ((props.enableBrushTool || !props.disableCrowdRadio) ? '0.2em' : '0') + ' 0'}}>
             {/* <Col md={4} className={styles.brushBtn}> */}
             <div className={styles.brushBtn}>
                 <Button className={styles.btn}
@@ -194,29 +194,33 @@ export default function BrushBtn(props) {
             {/* </Col>
             
             <Col md={6}> */}
-            <div >
-                {/* <Row > */}
-                {props.enableBrushTool ? <BrushTool /> : null}
-                
-                {props.enableCrowdRadio ?
-                    // <Row>
-                    <div>
-                        <Radio.Group 
-                            value={radioValue} 
-                            onChange={onRadioChange} 
-                            disabled={!(drawType==='brush'&&annoIdToDraw===annotationIdRef.current)}
-                            >
-                            {/* <Space > */}
-                                <Radio value={0}>single</Radio>
-                                <Radio value={1}>crowd</Radio>
-                            {/* </Space> */}
-                        </Radio.Group>
-                    {/* </Row>  */}
-                    </div>
-                    : null 
-                }
-
-            </div>    
+            {(props.enableBrushTool || !props.disableCrowdRadio) ?
+                <div className='ms-2'>
+                    {/* <Row > */}
+                    {props.enableBrushTool ? 
+                        <BrushTool minThinkness={props.minThinkness} maxThickness={props.maxThickness}/> 
+                        : null}
+                    
+                    {!props.disableCrowdRadio ?
+                        // <Row>
+                        <div>
+                            <Radio.Group 
+                                value={radioValue} 
+                                onChange={onRadioChange} 
+                                disabled={!(drawType==='brush'&&annoIdToDraw===annotationIdRef.current)}
+                                >
+                                {/* <Space > */}
+                                    <Radio value={0}>single</Radio>
+                                    <Radio value={1}>crowd</Radio>
+                                {/* </Space> */}
+                            </Radio.Group>
+                        {/* </Row>  */}
+                        </div>
+                        : null 
+                    }
+                </div> 
+                :null
+            }   
             {/* </Col> */}
             
         </div>

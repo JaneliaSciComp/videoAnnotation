@@ -50,6 +50,7 @@ export const btnGroupTypeOptions = [
     {value: 'shape', label: 'Shape'},
     {value: 'category', label: 'Category'},
     {value: 'skeleton', label: 'Skeleton'},
+    {value: 'brush', label: 'Brush'},
 ]
 
 export const btnTypeOptions = {
@@ -59,21 +60,28 @@ export const btnTypeOptions = {
     shape: [
         {value: 'keyPoint', label: 'Key Point'},
         {value: 'bbox', label: 'Bounding Box'},
-        {value: 'polygon', label: 'Polygon'},
-        {value: 'brush', label: 'Brush'}
+        {value: 'polygon', label: 'Polygon'}
     ],
     skeleton: [
         {value: 'skeleton', label: 'Skeleton'}
+    ],
+    brush: [
+        {value: 'brush', label: 'Brush'}
     ],
     general: [
         {value: 'category', label: 'Category'},
         {value: 'keyPoint', label: 'Key Point'},
         {value: 'bbox', label: 'Bounding Box'},
         {value: 'polygon', label: 'Polygon'},
-        {value: 'brush', label: 'Brush'},
         {value: 'skeleton', label: 'Skeleton'},
+        {value: 'brush', label: 'Brush'},
     ]
 }
+
+export const crowdSelectOptions = [
+    {value: 'yes', label: 'Has Crowd Option'},
+    {value: 'no', label: 'No Crowd Option'},
+]
 
 
 export function clearUnfinishedAnnotation(frameAnnotation) {

@@ -1549,10 +1549,8 @@ export default function Canvas(props) {
     }
 
     function createPathes() {
-        /** 
-         *  {'pathStrArr': [pathObjStr1, pathObjStr2]}
-        */
-       console.log('createPath');
+        // recreate all path obj based by looping through all brush annoObj's .pathes prop
+        console.log('createPath');
         const nextFrameAnno = annotationRef.current[frameNum];
         const pathStrArr=[];
         if (nextFrameAnno && Object.keys(nextFrameAnno).length>0) {
