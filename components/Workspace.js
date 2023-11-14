@@ -213,7 +213,7 @@ export default function Workspace(props) {
         setUseEraser(null);
         //annoIdToDraw will be reset in canvas after getBrushData()
         setAnnoIdToDelete(null);
-        setAnnoIdToShow([]);
+        // setAnnoIdToShow([]);
     }
 
 

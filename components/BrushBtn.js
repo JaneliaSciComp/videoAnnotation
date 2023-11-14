@@ -156,7 +156,7 @@ export default function BrushBtn(props) {
             label: props.label,
             color: props.color ? props.color : defaultColor,
             data: [],
-            first: null,
+            // first: null,
             isCrowd: 0,
             // hasPath: false // indicate if at least one path obj is created for this annoObj
         };

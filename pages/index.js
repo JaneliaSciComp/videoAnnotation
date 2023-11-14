@@ -104,18 +104,18 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Workspace > 
+      <Workspace btnConfigData={btnConfigData} > 
         {/* <Category label='chase'/>
         <ShapeBtn type='bbox' label='fly' color='red' /> */}
         {/* <BtnGroup data={groupData} /> */}
-        <BtnGroupController />
+        {/* <BtnGroupController /> */}
         {/* <Design /> */}
         <Row >
           <Col>
             
-            <Category label='category-'/>
-            <ShapeBtn type='bbox' label='bbox-' color='red' />
-            <ShapeBtn type='polygon' label='polygon-' color='red' />
+            <Category label='chase'/>
+            <ShapeBtn type='bbox' label='fly-bbox' color='red' />
+            <ShapeBtn type='polygon' label='fly-poly' color='red' />
             <BtnContainer />
             <BrushTool />
             <BrushBtn label='mouse' />

@@ -48,7 +48,7 @@ export default function Canvas(props) {
     const skeletonLandmark = useStates().skeletonLandmark;
     const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
     const frameAnnotation = useStates().frameAnnotation;
-    // const setFrameAnnotation = useStateSetters().setFrameAnnotation;
+    const setFrameAnnotation = useStateSetters().setFrameAnnotation;
     const btnConfigData = useStates().btnConfigData;
     const setActiveAnnoObj = useStateSetters().setActiveAnnoObj;
     const brushThickness = useStates().brushThickness;
@@ -153,7 +153,16 @@ export default function Canvas(props) {
     useEffect(() => {
         console.log('annoIdToShow useEffect', annoIdToShow);
         // only show selected obj on canvas when select annoObj in AnnotationTable
+        // const annoIdToShowSet =  new Set(annoIdToShow);
         Object.keys(fabricObjListRef.current).forEach(id => {
+            // console.log(id, canvasObjRef.current.getObjects());
+            //if do it in this way, needs to check if canvas already has the obj, 
+            //otherwise will result in duplicate obj
+            // if (annoIdToShowSet.has(id)) { 
+            //     addObjToCanvasById(id);
+            // } else {
+            //     removeObjFromCanvasById(id);
+            // }
             removeObjFromCanvasById(id);
         });
         annoIdToShow.forEach(id => {
@@ -226,6 +235,7 @@ export default function Canvas(props) {
 
         // recreate path obj before img load for less work
         createPathes();
+        console.log(canvas.getObjects());
 
         // update image when url changes
         if (frameUrl) {
@@ -381,7 +391,7 @@ export default function Canvas(props) {
         canvas.freeDrawingBrush.color = annoObj.color + convertAlphaFloatToHex(alphaFloat);
         // console.log('setBrush', annoObj,canvas.freeDrawingBrush.color);
         canvas.freeDrawingBrush.width = brushThickness;
-        console.log('setPencilBrush');
+        // console.log('setPencilBrush');
     }
 
     function resetBrush() {
@@ -392,7 +402,7 @@ export default function Canvas(props) {
 
     useEffect(()=>{
         // if (drawType==='brush') {
-            console.log('eraser useEffect', drawType);
+            // console.log('eraser useEffect', drawType);
             if (useEraser) {
                 setEraserBrush();
             } else {
@@ -414,10 +424,7 @@ export default function Canvas(props) {
         canvas.isDrawingMode = true;
         canvas.freeDrawingBrush = new fabric.EraserBrush(canvas);
         console.log('setEraserBrush');
-        // canvas.freeDrawingBrush.limitedToCanvasSize = true; //When `true`, the free drawing is limited to the whiteboard size
-        // const alphaFloat = props.alpha?props.alpha:defaultAlpha;
-        // canvas.freeDrawingBrush.color = annoObj.color + convertAlphaFloatToHex(alphaFloat);
-        // console.log('setBrush', annoObj,canvas.freeDrawingBrush.color);
+        canvas.freeDrawingBrush.limitedToCanvasSize = true; //When `true`, the free drawing is limited to the whiteboard size
         canvas.freeDrawingBrush.width = brushThickness;
     }
 
@@ -516,7 +523,9 @@ export default function Canvas(props) {
             // }
             for (let id in pixelDataCollection) {
                 const upperCanvasData = pixelDataCollection[id];
-                const resizedData = await window.createImageBitmap(upperCanvasData, 0, 0, img.width*img.scaleX,img.height*img.scaleY, {resizeWidth: img.width, resizeHeight: img.height});
+                const resizedData = await window.createImageBitmap(upperCanvasData, 0, 0, 
+                                        img.width*img.scaleX,img.height*img.scaleY, 
+                                        {resizeWidth: img.width, resizeHeight: img.height});
 
                 offscreenCtx.drawImage(resizedData, 0, 0);
                 const offscreenData = offscreenCtx.getImageData(0,0,img.width, img.height);
@@ -539,7 +548,8 @@ export default function Canvas(props) {
                     if (pixelData[i+3] > 0) {
                         if (i===0) {
                             inSeg = true;
-                            first = 1;
+                            // first = 1;
+                            rle.push(0);
                         } else {
                             if (inSeg) {
                                 count++;
@@ -557,7 +567,7 @@ export default function Canvas(props) {
                     } else {
                         if (i===0) {
                             inSeg = false;
-                            first = 0;
+                            // first = 0;
                         } else {
                             if (!inSeg) {
                                 count++;
@@ -583,10 +593,10 @@ export default function Canvas(props) {
                 // annoObj.first = first;
                 // setFrameAnnotation({...frameAnnotation, [id]: annoObj});
                 frameAnnotation[id].data = rle;
-                frameAnnotation[id].first = first;
+                // frameAnnotation[id].first = first;
 
-                //for testing
-                // console.log(pixelDataFiltered, img.width);
+                // //for testing
+                console.log(rle.reduce((res, count) => res+count, 0), img.width*img.height);
                 // const imageDataFiltered = new ImageData(pixelDataFiltered, img.width, img.height) ;
                 // const testCanvas = testCanvasCollection[id];
                 // testCanvas.width = img.width; //*img.scaleX;
@@ -611,24 +621,6 @@ export default function Canvas(props) {
     function getPathInfo(brushObj) {
         return brushObj.pathes.map(obj => {
             return JSON.stringify(obj.toJSON(["id"]));
-
-            const subStr = obj.path.map((p) => p.join(' '));
-            const joinedStr = subStr.join(' ');
-            return {
-                steps: joinedStr,
-                left: obj.left,
-                top: obj.top,
-                width: obj.width,
-                height: obj.height,
-                stroke: obj.stroke,
-                strokeWidth: obj.strokeWidth,
-                strokeDashArray: obj.strokeDashArray,
-                strokeLineCap: obj.strokeLineCap,
-                strokeLineJoin: obj.strokeLineJoin,
-                strokeMiterLimit: obj.strokeMiterLimit,
-                erasable: obj.erasable,
-                eraser: obj.eraser
-            }
           }
         )
     }
@@ -690,6 +682,8 @@ export default function Canvas(props) {
 
 
     function createFabricObjBasedOnAnnotation() {
+        const canvas = canvasObjRef.current;
+        console.log(canvas.getObjects());
         // console.log(frameNum, annotationRef.current);
         const nextFrameAnno = annotationRef.current[frameNum];
         if (nextFrameAnno && Object.keys(nextFrameAnno).length>0) {
@@ -724,13 +718,14 @@ export default function Canvas(props) {
                 }
             });
 
-            const canvas = canvasObjRef.current;
+            console.log(canvas.getObjects());
             canvas.getObjects().forEach(obj=>{
-                if (obj.id) { // only path obj has id
+                if (obj.id || obj.owner) { // path, keypoint, rect, polygon obj have id, circle,line obj have owner
                     console.log(obj);
                     canvas.bringToFront(obj);
                 }
             });
+            canvas.renderAll();
             // console.log(canvas, canvas.getObjects());
             // console.log(JSON.stringify(canvas));
 
@@ -1269,72 +1264,6 @@ export default function Canvas(props) {
     }
 
 
-    // function drawBrush() {
-    //     const canvas = canvasObjRef.current;
-    //     const annoObj = frameAnnotation[annoIdToDraw];
-    //     const pos = canvas.getPointer();
-    //     const circle = new fabric.Circle({
-    //         left: pos.x,  /////
-    //         top: pos.y,  /////
-    //         radius: brushThickness,
-    //         originX: 'center',
-    //         originY: 'center',
-    //         // strokeWidth: 1,
-    //         // strokeUniform: true,
-    //         // stroke: annoObj.color,
-    //         fill: annoObj.color+'80',
-    //         lockScalingX: true,
-    //         lockScalingY: true,
-    //         lockRotation: true,
-    //         lockScalingFlip: true,
-    //         lockSkewingX: true,
-    //         lockSkewingY: true,
-    //         hasControls: false,
-    //         selectable:false,
-    //         lockMovementX: true,
-    //         lockMovementY: true,
-    //         //centeredScaling: true,
-    //         type: annoObj.type + 'Circle', 
-    //         owner: annoObj.id,
-    //     })
-    //     canvas.add(circle);
-    // }
-
-    // function eraseBrush() {
-        // const canvas = canvasObjRef.current;
-        // const annoObj = frameAnnotation[annoIdToDraw];
-        // const pos = canvas.getPointer();
-        // const circle = new fabric.Circle({
-        //     left: pos.x,  /////
-        //     top: pos.y,  /////
-        //     radius: brushThickness,
-        //     originX: 'center',
-        //     originY: 'center',
-        //     strokeWidth: 1,
-        //     strokeUniform: true,
-        //     stroke: 'black',
-        //     // fill: annoObj.color+'80',
-        //     lockScalingX: true,
-        //     lockScalingY: true,
-        //     lockRotation: true,
-        //     lockScalingFlip: true,
-        //     lockSkewingX: true,
-        //     lockSkewingY: true,
-        //     hasControls: false,
-        //     selectable:false,
-        //     lockMovementX: true,
-        //     lockMovementY: true,
-        //     //centeredScaling: true,
-        //     type: annoObj.type + 'Eraser', 
-        //     owner: annoObj.id,
-        // })
-        // circle.filters.push({color: annoObj.color+'80'});
-        // circle.applyFilters();
-        // canvas.add(circle);
-
-    // }
-
-
     function createKeyPoint(data, annoObjToDraw) {
         const canvas = canvasObjRef.current;
         // canvas.selection = false;
@@ -1627,7 +1556,8 @@ export default function Canvas(props) {
             console.log('before add path',canvasStr);
             // canvas.loadFromJSON(canvasStr);
             const prefix = canvasStr.search('objects');
-            const newCanvasStr = canvasStr.slice(0, prefix-1) + '"objects":[' + pathStr +canvasStr.slice(prefix+10); //+ ','
+            const newCanvasStr = canvasStr.slice(0, prefix-1) + '"objects":[' 
+                                    + pathStr +canvasStr.slice(prefix+10); //+ ','
             console.log('after add path',newCanvasStr);
             canvas.loadFromJSON(newCanvasStr,canvas.renderAll.bind(canvas));
             const pathes = canvas.getObjects();
@@ -1742,7 +1672,7 @@ export default function Canvas(props) {
 
 
     function removeObj() {
-        // remove obj from canvas, objListRef, remove idObj in parent
+        // remove obj from canvas, objListRef, remove annoObj in parent
         const canvas = canvasObjRef.current;
         const activeObj = canvas.getActiveObject();
         
@@ -1760,7 +1690,9 @@ export default function Canvas(props) {
             // const annotationList = {...props.frameAnnotation};
             // delete(annotationList[activeObj.id]);
             // props.setFrameAnnotation(annotationList);
-            delete(frameAnnotation[activeObj.id]);
+            const frameAnnoCopy = {...frameAnnotation};
+            delete(frameAnnoCopy[activeObj.id]);
+            setFrameAnnotation(frameAnnoCopy);
             
             canvas.remove(activeObj);
         }
