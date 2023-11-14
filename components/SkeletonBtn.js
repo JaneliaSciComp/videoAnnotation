@@ -98,9 +98,12 @@ export default function SkeletonBtn(props) {
     function addRadioToAnnotation(value) {
         // update radio value to annotation
         if (clicked) { // only if already activated draw mode
-            const annotation = {...frameAnnotation[annotationIdRef.current]};
-            annotation.data[skeletonLandmark][2]=value;
-            setFrameAnnotation({...frameAnnotation, [annotationIdRef.current]: annotation});
+            // const annotation = {...frameAnnotation[annotationIdRef.current]};
+            // annotation.data[skeletonLandmark][2]=value;
+            // setFrameAnnotation({...frameAnnotation, [annotationIdRef.current]: annotation});
+            
+            // directly modify frameAnno without using setFrameAnno to prevent trigger frameAnno useEffect in Canvas
+            frameAnnotation[annotationIdRef.current].data[skeletonLandmark][2]=value;
         }
     }
 

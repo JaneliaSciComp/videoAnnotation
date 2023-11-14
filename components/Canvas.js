@@ -271,12 +271,12 @@ export default function Canvas(props) {
         const obj = fabricObjListRef.current[id];
         if (obj) { // when select in AnnotationTable, annoObj may be Category, or may hasn't been finished, so doesn't have corresponding obj in fabricObjRef
             if (obj.type==='skeleton') {
+                Object.entries(obj.edges).forEach(([_, line])=>canvas.add(line));
                 obj.landmarks.forEach(l => {
                     if (l) { //if l is labelled
                         canvas.add(l);
                     };
                 });
-                Object.entries(obj.edges).forEach(([_, line])=>canvas.add(line));
             } else if (obj.type==='brush') {
                 obj.pathes.forEach( p => canvas.add(p));
             } else {
@@ -317,7 +317,7 @@ export default function Canvas(props) {
         canvas.skeletonLines = {};
         canvas.isDrawingSkeleton = null;
         
-        canvas.renderAll();
+        // canvas.renderAll();
 
         return ()=>{
             console.log('frameAnno return func')
@@ -327,7 +327,7 @@ export default function Canvas(props) {
 
 
     useEffect(() => {
-        console.log('canvas drawtype useEffect');
+        console.log('canvas drawtype useEffect', drawType);
         const canvas = canvasObjRef.current;
 
         if (!drawType) {
@@ -423,13 +423,13 @@ export default function Canvas(props) {
         // const annoObj = frameAnnotation[annoIdToDraw];
         canvas.isDrawingMode = true;
         canvas.freeDrawingBrush = new fabric.EraserBrush(canvas);
-        console.log('setEraserBrush');
+        // console.log('setEraserBrush');
         canvas.freeDrawingBrush.limitedToCanvasSize = true; //When `true`, the free drawing is limited to the whiteboard size
         canvas.freeDrawingBrush.width = brushThickness;
     }
 
     function pathCreateHandler(e) {
-        console.log('pathcreateHandler');
+        // console.log('pathcreateHandler');
         if (drawType==='brush') {
             e.path.selectable=false;
             e.path.erasable=true;
@@ -588,11 +588,11 @@ export default function Canvas(props) {
                 rle.push(count);
                 console.log(id, rle);
                 // fabricObjListRef.current[id].rle = rle;
-                // const annoObj = {...frameAnnotation[id]};
-                // annoObj.data = rle;
+                const annoObj = {...frameAnnotation[id]};
+                annoObj.data = rle;
                 // annoObj.first = first;
-                // setFrameAnnotation({...frameAnnotation, [id]: annoObj});
-                frameAnnotation[id].data = rle;
+                setFrameAnnotation({...frameAnnotation, [id]: annoObj});
+                // frameAnnotation[id].data = rle;
                 // frameAnnotation[id].first = first;
 
                 // //for testing
@@ -763,7 +763,7 @@ export default function Canvas(props) {
     function imageLoadHandler(){
         //When new video is loaded
         //scale frame size to fit in canvas 
-        // if (props.frameNum === 0) {
+        // if (frameNum === 0) {
         if (!frameNum) { //including frameNum==0 (new video), frameNum==null (image instead of video)
             imageObjRef.current.width = imgRef.current.width;
             imageObjRef.current.height = imgRef.current.height;
@@ -1031,20 +1031,17 @@ export default function Canvas(props) {
         if (canvas.isDraggingSkeletonPoint) { //when drag skeletonPoint, the if above also holds, so will update coord when drag skeletonPoint
             dragSkeletonPoint();
         }
-        // if (canvas.isErasing) {
-        //     eraseBrush();
-        // }
+       
     }
 
 
     function setActiveObjData(){
         /* retrieve canvas.activeObj, calculate its data (coordinates) relative to image
-           update its data in props.frameAnnotation, and parent's activeIdObj
+           update its data in frameAnnotation, and parent's activeIdObj
         */
         const canvas = canvasObjRef.current;
         const obj = canvas.activeObj;
-        let data = {};
-        let newAnnoObj = {};
+        let data;
         // console.log('setActiveObjData');
         switch (obj.type) {
             case 'keyPoint':
@@ -1060,10 +1057,10 @@ export default function Canvas(props) {
                 data = getSkeletonCoordToImage(obj);
                 break;
         }
-        newAnnoObj = {...frameAnnotation[obj.id], data: data}; 
-        // props.setFrameAnnotation({...props.frameAnnotation, [obj.id]: newIdObj});
-        frameAnnotation[obj.id] = newAnnoObj;
-        setActiveAnnoObj(newAnnoObj);
+        const newAnnoObj = {...frameAnnotation[obj.id], data: data}; 
+        setFrameAnnotation({...frameAnnotation, [obj.id]: newAnnoObj});
+        // frameAnnotation[obj.id] = newAnnoObj;
+        setActiveAnnoObj(newAnnoObj)
     }
 
 
@@ -1244,6 +1241,7 @@ export default function Canvas(props) {
     function finishDrawSkeleton() {
         // pass skeletonObj to fabricObjListRef
         // called by useEffect (monitor drawType)
+        console.log('finishDrawSkeleton called');
         const canvas = canvasObjRef.current;
         canvas.skeletonPoints.forEach(p => {p.lockMovementX=false; p.lockMovementY=false});
         const idToDraw = getIdToDraw();
@@ -1326,10 +1324,10 @@ export default function Canvas(props) {
             canvas.add(bboxObj).setActiveObject(bboxObj);
             addActiveIdObj(bboxObj);
         } else {
-            // const annotationList = {...props.frameAnnotation};
-            // delete(annotationList[idObj.id]);
-            // props.setFrameAnnotation(annotationList);
-            delete(frameAnnotation[idObj.id])
+            const annotationList = {...frameAnnotation};
+            delete(annotationList[idObj.id]);
+            setFrameAnnotation(annotationList);
+            // delete(frameAnnotation[idObj.id])
         }   
         canvas.bboxStartPosition = null;
         canvas.bboxEndPosition = null;
@@ -1683,13 +1681,13 @@ export default function Canvas(props) {
                 skeletonObj.landmarks.forEach(p => canvas.remove(p));
                 Object.entries(skeletonObj.edges).forEach(([_, line]) => canvas.remove(line));
                 delete(fabricObjListRef.current[annoId]);
-                delete(frameAnnotation[annoId]);
+                const frameAnnoCopy = {...frameAnnotation};
+                delete(frameAnnoCopy[annoId]);
+                setFrameAnnotation(frameAnnoCopy);
+                // delete(frameAnnotation[annoId]);
             }
         } else { // for other shapes
             delete(fabricObjListRef.current[activeObj.id]);
-            // const annotationList = {...props.frameAnnotation};
-            // delete(annotationList[activeObj.id]);
-            // props.setFrameAnnotation(annotationList);
             const frameAnnoCopy = {...frameAnnotation};
             delete(frameAnnoCopy[activeObj.id]);
             setFrameAnnotation(frameAnnoCopy);

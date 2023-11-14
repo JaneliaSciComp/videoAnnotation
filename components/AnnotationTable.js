@@ -6,10 +6,21 @@ import { useStates, useStateSetters } from './AppContext';
 
 
 export default function AnnotationTable(props) {
+    /**
+     * props:
+     *      //width: str or number. 200 or '20em'. Width of the content part table
+     *      height: str or number. 200 or '20em'. Height of the content part of table
+     *      size: 'small'/'middle'/'large'. default is 'small'
+     *      ellipsis: boolean. Whether to make columns ellipsis when text is too long.
+     * 
+     * 
+     */
+
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [tableData, setTableData] = useState([]);
     const [columns, setColumns] = useState([]);
     const [keysInTable, setKeysInTable] = useState([]); // changes when selection and filter
+    const [expandableConfig, setExpandableConfig] = useState([]);
 
     const frameUrlRef = useRef();
 
@@ -21,7 +32,8 @@ export default function AnnotationTable(props) {
     // const annoIdToShow = useStates().annoIdToShow;
     const setAnnoIdToShow = useStateSetters().setAnnoIdToShow; // to pass data to canvas according to currentKeys
     const annoIdToDraw = useStates().annoIdToDraw;
-   
+
+
 
     useEffect(() => {
         console.log('annoTable useEffect', frameAnnotation, tableData, frameUrl, frameUrlRef.current);
@@ -35,6 +47,7 @@ export default function AnnotationTable(props) {
                         key: id,
                         label: annoObj.label,
                         type: annoObj.type,
+                        data: JSON.stringify(annoObj.data),
                     }
                 }
             )
@@ -72,11 +85,33 @@ export default function AnnotationTable(props) {
                 console.log(data);
                 newSelectedKeys = selectedRowKeys.filter(key => key!==idDeleted);
                 newKeysInTable = keysInTable.filter(key => key!==idDeleted);
-            } else { // other modification on frameAnno or annoIdToDraw (canvas or annoBtn)
-                newSelectedKeys = selectedRowKeys;
-                newKeysInTable = keysInTable;
+            } else { 
+                // 1. other modification on frameAnno or annoIdToDraw (canvas or annoBtn)
+                // 2. when clearUnfinishedAnnoObj() and create new AnnoObj happen
+                //    clearUnfinishedAnnoObj() can only remove one annoObj when create one new, 
+                //    so the other two conditions (>,<) won't happen
+                const idAdded = newFrameKeys.filter(key => !frameKeysSet.has(key))[0];
+                const idDeleted = frameKeys.filter(key => !newFrameKeysSet.has(key))[0];
+                if (idAdded && idDeleted) { // 2
+                    data.push({
+                        key: idAdded,
+                        label: frameAnnotation[idAdded].label,
+                        type: frameAnnotation[idAdded].type,
+                    });
+                    data = data.filter(obj => obj.key != idDeleted);
+                    newSelectedKeys = [...selectedRowKeys];
+                    newSelectedKeys.push(idAdded);
+                    newSelectedKeys = newSelectedKeys.filter(key => key!==idDeleted);
+                    newKeysInTable = [...keysInTable];
+                    newKeysInTable.push(idAdded);
+                    newKeysInTable = newKeysInTable.filter(key => key!==idDeleted);
+                } else { // 1
+                    newSelectedKeys = selectedRowKeys;
+                    newKeysInTable = keysInTable;
+                }
+                console.log(data);
             }
-            
+            data = data.map(obj => { return {...obj, data: JSON.stringify(frameAnnotation[obj.key]?.data)}});
             setSelectedRowKeys(newSelectedKeys);
             setKeysInTable(newKeysInTable);
         }
@@ -117,6 +152,7 @@ export default function AnnotationTable(props) {
                 filters: labelFilters,
                 onFilter: (value, record) => record.label === value ,
                 sorter: (a, b) => a.label.localeCompare(b.label),
+                ellipsis: props.ellipsis
             },
             {
                 title: 'Type',
@@ -124,6 +160,7 @@ export default function AnnotationTable(props) {
                 filters: typeFilters,
                 onFilter: (value, record) => record.type === value ,
                 sorter: (a, b) => a.label.localeCompare(b.label),
+                ellipsis: props.ellipsis
             },
             {
                 title: 'Delete',
@@ -139,6 +176,12 @@ export default function AnnotationTable(props) {
                 },
         ]
         setColumns(col);
+
+        // config expandable
+        setExpandableConfig({
+            expandedRowRender: (record) => <p style={{margin: '0', maxHeight: '6em', overflowY: 'auto'}}>{record.data}</p>,
+            rowExpandable: (record) => record.data,
+        });
     }, [frameAnnotation, annoIdToDraw])
 
 
@@ -198,12 +241,14 @@ export default function AnnotationTable(props) {
 
     return (
         <Table 
-            size = 'small'
+            size = {props.size ? props.size : 'small'}
             rowSelection={rowSelection} 
             columns={columns} 
             dataSource={tableData} 
             pagination={false}
             onChange={onChange}
+            scroll={{y: props.height, scrollToFirstRowOnChange: true}}
+            expandable={expandableConfig}
             />
     )
     

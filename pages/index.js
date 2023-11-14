@@ -113,7 +113,7 @@ export default function Home() {
         <Row >
           <Col>
             
-            <Category label='chase'/>
+            <Category label='chase-safdadfsafafdasfafasdfadfsafaffsda'/>
             <ShapeBtn type='bbox' label='fly-bbox' color='red' />
             <ShapeBtn type='polygon' label='fly-poly' color='red' />
             <BtnContainer />
@@ -131,7 +131,7 @@ export default function Home() {
             <Canvas width={300} height={200}/>
           </Col>
           <Col>
-            <AnnotationTable />
+            <AnnotationTable width={100} height={200} ellipsis/>
           </Col>
         
         </Row>
