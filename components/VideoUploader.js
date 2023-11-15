@@ -2,7 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 // import { saveAs } from 'file-saver';
 // import JSZip from "jszip";
 import styles from '../styles/Video.module.css';
-import { InputNumber, Slider } from 'antd';
+import { InputNumber, Slider, Space } from 'antd';
 import { CaretRightOutlined, PauseOutlined } from '@ant-design/icons';
 import {Row, Col, Form, Button} from 'react-bootstrap';
 import { useStateSetters } from './AppContext';
@@ -205,8 +205,8 @@ export default function VideoUploader(props) {
     return (
         <div className={styles.videoUploaderContainer}>
             {/* <input type='file' id='videoInput' accept='.jpg, .mp4, .mov, .avi' onChange={submitVideoHandler}></input> */}
-            <Row >
-                <Col sm={5} className='mt-2 '>
+            <Row className={styles.videoPlayControlContainer}>
+                <Col sm={3} className='px-0'>
                     <span className='me-1'>FPS</span>
                     <InputNumber className={styles.playFpsInput} 
                         min={totalFrameCount==0 ? 0 : 1}
@@ -214,8 +214,6 @@ export default function VideoUploader(props) {
                         value={playFps}
                         onChange={playFpsInputChangeHandler}
                         size="small"/>
-                    <CaretRightOutlined className=' ms-1' onClick={playClickHandler}/>
-                    <PauseOutlined className=' ms-1' onClick={pauseClickHandler} />
                     <InputNumber className={styles.sliderValueInput} size='small'
                         min={0}
                         max={totalFrameCount}
@@ -224,14 +222,24 @@ export default function VideoUploader(props) {
                         onChange={inputNumerChangeHandler}
                         />
                 </Col>
-                <Col sm={7}>
-                    <Slider className='ms-1'
-                        min={0}
-                        max={totalFrameCount}
-                        marks={{0:'0', [totalFrameCount]:`${totalFrameCount}`}}
-                        onChange={sliderChangeHandler}
-                        value={sliderValue}
-                        />
+                <Col sm={9} className='px-0'>
+                    <div className={styles.videoBtnSliderContainer}>
+                        <div className={styles.videoBtnContainer}>
+                            <CaretRightOutlined className=' ms-1' onClick={playClickHandler}/>
+                            <PauseOutlined className=' ms-1' onClick={pauseClickHandler} />
+                        </div>
+                        <div className={styles.videoSliderContainer}>
+                            <span className={styles.sliderMark}>0</span>
+                            <Slider className={styles.videoSlider}
+                                min={0}
+                                max={totalFrameCount}
+                                // marks={{0:'0', [totalFrameCount]:`${totalFrameCount}`}}
+                                onChange={sliderChangeHandler}
+                                value={sliderValue}
+                                />
+                            <span className={styles.sliderMark}>{totalFrameCount}</span>
+                        </div>
+                    </div>
                 </Col>
             </Row>
             {submitError ?

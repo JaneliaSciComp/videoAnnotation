@@ -285,18 +285,6 @@ export default function Canvas(props) {
         } 
     }
 
-    
-    // useEffect(() => {
-    //     //when frame changes, update objects on canvas
-    //     if (Object.keys(fabricObjListRef.current).length>0) {
-    //         Object.keys(fabricObjListRef.current).forEach(id => 
-    //             canvasObjRef.current.remove(fabricObjListRef.current[id]));
-    //         fabricObjListRef.current = {};
-    //     }
-
-    //     // createFabricObjBasedOnAnnotation();
-    //   }, [frameAnnotation]
-    // )
 
     useEffect(() => {
         console.log('frameAnno useEffect');
