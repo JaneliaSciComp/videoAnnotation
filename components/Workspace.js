@@ -49,6 +49,8 @@ export default function Workspace(props) {
     const [btnConfigData, setBtnConfigData] = useState({});
     const [btnGroups, setBtnGroups] = useState();
     // const [projectType, setProjectType] = useState('image'); //'image' or 'video'
+    const [frameNumSignal, setFrameNumSignal] = useState(); // Chart use it to tell VideoUploader which frame to go to
+
 
     console.log('workspace render');
 
@@ -70,6 +72,7 @@ export default function Workspace(props) {
         btnGroups: btnGroups,
         annotationRef: annotationRef,
         // projectType: projectType,
+        frameNumSignal: frameNumSignal,
     }
 
     const stateSetters = {
@@ -89,6 +92,7 @@ export default function Workspace(props) {
         setBtnConfigData: setBtnConfigData,
         setBtnGroups: setBtnGroups,
         // setProjectType: setProjectType,
+        setFrameNumSignal: setFrameNumSignal,
     }
 
     useEffect(()=> {

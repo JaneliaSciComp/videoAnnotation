@@ -14,6 +14,7 @@ import BtnGroup from '../components/BtnGroup.js';
 import BrushBtn from '../components/BrushBtn.js';
 import BrushTool from '../components/BrushTool.js';
 import AnnotationTable from '../components/AnnotationTable.js';
+import Chart from '../components/Chart.js';
 import {Row, Col} from 'react-bootstrap';
 
 
@@ -136,6 +137,7 @@ export default function Home() {
         
         </Row>
         <VideoUploader />
+        <Chart />
       </Workspace>
     </div>
   )

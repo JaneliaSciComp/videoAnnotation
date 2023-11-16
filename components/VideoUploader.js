@@ -5,7 +5,7 @@ import styles from '../styles/Video.module.css';
 import { InputNumber, Slider, Space } from 'antd';
 import { CaretRightOutlined, PauseOutlined } from '@ant-design/icons';
 import {Row, Col, Form, Button} from 'react-bootstrap';
-import { useStateSetters } from './AppContext';
+import { useStates, useStateSetters } from './AppContext';
 
 
 const FRAME_URL_ROOT = 'http://localhost:8000/api/frame';
@@ -22,14 +22,20 @@ export default function VideoUploader(props) {
     const [frameError, setFrameError] = useState();
     const playInterval = useRef(null);
 
+    // context
     const setFrameUrl = useStateSetters().setFrameUrl;
     const setFrameNum = useStateSetters().setFrameNum;
     const setVideoId = useStateSetters().setVideoId;
+    const frameNumSignal = useStates().frameNumSignal;
 
 
     console.log('VideoUploader render');
 
-
+    useEffect(() => {
+        if (frameNumSignal) {
+            setFrame(frameNumSignal);
+        }
+    }, [frameNumSignal])
     
 
     useEffect(()=>{
