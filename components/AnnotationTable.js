@@ -8,8 +8,9 @@ import { useStates, useStateSetters } from './AppContext';
 export default function AnnotationTable(props) {
     /**
      * props:
-     *      //width: str or number. 200 or '20em'. Width of the content part table
-     *      height: str or number. 200 or '20em'. Height of the content part of table
+     *      width: str or number. 200 or '20em'. Width of the table
+     *      height: str or number. 200 or '20em'. Height of the table
+     *      scrollY: str or number. 200 or '20em'. Height of the contents part (excluding header row) of table
      *      size: 'small'/'middle'/'large'. default is 'small'
      *      ellipsis: boolean. Whether to make columns ellipsis when text is too long.
      * 
@@ -36,7 +37,7 @@ export default function AnnotationTable(props) {
 
 
     useEffect(() => {
-        console.log('annoTable useEffect', frameAnnotation, tableData, frameUrl, frameUrlRef.current);
+        // console.log('annoTable useEffect', frameAnnotation, tableData, frameUrl, frameUrlRef.current);
         let data;
         if (frameUrl !== frameUrlRef.current) { // when switch frame
             // console.log('if called');
@@ -82,7 +83,7 @@ export default function AnnotationTable(props) {
                 const idDeleted = frameKeys.filter(key => !newFrameKeysSet.has(key))[0];
                 // console.log('idDeleted', idDeleted, !newFrameKeysSet.has(idDeleted), tableData, frameAnnotation);
                 data = data.filter(obj => obj.key != idDeleted);
-                console.log(data);
+                // console.log(data);
                 newSelectedKeys = selectedRowKeys.filter(key => key!==idDeleted);
                 newKeysInTable = keysInTable.filter(key => key!==idDeleted);
             } else { 
@@ -240,16 +241,19 @@ export default function AnnotationTable(props) {
 }
 
     return (
-        <Table 
-            size = {props.size ? props.size : 'small'}
-            rowSelection={rowSelection} 
-            columns={columns} 
-            dataSource={tableData} 
-            pagination={false}
-            onChange={onChange}
-            scroll={{y: props.height, scrollToFirstRowOnChange: true}}
-            expandable={expandableConfig}
-            />
+        <div style={{width: `${props.width}px`, height: `${props.height}px`}}>
+            <Table 
+                size = {props.size ? props.size : 'small'}
+                rowSelection={rowSelection} 
+                columns={columns} 
+                dataSource={tableData} 
+                pagination={false}
+                onChange={onChange}
+                scroll={{y: props.scrollY, scrollToFirstRowOnChange: true}}
+                expandable={expandableConfig}
+                />
+        </div>
+        
     )
     
 

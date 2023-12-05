@@ -11,11 +11,17 @@
     opacity: 0.6;
 }
 
-.btn-category:active {
+.btn-category :active {
     color: white !important;
     background: black !important;
     transform: translateY(3px);
 }
+
+/* .btn-save:active {
+    color: white !important;
+    background: black !important;
+    transform: translateY(3px);
+} */
 
 .brushBtnContainer {
     max-width: 400px;

@@ -13,9 +13,9 @@ import {Row, Col, Button} from 'react-bootstrap';
 import BtnGroup from './BtnGroup';
 import BrushTool from './BrushTool';
 // import BtnGroupController from './BtnGroupController';
-import Design from './Design';
+import Design from './BtnConfiguration';
 import { StatesProvider } from './AppContext';
-// import { clearUnfinishedAnnotation } from '../utils/utils';
+import { clearUnfinishedAnnotation } from '../utils/utils';
 
 
 export default function Workspace(props) {
@@ -25,7 +25,7 @@ export default function Workspace(props) {
      *      url: image url or video url // or put this in Canvas
      */
     const [videoId, setVideoId] = useState();
-    const [frameUrl, setFrameUrl] = useState('/fly.png'); //'/fly.png'
+    const [frameUrl, setFrameUrl] = useState(); //'/fly.png'
     const [frameNum, setFrameNum] = useState();
     const prevFrameNum = useRef();
     const annotationRef = useRef({});
@@ -50,7 +50,7 @@ export default function Workspace(props) {
     const [btnGroups, setBtnGroups] = useState();
     // const [projectType, setProjectType] = useState('image'); //'image' or 'video'
     const [frameNumSignal, setFrameNumSignal] = useState(); // Chart use it to tell VideoUploader which frame to go to
-
+    const [save, setSave] = useState(false);
 
     console.log('workspace render');
 
@@ -73,6 +73,7 @@ export default function Workspace(props) {
         annotationRef: annotationRef,
         // projectType: projectType,
         frameNumSignal: frameNumSignal,
+        save: save,
     }
 
     const stateSetters = {
@@ -93,7 +94,24 @@ export default function Workspace(props) {
         setBtnGroups: setBtnGroups,
         // setProjectType: setProjectType,
         setFrameNumSignal: setFrameNumSignal,
+        setSave: setSave,
     }
+
+
+    useEffect(()=> {
+        if (save) {
+            const annoCopy = clearUnfinishedAnnotation(frameAnnotation);
+            annotationRef.current[frameNum] = annoCopy;
+            const json = JSON.stringify(annotationRef.current);
+            const a = document.createElement("a");
+            const file = new Blob([json], {type: 'text/plain'});
+            a.href = URL.createObjectURL(file);
+            a.download = 'annotations.json';
+            a.click();
+            URL.revokeObjectURL(a.href);
+            setSave(false);
+        }
+    }, [save])
 
     useEffect(()=> {
         if (props.btnConfigData) {
@@ -222,8 +240,8 @@ export default function Workspace(props) {
 
 
     function addAnnotationObj(idObj) {
-        // setFrameAnnotation({...frameAnnotation, [idObj.id]: idObj});
-        frameAnnotation[idObj.id] = idObj; 
+        setFrameAnnotation({...frameAnnotation, [idObj.id]: idObj});
+        // frameAnnotation[idObj.id] = idObj; 
     }
 
 
@@ -248,7 +266,7 @@ export default function Workspace(props) {
 
 
     function renderBtnGroup() {
-        console.log(btnConfigData);
+        // console.log(btnConfigData);
         const groupIndices = Object.keys(btnConfigData).sort((a, b) => Number(a)-Number(b));
         const groups = []; 
         let k = 0;

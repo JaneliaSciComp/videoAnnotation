@@ -137,7 +137,7 @@ export default function Canvas(props) {
                 imgRef.current.removeEventListener("load", imageLoadHandler);
             }
         }
-      }, [useStates()] /////check if these are enough
+      }, [useStates()] /////check 
     )
 
 
@@ -151,7 +151,7 @@ export default function Canvas(props) {
     }, [annoIdToDelete])
 
     useEffect(() => {
-        console.log('annoIdToShow useEffect', annoIdToShow);
+        // console.log('annoIdToShow useEffect', annoIdToShow);
         // only show selected obj on canvas when select annoObj in AnnotationTable
         // const annoIdToShowSet =  new Set(annoIdToShow);
         Object.keys(fabricObjListRef.current).forEach(id => {
@@ -235,7 +235,7 @@ export default function Canvas(props) {
 
         // recreate path obj before img load for less work
         createPathes();
-        console.log(canvas.getObjects());
+        // console.log(canvas.getObjects());
 
         // update image when url changes
         if (frameUrl) {
@@ -287,7 +287,7 @@ export default function Canvas(props) {
 
 
     useEffect(() => {
-        console.log('frameAnno useEffect');
+        console.log('frameAnno useEffect', frameAnnotation);
         // // sometimes frameAnnotation changes before img load handler is called
         // // so put createFabricObj here. It will check current frameAnno has the same frameNum as the updated frameNum
         // createFabricObjBasedOnAnnotation(); // doesn't work, will be called everytime clicking on anno btn, result in error
@@ -459,7 +459,7 @@ export default function Canvas(props) {
 
 
     async function getBrushData() {
-        console.log('get brush data');
+        console.log('get brush data', frameAnnotation);
         const canvas = canvasObjRef.current;
         canvas.discardActiveObject(); //remove active object's control border
         
@@ -523,7 +523,7 @@ export default function Canvas(props) {
                 const pixelData = offscreenData.data;
                 const pixelDataFiltered = new Uint8ClampedArray(offscreenData.data); //for testing
                 const rle = [];
-                let first;
+                // let first;
                 // const [r,g,b] = convertColorHexToBit(frameAnnotation[annoIdToDraw].color); 
                 // const alpha = (props.alpha ? props.alpha : defaultAlpha) * 255;
                 // console.log('rgb', r, g, b);
@@ -576,12 +576,11 @@ export default function Canvas(props) {
                 rle.push(count);
                 console.log(id, rle);
                 // fabricObjListRef.current[id].rle = rle;
-                const annoObj = {...frameAnnotation[id]};
-                annoObj.data = rle;
-                // annoObj.first = first;
-                setFrameAnnotation({...frameAnnotation, [id]: annoObj});
-                // frameAnnotation[id].data = rle;
-                // frameAnnotation[id].first = first;
+                // const annoObj = {...frameAnnotation[id]};
+                // annoObj.data = rle;
+                // console.log(frameAnnotation);
+                // setFrameAnnotation({...frameAnnotation, [id]: annoObj});
+                frameAnnotation[id].data = rle;
 
                 // //for testing
                 console.log(rle.reduce((res, count) => res+count, 0), img.width*img.height);
@@ -709,7 +708,7 @@ export default function Canvas(props) {
             console.log(canvas.getObjects());
             canvas.getObjects().forEach(obj=>{
                 if (obj.id || obj.owner) { // path, keypoint, rect, polygon obj have id, circle,line obj have owner
-                    console.log(obj);
+                    // console.log(obj);
                     canvas.bringToFront(obj);
                 }
             });
@@ -1195,23 +1194,25 @@ export default function Canvas(props) {
         canvas.add(landmark).setActiveObject(landmark);
         
         //create edges
-        const neighbors = edgesInfo.edges[skeletonLandmark];
-        const edgeColor = edgesInfo.color;
-        const edgeInfo = {
-            id: idToDraw,
-            type: landmarkToDraw.btnType,
-            color: edgeColor,
-        }
-        // console.log('edge',edgeInfo);
-        canvas.skeletonPoints.forEach(p => {
-            if (neighbors.has(p.index)) {
-                const line = createLine(p.getCenterPoint(), landmark.getCenterPoint(), edgeInfo);
-                canvas.add(line);
-                canvas.bringToFront(landmark);
-                canvas.bringToFront(p);
-                canvas.skeletonLines[`${p.index}-${landmark.index}`] = line;
+        if (edgesInfo?.edges) {
+            const neighbors = edgesInfo.edges[skeletonLandmark];
+            const edgeColor = edgesInfo.color;
+            const edgeInfo = {
+                id: idToDraw,
+                type: landmarkToDraw.btnType,
+                color: edgeColor,
             }
-        })
+            // console.log('edge',edgeInfo);
+            canvas.skeletonPoints.forEach(p => {
+                if (neighbors.has(p.index)) {
+                    const line = createLine(p.getCenterPoint(), landmark.getCenterPoint(), edgeInfo);
+                    canvas.add(line);
+                    canvas.bringToFront(landmark);
+                    canvas.bringToFront(p);
+                    canvas.skeletonLines[`${p.index}-${landmark.index}`] = line;
+                }
+            })
+        }
 
         canvas.skeletonPoints[skeletonLandmark] = (landmark); // must be after creating edges
 
@@ -1479,18 +1480,20 @@ export default function Canvas(props) {
                 canvas.add(landmark);
                 landmarksDrawn[i] = landmark;
     
-                const neighbors = edgesInfo.edges[i];
-                const edgeColor = edgesInfo.color;
-                const edgeInfo = {
-                    id: id,
-                    type: landmarksToDraw[i].btnType,
-                    color: edgeColor,
-                }
-                for (let n=0; n<i; n++) {
-                    if (landmarksDrawn[n] && neighbors.has(n)) { // the landmark is labelled and is a neighbor
-                        const line = createLine(point, points[n], edgeInfo);
-                        canvas.add(line);
-                        edgesDrawn[`${landmarksDrawn[n].index}-${landmark.index}`] = line;
+                if (edgesInfo?.edges) {
+                    const neighbors = edgesInfo.edges[i];
+                    const edgeColor = edgesInfo.color;
+                    const edgeInfo = {
+                        id: id,
+                        type: landmarksToDraw[i].btnType,
+                        color: edgeColor,
+                    }
+                    for (let n=0; n<i; n++) {
+                        if (landmarksDrawn[n] && neighbors.has(n)) { // the landmark is labelled and is a neighbor
+                            const line = createLine(point, points[n], edgeInfo);
+                            canvas.add(line);
+                            edgesDrawn[`${landmarksDrawn[n].index}-${landmark.index}`] = line;
+                        }
                     }
                 }
             }

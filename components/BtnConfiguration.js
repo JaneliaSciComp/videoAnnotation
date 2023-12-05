@@ -11,7 +11,7 @@ import { useStateSetters, useStates } from './AppContext';
 const BTNGROUPNUM_MAX=50
 
 
-export default function Design(props) {
+export default function BtnConfiguration(props) {
     /**
      * Produce btnGroup data: 
         {
@@ -59,6 +59,7 @@ export default function Design(props) {
     // const [children, setChildren] = useState([]);
     // const [skeletonData, setSkeletonData] = useState({});
     const [getData, setGetData] = useState({}); // {btnGroupIndex1: false, index2: false, ...}
+    const [hide, setHide] = useState();
 
     // get context
     const btnConfigData = useStates().btnConfigData;
@@ -136,6 +137,8 @@ export default function Design(props) {
         }
         console.log(newGetData)
         setGetData(newGetData);
+        setHide(true);
+
 
         if (props.onCreateBtnClick) {
             props.onCreateBtnClick({...btnConfigData});
@@ -166,7 +169,8 @@ export default function Design(props) {
 
 
     return (
-        <div className={styles.designContainer}>
+        <div className={styles.designContainer} 
+                style={{display: hide?'none':'block'}}>
             <p className='my-2'>Customize Annotation Buttons</p>
             {/* <ConfigProvider configData={data} configDataSetter={setData}> */}
                 <Space direction='vertical'>

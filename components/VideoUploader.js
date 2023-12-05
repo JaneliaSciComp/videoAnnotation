@@ -205,7 +205,7 @@ export default function VideoUploader(props) {
     }
 
 
-
+//value='/Users/pengxi/video/numbered.mp4' 
 
 
     return (
@@ -256,7 +256,7 @@ export default function VideoUploader(props) {
                     <Form.Group as={Row} controlId='videoPath'>
                         <Form.Label column sm={2}>Video path</Form.Label>
                         <Col sm={6}>
-                            <Form.Control type='string' value='/Users/pengxi/video/numbered.mp4' name='video_path' placeholder='E.g. /somePath/videoName.avi' required />
+                            <Form.Control type='string' name='video_path' placeholder='E.g. /somePath/videoName.avi' required />
                             <Form.Control.Feedback type='invalid'>Please provide video path in your local computer, e.g. /somePath/videoName.avi</Form.Control.Feedback>
                             {submitError ?
                             <p >{submitError}</p>

@@ -1,42 +1,27 @@
-import Head from 'next/head';
 import React from 'react';
+import Head from 'next/head';
 import Workspace from '../components/Workspace.js';
 import ShapeBtn from '../components/ShapeBtn.js';
-import styles from '../styles/Home.module.css';
-import 'bootstrap/dist/css/bootstrap.min.css';
 import Category from '../components/Category.js';
 import SkeletonBtn from '../components/SkeletonBtn.js';
 import Canvas from '../components/Canvas.js';
 import VideoUploader from '../components/VideoUploader.js';
-import AnnotationDisplay from '../components/AnnotationDisplay.js';
-import Design from '../components/Design.js';
+import ActiveAnnotation from '../components/ActiveAnnotation.js';
+import BtnConfiguration from '../components/BtnConfiguration.js';
 import BtnGroupController from '../components/BtnGroupController';
-
-// import {fabric} from 'fabric';
+import BtnContainer from '../components/BtnContainer.js';
+import BtnGroup from '../components/BtnGroup.js';
+import BrushBtn from '../components/BrushBtn.js';
+import BrushTool from '../components/BrushTool.js';
+import AnnotationTable from '../components/AnnotationTable.js';
+import Chart from '../components/Chart.js';
+import SaveBtn from '../components/SaveBtn.js';
+import {Row, Col} from 'react-bootstrap';
 
 
 
 export default function Home() {
-  // const [annotation, setAnnotation] = useState({});
-  // const imgRef = useRef(null);
-  // const canvasRef = useRef(null);
   
-  // useEffect(()=>{
-  //   // if (props.opencvReady) {
-  //     imgRef.current.src = '/fly.png';
-  //     imgRef.current.onload = () => {
-  //       let mat = cv.imread(imgRef.current);
-  //       console.log('worked');
-  //       cv.imshow(canvasRef.current.id, mat);
-  //       mat.delete();
-  //       // cv.save(mat, 'output.png');
-  //     }    
-  //   // }
-    
-  // }
-  // // , [props.opencvReady]
-  // )
-
   const groupData = {
     groupIndex:'123',
     groupType: 'shape',
@@ -57,7 +42,6 @@ export default function Home() {
             },
     ]
   }
-  
   const btnConfigData = {'123456': {
     groupType: 'skeleton',
     btnType: 'skeleton',
@@ -113,9 +97,7 @@ export default function Home() {
     }
 }}
 
-// /Users/pengxi/video/numbered.mp4
-  
-
+//btnConfigData={btnConfigData}
 
   return (
     <div>
@@ -124,27 +106,38 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main>
-      
-        <Workspace btnConfigData={btnConfigData}>
-          <Category label='c' color='blue'/>
-          <ShapeBtn type='keyPoint' label='k' color='blue' />
-          <ShapeBtn type='bbox' label='mouse' color='red' />
-          <ShapeBtn type='polygon' label='p' color='red' />
-          <SkeletonBtn
-              groupIndex={Object.keys(btnConfigData)[0]}
-              data={btnConfigData[Object.keys(btnConfigData)[0]].childData}
-              />
-          
-          <AnnotationDisplay />
-          <Canvas />
-          <VideoUploader />
-        </Workspace>
-      </main>
-
-      <footer className={styles.footer}>
-       
-      </footer>
+      <Workspace> 
+        {/* <Category label='chase'/>
+        <ShapeBtn type='bbox' label='fly' color='red' /> */}
+        {/* <BtnGroup data={groupData} /> */}
+        {/* <BtnGroupController /> */}
+        <BtnConfiguration />
+        <Row >
+          <Col>
+            <Category label='chase'/>
+            <ShapeBtn type='bbox' label='fly-bbox' color='red' />
+            <ShapeBtn type='polygon' label='cat-plg' color='blue' />
+            <BtnContainer />
+            {/* <BrushTool />
+            <BrushBtn label='mouse' />
+            <BrushBtn label='fly' color='#FF0000' /> */}
+          </Col>
+          <Col>
+            {/* <ActiveAnnotation /> */}
+            <SaveBtn />
+          </Col>
+        </Row>
+        <Row >
+          <Col>
+            <Canvas width={400} height={300}/>
+          </Col>
+          <Col>
+            <AnnotationTable width={100} height={300} ellipsis/>
+          </Col>
+        </Row>
+        <VideoUploader />
+        {/* <Chart /> */}
+      </Workspace>
     </div>
   )
 }

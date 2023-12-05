@@ -79,8 +79,8 @@ export const btnTypeOptions = {
 }
 
 export const crowdSelectOptions = [
-    {value: 'yes', label: 'Has Crowd Option'},
-    {value: 'no', label: 'No Crowd Option'},
+    {value: 'yes', label: 'Yes'},
+    {value: 'no', label: 'No'},
 ]
 
 
