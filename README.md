@@ -2,7 +2,7 @@
 
 ## Quick Start
 
-We will use React, Next.js and our library to create a simply video annotation web like this:
+We will use ***React, Next.js*** and our library to create a simple video annotation web like this:
 
 ![web_page.png](/public/web_page.png)
 
@@ -30,7 +30,7 @@ Answer the popup questions. For my test, I used these settings. You can also cus
 > [!NOTE]
 > This step will be replace by `npm install ourLib` after we release this library
 
-Copy package.json, components, utils and styles folders from this repo to your root dir.
+Copy ***package.json, components, utils*** and ***styles*** folders from this repo to your root dir.
 
 Go to the root dir of your project, and install the dependencies.
 ```bash
@@ -97,6 +97,7 @@ The page should look like this:
 
 > [!NOTE]
 > The `<BtnConfiguration>` component will disapear after creating the buttons.
+> In order to process the video, you also need to set up a backend server. We will cover this later.
 
 Here we used react-bootstrap for the layout. Check the tutorial [here](https://react-bootstrap.netlify.app/docs/layout/grid/#auto-layout-columns).
 
