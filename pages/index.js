@@ -17,7 +17,8 @@ import AnnotationTable from '../components/AnnotationTable.js';
 import Chart from '../components/Chart.js';
 import SaveBtn from '../components/SaveBtn.js';
 import TrainBtn from '../components/TrainBtn.js';
-import {Row, Col} from 'react-bootstrap';
+import {Container, Row, Col} from 'react-bootstrap';
+import 'bootstrap/dist/css/bootstrap.min.css';
 
 
 
@@ -51,27 +52,25 @@ export default function Home() {
           btnType='skeleton'
           disableGroupTypeSelect
           disableBtnTypeSelect/>
-        
-        <Row>
-          <Col xl='auto'>
-            <canvas width={350} height={200} style={{border: 'solid'}}/>
-            <AnnotationTable width={350} height={200} scrollY={160} ellipsis />
-            <BtnContainer />
-            <div style={{textAlign: 'center'}}>
-              <SaveBtn />
-              <TrainBtn onClick={()=>{console.log('TrainBtn clicked')}}/>
-            </div>
-            
-          </Col>
-          <Col xl='auto'>
-            <Canvas width={700} height={500} />
-            <div className='mx-2'>
+      
+        {/* <Container > */}
+          <Row>
+            <Col xl='auto'>
+              <canvas width={350} height={200} style={{border: 'solid'}}/>
+              <AnnotationTable width='350px' height='200px' scrollY={160} ellipsis />
+              <BtnContainer />
+              <div style={{textAlign: 'center'}}>
+                <SaveBtn />
+                <TrainBtn onClick={()=>{console.log('TrainBtn clicked')}}/>
+              </div>
+              
+            </Col>
+            <Col xl='auto'>
+              <Canvas width={700} height={500} />
               <VideoUploader />
-            </div>
-            
-          </Col>
-        </Row>
-
+            </Col>
+          </Row>
+        {/* </Container> */}
       </Workspace>
     </div>
   )

@@ -1,5 +1,5 @@
-import 'bootstrap/dist/css/bootstrap.min.css';
 import React, {useState, useEffect, useRef} from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
 import styles from '../styles/Workspace.module.css';
 import Canvas from './Canvas';
 // import BoundingBox from './BoundingBox';

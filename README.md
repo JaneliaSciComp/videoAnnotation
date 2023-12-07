@@ -37,6 +37,7 @@ Go to the root dir of your project, and install the dependencies.
 npm install
 ```
 
+
 ### Step 3: Run the development server
 
 ```bash
@@ -44,6 +45,7 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+
 
 
 ### Step 4: Modifying `pages/index.js` 
@@ -61,7 +63,8 @@ import BtnConfiguration from '../components/BtnConfiguration.js';
 import AnnotationTable from '../components/AnnotationTable.js';
 import SaveBtn from '../components/SaveBtn.js';
 import TrainBtn from '../components/TrainBtn.js';
-import {Row, Col} from 'react-bootstrap'; // for layout
+import {Container, Row, Col} from 'react-bootstrap'; // for layout
+
 
 export default function Home() {
   return (
@@ -73,20 +76,18 @@ export default function Home() {
           disableBtnTypeSelect/>
         
         <Row>
-          <Col xl='auto'>
-            <canvas width={350} height={200} style={{border: 'solid'}}/>
-            <AnnotationTable width={350} height={200} scrollY={160} ellipsis />
-            <BtnContainer />
-            <SaveBtn />
-            <TrainBtn onClick={()=>{console.log('TrainBtn clicked')}}/>
-            
-          </Col>
-          <Col xl='auto'>
-            <Canvas width={700} height={500} />
-            <VideoUploader />
-          </Col>
+            <Col >
+                <canvas width={350} height={200} style={{border: 'solid'}}/>
+                <AnnotationTable width={350} height={200} scrollY={160} ellipsis />
+                <BtnContainer />
+                <SaveBtn />
+                <TrainBtn />
+            </Col>
+            <Col >
+                <Canvas width={500} height={500} />
+                <VideoUploader />
+            </Col>
         </Row>
-
     </Workspace>
   )
 }
@@ -97,8 +98,9 @@ The page should look like this:
 
 > [!NOTE]
 > The `<BtnConfiguration>` component will disapear after creating the buttons.
+
 > In order to process the video, you also need to set up a backend server. We will cover this later.
 
-Here we used react-bootstrap for the layout. Check the tutorial [here](https://react-bootstrap.netlify.app/docs/layout/grid/#auto-layout-columns).
+Here we used react-bootstrap for the layout. Check out the [tutorial](https://react-bootstrap.netlify.app/docs/layout/grid/#auto-layout-columns).
 
 
