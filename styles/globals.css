@@ -26,6 +26,13 @@ a {
   overflow-x: hidden;
 }
 
+.ant-btn-compact-first-item {
+  width: 6em;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
 /* @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;

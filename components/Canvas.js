@@ -670,7 +670,7 @@ export default function Canvas(props) {
 
     function createFabricObjBasedOnAnnotation() {
         const canvas = canvasObjRef.current;
-        console.log(canvas.getObjects());
+        // console.log(canvas.getObjects());
         // console.log(frameNum, annotationRef.current);
         const nextFrameAnno = annotationRef.current[frameNum];
         if (nextFrameAnno && Object.keys(nextFrameAnno).length>0) {
@@ -756,7 +756,7 @@ export default function Canvas(props) {
             imageObjRef.current.height = imgRef.current.height;
             scaleImage(canvasObjRef.current, imageObjRef.current);
         }
-        console.log('img load handler');
+        // console.log('img load handler');
         
         //Draw fabric objects according to annotation
         createFabricObjBasedOnAnnotation();
@@ -1514,7 +1514,7 @@ export default function Canvas(props) {
 
     function createPathes() {
         // recreate all path obj based by looping through all brush annoObj's .pathes prop
-        console.log('createPath');
+        // console.log('createPath');
         const nextFrameAnno = annotationRef.current[frameNum];
         const pathStrArr=[];
         if (nextFrameAnno && Object.keys(nextFrameAnno).length>0) {
@@ -1533,7 +1533,7 @@ export default function Canvas(props) {
                 }
             })
         }
-        console.log(pathStrArr);
+        // console.log(pathStrArr);
 
         if (pathStrArr.length > 0) {
             const canvas = canvasObjRef.current;
@@ -1554,7 +1554,7 @@ export default function Canvas(props) {
                 obj.selectable = false; //for some reason, this prop is not kept
                 addPathObjToRef(obj);
             });
-            console.log(canvas.getObjects());
+            // console.log(canvas.getObjects());
             canvas.add(imageObjRef.current);
             // canvas.renderAll();
         }         

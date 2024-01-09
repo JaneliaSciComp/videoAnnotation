@@ -12,7 +12,7 @@ function MyApp({ Component, pageProps }) {
 
   return (
     <>
-      <Script src='./opencv.js' strategy='beforeInteractive'/> 
+      {/* <Script src='./opencv.js' strategy='beforeInteractive'/>  */}
       <Component {...pageProps} />
     </>
   )

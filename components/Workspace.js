@@ -13,7 +13,7 @@ import {Row, Col, Button} from 'react-bootstrap';
 import BtnGroup from './BtnGroup';
 import BrushTool from './BrushTool';
 // import BtnGroupController from './BtnGroupController';
-import Design from './BtnConfiguration';
+// import Design from './BtnConfiguration';
 import { StatesProvider } from './AppContext';
 import { clearUnfinishedAnnotation } from '../utils/utils';
 
@@ -49,8 +49,10 @@ export default function Workspace(props) {
     const [btnConfigData, setBtnConfigData] = useState({});
     const [btnGroups, setBtnGroups] = useState();
     // const [projectType, setProjectType] = useState('image'); //'image' or 'video'
-    const [frameNumSignal, setFrameNumSignal] = useState(); // Chart use it to tell VideoUploader which frame to go to
+    const [frameNumSignal, setFrameNumSignal] = useState(); // Chart use it to tell VideoUploader which frame to go to. 1-based
+    const [totalFrameCount, setTotalFrameCount] = useState(0);
     const [save, setSave] = useState(false);
+    // const [chartMetric, setChartMetric] = useState();
 
     console.log('workspace render');
 
@@ -73,7 +75,9 @@ export default function Workspace(props) {
         annotationRef: annotationRef,
         // projectType: projectType,
         frameNumSignal: frameNumSignal,
+        totalFrameCount: totalFrameCount,
         save: save,
+        // chartMetric: chartMetric,
     }
 
     const stateSetters = {
@@ -94,7 +98,9 @@ export default function Workspace(props) {
         setBtnGroups: setBtnGroups,
         // setProjectType: setProjectType,
         setFrameNumSignal: setFrameNumSignal,
+        setTotalFrameCount: setTotalFrameCount,
         setSave: setSave,
+        // setChartMetric: setChartMetric,
     }
 
 

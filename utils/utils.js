@@ -46,6 +46,9 @@ export const predefinedColors = [
 
 ]
 
+export const staticVerticalLineColor = 'rgb(100,100,100, 0.5)';
+export const dynamicVerticalLineColor = 'rgb(220,220,220, 0.5)';
+
 export const btnGroupTypeOptions = [
     {value: 'shape', label: 'Shape'},
     {value: 'category', label: 'Category'},
@@ -117,3 +120,5 @@ export function clearUnfinishedAnnotation(frameAnnotation) {
     // console.log(annoCopy)
     return annoCopy;
 }
+
+

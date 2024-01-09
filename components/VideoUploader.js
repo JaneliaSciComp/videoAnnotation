@@ -15,7 +15,7 @@ export default function VideoUploader(props) {
     // const videoRef = useRef(null);
     // const canvasRef = useRef(null);
     const [fps, setFps] = useState(0);
-    const [totalFrameCount, setTotalFrameCount] = useState(0);
+    // const [totalFrameCount, setTotalFrameCount] = useState(0);
     const [sliderValue, setSliderValue] = useState(0);
     const [playFps, setPlayFps] = useState(0);
     const [submitError, setSubmitError] = useState();
@@ -27,6 +27,8 @@ export default function VideoUploader(props) {
     const setFrameNum = useStateSetters().setFrameNum;
     const setVideoId = useStateSetters().setVideoId;
     const frameNumSignal = useStates().frameNumSignal;
+    const totalFrameCount = useStates().totalFrameCount;
+    const setTotalFrameCount = useStateSetters().setTotalFrameCount;
 
 
     console.log('VideoUploader render');
@@ -256,7 +258,7 @@ export default function VideoUploader(props) {
                     <Form.Group as={Row} controlId='videoPath'>
                         <Form.Label column sm={2}>Video path</Form.Label>
                         <Col sm={6}>
-                            <Form.Control type='string' name='video_path' placeholder='E.g. /somePath/videoName.avi' required />
+                            <Form.Control type='string' value='/Users/pengxi/video/numbered.mp4' name='video_path' placeholder='E.g. /somePath/videoName.avi' required />
                             <Form.Control.Feedback type='invalid'>Please provide video path in your local computer, e.g. /somePath/videoName.avi</Form.Control.Feedback>
                             {submitError ?
                             <p >{submitError}</p>
