@@ -5,7 +5,9 @@ import { useStateSetters, useStates } from './AppContext';
 import { 
     Line,
     Bar,
-    getElementAtEvent
+    getElementAtEvent,
+    getElementsAtEvent,
+    getDatasetAtEvent
  } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -34,13 +36,14 @@ ChartJS.register(
 // plugins
 const staticVerticalLine = {
     id: 'staticVerticalLine',
-    afterDraw: function(chart, argv, options) {
+    afterDraw: function(chart, args, options) {
         // console.log('staticVLine', chart, argv, options, options.position);
         if ( (options.position>=0)
           && chart?.getDatasetMeta() 
           && chart.getDatasetMeta(0)?.data?.length
           && (chart.getDatasetMeta(0)?.data?.length > options.position)) {
-            const data = chart.getDatasetMeta(0).data; // get first dataset, to discover X coordinate of a point
+            // get first dataset, to get X coord of a point
+            const data = chart.getDatasetMeta(0).data; 
             // console.log(data);
             let singleElemWidth = data[options.position].width;
             singleElemWidth = singleElemWidth ? singleElemWidth : 0;
@@ -49,15 +52,15 @@ const staticVerticalLine = {
             const topY = chart.scales.y.top;
             const bottomY = chart.scales.y.bottom;
             const ctx = chart.ctx;
-            ctxDrawLine(ctx, x, topY, bottomY, options.color, width); //'rgb(200,200,200, 0.5)'
+            ctxDrawLine(ctx, x, topY, bottomY, options.color, width); 
         }
     }
 };
 
 const dynamicVerticalLine = {
     id: 'dynamicVerticalLine',
-    afterDraw: function(chart, argv, options) {
-        // console.log('dynamicVLine', chart);
+    afterDraw: function(chart, args, options) {
+        // console.log('dynamicVLine', chart, args, args.event);
         if (chart.tooltip._active?.length) {
             const activePoint = chart.tooltip._active[0];
             // console.log(activePoint);
@@ -72,6 +75,7 @@ const dynamicVerticalLine = {
         }
     }
 };
+
 
 function ctxDrawLine(ctx, x, topY, bottomY, color, width) {
     ctx.save();
@@ -214,7 +218,9 @@ export default function MyChart(props) {
             //     display: true,
             //     text: 'Chart.js Line Chart',
             //   },
-    
+                tooltip: {
+                    intersect: false
+                },
                 staticVerticalLine: {
                     position: frameNum - start,
                     metricsNumber: props.metrics.length,
@@ -232,17 +238,20 @@ export default function MyChart(props) {
     // console.log('chart', data);
 
     
-
-
     function clickHandler(e) {
         // console.log(getElementAtEvent(chartRef.current, e));
         const elem = getElementAtEvent(chartRef.current, e)[0];
         if (elem) {
             const frameNumStr = dataToDisplay.labels[elem.index];
             setFrameNumSignal(parseInt(frameNumStr));
-        }
-        
+        }   
     }
+
+    // function mouseMoveHandler(e) {  
+    //     const elem = getElementsAtEvent(chartRef.current, e);
+    //     const datasets = getDatasetAtEvent(chartRef.current, e);
+    //     console.log('mousemove', elem, datasets); 
+    // }
 
     function generateChart() {
         switch (props.type) {
@@ -251,6 +260,7 @@ export default function MyChart(props) {
                         options={options} 
                         data={dataToDisplay} 
                         onClick={clickHandler}
+                        // onMouseMove={mouseMoveHandler}
                         />
                 break;
             case 'Bar':
