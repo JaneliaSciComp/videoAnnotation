@@ -73,6 +73,16 @@ const dynamicVerticalLine = {
             const bottomY = chart.scales.y.bottom;
             ctxDrawLine(ctx, x, topY, bottomY, options.color, width); //'rgb(220,220,220, 0.5)'
         }
+    },
+
+    //Click on the vertical line to reset frameNum
+    afterEvent: function(chart, args, options) {
+        if (args?.event?.type === 'click' && chart.tooltip._active?.length) {
+            const activePoint = chart.tooltip._active[0];
+            // console.log(chart, activePoint);
+            const focusFrame = activePoint.index + options.startIndex + 1;
+            options.clickHandler(focusFrame);
+        }
     }
 };
 
@@ -142,7 +152,7 @@ export default function MyChart(props) {
     const [options, setOptions] = useState({});
 
     //context
-    const setFrameNumSignal = useStateSetters().setFrameNumSignal;
+    const setFrameNumSignal = useStateSetters().setFrameNumSignal; //1-based
     const frameNum = useStates().frameNum;
     const totalFrameCount = useStates().totalFrameCount;
 
@@ -228,7 +238,9 @@ export default function MyChart(props) {
                 },
                 dynamicVerticalLine: {
                     metricsNumber: props.metrics.length,
-                    color: props.dynamicVerticalLineColor ? props.dynamicVerticalLineColor : dynamicVerticalLineColor
+                    color: props.dynamicVerticalLineColor ? props.dynamicVerticalLineColor : dynamicVerticalLineColor,
+                    clickHandler: setFrameNumSignal,
+                    startIndex: start
                 }
             },
         });
