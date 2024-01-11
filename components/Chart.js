@@ -250,20 +250,15 @@ export default function MyChart(props) {
     // console.log('chart', data);
 
     
-    function clickHandler(e) {
-        // console.log(getElementAtEvent(chartRef.current, e));
-        const elem = getElementAtEvent(chartRef.current, e)[0];
-        if (elem) {
-            const frameNumStr = dataToDisplay.labels[elem.index];
-            setFrameNumSignal(parseInt(frameNumStr));
-        }   
-    }
-
-    // function mouseMoveHandler(e) {  
-    //     const elem = getElementsAtEvent(chartRef.current, e);
-    //     const datasets = getDatasetAtEvent(chartRef.current, e);
-    //     console.log('mousemove', elem, datasets); 
+    // function clickHandler(e) {
+    //     // console.log(getElementAtEvent(chartRef.current, e));
+    //     const elem = getElementAtEvent(chartRef.current, e)[0];
+    //     if (elem) {
+    //         const frameNumStr = dataToDisplay.labels[elem.index];
+    //         setFrameNumSignal(parseInt(frameNumStr));
+    //     }   
     // }
+
 
     function generateChart() {
         switch (props.type) {
@@ -271,7 +266,7 @@ export default function MyChart(props) {
                 return <Line ref={chartRef} 
                         options={options} 
                         data={dataToDisplay} 
-                        onClick={clickHandler}
+                        // onClick={clickHandler}
                         // onMouseMove={mouseMoveHandler}
                         />
                 break;
@@ -279,7 +274,7 @@ export default function MyChart(props) {
                 return <Bar ref={chartRef} 
                         options={options} 
                         data={dataToDisplay} 
-                        onClick={clickHandler}
+                        // onClick={clickHandler}
                         />
         }
     }

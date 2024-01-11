@@ -159,6 +159,7 @@ const data = {
         <ChartMenu /> */}
         <div className='my-3' >
           <ChartCombo metrics={metricsExample} data={data}  />
+          <ChartCombo metrics={metricsExample} data={data}  />
         </div>
         
       </Workspace>
