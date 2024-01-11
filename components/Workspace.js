@@ -1,5 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
+// import { saveAs } from 'file-saver';
+import JSZip from "jszip";
 import styles from '../styles/Workspace.module.css';
 import Canvas from './Canvas';
 // import BoundingBox from './BoundingBox';
@@ -108,16 +110,46 @@ export default function Workspace(props) {
         if (save) {
             const annoCopy = clearUnfinishedAnnotation(frameAnnotation);
             annotationRef.current[frameNum] = annoCopy;
-            const json = JSON.stringify(annotationRef.current);
-            const a = document.createElement("a");
-            const file = new Blob([json], {type: 'text/plain'});
-            a.href = URL.createObjectURL(file);
-            a.download = 'annotations.json';
-            a.click();
-            URL.revokeObjectURL(a.href);
+            const jsonAnno = JSON.stringify(annotationRef.current);
+            const blobAnno = new Blob([jsonAnno], {type: 'text/plain'});
+            
+            console.log(btnConfigData);
+            Object.values(btnConfigData).forEach(groupData => {
+                if (groupData.groupType === 'skeleton' && groupData.edgeData && groupData.edgeData.edges.length) {
+                    const edgesArr = groupData.edgeData.edges.map(neighborSet => neighborSet?[...neighborSet]:null);
+                    groupData.edgeData.edges = edgesArr;
+                }
+            })
+            const jsonBtnConfig = JSON.stringify(btnConfigData);
+            console.log(jsonBtnConfig);
+            const blobBtnConfig = new Blob([jsonBtnConfig], {type: 'text/plain'});
+            const zip = JSZip();
+            zip.file('annotations.json', blobAnno);
+            zip.file('btnConfiguration.json', blobBtnConfig);
+            zip.generateAsync({type: "blob"})
+                .then(res => {
+                    const a = document.createElement("a");
+                    a.href = URL.createObjectURL(res);
+                    a.download = 'archive.zip';
+                    a.click();
+                    URL.revokeObjectURL(a.href);
+                })
+
+            convertEdgeArrToSet();
+            console.log(btnConfigData);
             setSave(false);
         }
     }, [save])
+
+    function convertEdgeArrToSet() {
+        Object.values(btnConfigData).forEach(groupData => {
+            if (groupData.groupType === 'skeleton' && groupData.edgeData && groupData.edgeData.edges.length) {
+                const edgesSet = groupData.edgeData.edges.map(neighborArr => neighborArr?new Set(neighborArr):null);
+                groupData.edgeData.edges = edgesSet;
+            }
+        })
+    }
+
 
     useEffect(()=> {
         if (props.btnConfigData) {
@@ -192,7 +224,7 @@ export default function Workspace(props) {
         if (Object.keys(frameAnnotation).length > 0) {
             unfinished = Object.keys(frameAnnotation).filter(id=>{
                 const annoObj = frameAnnotation[id];
-                console.log('clear', annoObj, annoObj.type, annoObj.data, annoObj.first, annoObj.pathes);
+                // console.log('clear', annoObj, annoObj.type, annoObj.data, annoObj.first, annoObj.pathes);
                 if ((annoObj.type ==='polygon' 
                     || annoObj.type==='keyPoint' 
                     || annoObj.type==='bbox')

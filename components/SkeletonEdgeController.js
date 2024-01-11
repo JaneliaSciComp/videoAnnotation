@@ -161,15 +161,24 @@ export default function SkeletonEdgeController(props) {
 
     function onDoneBtnClick() {
         const btnGroupData = {...btnConfigData[props.index]};
-        btnGroupData.edgeData = {
+        console.log(btnGroupData, edgeDataRef.current);
+        if (edgeDataRef.current?.length) {
+            btnGroupData.edgeData = {
                 color: color,
                 edges: [...edgeDataRef.current],
             }
+            // console.log(btnGroupData);
+            setBtnConfigData({...btnConfigData, [props.index]: btnGroupData});
+            // props.setAddEdge(false);
+            setEdgeAdded(true);
+        } 
+        // else if (btnGroupData.edgeData) { //if user already added some edge, and want to reset it to be no edge.
+        //     console.log('edge reset');
+        //     delete(btnGroupData[edgeData]);
+        //     setBtnConfigData({...btnConfigData, [props.index]: btnGroupData});
+        //     setEdgeAdded(true);
+        // }
         
-        console.log(btnGroupData);
-        setBtnConfigData({...btnConfigData, [props.index]: btnGroupData});
-        // props.setAddEdge(false);
-        setEdgeAdded(true);
 
         const target = {
             index: props.index,

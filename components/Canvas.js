@@ -1194,7 +1194,7 @@ export default function Canvas(props) {
         canvas.add(landmark).setActiveObject(landmark);
         
         //create edges
-        if (edgesInfo?.edges) {
+        if (edgesInfo?.edges && edgesInfo.edges[skeletonLandmark]) {
             const neighbors = edgesInfo.edges[skeletonLandmark];
             const edgeColor = edgesInfo.color;
             const edgeInfo = {
@@ -1480,7 +1480,7 @@ export default function Canvas(props) {
                 canvas.add(landmark);
                 landmarksDrawn[i] = landmark;
     
-                if (edgesInfo?.edges) {
+                if (edgesInfo?.edges && edgesInfo.edges[i]) {
                     const neighbors = edgesInfo.edges[i];
                     const edgeColor = edgesInfo.color;
                     const edgeInfo = {
@@ -1605,33 +1605,39 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
         console.log('dragging skeleton point');
         const point = canvas.getActiveObject();
-        const landmarks = fabricObjListRef.current[point.owner].landmarks;
         const edgesInfo = btnConfigData[frameAnnotation[point.owner].groupIndex].edgeData; // {color: '', edges: [set(), ...]}
-        const edgeInfo = {
-            id: point.owner,
-            type: 'skeleton',
-            color: edgesInfo.color,
-        }
-        // console.log(point, landmarks, edgesInfo);
-        const neighbors = Array.from(edgesInfo.edges[point.index]);
-        neighbors.forEach(n => {
-            const neighborObj = landmarks[n];
-            if (neighborObj) { // check if neighbor exists, if not labelled, then undefined
-                const edge = createLine(neighborObj.getCenterPoint(), point.getCenterPoint(), edgeInfo);
-                let name;
-                if (n < point.index) {
-                    name = `${n}-${point.index}`;
-                } else {
-                    name = `${point.index}-${n}`;
-                }
-                const oldEdge = fabricObjListRef.current[point.owner].edges[name];
-                canvas.remove(oldEdge);
-                canvas.add(edge);
-                canvas.bringToFront(point);
-                canvas.bringToFront(landmarks[n]);
-                fabricObjListRef.current[point.owner].edges[name] = edge;
+        if (edgesInfo) {
+            const landmarks = fabricObjListRef.current[point.owner].landmarks;
+            const edgeInfo = {
+                id: point.owner,
+                type: 'skeleton',
+                color: edgesInfo.color,
             }
-        })
+            // console.log(point, landmarks, edgesInfo);
+            if (edgesInfo.edges[point.index]?.size>0) {
+                const neighbors = Array.from(edgesInfo.edges[point.index]);
+                neighbors.forEach(n => {
+                    const neighborObj = landmarks[n];
+                    if (neighborObj) { // check if neighbor exists, if not labelled, then undefined
+                        const edge = createLine(neighborObj.getCenterPoint(), point.getCenterPoint(), edgeInfo);
+                        let name;
+                        if (n < point.index) {
+                            name = `${n}-${point.index}`;
+                        } else {
+                            name = `${point.index}-${n}`;
+                        }
+                        const oldEdge = fabricObjListRef.current[point.owner].edges[name];
+                        canvas.remove(oldEdge);
+                        canvas.add(edge);
+                        canvas.bringToFront(point);
+                        canvas.bringToFront(landmarks[n]);
+                        fabricObjListRef.current[point.owner].edges[name] = edge;
+                    }
+                })
+            }
+            
+        }
+        
     }
 
 

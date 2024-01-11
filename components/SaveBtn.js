@@ -11,17 +11,16 @@ export default function SaveBtn(props) {
         Props: 
             
     */
-    const [clicked, setClicked] = useState(false);
+    // const [clicked, setClicked] = useState(false);
 
     const frameNum = useStates().frameNum;
     const frameUrl = useStates().frameUrl;
-    const frameAnnotation = useStates().frameAnnotation;
-    const setFrameAnnotation = useStateSetters().setFrameAnnotation;
+    // const frameAnnotation = useStates().frameAnnotation;
+    // const setFrameAnnotation = useStateSetters().setFrameAnnotation;
     const setSave = useStateSetters().setSave;
 
     function clickHandler() {
         if (Number.isInteger(frameNum) || frameUrl) {
-            //TODO: trigger getBrushData()
             
             // // clear unfinished polygon and skeleton annoObj before setting new annoIdToDraw
             // const annoCopy = clearUnfinishedAnnotation(frameAnnotation);

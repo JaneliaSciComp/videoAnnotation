@@ -518,7 +518,7 @@ export default function BtnGroupController(props) {
         const labelsValid = checkLabels(); 
         console.log(index, 'pass data');
         
-        if (labelsValid) {
+        if (labelsValid && groupData?.length) {
             const newData = {
                 groupType: groupType,
                 btnType: btnType,
