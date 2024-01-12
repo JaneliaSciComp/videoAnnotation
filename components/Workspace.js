@@ -113,7 +113,7 @@ export default function Workspace(props) {
             const jsonAnno = JSON.stringify(annotationRef.current);
             const blobAnno = new Blob([jsonAnno], {type: 'text/plain'});
             
-            console.log(btnConfigData);
+            // console.log(btnConfigData);
             Object.values(btnConfigData).forEach(groupData => {
                 if (groupData.groupType === 'skeleton' && groupData.edgeData && groupData.edgeData.edges.length) {
                     const edgesArr = groupData.edgeData.edges.map(neighborSet => neighborSet?[...neighborSet]:null);
@@ -121,7 +121,7 @@ export default function Workspace(props) {
                 }
             })
             const jsonBtnConfig = JSON.stringify(btnConfigData);
-            console.log(jsonBtnConfig);
+            // console.log(jsonBtnConfig);
             const blobBtnConfig = new Blob([jsonBtnConfig], {type: 'text/plain'});
             const zip = JSZip();
             zip.file('annotations.json', blobAnno);
@@ -136,7 +136,7 @@ export default function Workspace(props) {
                 })
 
             convertEdgeArrToSet();
-            console.log(btnConfigData);
+            // console.log(btnConfigData);
             setSave(false);
         }
     }, [save])

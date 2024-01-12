@@ -19,6 +19,7 @@ import SaveBtn from '../components/SaveBtn.js';
 import {Row, Col} from 'react-bootstrap';
 import ChartMenu from '../components/ChartController.js';
 import ChartCombo from '../components/ChartCombo.js';
+import JsonUploader from '../components/JsonUploader.js';
 
 
 export default function Home() {
@@ -130,6 +131,9 @@ const data = {
         <ShapeBtn type='bbox' label='fly' color='red' /> */}
         {/* <BtnGroup data={groupData} /> */}
         {/* <BtnGroupController /> */}
+        <JsonUploader type='annotation'/>
+        <JsonUploader type='configuration'/>
+
         <BtnConfiguration />
         <Row >
           <Col>
