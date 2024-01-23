@@ -11,7 +11,7 @@ export default function ChartCombo(props) {
      * Host data for ChartMenu and Chart, so that don't need to bother Workspace.
      * 
      * props:
-     *  metrics: ['length', 'width', ...]. Will be passed to child ChartMenu to generate dorpdown menus
+     *  // metrics: ['length', 'width', ...]. Will be passed to child ChartMenu to generate dorpdown menus
      *  data: data for chart
      *      {
                 length: {
@@ -29,10 +29,11 @@ export default function ChartCombo(props) {
      *  controllerAlign: 'start'/'end'/'center'/'between'/'around'/'evenly'. 'left' by default. How to horizontally align controller components, if horizontal is false.
      *  staticVerticalLineColor: 'rgb()', '#xxxxxx', 'red'. The color of the static vertical Line
         dynamicVerticalLineColor:  'rgb()', '#xxxxxx', 'red'. The color of the dynamic vertical Line
-     */
+        zoomSpeed: number. Speed for zooming on y axis. 0.01 by default.
+    */
     const [chartMetrics, setChartMetrics] = useState([]); // metrics for Chart to display
-    const [start, setStart] = useState(0);
-    const [end, setEnd] = useState(0);
+    // const [start, setStart] = useState(0);
+    // const [end, setEnd] = useState(0);
     const [chartType, setChartType] = useState('Line');
     const [range, setRange] = useState(1);
     
@@ -41,7 +42,7 @@ export default function ChartCombo(props) {
         <Row className={'d-flex ' + (props.horizontal?'justify-content-start':'flex-column')}>
             <Col sm='auto'>
                 <ChartController 
-                    metrics={props.metrics} 
+                    metrics={Object.keys(props.data)} 
                     vertical={props.horizontal ? true : false}
                     align={props.controllerAlign}
                     setChartMetrics={setChartMetrics} 
@@ -60,6 +61,7 @@ export default function ChartCombo(props) {
                     data={props.data}
                     staticVerticalLineColor={props.staticVerticalLineColor}
                     dynamicVerticalLineColor={props.dynamicVerticalLineColor}
+                    zoomSpeed={props.zoomSpeed}
                     />
             </Col>
         </Row>

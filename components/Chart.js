@@ -2,12 +2,14 @@ import React, {useState, useEffect, useRef} from 'react';
 import styles from '../styles/Chart.module.css';
 import { predefinedColors, staticVerticalLineColor, dynamicVerticalLineColor } from '../utils/utils';
 import { useStateSetters, useStates } from './AppContext'; 
+import Zoom from 'chartjs-plugin-zoom';
+// import Zoom from '../utils/chartjs-plugin-zoom.esm.js';
 import { 
     Line,
     Bar,
-    getElementAtEvent,
-    getElementsAtEvent,
-    getDatasetAtEvent
+    // getElementAtEvent,
+    // getElementsAtEvent,
+    // getDatasetAtEvent
  } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -31,6 +33,7 @@ ChartJS.register(
     Tooltip,
     // Title,
     Legend,
+    Zoom,
 );
 
 // plugins
@@ -139,6 +142,7 @@ export default function MyChart(props) {
             legendAlign: 'start'/'center'/'end'. 'end' by default. Horizontal position of legend.
             staticVerticalLineColor: 'rgb()', '#xxxxxx', 'red'. The color of the static vertical Line
             dynamicVerticalLineColor:  'rgb()', '#xxxxxx', 'red'. The color of the dynamic vertical Line
+            zoomSpeed: number. Speed for zooming on y axis. 0.01 by default.
             */
 
     const chartRef = useRef();
@@ -172,11 +176,13 @@ export default function MyChart(props) {
 
         const colorsCopy = [...predefinedColors];
         colorsCopy.shift(); // remove the first color '#000000' 
+        const scaleLimits = []; 
         const data = {
             labels: frameNums,
             datasets: props.metrics.map((m, i) => {
                 const dataset = props.data[m];
                 // console.log(m, dataset);
+                scaleLimits.push(getScaleLimits(dataset?.data));
                 return {
                     label: m,
                     // data: dataset?.data.slice(props.frameRange[0], props.frameRange[1]+1),
@@ -190,6 +196,8 @@ export default function MyChart(props) {
         };
         // console.log(data);
         setDataToDisplay(data);
+
+        const [min, max] = getScaleLimits(scaleLimits.flat());
 
         setOptions({
             responsive: true,
@@ -206,12 +214,17 @@ export default function MyChart(props) {
                     }
                 },
                 y: {
+                    // min: min,
+                    // max: max,
                     border: {
                         display: true
                     },
                     grid: {
                         display: props.yGrid ? props.yGrid : true,
                         drawTicks: false,
+                    },
+                    afterFit(scale) {
+                        scale.paddingLeft = 50; // min-width for left side y-axis
                     }
                 },
             },
@@ -241,6 +254,23 @@ export default function MyChart(props) {
                     color: props.dynamicVerticalLineColor ? props.dynamicVerticalLineColor : dynamicVerticalLineColor,
                     clickHandler: setFrameNumSignal,
                     startIndex: start
+                },
+                zoom: {
+                    pan: {
+                        enabled: true,
+                        mode: 'y',
+                        modifierKey: 'alt'
+                    },
+                    limits: {
+                        y: {min: min, max: max}
+                    },
+                    zoom: {
+                        wheel: {
+                            enabled: true,
+                            speed: props.zoomSpeed ? props.zoomSpeed :0.01
+                        },
+                        mode: 'y',
+                    }
                 }
             },
         });
@@ -302,6 +332,31 @@ export default function MyChart(props) {
         }
         
         return [start, end]
+    }
+
+    function getScaleLimits(dataArr) {
+        let min, max;
+        if (dataArr?.length >= 2) {
+            min = dataArr.reduce((res, current) => Math.min(res, current));
+            max = dataArr.reduce((res, current) => Math.max(res, current));
+        } else if (dataArr?.length === 1) {
+            const num = dataArr[0];
+            if (num > 0) {
+                min = 0;
+                max = num;
+            } else if (num < 0) {
+                min = num;
+                max = 0;
+            } else {
+                min = 0;
+                max = 10;
+            }
+        } else {
+            min = 0;
+            max = 10;
+        }
+        
+        return [min, max];
     }
 
 

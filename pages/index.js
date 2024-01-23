@@ -14,12 +14,14 @@ import BtnGroup from '../components/BtnGroup.js';
 import BrushBtn from '../components/BrushBtn.js';
 import BrushTool from '../components/BrushTool.js';
 import AnnotationTable from '../components/AnnotationTable.js';
-import Chart from '../components/Chart.js';
 import SaveBtn from '../components/SaveBtn.js';
 import {Row, Col} from 'react-bootstrap';
-import ChartMenu from '../components/ChartController.js';
-import ChartCombo from '../components/ChartCombo.js';
+// import ChartCombo from '../components/ChartCombo.js';
 import JsonUploader from '../components/JsonUploader.js';
+
+// client side components
+import dynamic from 'next/dynamic';
+const Chart = dynamic(() => import('../components/ChartCombo.js'), { ssr: false });
 
 
 export default function Home() {
@@ -162,8 +164,8 @@ const data = {
         {/* <Chart />
         <ChartMenu /> */}
         <div className='my-3' >
-          <ChartCombo metrics={metricsExample} data={data}  />
-          <ChartCombo metrics={metricsExample} data={data}  />
+          <Chart data={data} />
+          {/* <ChartCombo data={data} /> */}
         </div>
         
       </Workspace>
