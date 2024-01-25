@@ -39,7 +39,8 @@ export default function ChartCombo(props) {
     
 
     return (
-        <Row className={'d-flex ' + (props.horizontal?'justify-content-start':'flex-column')}>
+        <Row className={'d-flex ' + (props.horizontal?'justify-content-start':'flex-column')}
+        style={{height:'100%'}}>
             <Col sm='auto'>
                 <ChartController 
                     metrics={Object.keys(props.data)} 
@@ -52,7 +53,8 @@ export default function ChartCombo(props) {
                     setChartType={setChartType}
                     />
             </Col>
-            <Col sm='' style={{'max-width': props.horizontal?'calc(100% - 11em)':''}}>
+            <Col sm='' style={{'max-width': props.horizontal?'calc(100% - 11em)':'', 
+                                height: props.horizontal?'100%' : 'calc(100% - 2em)'}}>
                 <Chart 
                     type={chartType}
                     metrics={chartMetrics} 

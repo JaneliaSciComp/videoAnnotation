@@ -267,7 +267,7 @@ export default function MyChart(props) {
                     zoom: {
                         wheel: {
                             enabled: true,
-                            speed: props.zoomSpeed ? props.zoomSpeed :0.01
+                            speed: props.zoomSpeed ? -props.zoomSpeed : -0.01
                         },
                         mode: 'y',
                     }
@@ -361,7 +361,7 @@ export default function MyChart(props) {
 
 
     return (
-        <div style={{width: props.width ? props.width:'100%', height: props.height ? props.height:'100%'}}>
+        <div id='chart' style={{width: props.width ? props.width:'100%', height: props.height ? props.height:'100%'}}>
             {/* <canvas ref={canvasRef} width={800} height={150}/> */}
             
             {/* <Line ref={chartRef} 
