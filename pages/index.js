@@ -163,7 +163,7 @@ const data = {
         <VideoUploader />
         {/* <Chart />
         <ChartMenu /> */}
-        <div className='my-3' style={{height: '200px'}} >
+        <div className='my-3' style={{height: '200px', width: '600px'}} >
           <Chart data={data} />
           {/* <ChartCombo data={data} /> */}
         </div>

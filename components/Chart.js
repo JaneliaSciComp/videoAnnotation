@@ -153,7 +153,17 @@ export default function MyChart(props) {
             datasets: [{}]
         }
     );
-    const [options, setOptions] = useState({});
+    const [options, setOptions] = useState({
+        plugins: {
+            zoom: {
+                pan: {
+                    enabled: true,
+                    mode: 'y',
+                    modifierKey: 'alt',
+                }
+            }
+        }
+    });
 
     //context
     const setFrameNumSignal = useStateSetters().setFrameNumSignal; //1-based
@@ -162,7 +172,6 @@ export default function MyChart(props) {
 
 
     useEffect(() => {
-        // console.log(props);
         const frameNums = [];
         // for (let i = props.frameRange[0]+1; i <= props.frameRange[1]+1; i++) {
         //     frameNums.push(i.toString());
@@ -214,8 +223,8 @@ export default function MyChart(props) {
                     }
                 },
                 y: {
-                    // min: min,
-                    // max: max,
+                    min: min,
+                    max: max,
                     border: {
                         display: true
                     },
@@ -259,7 +268,7 @@ export default function MyChart(props) {
                     pan: {
                         enabled: true,
                         mode: 'y',
-                        modifierKey: 'alt'
+                        modifierKey: 'alt',
                     },
                     limits: {
                         y: {min: min, max: max}
