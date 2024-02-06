@@ -27,11 +27,11 @@ export default function Workspace(props) {
      *      url: image url or video url // or put this in Canvas
      */
     const [videoId, setVideoId] = useState();
-    const [frameUrl, setFrameUrl] = useState(); //'/fly.png'
+    const [frameUrl, setFrameUrl] = useState(); //for image, '/fly.png'
     const [frameNum, setFrameNum] = useState();
     const prevFrameNum = useRef();
-    const annotationRef = useRef({});
-    const [frameAnnotation, setFrameAnnotation] = useState({});
+    const annotationRef = useRef({}); //if image, only one child with frameNum 0
+    const [frameAnnotation, setFrameAnnotation] = useState({}); 
     const [activeAnnoObj, setActiveAnnoObj] = useState();
     // const [categoryId, setCategoryId] = useState({});
     // const [keyPointIdList, setKeyPointIdList] = useState({});
@@ -55,6 +55,8 @@ export default function Workspace(props) {
     const [totalFrameCount, setTotalFrameCount] = useState(0);
     const [save, setSave] = useState(false);
     // const [chartMetric, setChartMetric] = useState();
+    const [uploader, setUploader] = useState(); // {type: 'annotation'/'configuration', file: fileObj}
+
 
     console.log('workspace render');
 
@@ -80,6 +82,7 @@ export default function Workspace(props) {
         totalFrameCount: totalFrameCount,
         save: save,
         // chartMetric: chartMetric,
+        uploader: uploader
     }
 
     const stateSetters = {
@@ -103,13 +106,49 @@ export default function Workspace(props) {
         setTotalFrameCount: setTotalFrameCount,
         setSave: setSave,
         // setChartMetric: setChartMetric,
+        setUploader: setUploader,
+    }
+
+
+    useEffect(() => {
+        if (uploader?.type && uploader?.file) {
+            const reader = new FileReader();
+            reader.onload = (e) => onReaderLoad(e, uploader.type);
+            reader.readAsText(uploader.file.originFileObj);
+        }
+
+    }, [uploader])
+
+    function onReaderLoad(e, type){
+        // console.log(e.target.result);
+        const obj = JSON.parse(e.target.result);
+        // console.log(obj);
+        if (type === 'annotation') {
+            saveAnnotationAndUpdateStates(); 
+            prevFrameNum.current = null; 
+
+            //TODO: add alert: current annotation will be removed, save locally before upload?
+
+            annotationRef.current = obj;
+            if (Number.isInteger(frameNum)) { // a video is open
+                setFrameAnnotation({...annotationRef.current[frameNum]});
+            } else if (frameUrl) { // an image is open
+                setFrameAnnotation({...annotationRef.current[0]});
+            } else {
+                setFrameAnnotation({});
+            }
+        } else {
+            convertEdgeArrToSet(obj);
+            setBtnConfigData(obj);
+        }
     }
 
 
     useEffect(()=> {
         if (save) {
-            const annoCopy = clearUnfinishedAnnotation(frameAnnotation);
-            annotationRef.current[frameNum] = annoCopy;
+            // const annoCopy = clearUnfinishedAnnotation(frameAnnotation);
+            // annotationRef.current[frameNum] = annoCopy;
+            saveCurrentAnnotation();
             const jsonAnno = JSON.stringify(annotationRef.current);
             const blobAnno = new Blob([jsonAnno], {type: 'text/plain'});
             
@@ -134,20 +173,23 @@ export default function Workspace(props) {
                     a.click();
                     URL.revokeObjectURL(a.href);
                 })
-
-            convertEdgeArrToSet();
+            
+            const btnConfigDataCopy = {...btnConfigData};
+            convertEdgeArrToSet(btnConfigData);
+            setBtnConfigData(btnConfigDataCopy);
             // console.log(btnConfigData);
             setSave(false);
         }
     }, [save])
 
-    function convertEdgeArrToSet() {
-        Object.values(btnConfigData).forEach(groupData => {
+    function convertEdgeArrToSet(obj) { //obj is a copy of btnConfigData
+        Object.values(obj).forEach(groupData => {
             if (groupData.groupType === 'skeleton' && groupData.edgeData && groupData.edgeData.edges.length) {
                 const edgesSet = groupData.edgeData.edges.map(neighborArr => neighborArr?new Set(neighborArr):null);
                 groupData.edgeData.edges = edgesSet;
             }
         })
+        return obj;
     }
 
 
@@ -162,7 +204,7 @@ export default function Workspace(props) {
         //save frame anno data for last video
         saveAnnotationAndUpdateStates();
         //update totoal anno data for current video. will be replace by retrieving from DB later on.
-        annotationRef.current = {};
+        // annotationRef.current = {};
         prevFrameNum.current = null; 
         setFrameNum(null); // It's possible last vdieo is showing frame 0, then when switch video, frameNum won't change, then the effect below won't be called. So set frameNum to null, then when show frame 0 for the current video, the effect below will be called
         // setFrameAnnotation({});
@@ -195,7 +237,7 @@ export default function Workspace(props) {
         /* when videouploader switch to a new frame, save the annotation for current frame
            then retrieve the annotation for the new frame
          */
-        console.log('workspace frameNum useEffect: save frameAnnotation ', prevFrameNum.current, frameNum, frameAnnotation);
+        // console.log('workspace frameNum useEffect: save frameAnnotation ', prevFrameNum.current, frameNum, frameAnnotation, annotationRef.current);
         //save cuurent frame anno data
         saveAnnotationAndUpdateStates();
         //retrieve next frame anno data
@@ -251,7 +293,33 @@ export default function Workspace(props) {
     }
 
     function saveAnnotationAndUpdateStates() {
-        // console.log('save anno');
+        // console.log('save anno', );
+        // if (Number.isInteger(prevFrameNum.current)) {
+        //     if ( Object.keys(frameAnnotation).length > 0) {
+        //         const newFrameAnno = clearUnfinishedAnnotation();
+        //         if (Object.keys(newFrameAnno).length > 0) {
+        //             annotationRef.current[prevFrameNum.current] = newFrameAnno; 
+        //         } else {
+        //             delete(annotationRef.current[prevFrameNum.current]);
+        //         }
+        //         // console.log(newFrameAnno);
+        //     } else {
+        //         delete(annotationRef.current[prevFrameNum.current]);
+        //     }
+        // }
+        saveCurrentAnnotation();
+        prevFrameNum.current = frameNum;
+        setActiveAnnoObj(null);
+        setDrawType(null);
+        setSkeletonLandmark(null);
+        setUndo(0);
+        setUseEraser(null);
+        //annoIdToDraw will be reset in canvas after getBrushData()
+        setAnnoIdToDelete(null);
+        // setAnnoIdToShow([]);
+    }
+
+    function saveCurrentAnnotation() {
         if (Number.isInteger(prevFrameNum.current)) {
             if ( Object.keys(frameAnnotation).length > 0) {
                 const newFrameAnno = clearUnfinishedAnnotation();
@@ -265,15 +333,6 @@ export default function Workspace(props) {
                 delete(annotationRef.current[prevFrameNum.current]);
             }
         }
-        prevFrameNum.current = frameNum;
-        setActiveAnnoObj(null);
-        setDrawType(null);
-        setSkeletonLandmark(null);
-        setUndo(0);
-        setUseEraser(null);
-        //annoIdToDraw will be reset in canvas after getBrushData()
-        setAnnoIdToDelete(null);
-        // setAnnoIdToShow([]);
     }
 
 

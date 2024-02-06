@@ -24,6 +24,7 @@ export default function AnnotationTable(props) {
     const [expandableConfig, setExpandableConfig] = useState([]);
 
     const frameUrlRef = useRef();
+    const prevUploaderRef = useRef(); // to compare if new annotation file is uploaded
 
     // context
     const frameAnnotation = useStates().frameAnnotation;
@@ -33,14 +34,15 @@ export default function AnnotationTable(props) {
     // const annoIdToShow = useStates().annoIdToShow;
     const setAnnoIdToShow = useStateSetters().setAnnoIdToShow; // to pass data to canvas according to currentKeys
     const annoIdToDraw = useStates().annoIdToDraw;
+    const uploader = useStates().uploader; // to compare if new annotation file is uploaded
 
 
 
     useEffect(() => {
-        // console.log('annoTable useEffect', frameAnnotation, tableData, frameUrl, frameUrlRef.current);
+        console.log('annoTable useEffect', frameAnnotation, tableData, frameUrl, frameUrlRef.current);
         let data;
-        if (frameUrl !== frameUrlRef.current) { // when switch frame
-            // console.log('if called');
+        if (frameUrl !== frameUrlRef.current || uploader !== prevUploaderRef.current) { // when switch frame, or load new annotation file
+            console.log('if called', uploader !== prevUploaderRef.current, uploader);
             // construct data source
             data = Object.entries(frameAnnotation).map(
                 ([id, annoObj]) => {
@@ -56,6 +58,7 @@ export default function AnnotationTable(props) {
             setKeysInTable(data.map(obj => obj.key));
 
             frameUrlRef.current = frameUrl;
+            prevUploaderRef.current = uploader;
         
         } else { // when add or delete annoObj
             // console.log('else called');

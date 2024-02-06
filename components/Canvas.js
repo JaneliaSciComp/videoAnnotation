@@ -38,6 +38,8 @@ export default function Canvas(props) {
     const fabricObjListRef = useRef({}); // for skeleton: annoId: {id: annoId, type: 'skeleton', landmarks: [KeyPoints (if not labelled, then that entry is empty/undefined)], edges: {'0-1': Line, ...} }
                                          // for brush: annoId: {id: annoId, type: 'brush', pathes: []}
     const prevDrawTypeRef = useRef({});
+    const prevUploaderRef = useRef(); // to compare if new annotation file is uploaded
+
 
     // context
     const videoId = useStates().videoId;
@@ -62,6 +64,8 @@ export default function Canvas(props) {
     const annoIdToShow = useStates().annoIdToShow;
     const annotationRef = useStates().annotationRef;
     // const projectType = useStates().projectType;
+    const uploader = useStates().uploader; // to compare if new annotation file is uploaded
+
 
     
     console.log('canvas render');
@@ -287,7 +291,7 @@ export default function Canvas(props) {
 
 
     useEffect(() => {
-        console.log('frameAnno useEffect', frameAnnotation);
+        // console.log('frameAnno useEffect', frameAnnotation);
         // // sometimes frameAnnotation changes before img load handler is called
         // // so put createFabricObj here. It will check current frameAnno has the same frameNum as the updated frameNum
         // createFabricObjBasedOnAnnotation(); // doesn't work, will be called everytime clicking on anno btn, result in error
@@ -306,6 +310,11 @@ export default function Canvas(props) {
         canvas.isDrawingSkeleton = null;
         
         // canvas.renderAll();
+
+        if (uploader !== prevUploaderRef.current) {
+            createFabricObjBasedOnAnnotation();
+            prevUploaderRef.current = uploader;
+        }
 
         return ()=>{
             console.log('frameAnno return func')
@@ -698,14 +707,14 @@ export default function Canvas(props) {
                             break;
                         case 'skeleton':
                             dataToCanvas = getSkeletonCoordToCanvas(annoObj);
-                            console.log('skeleton', dataToCanvas);
+                            // console.log('skeleton', dataToCanvas);
                             createSkeleton(dataToCanvas, annoObj);
                             break;
                     }
                 }
             });
 
-            console.log(canvas.getObjects());
+            // console.log(canvas.getObjects());
             canvas.getObjects().forEach(obj=>{
                 if (obj.id || obj.owner) { // path, keypoint, rect, polygon obj have id, circle,line obj have owner
                     // console.log(obj);
@@ -1603,8 +1612,9 @@ export default function Canvas(props) {
 
     function dragSkeletonPoint() {
         const canvas = canvasObjRef.current;
-        console.log('dragging skeleton point');
+        
         const point = canvas.getActiveObject();
+        // console.log('dragging skeleton point', point);
         const edgesInfo = btnConfigData[frameAnnotation[point.owner].groupIndex].edgeData; // {color: '', edges: [set(), ...]}
         if (edgesInfo) {
             const landmarks = fabricObjListRef.current[point.owner].landmarks;

@@ -163,23 +163,37 @@ export default function ChartController(props) {
                 </Row>
             </Col>
             <Col xs='auto' className='mb-1'>
-                <Dropdown.Button 
-                    size='small'
-                    menu={menuProps} 
-                    //   onClick={handleButtonClick}
-                    trigger={['click']}>
-                    {selectedMetrics.join(',')}
-                </Dropdown.Button>
+                <Row className={'d-flex '}>
+                    <Col xs='auto' className='pe-0'>
+                        <span>Metrics</span>
+                    </Col>
+                    <Col xs='auto'>
+                        <Dropdown.Button 
+                            size='small'
+                            menu={menuProps} 
+                            //   onClick={handleButtonClick}
+                            trigger={['click']}>
+                            {selectedMetrics.join(',')}
+                        </Dropdown.Button>
+                    </Col>
+                </Row>
             </Col>
 
             <Col xs='auto' className='mb-1'>
-                <Dropdown.Button 
-                    size='small'
-                    menu={chartTypeProps} 
-                    // onClick={handleButtonClick}
-                    trigger={['click']}>
-                    {props.chartType}
-                </Dropdown.Button>
+                <Row className={'d-flex '}>
+                    <Col xs='auto' className='pe-0'>
+                        <span>Type</span>
+                    </Col>
+                    <Col xs='auto'>
+                        <Dropdown.Button 
+                            size='small'
+                            menu={chartTypeProps} 
+                            // onClick={handleButtonClick}
+                            trigger={['click']}>
+                            {props.chartType}
+                        </Dropdown.Button>
+                    </Col>
+                </Row>
             </Col>
         </Row>
         
