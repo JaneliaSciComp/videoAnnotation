@@ -24,7 +24,12 @@ export default function BtnGroup(props) {
                         },
                         {index: 1, ...},
                         ...
-                    ]
+                    ],
+                    edgeData: { // only for skeleton
+                        color: '#1677FF',
+                        edges: [ [], [], ...]
+                    },
+                    skeletonName: 'mouse' //only for skeleton
                 },
             enableBrushTool: boolean. True when specified. Whether to add BrushTool comp when the children are BrushBtns.
     */
@@ -106,6 +111,7 @@ export default function BtnGroup(props) {
                                 key={0}
                                 groupIndex={props.data.groupIndex}
                                 data={childData}
+                                skeletonName={props.data.skeletonName}
                                 />
                             ]
                     break;

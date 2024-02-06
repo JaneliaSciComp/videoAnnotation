@@ -42,7 +42,7 @@ export default function AnnotationTable(props) {
         // console.log('annoTable useEffect', frameAnnotation, tableData, frameUrl, frameUrlRef.current);
         let data;
         if (frameUrl !== frameUrlRef.current || uploader !== prevUploaderRef.current) { // when switch frame, or load new annotation file
-            console.log('if called', uploader !== prevUploaderRef.current, uploader);
+            // console.log('if called', uploader !== prevUploaderRef.current, uploader);
             // construct data source
             data = Object.entries(frameAnnotation).map(
                 ([id, annoObj]) => {
@@ -113,7 +113,7 @@ export default function AnnotationTable(props) {
                     newSelectedKeys = selectedRowKeys;
                     newKeysInTable = keysInTable;
                 }
-                console.log(data);
+                // console.log(data);
             }
             data = data.map(obj => { return {...obj, data: JSON.stringify(frameAnnotation[obj.key]?.data)}});
             setSelectedRowKeys(newSelectedKeys);

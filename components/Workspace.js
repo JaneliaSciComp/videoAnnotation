@@ -197,7 +197,6 @@ export default function Workspace(props) {
         if (props.btnConfigData) {
             convertEdgeArrToSet(props.btnConfigData);
             setBtnConfigData(props.btnConfigData);
-            setBtnConfigData({...props.btnConfigData});
         }
     }, [props.btnConfigData])
 
@@ -358,6 +357,7 @@ export default function Workspace(props) {
 
     useEffect(() => {
         if (btnConfigData) {
+            console.log(btnConfigData);
             renderBtnGroup();
         }
       }, [btnConfigData, frameNum, frameAnnotation, drawType, skeletonLandmark]

@@ -1240,7 +1240,7 @@ export default function Canvas(props) {
             setSkeletonLandmark(skeletonLandmark + 1);
         } else { // if done
             setSkeletonLandmark(null);
-            setDrawType(null); // will trigger useEffect to call finishDrawSkeleton() 
+            setDrawType(null); // will trigger useEffect to call finishDrawSkeleton(), and in skeletonBtn trigger useEffect to reset clicked and skeletonLandmark
             setAnnoIdToDraw(null);
         }
     }

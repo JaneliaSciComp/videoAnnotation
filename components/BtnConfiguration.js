@@ -75,6 +75,7 @@ export default function BtnConfiguration(props) {
     useEffect(() => {
         // initialize a group when comp mount
         if (Object.keys(btnConfigData).length===0) {
+            console.log('btnConfigData.length=0', btnConfigData);
             addGroup();
         }
       }, []

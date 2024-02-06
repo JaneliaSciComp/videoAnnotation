@@ -31,7 +31,8 @@ export default function SkeletonBtn(props) {
                 },
                 {index: 1, ...},
                 ...
-            ]
+            ],
+            skeletonName: 'mouse',
             // drawType={drawType} 
             // setDrawType={setDrawType} 
             // skeletonLandmark // indicate the current landmark index to draw, Canvas also has them
@@ -84,6 +85,12 @@ export default function SkeletonBtn(props) {
             setRadioValue(2);
         }
     }, [skeletonLandmark])
+
+    // useEffect(() => {
+    //     if (!clicked) {
+    //         setSkeletonLandmark(null);
+    //     }
+    // }, [clicked])
 
 
     // function addRadioToAnnotation(value) {
@@ -146,6 +153,7 @@ export default function SkeletonBtn(props) {
                 type: 'skeleton',   
                 groupIndex: props.groupIndex, 
                 frameNum: frameNum,
+                label: props.skeletonName,
                 data: initData,
             };
             // console.log('shape called', props);
@@ -171,8 +179,7 @@ export default function SkeletonBtn(props) {
                 setSkeletonLandmark(skeletonLandmark+1);
             } else { // if this is the last landmark
                 setDrawType(null);
-                setSkeletonLandmark(0);
-                
+                setSkeletonLandmark(null);
                 setAnnoIdToDraw(null);
             }
             
@@ -184,20 +191,13 @@ export default function SkeletonBtn(props) {
 
     return (
         <div className='d-flex align-items-center'>
-            {/* <Button className={styles.btn}
-                style={{color:clicked?'white':props.data[props.skeletonLandmark?props.skeletonLandmark:0].color, 
-                background: clicked?props.data[props.skeletonLandmark?props.skeletonLandmark:0].color:'white', 
-                border:'2px solid '+props.data[props.skeletonLandmark?props.skeletonLandmark:0].color}} 
-                onClick={clickHandler}>
-            {`${(props.skeletonLandmark?props.skeletonLandmark:0) +1}-${props.data[props.skeletonLandmark?props.skeletonLandmark:0].label}`}
-            </Button> */}
-
             <Button className={styles.btn}
                 style={{color:clicked?'white':props.data[skeletonLandmark?skeletonLandmark:0].color, 
                 background: clicked?props.data[skeletonLandmark?skeletonLandmark:0].color:'white', 
                 border:'2px solid '+props.data[skeletonLandmark?skeletonLandmark:0].color}} 
                 onClick={clickHandler}>
-            {`${(skeletonLandmark?skeletonLandmark:0) +1} ${props.data[skeletonLandmark?skeletonLandmark:0].label}`}
+            {/* {`${(skeletonLandmark?skeletonLandmark:0) +1} ${props.data[skeletonLandmark?skeletonLandmark:0].label}`} */}
+                {Number.isInteger(skeletonLandmark) ? `${skeletonLandmark+1} ${props.data[skeletonLandmark].label}` : props.skeletonName}
             </Button>
 
             <Radio.Group className='ms-3' value={radioValue} onChange={onRadioChange}>
