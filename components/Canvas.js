@@ -201,12 +201,9 @@ export default function Canvas(props) {
         getBrushData();
 
         // remove fabric object
-        if (Object.keys(fabricObjListRef.current).length>0) {
-            Object.keys(fabricObjListRef.current).forEach(id => {
-                removeObjFromCanvasById(id);
-            });
-            fabricObjListRef.current = {};
-        }
+        removeAllObjFromCanvas();
+        fabricObjListRef.current = {};
+        
 
         // remove unfinished objects
         canvas.polygonPoints.forEach(p=>canvas.remove(p));
@@ -250,6 +247,14 @@ export default function Canvas(props) {
 
       }, [frameUrl]
     )
+
+    function removeAllObjFromCanvas() {
+        if (Object.keys(fabricObjListRef.current).length>0) {
+            Object.keys(fabricObjListRef.current).forEach(id => {
+                removeObjFromCanvasById(id);
+            });
+        }
+    }
 
     function removeObjFromCanvasById(id) {
         const canvas = canvasObjRef.current;
@@ -312,6 +317,8 @@ export default function Canvas(props) {
         // canvas.renderAll();
 
         if (uploader !== prevUploaderRef.current) {
+            removeAllObjFromCanvas();
+            fabricObjListRef.current = {};
             createFabricObjBasedOnAnnotation();
             prevUploaderRef.current = uploader;
         }
@@ -678,6 +685,9 @@ export default function Canvas(props) {
 
 
     function createFabricObjBasedOnAnnotation() {
+        removeAllObjFromCanvas();
+        fabricObjListRef.current = {};
+        
         const canvas = canvasObjRef.current;
         // console.log(canvas.getObjects());
         // console.log(frameNum, annotationRef.current);

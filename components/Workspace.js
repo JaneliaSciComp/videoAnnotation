@@ -122,7 +122,7 @@ export default function Workspace(props) {
     function onReaderLoad(e, type){
         // console.log(e.target.result);
         const obj = JSON.parse(e.target.result);
-        // console.log(obj);
+        console.log(obj);
         if (type === 'annotation') {
             saveAnnotationAndUpdateStates(); 
             prevFrameNum.current = null; 
@@ -195,6 +195,8 @@ export default function Workspace(props) {
 
     useEffect(()=> {
         if (props.btnConfigData) {
+            convertEdgeArrToSet(props.btnConfigData);
+            setBtnConfigData(props.btnConfigData);
             setBtnConfigData({...props.btnConfigData});
         }
     }, [props.btnConfigData])

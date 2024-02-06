@@ -91,12 +91,18 @@ export default function Home() {
     edgeData: {
         color: '#1677FF',
         edges: [
-            new Set([1]),
-            new Set([0,2,3,4]),
-            new Set([1]),
-            new Set([1]),
-            new Set([1, 5]),
-            new Set([4])
+            // new Set([1]),
+            // new Set([0,2,3,4]),
+            // new Set([1]),
+            // new Set([1]),
+            // new Set([1, 5]),
+            // new Set([4])
+            [1],
+            [0,2,3,4],
+            [1],
+            [1],
+            [1, 5],
+            [4]
         ]
     }
 }}

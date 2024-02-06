@@ -22,7 +22,7 @@ export default function JsonUploader(props) {
 
 
     function changeHandler(e) {
-        console.log(e);
+        // console.log(e);
         // if (e.file.status !== 'uploading') {
         //   console.log(e.file, e.fileList);
         // }
@@ -53,7 +53,7 @@ export default function JsonUploader(props) {
           type='file' 
           accept='json'
           onChange={changeHandler}>
-            <Button icon={<UploadOutlined />}>Upload {props.type}</Button>
+            <Button className='d-flex align-items-center' icon={<UploadOutlined />}>Upload {props.type}</Button>
         </Upload>
     )
 }
