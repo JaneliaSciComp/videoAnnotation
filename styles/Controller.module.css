@@ -1,11 +1,11 @@
 .groupSelect {
     /* margin: 0 2px; */
-    width: 9em;
+    width: 8em;
 }
 
 .btnSelect {
     /* margin: 0 2px; */
-    width: 10em;
+    width: 9em;
 }
 
 .numInput {
@@ -24,7 +24,7 @@
 }
 
 .labelText {
-    width: 15em;
+    width: 11em;
     border-radius: 0;
 }
 
@@ -39,8 +39,8 @@
     border-right: none;
 } */
 
-.designContainer {
-    width: 37em;
+.btnConfigContainer {
+    width: 33em;
     margin: 2em 0;
     padding-left: 1em;
     padding-right: 1em; 
@@ -63,13 +63,13 @@
 }
 
 .btnGroupControllerContainer {
-    width: 35em;
+    width: 28em;
     /* margin: 0.5em 0; */
     padding: 0.5em;
 }
 
 .btnGroupControllerContainerBordered {
-    width: 35em;
+    width: 28em;
     /* margin: 0.5em 0; */
     padding: 0.5em;
     border: 1px solid rgb(222, 226, 230);
@@ -78,5 +78,5 @@
 
 .crowdSelect {
     /* margin: 0 2px; */
-    width: 10em;
+    width: 6em;
 }

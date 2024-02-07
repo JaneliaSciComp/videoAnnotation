@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useState} from 'react';
 import Head from 'next/head';
 import Workspace from '../components/Workspace.js';
 import ShapeBtn from '../components/ShapeBtn.js';
@@ -15,9 +15,12 @@ import BrushBtn from '../components/BrushBtn.js';
 import BrushTool from '../components/BrushTool.js';
 import AnnotationTable from '../components/AnnotationTable.js';
 import SaveBtn from '../components/SaveBtn.js';
-import {Row, Col} from 'react-bootstrap';
 // import ChartCombo from '../components/ChartCombo.js';
 import JsonUploader from '../components/JsonUploader.js';
+import ProjectManager from '../components/ProjectManager.js';
+import {Row, Col} from 'react-bootstrap';
+import { Button } from 'antd';
+
 
 // client side components
 import dynamic from 'next/dynamic';
@@ -25,6 +28,7 @@ const Chart = dynamic(() => import('../components/ChartCombo.js'), { ssr: false 
 
 
 export default function Home() {
+  const [projectManagerOpen, setProjectManagerOpen] = useState(true);
   
   const groupData = {
     groupIndex:'123',
@@ -106,25 +110,30 @@ export default function Home() {
             [4]
         ]
     }
-}}
+  }}
 
-const metricsExample= ['length', 'width', 'chase'];
-const nums = [71,56,-24,56,26,42,10,-82,82,47,-77,29,54,-40,54,91,96,-15,90,23];
-const data = {
-        length: {
-            data: nums,
-            // borderColor: '#F5222D', //'rgb(255, 99, 132)',
-            // backgroundColor: '#F5222D80' //'rgba(255, 99, 132, 0.5)',
-        },
-        width: {
-            data: nums.map(n => n+10), 
-            // borderColor: '#3DDCF9', //'rgb(22, 119, 255)',
-            // backgroundColor: '#3DDCF980' //'rgba(22, 119, 255, 0.5)',
-        },
-        chase: {
-            data: [0,0,0,0,0,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1],
+  const metricsExample= ['length', 'width', 'chase'];
+  const nums = [71,56,-24,56,26,42,10,-82,82,47,-77,29,54,-40,54,91,96,-15,90,23];
+  const data = {
+          length: {
+              data: nums,
+              // borderColor: '#F5222D', //'rgb(255, 99, 132)',
+              // backgroundColor: '#F5222D80' //'rgba(255, 99, 132, 0.5)',
+          },
+          width: {
+              data: nums.map(n => n+10), 
+              // borderColor: '#3DDCF9', //'rgb(22, 119, 255)',
+              // backgroundColor: '#3DDCF980' //'rgba(22, 119, 255, 0.5)',
+          },
+          chase: {
+              data: [0,0,0,0,0,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1],
+          }
         }
-      }
+
+
+  function openProjectManager() {
+    setProjectManagerOpen(!projectManagerOpen);
+  }
 
 //btnConfigData={btnConfigData}
 
@@ -135,7 +144,7 @@ const data = {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Workspace btnConfigData={btnConfigData}> 
+      <Workspace > 
         {/* <Category label='chase'/>
         <ShapeBtn type='bbox' label='fly' color='red' /> */}
         {/* <BtnGroup data={groupData} /> */}
@@ -143,7 +152,13 @@ const data = {
         <JsonUploader type='annotation'/>
         <JsonUploader type='configuration'/>
 
-        <BtnConfiguration />
+        {/* <BtnConfiguration /> */}
+        <Row>
+          <Button type="primary" onClick={openProjectManager}>
+            Project
+          </Button>
+          <ProjectManager open={projectManagerOpen} setOpen={setProjectManagerOpen}/>
+        </Row>
         <Row >
           <Col>
             <Category label='chase'/>

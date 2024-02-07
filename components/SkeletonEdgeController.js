@@ -195,7 +195,7 @@ export default function SkeletonEdgeController(props) {
 
     return (
         <div className='my-2'>
-            <div className='my-2 d-flex align-items-center'>
+            {/* <div className='my-2 d-flex align-items-center'>
                 <span className='mx-2'>Add Edge</span> 
                 <ColorPicker 
                     onChange={onColorChange}
@@ -208,10 +208,21 @@ export default function SkeletonEdgeController(props) {
                         },
                     ]}
                     />
-            </div>
-            {/* <p className='mx-2'>Add Edge</p>  */}
-            <br />
+            </div> 
+            <br /> */}
             <Row className='d-flex justify-content-center'>
+                <ColorPicker 
+                    className='me-3'
+                    onChange={onColorChange}
+                    value={color}
+                    disabled = {props.disableColorPicker}
+                    size="small"
+                    presets={[
+                        { label: 'Recommended',
+                        colors: predefinedColors,
+                        },
+                    ]}
+                    />
                 <Button onClick={onLastBtnClick} size='small' className='mx-2'>Last</Button>
                 <Button onClick={onNextBtnClick} size='small' className='mx-2'>Next</Button>
             </Row>
@@ -232,11 +243,11 @@ export default function SkeletonEdgeController(props) {
             }
             
             <br />
-            <Row className='my-2 d-flex justify-content-center'>
+            <Row className='my-1 d-flex justify-content-center'>
                 <Button type="primary" onClick={onDoneBtnClick} size='small'>Done</Button>
             </Row>
             {edgeAdded ? 
-                <Row className='my-2 d-flex justify-content-center'>
+                <Row className='d-flex justify-content-center'>
                     <p>Edge info Added</p>
                 </Row>
                 :null

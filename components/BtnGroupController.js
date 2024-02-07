@@ -355,6 +355,12 @@ export default function BtnGroupController(props) {
                     allowClear
                     placeholder="Label: e.g. 'mouse'"
                     onChange={onSkeletonNameChange}
+                    size='small'
+                    // count={{ //for antd ≥5.10
+                    //     show: true,
+                    //     max: 20,
+                    //     // exceedFormatter: (txt, { max }) => txt.slice(0, max),
+                    // }}
                     />
             );
         }
@@ -370,7 +376,7 @@ export default function BtnGroupController(props) {
                     color={childrenData[i].color}
                     label={childrenData[i].label}
                     typeSelectPlaceHolder='Btn type'
-                    labelPlaceHolder={childrenData[i].btnType === 'skeleton' ? "Landmark: e.g. 'head'" : "Label: e.g. 'mouse'"}
+                    labelPlaceHolder={childrenData[i].btnType === 'skeleton' ? "Landmark: 'head'" : "Label: 'mouse'"}
                     disableTypeSelect
                     enableDelete
                     // onTypeChange={onChildTypeChange}
@@ -384,7 +390,14 @@ export default function BtnGroupController(props) {
         if (childrenData[0] && childrenData[0].btnType === 'skeleton') {
             // console.log(childrenData[0].btnType=== 'skeleton');
             res.push(
-                <Button key={childrenData.length} onClick={onAddEdgeBtnClick} disabled={disableEdgeBtn}>Add Edge</Button>
+                <Button 
+                    key={childrenData.length} 
+                    onClick={onAddEdgeBtnClick} 
+                    disabled={disableEdgeBtn}
+                    size='small'
+                    >
+                    Add Edge
+                </Button>
             
             // <SkeletonEdgeController 
             //             index={getSelfIndex()}
@@ -576,14 +589,16 @@ export default function BtnGroupController(props) {
                         options={btnGroupTypeOptions}
                         placeholder={props.groupTypePlaceHolder}
                         disabled={props.disableGroupTypeSelect}
+                        size='small'
                         />
                     <Select className={styles.btnSelect}
                         defaultValue={props.defaultBtnType}
                         value={btnType}
                         onChange={onBtnTypeChange}
-                        options={groupType ? btnTypeOptions[groupType] : btnTypeOptions.general}
+                        options={groupType ? btnTypeOptions[groupType] : []}
                         // placeholder={props.btnTypePlaceHolder}
                         disabled={props.disableBtnTypeSelect}
+                        size='small'
                         />
                     <InputNumber className={styles.numInput}
                         // className={videoStyles.playFpsInput} 
@@ -592,7 +607,7 @@ export default function BtnGroupController(props) {
                         defaultValue={props.defualtBtnNum}
                         value={btnNum}
                         onChange={onBtnNumChange}
-                        // size="small"
+                        size="small"
                         disabled={props.disableBtnNumInput}
                         />
                 </Space.Compact>
@@ -603,7 +618,7 @@ export default function BtnGroupController(props) {
                         type='text'
                         icon={<DownOutlined />}
                         onClick={onDownBtnClick} 
-                        // size='small'
+                        size='small'
                         />
                     {/* :null
                 } */}
@@ -613,7 +628,7 @@ export default function BtnGroupController(props) {
                         type='text'
                         icon={<DeleteOutlined />} 
                         onClick={onDelete}
-                        // size='small'
+                        size='small'
                         />
                     :null
                 }
@@ -645,7 +660,7 @@ export default function BtnGroupController(props) {
             {!props.disableDoneBtn ?
                 <div className='my-2 d-flex flex-column align-items-center'>
                     <div className='my-2'>
-                        <Button type="primary" onClick={onDoneBtnClick}>Done</Button>
+                        <Button type="primary" onClick={onDoneBtnClick} size='small'>Done</Button>
                     </div>
                     {/* {dataAdded ? 
                         <div className='my-2'>

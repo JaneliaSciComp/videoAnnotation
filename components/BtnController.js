@@ -115,6 +115,7 @@ export default function BtnController(props) {
                     options={props.groupType?btnTypeOptions[props.groupType]:btnTypeOptions.general}
                     placeholder={props.typeSelectPlaceHolder}
                     disabled={props.disableTypeSelect}
+                    size='small'
                     />
                 <Input className={styles.labelText}
                     // addonBefore="Label"
@@ -124,14 +125,16 @@ export default function BtnController(props) {
                     onChange={onLabelChange}
                     placeholder={props.labelPlaceHolder}
                     disabled = {props.disableLabelInput}
+                    size='small'
                     />
                 {props.btnType==='brush' ?
                     <Select className={styles.crowdSelect}
                         value={props.hasCrowdOption}
                         onChange={onCrowdChange}
                         options={crowdSelectOptions}
-                        placeholder='Crowd Option'
+                        placeholder='Crowd'
                         disabled={props.disableCrowdSelect}
+                        size='small'
                         /> 
                     : null
                 }
@@ -141,7 +144,7 @@ export default function BtnController(props) {
                     value={props.color ? props.color : '#1677FF'}
                     onChange={onColorChange}
                     disabled = {props.disableColorPicker}
-                    // size="small"
+                    size="small"
                     presets={[
                         { label: 'Recommended',
                           colors: predefinedColors,
@@ -155,7 +158,7 @@ export default function BtnController(props) {
                 type='text'
                 icon={<DeleteOutlined />} 
                 onClick={onDelete}
-                // size='small'
+                size='small'
                 />
                 :null
             }

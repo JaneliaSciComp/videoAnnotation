@@ -131,12 +131,12 @@ export default function BtnConfiguration(props) {
 
     function onCreateBtnClick() {
         const newGetData = {};
-        console.log(getData);
+        // console.log(getData);
         for (let i in getData) {
-            console.log(i);
+            // console.log(i);
             newGetData[i] = true;
         }
-        console.log(newGetData)
+        // console.log(newGetData)
         setGetData(newGetData);
         setHide(true);
 
@@ -170,7 +170,7 @@ export default function BtnConfiguration(props) {
 
 
     return (
-        <div className={styles.designContainer} 
+        <div className={styles.btnConfigContainer} 
                 style={{display: hide?'none':'block'}}>
             <p className='my-2'>Customize Annotation Buttons</p>
             {/* <ConfigProvider configData={data} configDataSetter={setData}> */}
