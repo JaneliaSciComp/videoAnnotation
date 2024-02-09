@@ -40,7 +40,9 @@
 } */
 
 .btnConfigContainer {
-    width: 33em;
+    /* width: 33em; */
+    width: 100%;
+    overflow-x: auto;
     margin: 2em 0;
     padding-left: 1em;
     padding-right: 1em; 

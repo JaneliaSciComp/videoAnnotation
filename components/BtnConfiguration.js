@@ -59,7 +59,7 @@ export default function BtnConfiguration(props) {
     // const [children, setChildren] = useState([]);
     // const [skeletonData, setSkeletonData] = useState({});
     const [getData, setGetData] = useState({}); // {btnGroupIndex1: false, index2: false, ...}
-    const [hide, setHide] = useState();
+    // const [hide, setHide] = useState();
 
     // get context
     const btnConfigData = useStates().btnConfigData;
@@ -138,7 +138,7 @@ export default function BtnConfiguration(props) {
         }
         // console.log(newGetData)
         setGetData(newGetData);
-        setHide(true);
+        // setHide(true);
 
 
         if (props.onCreateBtnClick) {
@@ -171,7 +171,8 @@ export default function BtnConfiguration(props) {
 
     return (
         <div className={styles.btnConfigContainer} 
-                style={{display: hide?'none':'block'}}>
+                // style={{display: hide?'none':'block'}}
+                >
             <p className='my-2'>Customize Annotation Buttons</p>
             {/* <ConfigProvider configData={data} configDataSetter={setData}> */}
                 <Space direction='vertical'>
@@ -183,7 +184,7 @@ export default function BtnConfiguration(props) {
                             // data={data}
                             // setData={setData}
                             groupTypePlaceHolder='Group Type'
-                            btnTypePlaceHolder='Btn type'
+                            btnTypePlaceHolder='Btn Type'
                             defaultGroupType={props.defaultGroupType}
                             groupType={props.groupType}
                             defaultBtnType={props.defualtBtnType}

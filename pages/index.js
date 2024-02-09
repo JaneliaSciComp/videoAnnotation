@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import Head from 'next/head';
 import Workspace from '../components/Workspace.js';
 import ShapeBtn from '../components/ShapeBtn.js';
@@ -18,6 +18,7 @@ import SaveBtn from '../components/SaveBtn.js';
 // import ChartCombo from '../components/ChartCombo.js';
 import JsonUploader from '../components/JsonUploader.js';
 import ProjectManager from '../components/ProjectManager.js';
+import ProjectDropdown from '../components/ProjectDropdown.js';
 import {Row, Col} from 'react-bootstrap';
 import { Button } from 'antd';
 
@@ -28,7 +29,7 @@ const Chart = dynamic(() => import('../components/ChartCombo.js'), { ssr: false 
 
 
 export default function Home() {
-  const [projectManagerOpen, setProjectManagerOpen] = useState(true);
+  // const [managerOpen, setManagerOpen] = useState(false);
   
   const groupData = {
     groupIndex:'123',
@@ -131,8 +132,8 @@ export default function Home() {
         }
 
 
-  function openProjectManager() {
-    setProjectManagerOpen(!projectManagerOpen);
+  function openManager() {
+    setManagerOpen(!managerOpen);
   }
 
 //btnConfigData={btnConfigData}
@@ -151,14 +152,14 @@ export default function Home() {
         {/* <BtnGroupController /> */}
         <JsonUploader type='annotation'/>
         <JsonUploader type='configuration'/>
+        
 
         {/* <BtnConfiguration /> */}
-        <Row>
-          <Button type="primary" onClick={openProjectManager}>
-            Project
-          </Button>
-          <ProjectManager open={projectManagerOpen} setOpen={setProjectManagerOpen}/>
-        </Row>
+        {/* <Button type="primary" onClick={openManager} style={{width: '6em'}}>
+          Project
+        </Button>
+        <ProjectManager open={managerOpen} setOpen={setManagerOpen}/> */}
+        <ProjectDropdown />
         <Row >
           <Col>
             <Category label='chase'/>

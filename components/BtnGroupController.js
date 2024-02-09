@@ -596,7 +596,7 @@ export default function BtnGroupController(props) {
                         value={btnType}
                         onChange={onBtnTypeChange}
                         options={groupType ? btnTypeOptions[groupType] : []}
-                        // placeholder={props.btnTypePlaceHolder}
+                        placeholder={props.btnTypePlaceHolder}
                         disabled={props.disableBtnTypeSelect}
                         size='small'
                         />
