@@ -33,13 +33,6 @@ export default function Workspace(props) {
     const annotationRef = useRef({}); //if image, only one child with frameNum 0
     const [frameAnnotation, setFrameAnnotation] = useState({}); 
     const [activeAnnoObj, setActiveAnnoObj] = useState();
-    // const [categoryId, setCategoryId] = useState({});
-    // const [keyPointIdList, setKeyPointIdList] = useState({});
-    // const [drawKeyPoint, setDrawKeyPoint] = useState(false);
-    // const [rectIdList, setRectIdList] = useState({});
-    // const [drawRect, setDrawRect] = useState(false);
-    // const [polygonIdList, setPolygonIdList] = useState({});
-    // const [drawPolygon, setDrawPolygon] = useState(false);
     const [drawType, setDrawType] = useState();
     const [skeletonLandmark, setSkeletonLandmark] = useState(); // the current landmark index to draw, pass to skeletonBtn and Canvas
     const [useEraser, setUseEraser] = useState(); //for brush, boolean
@@ -56,6 +49,7 @@ export default function Workspace(props) {
     const [save, setSave] = useState(false);
     // const [chartMetric, setChartMetric] = useState();
     const [uploader, setUploader] = useState(); // {type: 'annotation'/'configuration', file: fileObj}
+    const projectConfigDataRef = useRef({}); //{projectName: 'str', description: 'str'/null, btnConfigData: obj/a copy of btnConfigData state}
 
 
     console.log('workspace render');
@@ -82,7 +76,8 @@ export default function Workspace(props) {
         totalFrameCount: totalFrameCount,
         save: save,
         // chartMetric: chartMetric,
-        uploader: uploader
+        uploader: uploader,
+        projectConfigDataRef: projectConfigDataRef,
     }
 
     const stateSetters = {

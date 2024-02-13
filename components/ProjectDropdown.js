@@ -1,13 +1,18 @@
 import React, {useState, useEffect, useRef} from 'react';
 import { useStateSetters, useStates } from './AppContext'; 
-import { Dropdown } from 'antd';
+import { Dropdown, Button, Modal } from 'antd';
 import ProjectManager from '../components/ProjectManager.js';
 
 
 
 export default function ProjectDropdown(props) {
+    /**
+     *  props:
+     *      //serverType: 'local' / 'remote'
+     */
+
     const [managerOpen, setManagerOpen] = useState(false);
-    const [managerType, setManagerType] = useState();
+    const [managerStatus, setManagerStatus] = useState(); //'new' / 'edit'
 
     const items = [
         {
@@ -32,19 +37,39 @@ export default function ProjectDropdown(props) {
         const label = items[e.key].label;
         switch (label) {
             case 'New':
-                setManagerType('new');
-                setManagerOpen(true);
+                Modal.confirm({
+                    title: 'Alert',
+                    content: 'The current project configuration data will be removed!',
+                    onOk: okClickHandler,
+                    onCancel: cancelClickHandler,
+                    // footer: (_, { OkBtn, CancelBtn }) => (
+                    //   <>
+                    //     <CancelBtn />
+                    //     <OkBtn />
+                    //   </>
+                    // ),
+                  });
                 break;
             case 'Open':
 
                 break;
             case 'Edit':
-
+                setManagerStatus('edit');
+                setManagerOpen(true);
                 break;
             case 'Load Annotation':
 
                 break;
         }
+    }
+
+    function okClickHandler() {
+        setManagerStatus('new');
+        setManagerOpen(true);
+    }
+
+    function cancelClickHandler() {
+        setManagerOpen(false);
     }
 
     return (
@@ -61,8 +86,9 @@ export default function ProjectDropdown(props) {
                 </a>
             </Dropdown>
 
-            <ProjectManager 
-                type={managerType} 
+            <ProjectManager
+                // serverType={props.serverType} 
+                status={managerStatus} 
                 open={managerOpen} 
                 setOpen={setManagerOpen} 
                 />
