@@ -11,11 +11,13 @@ export default function ProjectManager(props) {
      *      setOpen: setter of open. In order to give controll to ProjectManager's internal buttons.
      *      // serverType: 'local' / 'remote'
      *      status: 'new' / 'edit'
-     *      configData: 
+     *      
+     *      For reference, projectConfigDataRef: 
      *          {
      *              projectName: str,
      *              // projectDirectory: (no need. user still has to upload/save files mannually) Only for local server. '/user/project1', a str pointing to a local folder where all annotation and config data are stored.
      *              description: str, optional
+     *              btnConfigData: {}
      *          }
      */
 

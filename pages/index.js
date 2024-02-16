@@ -150,8 +150,8 @@ export default function Home() {
         <ShapeBtn type='bbox' label='fly' color='red' /> */}
         {/* <BtnGroup data={groupData} /> */}
         {/* <BtnGroupController /> */}
-        <JsonUploader type='annotation'/>
-        <JsonUploader type='configuration'/>
+        {/* <JsonUploader type='annotation'/>
+        <JsonUploader type='configuration'/> */}
         
 
         {/* <BtnConfiguration /> */}

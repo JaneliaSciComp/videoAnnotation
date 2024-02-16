@@ -2,6 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import { useStateSetters, useStates } from './AppContext'; 
 import { Dropdown, Button, Modal } from 'antd';
 import ProjectManager from '../components/ProjectManager.js';
+import ModalJsonUploader from './ModalJsonUploader.js';
 
 
 
@@ -9,10 +10,16 @@ export default function ProjectDropdown(props) {
     /**
      *  props:
      *      //serverType: 'local' / 'remote'
+     *      //uploaderOkClickHandler: will be called after natural behavior of uploading and updating projectConfigData.
+     *      //uploaderCancelClickHandler: will be called after natural behavior of closing the uploader modal window
      */
 
     const [managerOpen, setManagerOpen] = useState(false);
     const [managerStatus, setManagerStatus] = useState(); //'new' / 'edit'
+    const [uploaderOpen, setUploaderOpen] = useState(false);
+
+    const projectConfigDataRef = useStates().projectConfigDataRef;
+    const setBtnConfigData = useStateSetters().setBtnConfigData;
 
     const items = [
         {
@@ -27,50 +34,68 @@ export default function ProjectDropdown(props) {
           label: 'Edit',
           key: '2',
         },
-        {
-          label: 'Load Annotation',
-          key: '3',
-        },
+        // {
+        //   label: 'Load Annotation',
+        //   key: '3',
+        // },
     ];
 
     function onClick(e) {
         const label = items[e.key].label;
         switch (label) {
             case 'New':
-                Modal.confirm({
-                    title: 'Alert',
-                    content: 'The current project configuration data will be removed!',
-                    onOk: okClickHandler,
-                    onCancel: cancelClickHandler,
-                    // footer: (_, { OkBtn, CancelBtn }) => (
-                    //   <>
-                    //     <CancelBtn />
-                    //     <OkBtn />
-                    //   </>
-                    // ),
-                  });
+                if (Object.keys(projectConfigDataRef.current).length) {
+                    confirm();
+                } else {
+                    setManagerStatus('new');
+                    setManagerOpen(true);
+                }
                 break;
             case 'Open':
-
+                setUploaderOpen(true);
                 break;
             case 'Edit':
                 setManagerStatus('edit');
                 setManagerOpen(true);
                 break;
-            case 'Load Annotation':
+            // case 'Load Annotation':
 
-                break;
+            //     break;
         }
     }
 
-    function okClickHandler() {
+    function confirmOkClickHandler() {
+        // projectConfigDataRef.current = {};
+        // setBtnConfigData({});
         setManagerStatus('new');
         setManagerOpen(true);
     }
 
     function cancelClickHandler() {
         setManagerOpen(false);
+        setUploaderOpen(false);
     }
+
+    function confirm() {
+        Modal.confirm({
+            title: 'Alert',
+            content: 'The current project configuration data including annotation buttons will be removed!',
+            onOk: confirmOkClickHandler,
+            onCancel: cancelClickHandler,
+        });
+    }
+
+    // function uploaderOkClickHandler() {
+    //     confirm('open');
+    // }
+
+    // function uploaderCancelClickHandler() {
+    //     setUploaderOpen(false);
+
+    //     if (props.uploaderCancelClickHandler) {
+    //         props.uploaderCancelClickHandler();
+    //     }
+    // }
 
     return (
         <>
@@ -91,6 +116,14 @@ export default function ProjectDropdown(props) {
                 status={managerStatus} 
                 open={managerOpen} 
                 setOpen={setManagerOpen} 
+                />
+            
+            <ModalJsonUploader 
+                type='configuration'
+                open={uploaderOpen}
+                setOpen={setUploaderOpen}
+                // onOk={props.uploaderOkClickHandler} 
+                // onCancel={uploaderCancelClickHandler}
                 />
 
         </>

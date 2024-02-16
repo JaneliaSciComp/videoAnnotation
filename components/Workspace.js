@@ -133,8 +133,18 @@ export default function Workspace(props) {
                 setFrameAnnotation({});
             }
         } else {
-            convertEdgeArrToSet(obj);
-            setBtnConfigData(obj);
+            /**
+             * {
+                    projectName: str,
+                    description: str, optional
+                    btnConfigData: {}
+                }
+             */
+            projectConfigDataRef.current = obj;
+            const btnConfigObj = {...obj.btnConfigData};
+            console.log(btnConfigObj);
+            convertEdgeArrToSet(btnConfigObj);
+            setBtnConfigData(btnConfigObj);
         }
     }
 
