@@ -1479,56 +1479,59 @@ export default function Canvas(props) {
     }
 
     function createSkeleton(points, annoObjToDraw) {
-        // called only when go a frame with skeleton annotation, to draw skeleton landmarks and edges
+        // called only when go to a frame with skeleton annotation, to draw skeleton landmarks and edges
         // points: arr of point. [{x1: , y1: }, {x2:, y2: }, ...]
         const canvas = canvasObjRef.current;
         const id = annoObjToDraw.id;
-        const landmarksToDraw = btnConfigData[annoObjToDraw.groupIndex].childData; //[{index: 0, btnType: 'skeleton',label: 'head',color: '#1677FF'}, ...]
-        const edgesInfo = btnConfigData[annoObjToDraw.groupIndex].edgeData; // {color: '', edges: [set(), ...]}
-        const landmarksDrawn = [];
-        const edgesDrawn = {};
-
-        points.forEach((point, i) => { //point: {x: , y: }
-            if (annoObjToDraw.data[i][2]!==0) { //to exclude unlabelled landmark
-                const landmarkInfo = {
-                    id: id,
-                    color: landmarksToDraw[i].color,
-                    type: landmarksToDraw[i].btnType,
-                }
-                const landmark = createPoint(point, landmarkInfo, i);
-                canvas.add(landmark);
-                landmarksDrawn[i] = landmark;
+        if (btnConfigData[annoObjToDraw.groupIndex]?.groupType==='skeleton') {
+            const landmarksToDraw = btnConfigData[annoObjToDraw.groupIndex].childData; //[{index: 0, btnType: 'skeleton',label: 'head',color: '#1677FF'}, ...]
+            const edgesInfo = btnConfigData[annoObjToDraw.groupIndex].edgeData; // {color: '', edges: [set(), ...]}
+            const landmarksDrawn = [];
+            const edgesDrawn = {};
     
-                if (edgesInfo?.edges && edgesInfo.edges[i]) {
-                    const neighbors = new Set(edgesInfo.edges[i]);
-                    const edgeColor = edgesInfo.color;
-                    const edgeInfo = {
+            points.forEach((point, i) => { //point: {x: , y: }
+                if (annoObjToDraw.data[i][2]!==0) { //to exclude unlabelled landmark
+                    const landmarkInfo = {
                         id: id,
+                        color: landmarksToDraw[i].color,
                         type: landmarksToDraw[i].btnType,
-                        color: edgeColor,
                     }
-                    for (let n=0; n<i; n++) {
-                        if (landmarksDrawn[n] && neighbors.has(n)) { // the landmark is labelled and is a neighbor
-                            const line = createLine(point, points[n], edgeInfo);
-                            canvas.add(line);
-                            edgesDrawn[`${landmarksDrawn[n].index}-${landmark.index}`] = line;
+                    const landmark = createPoint(point, landmarkInfo, i);
+                    canvas.add(landmark);
+                    landmarksDrawn[i] = landmark;
+        
+                    if (edgesInfo?.edges && edgesInfo.edges[i]) {
+                        const neighbors = new Set(edgesInfo.edges[i]);
+                        const edgeColor = edgesInfo.color;
+                        const edgeInfo = {
+                            id: id,
+                            type: landmarksToDraw[i].btnType,
+                            color: edgeColor,
+                        }
+                        for (let n=0; n<i; n++) {
+                            if (landmarksDrawn[n] && neighbors.has(n)) { // the landmark is labelled and is a neighbor
+                                const line = createLine(point, points[n], edgeInfo);
+                                canvas.add(line);
+                                edgesDrawn[`${landmarksDrawn[n].index}-${landmark.index}`] = line;
+                            }
                         }
                     }
                 }
-            }
-        })
-        landmarksDrawn.forEach(p => {
-            p.lockMovementX=false; 
-            p.lockMovementY=false;
-            canvas.bringToFront(p);});
-
-        const skeletonObj = {
-            id: id,
-            type: 'skeleton',
-            landmarks: landmarksDrawn,
-            edges: edgesDrawn,
-        };
-        fabricObjListRef.current[id] = skeletonObj; /////
+            })
+            landmarksDrawn.forEach(p => {
+                p.lockMovementX=false; 
+                p.lockMovementY=false;
+                canvas.bringToFront(p);});
+    
+            const skeletonObj = {
+                id: id,
+                type: 'skeleton',
+                landmarks: landmarksDrawn,
+                edges: edgesDrawn,
+            };
+            fabricObjListRef.current[id] = skeletonObj; /////
+        }
+        
     }
 
     function createPathes() {

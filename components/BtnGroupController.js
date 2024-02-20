@@ -129,9 +129,11 @@ export default function BtnGroupController(props) {
 
     useEffect(() => {
         if (props.status==='edit') {
-            setGroupData([...btnConfigData[props.index].childData]);
-            setAddEdge(true);
+            if (btnConfigData[props.index].childData) {
+                setGroupData([...btnConfigData[props.index].childData]);
+            }
             if (btnConfigData[props.index].groupType==='skeleton') {
+                setAddEdge(true);
                 setSkeletonName(btnConfigData[props.index].skeletonName);
             }
         } else if (props.status==='new') {
@@ -182,11 +184,11 @@ export default function BtnGroupController(props) {
         // to update callback's scope when data changes
         // rerender addEdge btn when disableEdgeBtn state changes
         // console.log('useEffect called');
-        if (groupData && getSelfIndex()) { // avoid calling when component just mounted
+        if ((skeletonName || groupData) && getSelfIndex()) { // avoid calling when component just mounted
             renderChildren(); //update callback's scope
         } 
 
-      }, [groupData, disableEdgeBtn]
+      }, [groupData, disableEdgeBtn, skeletonName]
     )
 
     // useEffect(() => {
@@ -558,6 +560,7 @@ export default function BtnGroupController(props) {
 
     function onSkeletonNameChange(e) {
         setSkeletonName(e.target.value);
+
     } 
 
 

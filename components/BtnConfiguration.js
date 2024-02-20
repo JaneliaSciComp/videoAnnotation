@@ -51,11 +51,11 @@ export default function BtnConfiguration(props) {
             disableBtnNumInput: disable child btnGroupController's btnNumInput
             onAddBtnClick: When the Add btn is clicked, it will add a btnGroupController. Developer can also add extra function by defining this api. 
                 It will be called after the prebuilt function.
-            onCreateBtnClick: When the Create btn is clicked, it will append the btn data to the data property by calling setData. 
+            onCreateBtnClick: When the Create btn is clicked, it will signal the child BtnGroupControllers to pass data to btnConfigData, then Workspace will create btns. 
                 Developer can also add extra function by defining this api. It will be called after the appending function.
                 Takes the data as the argument.
             hideCreateBtn: boolean. Useful when BtnConfiguration is nested in ProjectManager.
-            status: 'new' / 'edit' / null. Required when btnConfiguration is used either solely (needs to create parent comp to update it) or inside ProjectManager.
+            status: 'new' / 'edit' / null. Required when btnConfiguration is used either solely (needs to have parent comp to update its value) or inside ProjectManager.
                 If 'new', show empty window; if 'edit', load btnConfigData; null is just to enable change of status, otherwise if open it twice as 'new', useEffect won't be triggered.
             // reload: boolean. The parent use this to signal btnConfiguration to display BtnConfigData. Useful when BtnConfiguration is nested in ProjectManager.
             // setReload: setter of reload.
@@ -87,9 +87,7 @@ export default function BtnConfiguration(props) {
             console.log('new btnConfig');
             addGroup('new');            
         } 
-        // else if (props.status === 'edit') {
-
-        // }
+        
       }, [props.status]
     )
 
@@ -108,6 +106,7 @@ export default function BtnConfiguration(props) {
     // )
 
     useEffect(() => {
+        console.log('confirmConfig changed', confirmConfig)
         if (confirmConfig) {
             onCreateBtnClick();
             setConfirmConfig(false);
@@ -159,7 +158,9 @@ export default function BtnConfiguration(props) {
 
 
     function onAddBtnClick() {
-        addGroup('add');
+        if (props.status) {
+            addGroup('add');
+        } 
 
         if (props.onAddBtnClick) {
             props.onAddBtnClick();
@@ -168,20 +169,27 @@ export default function BtnConfiguration(props) {
 
 
     function onCreateBtnClick() {
-        const newGetData = {};
-        // console.log(getData);
-        for (let i in getData) {
-            // console.log(i);
-            newGetData[i] = true;
-        }
-        // console.log(newGetData)
-        setGetData(newGetData);
-        // setHide(true);
+        // if (props.status) {
+            if (props.status === 'edit') {
+                if (Object.keys(btnConfigData).length > 0) {
+                    Object.keys(btnConfigData).forEach(index => getData[index]=false);
+                }
+            }
+            
+            console.log('createBtn',getData);
+            const newGetData = {};
+            for (let i in getData) {
+                // console.log(i);
+                newGetData[i] = true;
+            }
+            // console.log(newGetData)
+            setGetData(newGetData);
+            // setHide(true);
 
-
-        if (props.onCreateBtnClick) {
-            props.onCreateBtnClick({...btnConfigData});
-        }
+            if (props.onCreateBtnClick) {
+                props.onCreateBtnClick({...btnConfigData});
+            }
+        // }
     }
 
     function onDelete(target) {

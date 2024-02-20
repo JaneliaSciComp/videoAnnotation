@@ -44,6 +44,10 @@ export default function ProjectManager(props) {
                 setBtnConfigStatus('new');
             } else if (props.status === 'edit') {
                 // display existing config data in modal
+                form.setFieldsValue({ 
+                    projectName: projectConfigDataRef.current.projectName,
+                    description: projectConfigDataRef.current.description
+                });
                 setOkDisable(false);
                 setBtnConfigStatus('edit');
             }

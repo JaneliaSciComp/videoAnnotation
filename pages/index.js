@@ -150,11 +150,11 @@ export default function Home() {
         <ShapeBtn type='bbox' label='fly' color='red' /> */}
         {/* <BtnGroup data={groupData} /> */}
         {/* <BtnGroupController /> */}
-        {/* <JsonUploader type='annotation'/>
-        <JsonUploader type='configuration'/> */}
+        {/* <JsonUploader type='annotation'/> */}
+        {/* <JsonUploader type='configuration'/> */}
         
 
-        {/* <BtnConfiguration /> */}
+        {/* <BtnConfiguration status='edit'/> */}
         {/* <Button type="primary" onClick={openManager} style={{width: '6em'}}>
           Project
         </Button>
@@ -172,7 +172,8 @@ export default function Home() {
           </Col>
           <Col>
             {/* <ActiveAnnotation /> */}
-            <SaveBtn />
+            <SaveBtn type='configuration'/>
+            <SaveBtn type='annotation' />
           </Col>
         </Row>
         <Row >

@@ -22,6 +22,7 @@ export default function ProjectDropdown(props) {
 
     const projectConfigDataRef = useStates().projectConfigDataRef;
     const setBtnConfigData = useStateSetters().setBtnConfigData;
+    const setSaveConfig = useStateSetters().setSaveConfig;
 
     const items = [
         {
@@ -36,17 +37,17 @@ export default function ProjectDropdown(props) {
           label: 'Edit',
           key: '2',
         },
-        // {
-        //   label: 'Load Annotation',
-        //   key: '3',
-        // },
+        {
+          label: 'Save',
+          key: '3',
+        },
     ];
 
     function onClick(e) {
         const label = items[e.key].label;
         switch (label) {
             case 'New':
-                if (Object.keys(projectConfigDataRef.current).length>1) { // 1 is the btnConfigData field, it's initialized as not null or undefined 
+                if (projectConfigDataRef.current?.projectName || (projectConfigDataRef.current?.btnConfigData && Object.keys(projectConfigDataRef.current.btnConfigData).length>0)) { // The btnConfigData field is initialized as not null or undefined 
                     confirm();
                 } else {
                     setManagerStatus('new');
@@ -60,9 +61,11 @@ export default function ProjectDropdown(props) {
                 setManagerStatus('edit');
                 setManagerOpen(true);
                 break;
-            // case 'Load Annotation':
-
-            //     break;
+            case 'Save':
+                if (projectConfigDataRef.current?.projectName || (projectConfigDataRef.current?.btnConfigData && Object.keys(projectConfigDataRef.current.btnConfigData).length>0)) {
+                    setSaveConfig(true);
+                }
+                break;
         }
     }
 

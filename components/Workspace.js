@@ -46,11 +46,12 @@ export default function Workspace(props) {
     // const [projectType, setProjectType] = useState('image'); //'image' or 'video'
     const [frameNumSignal, setFrameNumSignal] = useState(); // Chart use it to tell VideoUploader which frame to go to. 1-based
     const [totalFrameCount, setTotalFrameCount] = useState(0);
-    const [save, setSave] = useState(false);
+    // const [save, setSave] = useState(false);
     // const [chartMetric, setChartMetric] = useState();
     const [uploader, setUploader] = useState(); // {type: 'annotation'/'configuration', file: fileObj}
     const projectConfigDataRef = useRef({}); //{projectName: 'str', description: 'str'/null, btnConfigData: obj/copy of btnConfigData state,edges are array not set}
     const [confirmConfig, setConfirmConfig] = useState(); // ProjectManager use it to tell BtnConfiguration to create btns
+    const [saveConfig, setSaveConfig] = useState(false);
 
     console.log('workspace render');
 
@@ -74,11 +75,12 @@ export default function Workspace(props) {
         // projectType: projectType,
         frameNumSignal: frameNumSignal,
         totalFrameCount: totalFrameCount,
-        save: save,
+        // save: save,
         // chartMetric: chartMetric,
         uploader: uploader,
         projectConfigDataRef: projectConfigDataRef,
         confirmConfig: confirmConfig,
+        saveConfig: saveConfig,
     }
 
     const stateSetters = {
@@ -100,10 +102,11 @@ export default function Workspace(props) {
         // setProjectType: setProjectType,
         setFrameNumSignal: setFrameNumSignal,
         setTotalFrameCount: setTotalFrameCount,
-        setSave: setSave,
+        // setSave: setSave,
         // setChartMetric: setChartMetric,
         setUploader: setUploader,
-        setConfirmConfig: setConfirmConfig
+        setConfirmConfig: setConfirmConfig,
+        setSaveConfig: setSaveConfig,
     }
 
 
@@ -151,45 +154,45 @@ export default function Workspace(props) {
     }
 
 
-    useEffect(()=> {
-        if (save) {
-            // const annoCopy = clearUnfinishedAnnotation(frameAnnotation);
-            // annotationRef.current[frameNum] = annoCopy;
-            saveCurrentAnnotation();
-            const jsonAnno = JSON.stringify(annotationRef.current);
-            const blobAnno = new Blob([jsonAnno], {type: 'text/plain'});
+    // useEffect(()=> {
+    //     if (save) {
+    //         // const annoCopy = clearUnfinishedAnnotation(frameAnnotation);
+    //         // annotationRef.current[frameNum] = annoCopy;
+    //         saveCurrentAnnotation();
+    //         const jsonAnno = JSON.stringify(annotationRef.current);
+    //         const blobAnno = new Blob([jsonAnno], {type: 'text/plain'});
             
-            // console.log(btnConfigData);
-            // Object.values(btnConfigData).forEach(groupData => {
-            //     if (groupData.groupType === 'skeleton' && groupData.edgeData && groupData.edgeData.edges.length) {
-            //         const edgesArr = groupData.edgeData.edges.map(neighborSet => neighborSet?[...neighborSet]:null);
-            //         groupData.edgeData.edges = edgesArr;
-            //     }
-            // })
-            // projectConfigDataRef.current = {...projectConfigDataRef.current, btnConfigData: {...btnConfigData}};
-            console.log(projectConfigDataRef.current);
-            const jsonProjectConfig = JSON.stringify(projectConfigDataRef.current);
-            console.log(jsonProjectConfig);
-            const blobProjectConfig = new Blob([jsonProjectConfig], {type: 'text/plain'});
-            const zip = JSZip();
-            zip.file('annotations.json', blobAnno);
-            zip.file('projectConfiguration.json', blobProjectConfig);
-            zip.generateAsync({type: "blob"})
-                .then(res => {
-                    const a = document.createElement("a");
-                    a.href = URL.createObjectURL(res);
-                    a.download = 'archive.zip';
-                    a.click();
-                    URL.revokeObjectURL(a.href);
-                })
+    //         // console.log(btnConfigData);
+    //         // Object.values(btnConfigData).forEach(groupData => {
+    //         //     if (groupData.groupType === 'skeleton' && groupData.edgeData && groupData.edgeData.edges.length) {
+    //         //         const edgesArr = groupData.edgeData.edges.map(neighborSet => neighborSet?[...neighborSet]:null);
+    //         //         groupData.edgeData.edges = edgesArr;
+    //         //     }
+    //         // })
+    //         // projectConfigDataRef.current = {...projectConfigDataRef.current, btnConfigData: {...btnConfigData}};
+    //         console.log(projectConfigDataRef.current);
+    //         const jsonProjectConfig = JSON.stringify(projectConfigDataRef.current);
+    //         console.log(jsonProjectConfig);
+    //         const blobProjectConfig = new Blob([jsonProjectConfig], {type: 'text/plain'});
+    //         const zip = JSZip();
+    //         zip.file('annotations.json', blobAnno);
+    //         zip.file('projectConfiguration.json', blobProjectConfig);
+    //         zip.generateAsync({type: "blob"})
+    //             .then(res => {
+    //                 const a = document.createElement("a");
+    //                 a.href = URL.createObjectURL(res);
+    //                 a.download = 'archive.zip';
+    //                 a.click();
+    //                 URL.revokeObjectURL(a.href);
+    //             })
             
-            // const btnConfigDataCopy = {...btnConfigData};
-            // convertEdgeArrToSet(btnConfigDataCopy);
-            // setBtnConfigData(btnConfigDataCopy);
-            // console.log(btnConfigData);
-            setSave(false);
-        }
-    }, [save])
+    //         // const btnConfigDataCopy = {...btnConfigData};
+    //         // convertEdgeArrToSet(btnConfigDataCopy);
+    //         // setBtnConfigData(btnConfigDataCopy);
+    //         // console.log(btnConfigData);
+    //         setSave(false);
+    //     }
+    // }, [save])
 
     // function convertEdgeArrToSet(obj) { //obj is a copy of btnConfigData
     //     Object.values(obj).forEach(groupData => {
@@ -200,6 +203,21 @@ export default function Workspace(props) {
     //     })
     //     return obj;
     // }
+
+    useEffect(()=> {
+        if (saveConfig) {
+            console.log(projectConfigDataRef.current);
+            const jsonProjectConfig = JSON.stringify(projectConfigDataRef.current);
+            console.log(jsonProjectConfig);
+            const blobProjectConfig = new Blob([jsonProjectConfig], {type: 'text/plain'});
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blobProjectConfig);
+            a.download = 'configuration.json';
+            a.click();
+            URL.revokeObjectURL(a.href);
+            setSaveConfig(false);
+        }
+    }, [saveConfig])
 
 
     useEffect(()=> {

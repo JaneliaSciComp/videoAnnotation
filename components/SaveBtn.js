@@ -9,6 +9,7 @@ export default function SaveBtn(props) {
     /*
         
         Props: 
+            type: 'annotation' / 'configuration'
             
     */
     // const [clicked, setClicked] = useState(false);
@@ -17,29 +18,21 @@ export default function SaveBtn(props) {
     const frameUrl = useStates().frameUrl;
     // const frameAnnotation = useStates().frameAnnotation;
     // const setFrameAnnotation = useStateSetters().setFrameAnnotation;
-    const setSave = useStateSetters().setSave;
+    const setSaveConfig = useStateSetters().setSaveConfig;
 
     function clickHandler() {
-        if (Number.isInteger(frameNum) || frameUrl) {
-            
-            // // clear unfinished polygon and skeleton annoObj before setting new annoIdToDraw
-            // const annoCopy = clearUnfinishedAnnotation(frameAnnotation);
-            // setFrameAnnotation(annoCopy);
-            setSave(true);
-
-            // const json = JSON.stringify(annoCopy);
-            // const a = document.createElement("a");
-            // const file = new Blob([json], {type: 'text/plain'});
-            // a.href = URL.createObjectURL(file);
-            // a.download = 'annotations.json';
-            // a.click();
-            // URL.revokeObjectURL(a.href);
+        if (props.type === 'configuration') {
+            setSaveConfig(true);
+        } else if (props.type === 'annotation') {
+            if (Number.isInteger(frameNum) || frameUrl) {
+                // setSaveAnnotation(true);
+            }
         }
     }
 
     return (
         <Button className={styles.btn} onClick={clickHandler}>
-            Save
+            Save {props.type}
         </Button>
     )
 }

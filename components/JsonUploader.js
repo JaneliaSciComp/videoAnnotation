@@ -4,17 +4,17 @@ import { Button, message, Upload, Modal } from 'antd';
 import styles from '../styles/Button.module.css';
 import { useStates, useStateSetters } from './AppContext';
 
-//TODO: pass data to annotationRef and btnConfigData in Workspace
+
 
 export default function JsonUploader(props) {
     /**
      *  props:
      *      type: required, 'annotation' or 'configuration'
-     *      //askConfirm: boolean. Trigger modal confirm window.
-     *      modalOpen: only useful when put inside a modal window. boolean. Whether to open the parent modal window
+     *      onLoad: call back after the file is successfully loaded, with the file obj as argument. Will be called after natural behavior.
+     *      //modalOpen: only useful when put inside a modal window. The "open" prop of the parent window. Used to close the parent modal window after uploading the file or click ok or cancel btn on the confirm window
      *      setModalOpen: only useful when put inside a modal window. setter of modalOpen.
      */
-    // const [info, setInfo] = useState();
+    const [info, setInfo] = useState('Click or drag file to this area to upload');
 
     const setUploader = useStateSetters().setUploader;
     const projectConfigDataRef = useStates().projectConfigDataRef;
@@ -27,18 +27,6 @@ export default function JsonUploader(props) {
         }
     }, [])
 
-    // useEffect(() => {
-    //     if (props.askConfirm && Object.keys(projectConfigDataRef.current).length) {
-    //         Modal.confirm({
-    //             title: 'Alert',
-    //             content: 'The current project configuration data including annotation buttons will be removed!',
-    //             onOk: confirmOkClickHandler,
-    //             onCancel: cancelClickHandler,
-    //         });
-    //     }
-        
-    // }, [props.askConfirm])
-
 
     function changeHandler(e) {
         // console.log(e);
@@ -49,7 +37,7 @@ export default function JsonUploader(props) {
             uploadFile(e.file);
         } else if (e.file.status === 'error') {
             message.error(`${e.file.name} file upload failed.`);
-            // setInfo(`${e.file.name} file upload failed.`);
+            setInfo(`${e.file.name} file upload failed.`);
         }
     }
 
@@ -65,8 +53,8 @@ export default function JsonUploader(props) {
 
     function uploadFile(file) {
         message.success(`${file.name} file uploaded successfully`);
-        // setInfo(`${file.name} file uploaded successfully`);
-        if (Object.keys(projectConfigDataRef.current).length>1) { // 1 is the btnConfigData field, it's initialized as not null or undefined 
+        setInfo(`${file.name} file uploaded successfully`);
+        if (projectConfigDataRef.current?.projectName || (projectConfigDataRef.current?.btnConfigData && Object.keys(projectConfigDataRef.current.btnConfigData).length>0)) { // The btnConfigData field is initialized as not null or undefined 
             Modal.confirm({
                 title: 'Alert',
                 content: 'The current project configuration data including annotation buttons will be removed!',
@@ -81,6 +69,10 @@ export default function JsonUploader(props) {
                 type: props.type,
                 file: file
             });
+        }
+
+        if (props.onLoad) {
+            props.onLoad(file);
         }
     }
 
@@ -102,7 +94,7 @@ export default function JsonUploader(props) {
     }
 
     return (
-        <div style={{width: '50%'}}>
+        <div style={{width: '100%'}}>
             <Dragger 
                 id='jsonFile'
                 name='jsonFile' 
@@ -115,10 +107,9 @@ export default function JsonUploader(props) {
                     <p className="ant-upload-drag-icon">
                         <InboxOutlined />
                     </p>
-                    <p className="ant-upload-text">Click or drag file to this area to upload</p>
+                    <p className="ant-upload-text">{info}</p>
                     {/* <Button className='d-flex align-items-center' icon={<UploadOutlined />}>Upload {props.type}</Button> */}
             </Dragger>
-            {/* <p className="ant-upload-text">{info}</p> */}
         </div>
         
     )

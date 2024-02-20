@@ -8,7 +8,6 @@ export default function ModalJsonUploader(props) {
     /**
      *  props:
      *      type: required, 'annotation' or 'configuration'
-     *      footer:
      *      open: boolean. Whether to open the modal window
      *      setOpen: setter of open. In order to give controll to ProjectManager's internal buttons.
      */
@@ -43,6 +42,7 @@ export default function ModalJsonUploader(props) {
             footer={() => null}
             >
             <div className='my-4 d-flex justify-content-center'>
+                <div style={{width: '50%'}}>
                 <JsonUploader 
                     type={props.type} 
                     // askConfirm={askConfirm} 
@@ -50,6 +50,7 @@ export default function ModalJsonUploader(props) {
                     modalOpen={props.open}
                     setModalOpen={props.setOpen}
                     />
+                </div>
             </div>
         </Modal>
     )
