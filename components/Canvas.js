@@ -1203,7 +1203,7 @@ export default function Canvas(props) {
         }
         // console.log('landmark', landmarkInfo);
         const landmarkTotalNum = btnConfigData[annoObjToDraw.groupIndex].childData.length;
-        const edgesInfo = btnConfigData[annoObjToDraw.groupIndex].edgeData; // {color: '', edges: [set(), ...]}
+        const edgesInfo = btnConfigData[annoObjToDraw.groupIndex].edgeData; // {color: '', edges: [[], [],...]}
         
         const clickPoint = canvas.getPointer();
         //console.log(clickPoint);
@@ -1214,7 +1214,7 @@ export default function Canvas(props) {
         
         //create edges
         if (edgesInfo?.edges && edgesInfo.edges[skeletonLandmark]) {
-            const neighbors = edgesInfo.edges[skeletonLandmark];
+            const neighbors = new Set(edgesInfo.edges[skeletonLandmark]);
             const edgeColor = edgesInfo.color;
             const edgeInfo = {
                 id: idToDraw,
@@ -1500,7 +1500,7 @@ export default function Canvas(props) {
                 landmarksDrawn[i] = landmark;
     
                 if (edgesInfo?.edges && edgesInfo.edges[i]) {
-                    const neighbors = edgesInfo.edges[i];
+                    const neighbors = new Set(edgesInfo.edges[i]);
                     const edgeColor = edgesInfo.color;
                     const edgeInfo = {
                         id: id,
@@ -1625,7 +1625,7 @@ export default function Canvas(props) {
         
         const point = canvas.getActiveObject();
         // console.log('dragging skeleton point', point);
-        const edgesInfo = btnConfigData[frameAnnotation[point.owner].groupIndex].edgeData; // {color: '', edges: [set(), ...]}
+        const edgesInfo = btnConfigData[frameAnnotation[point.owner].groupIndex].edgeData; // {color: '', edges: [[], ...]}
         if (edgesInfo) {
             const landmarks = fabricObjListRef.current[point.owner].landmarks;
             const edgeInfo = {
@@ -1634,8 +1634,8 @@ export default function Canvas(props) {
                 color: edgesInfo.color,
             }
             // console.log(point, landmarks, edgesInfo);
-            if (edgesInfo.edges[point.index]?.size>0) {
-                const neighbors = Array.from(edgesInfo.edges[point.index]);
+            if (edgesInfo.edges[point.index]?.length>0) {
+                const neighbors = edgesInfo.edges[point.index];
                 neighbors.forEach(n => {
                     const neighborObj = landmarks[n];
                     if (neighborObj) { // check if neighbor exists, if not labelled, then undefined

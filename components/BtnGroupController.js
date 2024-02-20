@@ -126,6 +126,22 @@ export default function BtnGroupController(props) {
       },[]
     )
 
+
+    useEffect(() => {
+        if (props.status==='edit') {
+            setGroupData([...btnConfigData[props.index].childData]);
+            setAddEdge(true);
+            if (btnConfigData[props.index].groupType==='skeleton') {
+                setSkeletonName(btnConfigData[props.index].skeletonName);
+            }
+        } else if (props.status==='new') {
+            setGroupData([]);
+            setAddEdge(false);
+            setSkeletonName(null);
+        }
+    }, [props.status])
+
+
     useEffect(()=>{
         //when Design set getData to true, add the groupData to btnConfigData
         const myIndex = getSelfIndex();
@@ -150,8 +166,6 @@ export default function BtnGroupController(props) {
       }, [props.getData]
     )
 
-
-    
 
 
     // useEffect(() => {
@@ -333,7 +347,6 @@ export default function BtnGroupController(props) {
                 btnType: btnType,
                 label: '',
                 color: '#1677FF',
-
             };
             newData.push(data);
         }
@@ -354,6 +367,7 @@ export default function BtnGroupController(props) {
                     // addonBefore="Label"
                     allowClear
                     placeholder="Label: e.g. 'mouse'"
+                    value={skeletonName}
                     onChange={onSkeletonNameChange}
                     size='small'
                     // count={{ //for antd ≥5.10
@@ -652,6 +666,7 @@ export default function BtnGroupController(props) {
                         // data={props.data}
                         // setData={props.setData}
                         setAddEdge={setAddEdge}
+                        status={props.status}
                         />
                     </div>
                     :null   

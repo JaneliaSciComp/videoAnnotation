@@ -15,8 +15,8 @@ export default function SkeletonEdgeController(props) {
                 edgeData: {  # extra entry for skeleton, other types of annotation do not have
                     color: '#000000',
                     edges: [
-                        set(2, 5, ...), // can be empty set or undefined/null
-                        set(...), 
+                        [2, 5, ...], // can be empty set or undefined/null
+                        [...], 
                         ...
                     ]}
                 } 
@@ -44,6 +44,7 @@ export default function SkeletonEdgeController(props) {
                     set(...), 
                     ...
                 ]
+            (Here use set inside edgeDataRef for convenience, will be converted to arr when Done btn is clicked and pass to btnConfigData)
             color: dynamically change when user pick new value
     */
     
@@ -70,6 +71,23 @@ export default function SkeletonEdgeController(props) {
         }
       },[]
     )
+
+    useEffect(()=>{
+        if (props.status==='edit') {
+            const groupData = btnConfigData[props.index];
+            if (groupData.edgeData && groupData.edgeData.edges.length) {
+                const edgeData = groupData.edgeData;
+                setColor(edgeData.color);
+                const edgesSet = edgeData.edges.map(neighborArr => neighborArr?new Set(neighborArr):null);
+                edgeDataRef.current = edgesSet;
+            }
+            
+        } else if (props.status==='new') {
+            edgeDataRef.current = [];
+        }
+        setCurrentVertex(0);
+    }, [props.status])
+
 
     useEffect(() => {
         // generate input data for radioGroup when props.vertices changes
@@ -110,9 +128,10 @@ export default function SkeletonEdgeController(props) {
     )
 
     function onCheckBoxChange(newCheckedValues) {
-        // console.log('checked = ', newCheckedValues);
+        console.log('checked = ', newCheckedValues);
         setCheckedValues(newCheckedValues);
         const existingEdges = edgeDataRef.current[currentVertex] ? edgeDataRef.current[currentVertex] : new Set();
+        // const existingEdges = edgeDataRef.current[currentVertex] ? edgeDataRef.current[currentVertex] : [];
         let neighbor, neighborEdges;
         if (existingEdges.size < newCheckedValues.length) { //user checked a new value, add edge to this new neighbor's data
             neighbor = newCheckedValues.filter(v => !existingEdges.has(v))[0];
@@ -163,11 +182,12 @@ export default function SkeletonEdgeController(props) {
         const btnGroupData = {...btnConfigData[props.index]};
         console.log(btnGroupData, edgeDataRef.current);
         if (edgeDataRef.current?.length) {
+            const edgesArr = edgeDataRef.current.map(neighborSet => neighborSet?[...neighborSet]:null);
             btnGroupData.edgeData = {
                 color: color,
-                edges: [...edgeDataRef.current],
+                edges: edgesArr,
             }
-            // console.log(btnGroupData);
+            console.log(btnGroupData);
             setBtnConfigData({...btnConfigData, [props.index]: btnGroupData});
             // props.setAddEdge(false);
             setEdgeAdded(true);

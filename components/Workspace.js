@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, use} from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 // import { saveAs } from 'file-saver';
 import JSZip from "jszip";
@@ -49,8 +49,8 @@ export default function Workspace(props) {
     const [save, setSave] = useState(false);
     // const [chartMetric, setChartMetric] = useState();
     const [uploader, setUploader] = useState(); // {type: 'annotation'/'configuration', file: fileObj}
-    const projectConfigDataRef = useRef({}); //{projectName: 'str', description: 'str'/null, btnConfigData: obj/a copy of btnConfigData state}
-
+    const projectConfigDataRef = useRef({}); //{projectName: 'str', description: 'str'/null, btnConfigData: obj/copy of btnConfigData state,edges are array not set}
+    const [confirmConfig, setConfirmConfig] = useState(); // ProjectManager use it to tell BtnConfiguration to create btns
 
     console.log('workspace render');
 
@@ -78,6 +78,7 @@ export default function Workspace(props) {
         // chartMetric: chartMetric,
         uploader: uploader,
         projectConfigDataRef: projectConfigDataRef,
+        confirmConfig: confirmConfig,
     }
 
     const stateSetters = {
@@ -102,6 +103,7 @@ export default function Workspace(props) {
         setSave: setSave,
         // setChartMetric: setChartMetric,
         setUploader: setUploader,
+        setConfirmConfig: setConfirmConfig
     }
 
 
@@ -143,7 +145,7 @@ export default function Workspace(props) {
             projectConfigDataRef.current = obj;
             const btnConfigObj = {...obj.btnConfigData};
             console.log(btnConfigObj);
-            convertEdgeArrToSet(btnConfigObj);
+            // convertEdgeArrToSet(btnConfigObj);
             setBtnConfigData(btnConfigObj);
         }
     }
@@ -158,18 +160,20 @@ export default function Workspace(props) {
             const blobAnno = new Blob([jsonAnno], {type: 'text/plain'});
             
             // console.log(btnConfigData);
-            Object.values(btnConfigData).forEach(groupData => {
-                if (groupData.groupType === 'skeleton' && groupData.edgeData && groupData.edgeData.edges.length) {
-                    const edgesArr = groupData.edgeData.edges.map(neighborSet => neighborSet?[...neighborSet]:null);
-                    groupData.edgeData.edges = edgesArr;
-                }
-            })
-            const jsonBtnConfig = JSON.stringify(btnConfigData);
-            // console.log(jsonBtnConfig);
-            const blobBtnConfig = new Blob([jsonBtnConfig], {type: 'text/plain'});
+            // Object.values(btnConfigData).forEach(groupData => {
+            //     if (groupData.groupType === 'skeleton' && groupData.edgeData && groupData.edgeData.edges.length) {
+            //         const edgesArr = groupData.edgeData.edges.map(neighborSet => neighborSet?[...neighborSet]:null);
+            //         groupData.edgeData.edges = edgesArr;
+            //     }
+            // })
+            // projectConfigDataRef.current = {...projectConfigDataRef.current, btnConfigData: {...btnConfigData}};
+            console.log(projectConfigDataRef.current);
+            const jsonProjectConfig = JSON.stringify(projectConfigDataRef.current);
+            console.log(jsonProjectConfig);
+            const blobProjectConfig = new Blob([jsonProjectConfig], {type: 'text/plain'});
             const zip = JSZip();
             zip.file('annotations.json', blobAnno);
-            zip.file('btnConfiguration.json', blobBtnConfig);
+            zip.file('projectConfiguration.json', blobProjectConfig);
             zip.generateAsync({type: "blob"})
                 .then(res => {
                     const a = document.createElement("a");
@@ -179,28 +183,28 @@ export default function Workspace(props) {
                     URL.revokeObjectURL(a.href);
                 })
             
-            const btnConfigDataCopy = {...btnConfigData};
-            convertEdgeArrToSet(btnConfigData);
-            setBtnConfigData(btnConfigDataCopy);
+            // const btnConfigDataCopy = {...btnConfigData};
+            // convertEdgeArrToSet(btnConfigDataCopy);
+            // setBtnConfigData(btnConfigDataCopy);
             // console.log(btnConfigData);
             setSave(false);
         }
     }, [save])
 
-    function convertEdgeArrToSet(obj) { //obj is a copy of btnConfigData
-        Object.values(obj).forEach(groupData => {
-            if (groupData.groupType === 'skeleton' && groupData.edgeData && groupData.edgeData.edges.length) {
-                const edgesSet = groupData.edgeData.edges.map(neighborArr => neighborArr?new Set(neighborArr):null);
-                groupData.edgeData.edges = edgesSet;
-            }
-        })
-        return obj;
-    }
+    // function convertEdgeArrToSet(obj) { //obj is a copy of btnConfigData
+    //     Object.values(obj).forEach(groupData => {
+    //         if (groupData.groupType === 'skeleton' && groupData.edgeData && groupData.edgeData.edges.length) {
+    //             const edgesSet = groupData.edgeData.edges.map(neighborArr => neighborArr?new Set(neighborArr):null);
+    //             groupData.edgeData.edges = edgesSet;
+    //         }
+    //     })
+    //     return obj;
+    // }
 
 
     useEffect(()=> {
         if (props.btnConfigData) {
-            convertEdgeArrToSet(props.btnConfigData);
+            // convertEdgeArrToSet(props.btnConfigData);
             setBtnConfigData(props.btnConfigData);
         }
     }, [props.btnConfigData])
@@ -359,6 +363,18 @@ export default function Workspace(props) {
     // function addPolygonId(idObj) {
     //     setPolygonIdList({...polygonIdList, [idObj.id]: idObj});
     // }
+
+    useEffect(() => {
+        console.log('btnConfigData changed', btnConfigData);
+        const btnConfigCopy = {...btnConfigData};
+        Object.values(btnConfigCopy).forEach(groupData => {
+            if (groupData?.edgeData && groupData.edgeData.edges.length) {
+                const edgesArr = groupData.edgeData.edges.map(neighborSet => neighborSet?[...neighborSet]:null);
+                groupData.edgeData.edges = edgesArr;
+            }
+        })
+        projectConfigDataRef.current.btnConfigData =btnConfigCopy;
+    }, [btnConfigData])
 
     useEffect(() => {
         if (btnConfigData) {

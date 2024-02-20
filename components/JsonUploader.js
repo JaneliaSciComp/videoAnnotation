@@ -14,7 +14,7 @@ export default function JsonUploader(props) {
      *      modalOpen: only useful when put inside a modal window. boolean. Whether to open the parent modal window
      *      setModalOpen: only useful when put inside a modal window. setter of modalOpen.
      */
-    const [info, setInfo] = useState();
+    // const [info, setInfo] = useState();
 
     const setUploader = useStateSetters().setUploader;
     const projectConfigDataRef = useStates().projectConfigDataRef;
@@ -48,8 +48,8 @@ export default function JsonUploader(props) {
         if (e.file.status === 'done') {
             uploadFile(e.file);
         } else if (e.file.status === 'error') {
-            // message.error(`${e.file.name} file upload failed.`);
-            setInfo(`${e.file.name} file upload failed.`);
+            message.error(`${e.file.name} file upload failed.`);
+            // setInfo(`${e.file.name} file upload failed.`);
         }
     }
 
@@ -64,9 +64,9 @@ export default function JsonUploader(props) {
     // }
 
     function uploadFile(file) {
-        // message.success(`${file.name} file uploaded successfully`);
-        setInfo(`${file.name} file uploaded successfully`);
-        if (Object.keys(projectConfigDataRef.current).length) {
+        message.success(`${file.name} file uploaded successfully`);
+        // setInfo(`${file.name} file uploaded successfully`);
+        if (Object.keys(projectConfigDataRef.current).length>1) { // 1 is the btnConfigData field, it's initialized as not null or undefined 
             Modal.confirm({
                 title: 'Alert',
                 content: 'The current project configuration data including annotation buttons will be removed!',
@@ -118,7 +118,7 @@ export default function JsonUploader(props) {
                     <p className="ant-upload-text">Click or drag file to this area to upload</p>
                     {/* <Button className='d-flex align-items-center' icon={<UploadOutlined />}>Upload {props.type}</Button> */}
             </Dragger>
-            <p className="ant-upload-text">{info}</p>
+            {/* <p className="ant-upload-text">{info}</p> */}
         </div>
         
     )

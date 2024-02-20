@@ -12,6 +12,8 @@ export default function ProjectDropdown(props) {
      *      //serverType: 'local' / 'remote'
      *      //uploaderOkClickHandler: will be called after natural behavior of uploading and updating projectConfigData.
      *      //uploaderCancelClickHandler: will be called after natural behavior of closing the uploader modal window
+     *      onProjectNameChange: will be called after natural onProjectNameChange behavior in ProjectManager
+     *      onDescriptionChange: will be called after natural onDescriptionChange behavior in ProjectManager
      */
 
     const [managerOpen, setManagerOpen] = useState(false);
@@ -44,7 +46,7 @@ export default function ProjectDropdown(props) {
         const label = items[e.key].label;
         switch (label) {
             case 'New':
-                if (Object.keys(projectConfigDataRef.current).length) {
+                if (Object.keys(projectConfigDataRef.current).length>1) { // 1 is the btnConfigData field, it's initialized as not null or undefined 
                     confirm();
                 } else {
                     setManagerStatus('new');
@@ -65,8 +67,8 @@ export default function ProjectDropdown(props) {
     }
 
     function confirmOkClickHandler() {
-        // projectConfigDataRef.current = {};
-        // setBtnConfigData({});
+        projectConfigDataRef.current = {};
+        // setBtnConfigData({}); // put in BtnConfiguration, to make sure first emtpy btnConfigData, then create new btnGroup
         setManagerStatus('new');
         setManagerOpen(true);
     }
@@ -116,6 +118,8 @@ export default function ProjectDropdown(props) {
                 status={managerStatus} 
                 open={managerOpen} 
                 setOpen={setManagerOpen} 
+                // onProjectNameChange={props.onProjectNameChange}
+                // onDescriptionChange={props.onDescriptionChange}
                 />
             
             <ModalJsonUploader 
