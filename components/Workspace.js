@@ -18,6 +18,7 @@ import BrushTool from './BrushTool';
 // import Design from './BtnConfiguration';
 import { StatesProvider } from './AppContext';
 import { clearUnfinishedAnnotation } from '../utils/utils';
+import { Modal } from 'antd';
 
 
 export default function Workspace(props) {
@@ -52,6 +53,8 @@ export default function Workspace(props) {
     const projectConfigDataRef = useRef({}); //{projectName: 'str', description: 'str'/null, btnConfigData: obj/copy of btnConfigData state,edges are array not set}
     const [confirmConfig, setConfirmConfig] = useState(); // ProjectManager use it to tell BtnConfiguration to create btns
     const [saveConfig, setSaveConfig] = useState(false);
+    const [infoOpen, setInfoOpen] = useState(false);
+    const [info, setInfo] = useState();
 
     console.log('workspace render');
 
@@ -81,6 +84,8 @@ export default function Workspace(props) {
         projectConfigDataRef: projectConfigDataRef,
         confirmConfig: confirmConfig,
         saveConfig: saveConfig,
+        info: info,
+        infoOpen: infoOpen,
     }
 
     const stateSetters = {
@@ -107,6 +112,8 @@ export default function Workspace(props) {
         setUploader: setUploader,
         setConfirmConfig: setConfirmConfig,
         setSaveConfig: setSaveConfig,
+        setInfo: setInfo,
+        setInfoOpen: setInfoOpen,
     }
 
 
@@ -207,14 +214,22 @@ export default function Workspace(props) {
     useEffect(()=> {
         if (saveConfig) {
             console.log(projectConfigDataRef.current);
-            const jsonProjectConfig = JSON.stringify(projectConfigDataRef.current);
-            console.log(jsonProjectConfig);
-            const blobProjectConfig = new Blob([jsonProjectConfig], {type: 'text/plain'});
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blobProjectConfig);
-            a.download = 'configuration.json';
-            a.click();
-            URL.revokeObjectURL(a.href);
+            if (!projectConfigDataRef.current?.projectName) {
+                setInfo('Project Name is empty.');
+                setInfoOpen(true);
+            } else if (Object.keys(btnConfigData).length===0 || Object.keys(btnConfigData[Object.keys(btnConfigData)[0]]).length===0) {
+                setInfo('No annotation button is created.');
+                setInfoOpen(true);
+            } else {
+                const jsonProjectConfig = JSON.stringify(projectConfigDataRef.current);
+                console.log(jsonProjectConfig);
+                const blobProjectConfig = new Blob([jsonProjectConfig], {type: 'text/plain'});
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blobProjectConfig);
+                a.download = 'configuration.json';
+                a.click();
+                URL.revokeObjectURL(a.href);
+            }
             setSaveConfig(false);
         }
     }, [saveConfig])
@@ -450,6 +465,16 @@ export default function Workspace(props) {
         console.log('anno', frameAnnotation);
     }
 
+    function okClickHandler() {
+        setInfo(null);
+        setInfoOpen(false);
+    }
+
+    function cancelClickHandler() {
+        setInfo(null);
+        setInfoOpen(false);
+    }
+
     return (
         <div className={styles.container}>
             <main className={styles.main}>
@@ -457,6 +482,20 @@ export default function Workspace(props) {
                     {props.children}
                     {/* <Button onClick={clickHandler}>anno</Button> */}
                 </StatesProvider>
+
+                <Modal
+                    title='Info'
+                    open={infoOpen}
+                    onOk={okClickHandler} 
+                    onCancel={cancelClickHandler}
+                    footer={(_, { OkBtn, CancelBtn }) => (
+                        <>
+                          <CancelBtn />
+                        </>
+                    )}
+                    >
+                    <p className="ant-upload-text ms-4">{info}</p>
+                </Modal>
             </main>
 
           {/* <main className={styles.main}>

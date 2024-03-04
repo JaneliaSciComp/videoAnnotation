@@ -106,6 +106,8 @@ ChartJS.register(
     dynamicVerticalLine
 )
 
+const MIN_OFFSET = 5;
+const MAX_OFFSET = 5;
 
 export default function MyChart(props) {
     /**
@@ -223,8 +225,8 @@ export default function MyChart(props) {
                     }
                 },
                 y: {
-                    min: min,
-                    max: max,
+                    min: min - MIN_OFFSET,
+                    max: max + MAX_OFFSET,
                     border: {
                         display: true
                     },

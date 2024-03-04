@@ -74,7 +74,6 @@ export default function ProjectManager(props) {
         }
 
         setConfirmConfig(true);
-
         setBtnConfigStatus(null);
         // props.setOpen(false);
     }

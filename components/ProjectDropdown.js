@@ -47,7 +47,9 @@ export default function ProjectDropdown(props) {
         const label = items[e.key].label;
         switch (label) {
             case 'New':
-                if (projectConfigDataRef.current?.projectName || (projectConfigDataRef.current?.btnConfigData && Object.keys(projectConfigDataRef.current.btnConfigData).length>0)) { // The btnConfigData field is initialized as not null or undefined 
+                if (projectConfigDataRef.current?.projectName
+                    || projectConfigDataRef.current?.description
+                    || (projectConfigDataRef.current?.btnConfigData && Object.keys(projectConfigDataRef.current.btnConfigData).length>0)) { // The btnConfigData field is initialized as existed {} 
                     confirm();
                 } else {
                     setManagerStatus('new');
@@ -62,9 +64,7 @@ export default function ProjectDropdown(props) {
                 setManagerOpen(true);
                 break;
             case 'Save':
-                if (projectConfigDataRef.current?.projectName || (projectConfigDataRef.current?.btnConfigData && Object.keys(projectConfigDataRef.current.btnConfigData).length>0)) {
-                    setSaveConfig(true);
-                }
+                setSaveConfig(true);
                 break;
         }
     }

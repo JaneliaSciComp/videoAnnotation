@@ -19,6 +19,7 @@ import SaveBtn from '../components/SaveBtn.js';
 import JsonUploader from '../components/JsonUploader.js';
 import ProjectManager from '../components/ProjectManager.js';
 import ProjectDropdown from '../components/ProjectDropdown.js';
+import VideoManager from '../components/VideoManager.js';
 import {Row, Col} from 'react-bootstrap';
 import { Button } from 'antd';
 
@@ -159,6 +160,7 @@ export default function Home() {
           Project
         </Button>
         <ProjectManager open={managerOpen} setOpen={setManagerOpen}/> */}
+        <VideoManager />
         <ProjectDropdown />
         <Row >
           <Col>
