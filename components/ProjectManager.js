@@ -4,22 +4,23 @@ import BtnConfiguration from './BtnConfiguration';
 import { Modal, Form, Input, Button } from 'antd';
 
 
+/**
+ *  props:
+ *      open: boolean. Whether to open the modal window
+ *      setOpen: setter of open. In order to give controll to ProjectManager's internal buttons.
+ *      // serverType: 'local' / 'remote'
+ *      status: 'new' / 'edit'
+ *      
+ *      For reference, projectConfigDataRef: 
+ *          {
+ *              projectName: str,
+ *              // projectDirectory: (no need. user still has to upload/save files mannually) Only for local server. '/user/project1', a str pointing to a local folder where all annotation and config data are stored.
+ *              description: str, optional
+ *              btnConfigData: {}
+ *              videos: {videoId: 'dir', ...}
+ *          }
+ */
 export default function ProjectManager(props) {
-    /**
-     *  props:
-     *      open: boolean. Whether to open the modal window
-     *      setOpen: setter of open. In order to give controll to ProjectManager's internal buttons.
-     *      // serverType: 'local' / 'remote'
-     *      status: 'new' / 'edit'
-     *      
-     *      For reference, projectConfigDataRef: 
-     *          {
-     *              projectName: str,
-     *              // projectDirectory: (no need. user still has to upload/save files mannually) Only for local server. '/user/project1', a str pointing to a local folder where all annotation and config data are stored.
-     *              description: str, optional
-     *              btnConfigData: {}
-     *          }
-     */
     
     const [okDisable, setOkDisable] = useState(true);
     const [btnConfigStatus, setBtnConfigStatus] = useState();

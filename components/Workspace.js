@@ -21,12 +21,13 @@ import { clearUnfinishedAnnotation } from '../utils/utils';
 import { Modal } from 'antd';
 
 
-export default function Workspace(props) {
-    /**
+/**
      * props:
      *      btnConfigData
-     *      url: image url or video url // or put this in Canvas
+     *      //url: image url or video url // or put this in Canvas
      */
+export default function Workspace(props) {
+    
     const [videoId, setVideoId] = useState();
     const [frameUrl, setFrameUrl] = useState(); //for image, '/fly.png'
     const [frameNum, setFrameNum] = useState();

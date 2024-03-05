@@ -5,48 +5,48 @@ import { useStateSetters, useStates } from './AppContext';
 import {predefinedColors} from '../utils/utils.js';
 
 
-export default function SkeletonEdgeController(props) {
-    /**
-        To configure edges for skeleton group.
-        Append edge data to skeleton btn group:
-            {groupIndex: {
-                groupType: 'skeleton',
-                ...,
-                edgeData: {  # extra entry for skeleton, other types of annotation do not have
-                    color: '#000000',
-                    edges: [
-                        [2, 5, ...], // can be empty set or undefined/null
-                        [...], 
-                        ...
-                    ]}
-                } 
-            }
-            
-        Props: 
-            index: unique skeletonIndex. Required. Used to identify btn groups to be appended to. 
-            data: Required. The data holder to append the edge data, e.g. the data used by Design component
-            setData: Required. The setter of data. Use as [data, setData]=useState()
-            vertices: 
-                [ 'head', 'right wing', 'left wing', 'tail' ]
-            color: '#1677FF'. Optional.
-            disableColorPicker: boolean. False by default, true when specified. Whether to disable color picker.
-
-            onColorChange: Callback when colorPicker changes. Will be executed after the internal funtions seting the color state vlaue. Takes one argument: target {index: int, index property of this object, value: str, the value of this color picker}
-            onDoneBtnClick: When the Done btn is clicked, it will append the edge data to the data property by calling setData. 
-                Developer can also add extra function by defining this api. It will be called after the appending function.
-                Takes the edge data as the argument.
-
-
-        Ref:
-            edgeDataRef: dynamically change when checkbox or last/next btn is clicked. To prevent too frequent change on props.data
-                [
-                    set(vertex3, vertex5, ...), // can be empty set or undefined/null
-                    set(...), 
+/**
+    To configure edges for skeleton group.
+    Append edge data to skeleton btn group:
+        {groupIndex: {
+            groupType: 'skeleton',
+            ...,
+            edgeData: {  # extra entry for skeleton, other types of annotation do not have
+                color: '#000000',
+                edges: [
+                    [2, 5, ...], // can be empty set or undefined/null
+                    [...], 
                     ...
-                ]
-            (Here use set inside edgeDataRef for convenience, will be converted to arr when Done btn is clicked and pass to btnConfigData)
-            color: dynamically change when user pick new value
-    */
+                ]}
+            } 
+        }
+        
+    Props: 
+        index: unique skeletonIndex. Required. Used to identify btn groups to be appended to. 
+        data: Required. The data holder to append the edge data, e.g. the data used by Design component
+        setData: Required. The setter of data. Use as [data, setData]=useState()
+        vertices: 
+            [ 'head', 'right wing', 'left wing', 'tail' ]
+        color: '#1677FF'. Optional.
+        disableColorPicker: boolean. False by default, true when specified. Whether to disable color picker.
+
+        onColorChange: Callback when colorPicker changes. Will be executed after the internal funtions seting the color state vlaue. Takes one argument: target {index: int, index property of this object, value: str, the value of this color picker}
+        onDoneBtnClick: When the Done btn is clicked, it will append the edge data to the data property by calling setData. 
+            Developer can also add extra function by defining this api. It will be called after the appending function.
+            Takes the edge data as the argument.
+
+
+    Ref:
+        edgeDataRef: dynamically change when checkbox or last/next btn is clicked. To prevent too frequent change on props.data
+            [
+                set(vertex3, vertex5, ...), // can be empty set or undefined/null
+                set(...), 
+                ...
+            ]
+        (Here use set inside edgeDataRef for convenience, will be converted to arr when Done btn is clicked and pass to btnConfigData)
+        color: dynamically change when user pick new value
+*/
+export default function SkeletonEdgeController(props) {
     
     const [verticesOptions, setVerticesOptions] = useState();
     const [currentVertex, setCurrentVertex] = useState(0);

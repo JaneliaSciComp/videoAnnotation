@@ -5,18 +5,19 @@ import {Row, Col} from 'react-bootstrap';
 import { useStates } from './AppContext'; 
 
 
+/**
+ *  props:
+ *      metrics: ['length', 'width', ...]. Array of metrics for dropdown menu
+ *      range: int. Frame range to display.
+ *      setRange: setter of range.
+ *      setChartMetrics: setter of chartMetrics. 
+ *      chartType: 'Line' or 'Bar'.
+ *      setChartType: setter of chartType
+ *      vertical: boolean. Arrange the components vertically or horizontally.
+ *      align: 'start'/'end'/'center'/'between'/'around'/'evenly'. 'start' by default. How to horizontally align componentes, if vertical is false.
+ */
 export default function ChartController(props) {
-    /**
-     *  props:
-     *      metrics: ['length', 'width', ...]. Array of metrics for dropdown menu
-     *      range: int. Frame range to display.
-     *      setRange: setter of range.
-     *      setChartMetrics: setter of chartMetrics. 
-     *      chartType: 'Line' or 'Bar'.
-     *      setChartType: setter of chartType
-     *      vertical: boolean. Arrange the components vertically or horizontally.
-     *      align: 'start'/'end'/'center'/'between'/'around'/'evenly'. 'start' by default. How to horizontally align componentes, if vertical is false.
-     */
+    
     const [menuProps, setMenuProps] = useState();
     const [selectedMetrics, setSelectedMetrics] = useState([]);
 

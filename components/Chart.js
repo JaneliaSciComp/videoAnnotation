@@ -109,43 +109,44 @@ ChartJS.register(
 const MIN_OFFSET = 5;
 const MAX_OFFSET = 5;
 
-export default function MyChart(props) {
-    /**
-     *  props:
-     *      type: 'Line'/'Bar'.
-     *      metrics: [metric1, metric2, ...], metrics to display on chart. should match datasetNames. 
-    //  *      dataSource: 'local' or 'backend'. 
-    //  *          If 'backend', change of metric should trigger fetching data from backend.
-    //  *          If 'local', props.data should provide data to display.
-    //  *      frameRange: [start, end]. [0, 10] means [0, 1,..., 9,10]
-            range: frame range to display. 
-                The first and the last frame are calculated based on range and current frameNum.
-                The current frameNum should be the center of range. If the calculated first/last frame is out of bound,
-                then use frame 1 or the final frame.
-            data: data to display in chart. 
-                Format:
-                {
-                    datasetName1: {
-                                    data: [num1, num2, ...], // frameRange will extract the items from this array. Its length should be bigger than frameRange, and should fill up missing data
-                                    //borderColor: 'rgb(255, 99, 132)',
-                                    //backgroundColor: 'rgba(255, 99, 132, 0.5)',
-                                },
-                    datasetName2: {
-                                    data: [num1, num2, ...], 
-                                }
 
-                }
-            
-            width: str. '100%'/'200px'/'50vw'..., default is 100%. Set the width of the chart.
-            height: str. '100%'/'200px'/'50vh'..., default is 100%. Set the height of the chart
-            xGrid: boolean. False by default. Whether to display the vertical grid line.
-            yGrid: boolean. True by default. Whether to display the horizontal grid line.
-            legendPosition: 'top'/'left'/'bottom'/'right'/'chartArea'. 'bottom' by default. Position of legend.
-            legendAlign: 'start'/'center'/'end'. 'end' by default. Horizontal position of legend.
-            staticVerticalLineColor: 'rgb()', '#xxxxxx', 'red'. The color of the static vertical Line
-            dynamicVerticalLineColor:  'rgb()', '#xxxxxx', 'red'. The color of the dynamic vertical Line
-            zoomSpeed: number. Speed for zooming on y axis. 0.01 by default.
-            */
+/**
+ *  props:
+ *      type: 'Line'/'Bar'.
+ *      metrics: [metric1, metric2, ...], metrics to display on chart. should match datasetNames. 
+//  *      dataSource: 'local' or 'backend'. 
+//  *          If 'backend', change of metric should trigger fetching data from backend.
+//  *          If 'local', props.data should provide data to display.
+//  *      frameRange: [start, end]. [0, 10] means [0, 1,..., 9,10]
+        range: frame range to display. 
+            The first and the last frame are calculated based on range and current frameNum.
+            The current frameNum should be the center of range. If the calculated first/last frame is out of bound,
+            then use frame 1 or the final frame.
+        data: data to display in chart. 
+            Format:
+            {
+                datasetName1: {
+                                data: [num1, num2, ...], // frameRange will extract the items from this array. Its length should be bigger than frameRange, and should fill up missing data
+                                //borderColor: 'rgb(255, 99, 132)',
+                                //backgroundColor: 'rgba(255, 99, 132, 0.5)',
+                            },
+                datasetName2: {
+                                data: [num1, num2, ...], 
+                            }
+
+            }
+        
+        width: str. '100%'/'200px'/'50vw'..., default is 100%. Set the width of the chart.
+        height: str. '100%'/'200px'/'50vh'..., default is 100%. Set the height of the chart
+        xGrid: boolean. False by default. Whether to display the vertical grid line.
+        yGrid: boolean. True by default. Whether to display the horizontal grid line.
+        legendPosition: 'top'/'left'/'bottom'/'right'/'chartArea'. 'bottom' by default. Position of legend.
+        legendAlign: 'start'/'center'/'end'. 'end' by default. Horizontal position of legend.
+        staticVerticalLineColor: 'rgb()', '#xxxxxx', 'red'. The color of the static vertical Line
+        dynamicVerticalLineColor:  'rgb()', '#xxxxxx', 'red'. The color of the dynamic vertical Line
+        zoomSpeed: number. Speed for zooming on y axis. 0.01 by default.
+        */
+export default function MyChart(props) {
 
     const chartRef = useRef();
     // const [frameNumsToDisplay, setFrameNumsToDisplay] = useState([]);

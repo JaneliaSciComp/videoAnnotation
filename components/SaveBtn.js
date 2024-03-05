@@ -5,13 +5,13 @@ import { useStates, useStateSetters } from './AppContext';
 import { clearUnfinishedAnnotation } from '../utils/utils.js';
 
 
-export default function SaveBtn(props) {
-    /*
+/*
+    Props: 
+        type: 'annotation' / 'configuration'
         
-        Props: 
-            type: 'annotation' / 'configuration'
-            
-    */
+*/
+export default function SaveBtn(props) {
+    
     // const [clicked, setClicked] = useState(false);
 
     const frameNum = useStates().frameNum;

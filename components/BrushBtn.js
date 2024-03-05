@@ -10,35 +10,35 @@ import { clearUnfinishedAnnotation } from '../utils/utils.js';
 
 // const defaultColor = '#1677FF';
 
-
+/**
+ * Note: for developer, creating multiple BrushBtn of a same label will result in error, 
+ * because these BrushBtn use label to distinguish from each other.
+ *     For annotator, when use BtnGroupController, Design to configuire BrushBtns, 
+ * using a same label for multiple BrushBtns will result in error too.
+ * 
+ * To activate/deactivate brush segmentation drawing on canvas. Contains eraser btn and brush thichness slider
+ * Each frame/img each label only has one brush annotation obj.
+ * Brush segmentation annotation data structure:
+ *      {id: {
+            type: 'brush',
+            color: '#000000',
+            label: 'mouse',
+            iscrowd: 0 or 1. Indicates the segmentation covers single or multiple target objects.
+            first: 0 or 1. Indicates the first number in data(rle) is inside (1) segmentation or not (0)
+            data: [128, 29, ...]. RLE format
+            pathes: [pathStr1, pathStr2, ...]. The stringified fabric path objs for this brush btn.
+        }}
+    * 
+    * Props: 
+        label: 'Mouse'. Required 
+        color: 'red'. Optional. If not provided, use defaultColor
+        minThinkness: int. To set the min value of slider to config the thickness of brush. Optional. If not provided, use MIN_THICKNESS
+        maxThickness: int. To set the max value of slider to config the thickness of brush. Optional. If not provided, use MAX_THICKNESS
+        enableBrushTool: useful when there is only one brush btn. not recommended for multiple brush btns since one brushTool controls all brush drawing. 
+        disableCrowdRadio
+    */
 export default function BrushBtn(props) {
-    /**
-     * Note: for developer, creating multiple BrushBtn of a same label will result in error, 
-     * because these BrushBtn use label to distinguish from each other.
-     *     For annotator, when use BtnGroupController, Design to configuire BrushBtns, 
-     * using a same label for multiple BrushBtns will result in error too.
-     * 
-     * To activate/deactivate brush segmentation drawing on canvas. Contains eraser btn and brush thichness slider
-     * Each frame/img each label only has one brush annotation obj.
-     * Brush segmentation annotation data structure:
-     *      {id: {
-                type: 'brush',
-                color: '#000000',
-                label: 'mouse',
-                iscrowd: 0 or 1. Indicates the segmentation covers single or multiple target objects.
-                first: 0 or 1. Indicates the first number in data(rle) is inside (1) segmentation or not (0)
-                data: [128, 29, ...]. RLE format
-                pathes: [pathStr1, pathStr2, ...]. The stringified fabric path objs for this brush btn.
-            }}
-     * 
-     * Props: 
-            label: 'Mouse'. Required 
-            color: 'red'. Optional. If not provided, use defaultColor
-            minThinkness: int. To set the min value of slider to config the thickness of brush. Optional. If not provided, use MIN_THICKNESS
-            maxThickness: int. To set the max value of slider to config the thickness of brush. Optional. If not provided, use MAX_THICKNESS
-            enableBrushTool: useful when there is only one brush btn. not recommended for multiple brush btns since one brushTool controls all brush drawing. 
-            disableCrowdRadio
-     */
+    
     const [radioValue, setRadioValue] = useState(0);
     // const [thickness, setThickness] = useState(5);
     const annotationIdRef = useRef(); // to remember the annotation id for this brush btn, to retrieve anno data so that can add crowded info, to reset annoIdtoDraw for parent 

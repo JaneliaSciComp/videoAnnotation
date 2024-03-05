@@ -6,42 +6,42 @@ import { useStateSetters, useStates } from './AppContext';
 import { clearUnfinishedAnnotation } from '../utils/utils.js';
 
 
-
-export default function SkeletonBtn(props) {
-    /** 
-        To activate skeleton drawing on canvas. Update btn label for each lankmark, and allow setting visibility of the landmark.
-        For reference, skeleton annotation data structure:
-            {id: {
-                type: 'skeleton',
-                color: '#000000',
-                label: btnGroupId,
-                data: [
-                    [x, y, visibility],
-                    ...
-                ]
-            }}
-
-        Props: 
-            groupIndex: '123456',  
+/** 
+    To activate skeleton drawing on canvas. Update btn label for each lankmark, and allow setting visibility of the landmark.
+    For reference, skeleton annotation data structure:
+        {id: {
+            type: 'skeleton',
+            color: '#000000',
+            label: btnGroupId,
             data: [
-                {index: 0, 
-                btnType: 'skeleton',
-                label: 'head',
-                color: '#FFFFFF'
-                },
-                {index: 1, ...},
+                [x, y, visibility],
                 ...
-            ],
-            skeletonName: 'mouse',
-            // drawType={drawType} 
-            // setDrawType={setDrawType} 
-            // skeletonLandmark // indicate the current landmark index to draw, Canvas also has them
-            // setSkeletonLandmark  // 
-            // frameNum={frameNum}
-            // addAnnotationObj={addAnnotationObj}
-            // frameAnnotation={frameAnnotation} // this component needs to add the radio value to frameAnnotation 
-            // setFrameAnnotation={setFrameAnnotation}
-    */
+            ]
+        }}
+
+    Props: 
+        groupIndex: '123456',  
+        data: [
+            {index: 0, 
+            btnType: 'skeleton',
+            label: 'head',
+            color: '#FFFFFF'
+            },
+            {index: 1, ...},
+            ...
+        ],
+        skeletonName: 'mouse',
+        // drawType={drawType} 
+        // setDrawType={setDrawType} 
+        // skeletonLandmark // indicate the current landmark index to draw, Canvas also has them
+        // setSkeletonLandmark  // 
+        // frameNum={frameNum}
+        // addAnnotationObj={addAnnotationObj}
+        // frameAnnotation={frameAnnotation} // this component needs to add the radio value to frameAnnotation 
+        // setFrameAnnotation={setFrameAnnotation}
+*/
+export default function SkeletonBtn(props) {
+    
     const [clicked, setClicked] = useState(false);
     const [radioValue, setRadioValue] = useState(2);
     const annotationIdRef = useRef(); // to remember the annotation id created by clicking the btn, to retrieve anno data so that can add visibility info 

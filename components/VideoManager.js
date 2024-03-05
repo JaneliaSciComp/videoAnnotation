@@ -4,22 +4,23 @@ import { Modal, List, Button } from 'antd';
 import { PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 
 
+/**
+ *  props:
+ *      open: boolean. Whether to open the modal window
+ *      setOpen: setter of open. In order to give controll to VideoManager's internal buttons.
+ *      // serverType: 'local' / 'remote'
+ *      
+ *      VideoManager will generate videos data for project.
+ *      For reference, projectConfigDataRef: 
+ *          {
+ *              projectName: str,
+ *              // projectDirectory: (no need. user still has to upload/save files mannually) Only for local server. '/user/project1', a str pointing to a local folder where all annotation and config data are stored.
+ *              description: str, optional
+ *              *** videos: {videoId: 'dir', ...} ***
+ *          }
+ */
 export default function VideoManager(props) {
-    /**
-     *  props:
-     *      open: boolean. Whether to open the modal window
-     *      setOpen: setter of open. In order to give controll to VideoManager's internal buttons.
-     *      // serverType: 'local' / 'remote'
-     *      
-     *      VideoManager will generate videos data for project.
-     *      For reference, projectConfigDataRef: 
-     *          {
-     *              projectName: str,
-     *              // projectDirectory: (no need. user still has to upload/save files mannually) Only for local server. '/user/project1', a str pointing to a local folder where all annotation and config data are stored.
-     *              description: str, optional
-     *              *** videos: {videoId: 'dir', ...} ***
-     *          }
-     */
+    
     const [data, setData] = useState(['video1', 'video2']); //data source for list. [str...]
 
     

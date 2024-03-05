@@ -4,14 +4,15 @@ import JsonUploader from './JsonUploader';
 import { Modal } from 'antd';
 
 
-export default function ModalJsonUploader(props) {
-    /**
-     *  props:
-     *      type: required, 'annotation' or 'configuration'
-     *      open: boolean. Whether to open the modal window
-     *      setOpen: setter of open. In order to give controll to ProjectManager's internal buttons.
-     */
 
+/**
+ *  props:
+ *      type: required, 'annotation' or 'configuration'
+ *      open: boolean. Whether to open the modal window
+ *      setOpen: setter of open. In order to give controll to ProjectManager's internal buttons.
+ */
+export default function ModalJsonUploader(props) {
+    
     // const [askConfirm, setAskConfirm] = useState(false); // trigger modal confirm in JsonUploader
 
 

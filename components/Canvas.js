@@ -16,16 +16,17 @@ const CLICK_TOLERANCE = 5;
 const ANNOTATION_TYPES = new Set(['keyPoint', 'bbox', 'polygon', 'skeleton', 'brush']);
 
 
+/**
+ * props:
+ *      width: canvas width
+ *      height: canvas height
+ *      circleRadius: radius for keypoint, skeleton landmark, polygon point
+ *      strokeWidth: thinkness of line
+ *      wheelSensitivity: wheel sensitivity for zooming
+ *      alpha: number, [0,1]. transparency for segementation (brush) drawing
+ */
 export default function Canvas(props) {
-    /**
-     * props:
-     *      width: canvas width
-     *      height: canvas height
-     *      circleRadius: radius for keypoint, skeleton landmark, polygon point
-     *      strokeWidth: thinkness of line
-     *      wheelSensitivity: wheel sensitivity for zooming
-     *      alpha: number, [0,1]. transparency for segementation (brush) drawing
-     */
+    
     const imgRef = useRef();
     const imageObjRef = useRef();
     const canvasRef = useRef();

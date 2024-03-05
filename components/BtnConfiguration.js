@@ -6,60 +6,59 @@ import { PlusOutlined } from '@ant-design/icons';
 import SkeletonEdgeController from './SkeletonEdgeController';
 import { useStateSetters, useStates } from './AppContext';
 
-
-
 const BTNGROUPNUM_MAX=50
 
 
-export default function BtnConfiguration(props) {
-    /**
-     * Produce btnGroup data: 
-        {
-            {groupIndex1: { //The first three are used by <BtnGroup> not <Canvas>
-                groupType: 'shape',
+/**
+ * Produce btnGroup data: 
+    {
+        {groupIndex1: { //The first three are used by <BtnGroup> not <Canvas>
+            groupType: 'shape',
+            btnType: 'bbox',
+            btnNum: 2,
+            childData: [ // used by both <BtnGroup> and <Canvas>
+                {index: 0, 
                 btnType: 'bbox',
-                btnNum: 2,
-                childData: [ // used by both <BtnGroup> and <Canvas>
-                    {index: 0, 
-                    btnType: 'bbox',
-                    label: 'fly',
-                    color: '#FFFFFF'
-                    },
-                    {index: 1, ...},
-                    ...
-                ],
-                (edgeData: [  //only for skeleton group
-                    Set(),
-                    ...
-                ])
-            }},
-            {groupIndex2: ...},
-            ...
-        }
+                label: 'fly',
+                color: '#FFFFFF'
+                },
+                {index: 1, ...},
+                ...
+            ],
+            (edgeData: [  //only for skeleton group
+                Set(),
+                ...
+            ])
+        }},
+        {groupIndex2: ...},
+        ...
+    }
+
+    props:
+        // data: Required. The generated data, structure as above, will be append to it. 
+        // setData: Required. The setter of data. Will be called in the Create btn click handler to append data.
+        defaultGroupType: 'category'/'shape'/'skeleton'. Optional. When specified, all of the btnGroupController will have groupType set, and the btnType dropdown will be generated accordingly; otherwise, use general list.
+        groupType: set groupType for each child btnGroupController
+        defaultBtnType: set defaultGroupType for each child btnGroupController
+        btnType: set btnType for each child btnGroupController
+        defaultBtnNum: set defaultBtnNum for each child btnGroupController
+        btnNum: set btnNum for each child btnGroupController
+        disableGroupTypeSelect: disable child btnGroupController's groupTypeSelect
+        disableBtnTypeSelect: disable child btnGroupController's btnTypeSelect
+        disableBtnNumInput: disable child btnGroupController's btnNumInput
+        onAddBtnClick: When the Add btn is clicked, it will add a btnGroupController. Developer can also add extra function by defining this api. 
+            It will be called after the prebuilt function.
+        onCreateBtnClick: When the Create btn is clicked, it will signal the child BtnGroupControllers to pass data to btnConfigData, then Workspace will create btns. 
+            Developer can also add extra function by defining this api. It will be called after the appending function.
+            Takes the data as the argument.
+        hideCreateBtn: boolean. Useful when BtnConfiguration is nested in ProjectManager.
+        status: 'new' / 'edit' / null. Required when btnConfiguration is used either solely (needs to have parent comp to update its value) or inside ProjectManager.
+            If 'new', show empty window; if 'edit', load btnConfigData; null is just to enable change of status, otherwise if open it twice as 'new', useEffect won't be triggered.
+        // reload: boolean. The parent use this to signal btnConfiguration to display BtnConfigData. Useful when BtnConfiguration is nested in ProjectManager.
+        // setReload: setter of reload.
+*/
+export default function BtnConfiguration(props) {
     
-        props:
-            // data: Required. The generated data, structure as above, will be append to it. 
-            // setData: Required. The setter of data. Will be called in the Create btn click handler to append data.
-            defaultGroupType: 'category'/'shape'/'skeleton'. Optional. When specified, all of the btnGroupController will have groupType set, and the btnType dropdown will be generated accordingly; otherwise, use general list.
-            groupType: set groupType for each child btnGroupController
-            defaultBtnType: set defaultGroupType for each child btnGroupController
-            btnType: set btnType for each child btnGroupController
-            defaultBtnNum: set defaultBtnNum for each child btnGroupController
-            btnNum: set btnNum for each child btnGroupController
-            disableGroupTypeSelect: disable child btnGroupController's groupTypeSelect
-            disableBtnTypeSelect: disable child btnGroupController's btnTypeSelect
-            disableBtnNumInput: disable child btnGroupController's btnNumInput
-            onAddBtnClick: When the Add btn is clicked, it will add a btnGroupController. Developer can also add extra function by defining this api. 
-                It will be called after the prebuilt function.
-            onCreateBtnClick: When the Create btn is clicked, it will signal the child BtnGroupControllers to pass data to btnConfigData, then Workspace will create btns. 
-                Developer can also add extra function by defining this api. It will be called after the appending function.
-                Takes the data as the argument.
-            hideCreateBtn: boolean. Useful when BtnConfiguration is nested in ProjectManager.
-            status: 'new' / 'edit' / null. Required when btnConfiguration is used either solely (needs to have parent comp to update its value) or inside ProjectManager.
-                If 'new', show empty window; if 'edit', load btnConfigData; null is just to enable change of status, otherwise if open it twice as 'new', useEffect won't be triggered.
-            // reload: boolean. The parent use this to signal btnConfiguration to display BtnConfigData. Useful when BtnConfiguration is nested in ProjectManager.
-            // setReload: setter of reload.
-    */
     // const [data, setData] = useState({}); //To prevent too many rerenders of parent comp. feel like it's not useful, as the btnGroupController can directly modify Workspace's btnConfigData, and Design can do that too.
     // const [children, setChildren] = useState([]);
     // const [skeletonData, setSkeletonData] = useState({});

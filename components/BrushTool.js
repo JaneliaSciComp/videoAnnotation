@@ -9,12 +9,13 @@ import {defaultColor} from '../utils/utils.js';
 const MIN_THICKNESS = 1;
 const MAX_THICKNESS = 100;
 
+
+/**
+ *  props:
+ *      minThinkness: int. To set the min value of slider to config the thickness of brush. Optional. If not provided, use MIN_THICKNESS
+        maxThickness: int. To set the max value of slider to config the thickness of brush. Optional. If not provided, use MAX_THICKNESS
+*/
 export default function BrushTool(props) {
-    /**
-     *  props:
-     *      minThinkness: int. To set the min value of slider to config the thickness of brush. Optional. If not provided, use MIN_THICKNESS
-            maxThickness: int. To set the max value of slider to config the thickness of brush. Optional. If not provided, use MAX_THICKNESS
-     */
 
     // get context
     const drawType = useStates().drawType;

@@ -5,18 +5,19 @@ import { useStates, useStateSetters } from './AppContext';
 // import styles from '../styles/Controller.module.css';
 
 
-export default function AnnotationTable(props) {
-    /**
-     * props:
-     *      width: str or number. 200 or '20em'. Width of the table
-     *      height: str or number. 200 or '20em'. Height of the table
-     *      scrollY: str or number. 200 or '20em'. Height of the contents part (excluding header row) of table
-     *      size: 'small'/'middle'/'large'. default is 'small'
-     *      ellipsis: boolean. Whether to make columns ellipsis when text is too long.
-     * 
-     * 
-     */
+/**
+ * props:
+ *      width: str or number. 200 or '20em'. Width of the table
+ *      height: str or number. 200 or '20em'. Height of the table
+ *      scrollY: str or number. 200 or '20em'. Height of the contents part (excluding header row) of table
+ *      size: 'small'/'middle'/'large'. default is 'small'
+ *      ellipsis: boolean. Whether to make columns ellipsis when text is too long.
+ * 
+ * 
+ */
 
+export default function AnnotationTable(props) {
+    
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [tableData, setTableData] = useState([]);
     const [columns, setColumns] = useState([]);
