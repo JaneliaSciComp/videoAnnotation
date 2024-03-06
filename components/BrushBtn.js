@@ -13,7 +13,7 @@ import { clearUnfinishedAnnotation } from '../utils/utils.js';
 /**
  * Note: for developer, creating multiple BrushBtn of a same label will result in error, 
  * because these BrushBtn use label to distinguish from each other.
- *     For annotator, when use BtnGroupController, Design to configuire BrushBtns, 
+ *     For annotator, when use BtnGroupController, BtnConfiguration to configuire BrushBtns, 
  * using a same label for multiple BrushBtns will result in error too.
  * 
  * To activate/deactivate brush segmentation drawing on canvas. Contains eraser btn and brush thichness slider
@@ -182,7 +182,7 @@ export default function BrushBtn(props) {
     return (
         // <Row >
         <div className={styles.brushBtnContainer}
-            style={{margin: ((props.enableBrushTool || !props.disableCrowdRadio) ? '0.2em' : '0') + ' 0'}}>
+            style={{margin: ((props.enableBrushTool || !props.omitCrowdRadio) ? '0.2em' : '0') + ' 0'}}>
             {/* <Col md={4} className={styles.brushBtn}> */}
             <div className={styles.brushBtn}>
                 <Button className={styles.btn}
@@ -196,14 +196,14 @@ export default function BrushBtn(props) {
             {/* </Col>
             
             <Col md={6}> */}
-            {(props.enableBrushTool || !props.disableCrowdRadio) ?
+            {(props.enableBrushTool || !props.omitCrowdRadio) ?
                 <div className='ms-2'>
                     {/* <Row > */}
                     {props.enableBrushTool ? 
                         <BrushTool minThinkness={props.minThinkness} maxThickness={props.maxThickness}/> 
                         : null}
                     
-                    {!props.disableCrowdRadio ?
+                    {!props.omitCrowdRadio ?
                         // <Row>
                         <div>
                             <Radio.Group 

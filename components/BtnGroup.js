@@ -126,7 +126,7 @@ export default function BtnGroup(props) {
                                             key={i}
                                             label={item.label}
                                             color={item.color}
-                                            disableCrowdRadio={item.disableCrowdRadio}
+                                            omitCrowdRadio={item.omitCrowdRadio}
                                             />
                                     )
                     btns.push(

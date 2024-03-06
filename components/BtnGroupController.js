@@ -487,7 +487,7 @@ export default function BtnGroupController(props) {
         const childrenData = getData();
         const data = {...childrenData[target.index]};
         // console.log('color', childrenData);
-        data.disableCrowdRadio = target.value==='yes'?false : true;
+        data.omitCrowdRadio = target.value==='yes'?false : true;
         // console.log(data);
         const childrenDataCopy = [...childrenData];
         childrenDataCopy[target.index] = data;

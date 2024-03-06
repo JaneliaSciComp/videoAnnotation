@@ -13,6 +13,7 @@ import { clearUnfinishedAnnotation } from '../utils/utils.js';
             type: 'skeleton',
             color: '#000000',
             label: btnGroupId,
+            skeletonName: 'mouse',
             data: [
                 [x, y, visibility],
                 ...
@@ -20,8 +21,8 @@ import { clearUnfinishedAnnotation } from '../utils/utils.js';
         }}
 
     Props: 
-        groupIndex: '123456',  
-        data: [
+        // groupIndex: '123456', //configure data, should not be accessible for user
+        // data: [  //configure data, should not be accessible for user
             {index: 0, 
             btnType: 'skeleton',
             label: 'head',
