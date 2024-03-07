@@ -219,12 +219,18 @@ export default function BtnGroupController(props) {
         } 
     }, [groupData])
 
+    useEffect(()=>{
+        if (props.defaultGroupType && btnTypeOptions[props.defaultGroupType]) {
+            setBtnType(btnTypeOptions[props.defaultGroupType][0]['value']);
+        }
+        
+    }, [props.defaultGroupType])
 
     function onGroupTypeChange(newValue, opt) {
         // console.log(newValue);
         // console.log(btnOptions[newValue]);
         setGroupType(newValue);
-        setBtnType(btnTypeOptions[newValue][0]['value']);
+        // setBtnType(btnTypeOptions[newValue][0]['value']);
 
         // if user has defined custom callback
         if (props.onGroupTypeChange) {

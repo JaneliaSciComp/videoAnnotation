@@ -26,8 +26,8 @@ const BTNGROUPNUM_MAX=50
                 ...
             ],
             (edgeData: [  //only for skeleton group
-                Set(),
-                ...
+                [...],
+                [...],
             ])
         }},
         {groupIndex2: ...},
@@ -186,7 +186,7 @@ export default function BtnConfiguration(props) {
             // setHide(true);
 
             if (props.onCreateBtnClick) {
-                props.onCreateBtnClick({...btnConfigData});
+                props.onCreateBtnClick();
             }
         // }
     }

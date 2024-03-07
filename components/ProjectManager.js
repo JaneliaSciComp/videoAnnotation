@@ -171,7 +171,7 @@ export default function ProjectManager(props) {
                 </Form>
                 <BtnConfiguration 
                     status={btnConfigStatus} 
-                    hideCreateBtn 
+                    // hideCreateBtn
                     />
             </Modal>
         </>
