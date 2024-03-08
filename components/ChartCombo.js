@@ -6,11 +6,11 @@ import {Row, Col} from 'react-bootstrap';
 
 
 /**
- * Combination of ChartMenu and Chart. 
- * Host data for ChartMenu and Chart, so that don't need to bother Workspace.
+ * Combination of ChartController and Chart. 
+ * Host data for ChartController and Chart, so that don't need to bother Workspace.
  * 
  * props:
- *  // metrics: ['length', 'width', ...]. Will be passed to child ChartMenu to generate dorpdown menus
+ *  // metrics: ['length', 'width', ...]. Will be passed to child ChartController to generate dorpdown menus
  *  data: data for chart
  *      {
             length: {

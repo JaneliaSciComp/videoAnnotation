@@ -69,11 +69,7 @@ import {Container, Row, Col} from 'react-bootstrap'; // for layout
 export default function Home() {
   return (
     <Workspace >
-        <BtnConfiguration 
-          groupType='skeleton' 
-          btnType='skeleton'
-          disableGroupTypeSelect
-          disableBtnTypeSelect/>
+        <ProjectDropdown />
         
         <Row>
             <Col >
@@ -92,14 +88,9 @@ export default function Home() {
   )
 }
 ```
-The page should look like this:
-
-![init_page.png](/public/init_page.png)
 
 > [!NOTE]
-> The `<BtnConfiguration>` component will disapear after creating the buttons.
-
-> In order to process the video, you also need to set up a backend server. We will cover this later.
+> In order to process the video, you also need to set up a backend server. We will cover this in another [repo](https://github.com/JaneliaSciComp/videoAnnotation_backend/tree/local_usage).
 
 Here we used react-bootstrap for the layout. Check out the [tutorial](https://react-bootstrap.netlify.app/docs/layout/grid/#auto-layout-columns).
 

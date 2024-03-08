@@ -9,6 +9,7 @@ import VideoUploader from '../components/VideoUploader.js';
 import ActiveAnnotation from '../components/ActiveAnnotation.js';
 import BtnConfiguration from '../components/BtnConfiguration.js';
 import BtnGroupController from '../components/BtnGroupController';
+import BtnController from '../components/BtnController.js';
 import BtnContainer from '../components/BtnContainer.js';
 import BtnGroup from '../components/BtnGroup.js';
 import BrushBtn from '../components/BrushBtn.js';
@@ -19,6 +20,7 @@ import SaveBtn from '../components/SaveBtn.js';
 import JsonUploader from '../components/JsonUploader.js';
 import ProjectManager from '../components/ProjectManager.js';
 import ProjectDropdown from '../components/ProjectDropdown.js';
+import ModalJsonUploader from '../components/ModalJsonUploader.js';
 import VideoManager from '../components/VideoManager.js';
 import {Row, Col} from 'react-bootstrap';
 import { Button } from 'antd';
@@ -30,7 +32,7 @@ const Chart = dynamic(() => import('../components/ChartCombo.js'), { ssr: false 
 
 
 export default function Home() {
-  // const [managerOpen, setManagerOpen] = useState(false);
+  const [open, setOpen] = useState(false);
   
   const groupData = {
     groupIndex:'123',
@@ -133,8 +135,8 @@ export default function Home() {
         }
 
 
-  function openManager() {
-    setManagerOpen(!managerOpen);
+  function openModal() {
+    setOpen(true);
   }
 
 //btnConfigData={btnConfigData}
@@ -155,18 +157,22 @@ export default function Home() {
         {/* <JsonUploader type='configuration'/> */}
         
 
-        {/* <BtnConfiguration status='edit'/> */}
-        {/* <Button type="primary" onClick={openManager} style={{width: '6em'}}>
-          Project
-        </Button>
-        <ProjectManager open={managerOpen} setOpen={setManagerOpen}/> */}
+        {/* <BtnConfiguration status='new'/> */}
+        {/* <Button onClick={openModal}>Open Modal</Button> */}
+        {/* <ProjectManager status='new' open={open} setOpen={setOpen}/> */}
+        {/* <ModalJsonUploader 
+          type='configuration'
+          open={open}
+          setOpen={setOpen}
+        /> */}
+        {/* <JsonUploader type='configuration' /> */}
         <VideoManager />
         <ProjectDropdown />
         <Row >
           <Col>
-            <Category label='chase'/>
+            {/* <Category label='chase'/>
             <ShapeBtn type='bbox' label='fly-bbox' color='red' />
-            <ShapeBtn type='polygon' label='cat-plg' color='blue' />
+            <ShapeBtn type='polygon' label='cat-plg' color='blue' /> */}
             <BtnContainer />
             {/* <BrushTool />
             <BrushBtn label='mouse' />
@@ -183,7 +189,7 @@ export default function Home() {
             <Canvas width={400} height={300}/>
           </Col>
           <Col >
-            <AnnotationTable width={300} height={300} ellipsis/>
+            <AnnotationTable width={400} height={300} ellipsis/>
           </Col>
         </Row>
         <VideoUploader />

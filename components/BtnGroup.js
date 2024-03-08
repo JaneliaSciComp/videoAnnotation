@@ -8,7 +8,7 @@ import {Row} from 'react-bootstrap';
 
 export default function BtnGroup(props) {
     /*
-        To bundle a group of annotating btns of the same type.
+        To bundle a group of annotation btns of the same type.
         Props: 
             data: 
                 {   

@@ -10,8 +10,8 @@ import ModalJsonUploader from './ModalJsonUploader.js';
  *      //serverType: 'local' / 'remote'
  *      //uploaderOkClickHandler: will be called after natural behavior of uploading and updating projectConfigData.
  *      //uploaderCancelClickHandler: will be called after natural behavior of closing the uploader modal window
- *      onProjectNameChange: will be called after natural onProjectNameChange behavior in ProjectManager
- *      onDescriptionChange: will be called after natural onDescriptionChange behavior in ProjectManager
+ *      onProjectNameChange: called after inherent behavior in ProjectManager
+ *      onDescriptionChange: called after inherent behavior in ProjectManager
  */
 export default function ProjectDropdown(props) {
 

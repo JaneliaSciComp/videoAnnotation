@@ -8,7 +8,7 @@ import { useStates, useStateSetters } from './AppContext';
 /**
  *  props:
  *      type: required, 'annotation' or 'configuration'
- *      onLoad: call back after the file is successfully loaded, with the file obj as argument. Will be called after natural behavior.
+ *      onLoad: called after the file is successfully loaded, with the file obj as argument. Will be called after inherent behavior.
  *      //modalOpen: only useful when put inside a modal window. The "open" prop of the parent window. Used to close the parent modal window after uploading the file or click ok or cancel btn on the confirm window
  *      setModalOpen: only useful when put inside a modal window. setter of modalOpen.
  */

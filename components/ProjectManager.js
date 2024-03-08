@@ -131,7 +131,6 @@ export default function ProjectManager(props) {
                     <Button key={0} onClick={cancelClickHandler}>Cancel</Button>,
                     <Button key={1} type='primary' onClick={okClickHandler} disabled={okDisable}>Ok</Button>
                 ]}
-        
                 >
                 <Form form={form} className='mt-5' size='small'>
                     <Form.Item 
@@ -171,7 +170,7 @@ export default function ProjectManager(props) {
                 </Form>
                 <BtnConfiguration 
                     status={btnConfigStatus} 
-                    // hideCreateBtn
+                    hideCreateBtn
                     />
             </Modal>
         </>

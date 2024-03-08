@@ -7,9 +7,9 @@ import { useStates, useStateSetters } from './AppContext';
 
 /**
  * props:
- *      width: str or number. 200 or '20em'. Width of the table
- *      height: str or number. 200 or '20em'. Height of the table
- *      scrollY: str or number. 200 or '20em'. Height of the contents part (excluding header row) of table
+ *      width: str or number. 200 or '200'. Width of the table
+ *      height: str or number. 200 or '200'. Height of the table
+ *      scrollY: str or number. 200 or '200'. Height of the contents part (excluding header row) of table
  *      size: 'small'/'middle'/'large'. default is 'small'
  *      ellipsis: boolean. Whether to make columns ellipsis when text is too long.
  * 
