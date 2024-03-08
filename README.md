@@ -13,14 +13,16 @@ If you’re new to React or Next.js, check out [React](https://react.dev/learn) 
 
 ### Step 1: Initialize a new project
 
-First of all, you need to install [Node.js](https://nodejs.org/en/) for local development.
+First of all, you need to install [Node.js](https://nodejs.org/en/) (>=19.0.0).
 
-Then run
+Then clone this repo.
+
+Then outside of the repo dir, run
 ```bash
 npx create-next-app@13.2.4  # The version used to create the page
 ```
 
-Answer the popup questions. For my test, I used these settings. You can also customize your own settings.
+Answer the popup questions. For my test, I used these settings. You can also customize your own.
 
 ![nextjs_settings.png](/public/nextjs_settings.png)
 
@@ -28,11 +30,11 @@ Answer the popup questions. For my test, I used these settings. You can also cus
 ### Step 2: Copy our library to your project and install dependencies
 
 > [!NOTE]
-> This step will be replace by `npm install ourLib` after we release this library
+> This step will be replaced by `npm install ourLib` after we release this library
 
-Copy ***package.json, components, utils*** and ***styles*** folders from this repo to your root dir.
+Copy ***package.json, components, utils*** and ***styles*** folders from the repo dir to the root dir of the project you just created.
 
-Go to the root dir of your project, and install the dependencies.
+In the root dir of your project, install the dependencies.
 ```bash
 npm install
 ```
@@ -48,10 +50,10 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 
 
-### Step 4: Modifying `pages/index.js` 
+### Step 4: Modify `pages/index.js` 
 You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
 
-For the web in the above image, the index.js file should look like this
+For the web in the image above, the index.js file should look like this
 
 ```javascript
 import React from 'react';
@@ -63,6 +65,7 @@ import BtnConfiguration from '../components/BtnConfiguration.js';
 import AnnotationTable from '../components/AnnotationTable.js';
 import SaveBtn from '../components/SaveBtn.js';
 import TrainBtn from '../components/TrainBtn.js';
+import ProjectDropdown from '../components/ProjectDropdown.js';
 import {Container, Row, Col} from 'react-bootstrap'; // for layout
 
 
@@ -90,7 +93,7 @@ export default function Home() {
 ```
 
 > [!NOTE]
-> In order to process the video, you also need to set up a backend server. We will cover this in another [repo](https://github.com/JaneliaSciComp/videoAnnotation_backend/tree/local_usage).
+> In order to process the video, you need to set up a backend server. We will cover this in another [repo](https://github.com/JaneliaSciComp/videoAnnotation_backend/tree/local_usage).
 
 Here we used react-bootstrap for the layout. Check out the [tutorial](https://react-bootstrap.netlify.app/docs/layout/grid/#auto-layout-columns).
 

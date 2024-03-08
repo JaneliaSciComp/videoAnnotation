@@ -642,6 +642,7 @@ export default function BtnGroupController(props) {
                 {/* {props.enableDelete ? */}
                     <Button className={styles.generateBtn} 
                         // shape='circle'
+                        tabIndex={-1}
                         type='text'
                         icon={<DownOutlined />}
                         onClick={onDownBtnClick} 
@@ -651,6 +652,7 @@ export default function BtnGroupController(props) {
                 } */}
                 {props.enableDelete ?
                     <Button className={styles.deleteBtn} 
+                        tabIndex={-1}
                         // shape='circle'
                         type='text'
                         icon={<DeleteOutlined />} 

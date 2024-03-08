@@ -157,6 +157,7 @@ export default function BtnController(props) {
             {props.enableDelete ?
                 <Button className={styles.deleteBtn} 
                 // shape='circle'
+                tabIndex={-1}
                 type='text'
                 icon={<DeleteOutlined />} 
                 onClick={onDelete}
