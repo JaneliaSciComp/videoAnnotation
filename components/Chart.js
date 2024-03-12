@@ -226,8 +226,8 @@ export default function MyChart(props) {
                     }
                 },
                 y: {
-                    min: min - props.type==='Line' ? MIN_OFFSET : 0,
-                    max: max + props.type==='Line' ? MAX_OFFSET : 0,
+                    min: min - (props.type==='Line' ? MIN_OFFSET : 0),
+                    max: max + (props.type==='Line' ? MAX_OFFSET : 0),
                     border: {
                         display: true
                     },

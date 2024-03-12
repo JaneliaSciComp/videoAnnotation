@@ -30,10 +30,10 @@ export default function SaveBtn(props) {
             }
         }
     }
-
+    // {props.type}
     return (
         <Button className={styles.btn} onClick={clickHandler}>
-            Save {props.type}
+            Save 
         </Button>
     )
 }
