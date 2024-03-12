@@ -116,7 +116,6 @@ export default function Home() {
     }
   }}
 
-  const metricsExample= ['length', 'width', 'chase'];
   const nums = [71,56,-24,56,26,42,10,-82,82,47,-77,29,54,-40,54,91,96,-15,90,23];
   const data = {
           length: {
@@ -153,9 +152,6 @@ export default function Home() {
         <ShapeBtn type='bbox' label='fly' color='red' /> */}
         {/* <BtnGroup data={groupData} /> */}
         {/* <BtnGroupController /> */}
-        {/* <JsonUploader type='annotation'/> */}
-        {/* <JsonUploader type='configuration'/> */}
-        
 
         {/* <BtnConfiguration status='new'/> */}
         {/* <Button onClick={openModal}>Open Modal</Button> */}
@@ -166,6 +162,7 @@ export default function Home() {
           setOpen={setOpen}
         /> */}
         {/* <JsonUploader type='configuration' /> */}
+        <JsonUploader type={'annotation'}/>
         <VideoManager />
         <ProjectDropdown />
         <Row >
@@ -180,7 +177,7 @@ export default function Home() {
           </Col>
           <Col>
             {/* <ActiveAnnotation /> */}
-            <SaveBtn type='configuration'/>
+            {/* <SaveBtn type='configuration'/> */}
             <SaveBtn type='annotation' />
           </Col>
         </Row>

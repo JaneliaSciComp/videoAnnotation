@@ -19,13 +19,14 @@ export default function SaveBtn(props) {
     // const frameAnnotation = useStates().frameAnnotation;
     // const setFrameAnnotation = useStateSetters().setFrameAnnotation;
     const setSaveConfig = useStateSetters().setSaveConfig;
+    const setSaveAnnotation = useStateSetters().setSaveAnnotation;
 
     function clickHandler() {
         if (props.type === 'configuration') {
             setSaveConfig(true);
         } else if (props.type === 'annotation') {
             if (Number.isInteger(frameNum) || frameUrl) {
-                // setSaveAnnotation(true);
+                setSaveAnnotation(true);
             }
         }
     }

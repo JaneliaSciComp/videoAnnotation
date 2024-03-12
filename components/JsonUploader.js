@@ -54,7 +54,7 @@ export default function JsonUploader(props) {
     function uploadFile(file) {
         message.success(`${file.name} file uploaded successfully`);
         setInfo(`${file.name} file uploaded successfully`);
-        if (projectConfigDataRef.current?.projectName || (projectConfigDataRef.current?.btnConfigData && Object.keys(projectConfigDataRef.current.btnConfigData).length>0)) { // The btnConfigData field is initialized as not null or undefined 
+        if (props.type==='configuration' && (projectConfigDataRef.current?.projectName || (projectConfigDataRef.current?.btnConfigData && Object.keys(projectConfigDataRef.current.btnConfigData).length>0))) { // The btnConfigData field is initialized as not null or undefined 
             Modal.confirm({
                 title: 'Alert',
                 content: 'The current project configuration data including annotation buttons will be removed!',

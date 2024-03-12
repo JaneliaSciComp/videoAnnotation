@@ -54,6 +54,7 @@ export default function Workspace(props) {
     const projectConfigDataRef = useRef({}); //{projectName: 'str', description: 'str'/null, btnConfigData: obj/copy of btnConfigData state,edges are array not set}
     const [confirmConfig, setConfirmConfig] = useState(); // ProjectManager use it to tell BtnConfiguration to create btns
     const [saveConfig, setSaveConfig] = useState(false);
+    const [saveAnnotation, setSaveAnnotation] = useState(false);
     const [infoOpen, setInfoOpen] = useState(false);
     const [info, setInfo] = useState();
 
@@ -85,6 +86,7 @@ export default function Workspace(props) {
         projectConfigDataRef: projectConfigDataRef,
         confirmConfig: confirmConfig,
         saveConfig: saveConfig,
+        saveAnnotation: saveAnnotation,
         info: info,
         infoOpen: infoOpen,
     }
@@ -113,6 +115,7 @@ export default function Workspace(props) {
         setUploader: setUploader,
         setConfirmConfig: setConfirmConfig,
         setSaveConfig: setSaveConfig,
+        setSaveAnnotation: setSaveAnnotation,
         setInfo: setInfo,
         setInfoOpen: setInfoOpen,
     }
@@ -234,6 +237,25 @@ export default function Workspace(props) {
             setSaveConfig(false);
         }
     }, [saveConfig])
+
+    useEffect(()=> {
+        if (saveAnnotation) {
+            // const annoCopy = clearUnfinishedAnnotation(frameAnnotation);
+            // annotationRef.current[frameNum] = annoCopy;
+            saveCurrentAnnotation();
+            if (Object.keys(annotationRef.current)?.length > 0) {
+                const jsonAnno = JSON.stringify(annotationRef.current);
+                console.log(jsonAnno);
+                const blobAnno = new Blob([jsonAnno], {type: 'text/plain'});
+                const a = document.createElement("a");
+                a.href = URL.createObjectURL(blobAnno);
+                a.download = 'annotation.json';
+                a.click();
+                URL.revokeObjectURL(a.href);
+            }
+            setSaveAnnotation(false);
+        }
+    }, [saveAnnotation])
 
 
     useEffect(()=> {
