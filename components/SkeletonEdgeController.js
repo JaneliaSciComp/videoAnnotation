@@ -34,7 +34,7 @@ import {predefinedColors} from '../utils/utils.js';
         onDoneBtnClick: When the Done btn is clicked, it will append the edge data to the data property by calling setData. 
             Developer can also add extra function by defining this api. It will be called after the appending function.
             Takes the edge data as the argument.
-
+        status: 'new' / 'edit'
 
     Ref:
         edgeDataRef: dynamically change when checkbox or last/next btn is clicked. To prevent too frequent change on props.data
@@ -86,6 +86,7 @@ export default function SkeletonEdgeController(props) {
             edgeDataRef.current = [];
         }
         setCurrentVertex(0);
+        setEdgeAdded(false);
     }, [props.status])
 
 
@@ -128,7 +129,7 @@ export default function SkeletonEdgeController(props) {
     )
 
     function onCheckBoxChange(newCheckedValues) {
-        console.log('checked = ', newCheckedValues);
+        // console.log('checked = ', newCheckedValues);
         setCheckedValues(newCheckedValues);
         const existingEdges = edgeDataRef.current[currentVertex] ? edgeDataRef.current[currentVertex] : new Set();
         // const existingEdges = edgeDataRef.current[currentVertex] ? edgeDataRef.current[currentVertex] : [];
