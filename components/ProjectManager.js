@@ -72,6 +72,7 @@ export default function ProjectManager(props) {
             projectName: projectName,
             description: description,
             // btnConfigData: {...btnConfigData}
+            videos: {}
         }
 
         setConfirmConfig(true);
@@ -81,7 +82,7 @@ export default function ProjectManager(props) {
 
 
     function cancelClickHandler() {
-        console.log('cancel');
+        // console.log('cancel');
         setBtnConfigStatus(null);
         // props.setOpen(false);
     }

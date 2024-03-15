@@ -218,7 +218,7 @@ export default function VideoUploader(props) {
                     <span className='me-1'>FPS</span>
                     <InputNumber className={styles.playFpsInput} 
                         min={totalFrameCount==0 ? 0 : 1}
-                        max={fps==0 ? 0 : 2*fps} //TODO
+                        max={fps===0 ? 0 : 2*fps} //TODO
                         value={playFps}
                         onChange={playFpsInputChangeHandler}
                         size="small"/>
@@ -258,7 +258,6 @@ export default function VideoUploader(props) {
                     <Form.Group as={Row} controlId='videoPath'>
                         <Form.Label column sm={2}>Video path</Form.Label>
                         <Col sm={6}>
-                            {/* /Users/pengx/work/videoAnnotation/code/videoAnnotation/videoAnnotation_backend */}
                             <Form.Control type='string' defaultValue='/Users/pengxi/video/numbered.mp4' name='video_path' placeholder='E.g. /somePath/videoName.avi' required />
                             <Form.Control.Feedback type='invalid'>Please provide video path in your local computer, e.g. /somePath/videoName.avi</Form.Control.Feedback>
                             {submitError ?
