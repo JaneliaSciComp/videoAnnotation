@@ -34,13 +34,17 @@ export default function VideoManager(props) {
     //TODO: add and load btn, load video
     
     const [videoNames, setVideoNames] = useState([]); //data source for list: ['video1', 'video2']
+    const [videoIds, setVideoIds] = useState([]); // videoIds are the ids of entries in videoNames in the same order
     const [detailsVideoName, setDetailsVideoName] = useState();
     const [detailsVideoPath, setDetailsVideoPath] = useState();
     const [detailsVideoId, setDetailsVideoId] = useState(); 
     const [btnDisable, setBtnDisable] = useState(true);
+    const [info, setInfo] = useState();
 
     const projectConfigDataRef = useStates().projectConfigDataRef;
-    
+    const videoData = useStates().videoData;
+    const setVideoData = useStateSetters().setVideoData;
+
     const [form] = Form.useForm();
 
     useEffect(() => {
@@ -50,19 +54,16 @@ export default function VideoManager(props) {
           
     }, [props.open])
 
-    // useEffect(()=>{
-    //     if (projectConfigDataRef.current?.videos?.length > 0) {
-    //         const videos = Object.entries(projectConfigDataRef.current.videos).map(
-    //             (_, value) => {
-    //                 return value.name;
-    //             }
-    //         )
-    //         console.log('videos', videos);
-    //         setVideoData(videos);
-    //     } else {
-    //         setVideoData([]);
-    //     }
-    // }, [])
+    useEffect(() => {
+        const names = [];
+        const ids = [];
+        for (let id in videoData) {
+            ids.push(id);
+            names.push(videoData[id].name);
+        }
+        setVideoNames(names);
+        setVideoIds(ids);
+    }, [videoData])
     
 
     function okClickHandler() {
@@ -77,13 +78,10 @@ export default function VideoManager(props) {
         props.setOpen(false);
     }
 
-    function onVideoNameClick(e) {
+    function onVideoNameClick(i) {
         // console.log(e.target);
-        const videos = projectConfigDataRef.current.videos;
-        const videoId = Object.keys(videos).filter(
-            (id) => videos[id].name === e.target.innerHTML
-        )[0];
-        const videoObj = videos[videoId];
+        const videoId = videoIds[i];
+        const videoObj = videoData[videoId];
         form.setFieldsValue({
             videoName: videoObj.name,
             videoPath: videoObj.path
@@ -99,7 +97,6 @@ export default function VideoManager(props) {
         const target = {
             value: e.target.value,
         };
-
         if (props.onVideoNameChange) {
             props.onVideoNameChange(target);
         }
@@ -110,7 +107,7 @@ export default function VideoManager(props) {
         if (e.target.value?.length > 0) {
             form.setFieldsValue({ videoPath: e.target.value });
             setBtnDisable(false);
-        }else {
+        } else {
             setBtnDisable(true);
         }
 
@@ -126,59 +123,60 @@ export default function VideoManager(props) {
     function onAddBtnClick() {
         // console.log(e);
         const id = new Date().getTime();
-        addVideo(id);
+        modifyVideoData(id);
     }
 
     function onAddLoadBtnClick() {
         // console.log(e);
         const id = new Date().getTime();
-        addVideo(id);
+        modifyVideoData(id);
 
         //TODO: submit video to backend
     }
 
     function onEditBtnClick() {
         // console.log(e);
-        let {videoName, videoPath} = form.getFieldsValue();
-        if (!videoName?.length>0) {
-            videoName = videoPath;
-        }
-        if (projectConfigDataRef.current?.projectName?.length>0) {
-            const videosCopy = {...projectConfigDataRef.current.videos};
-            videosCopy[detailsVideoId].name = videoName;
-            const newVideoNames = Object.entries(videosCopy).map(([_, value])=>value.name);
-            setVideoNames(newVideoNames);
-
-            projectConfigDataRef.current.videos[detailsVideoId] = {
-                name: videoName,
-                path: videoPath
-            };
-        }
-        setDetailsVideoId(null);
-        form.resetFields();
-        setBtnDisable(true);
+        modifyVideoData(detailsVideoId);
     }
 
-    function addVideo(id) {
+    function modifyVideoData(id) {
         let {videoName, videoPath} = form.getFieldsValue();
         if (!videoName?.length>0) {
             videoName = videoPath;
         }
         if (projectConfigDataRef.current?.projectName?.length>0) {
-            const videosCopy = {...projectConfigDataRef.current.videos};
-            videosCopy[id] = {name: videoName};
-            const newVideoNames = Object.entries(videosCopy).map(([_, value])=>value.name);
-            // console.log(videosCopy, newVideoNames);
-            setVideoNames(newVideoNames);
-
-            projectConfigDataRef.current.videos[id] = {
+            const videoDataCopy = {...videoData};
+            videoDataCopy[id] = {
                 name: videoName,
                 path: videoPath
             };
+            setVideoData(videoDataCopy);
+
+            form.resetFields();
+            setBtnDisable(true);
+            setInfo(null);
+            setDetailsVideoId(null);
+        } else {
+            setInfo('Please initialize or load a project first.')
         }
-        // setDetailsVideoId(id);
-        form.resetFields();
-        setBtnDisable(true);
+    }
+
+    function onLoadBtnClick() {
+
+    }
+
+    function onDelBtnClick(i) {
+        console.log(i);
+        const videoId = videoIds[i];
+        if (videoId === detailsVideoId) {
+            form.resetFields();
+            setBtnDisable(true);
+            setInfo(null);
+            setDetailsVideoId(null);
+        }
+        const videoDataCopy = {...videoData};
+        delete(videoDataCopy[videoId]);
+        setVideoData(videoDataCopy);
     }
 
     return (
@@ -197,12 +195,12 @@ export default function VideoManager(props) {
                     // footer={<div>Footer</div>}
                     bordered
                     dataSource={videoNames}
-                    renderItem={(item) => 
+                    renderItem={(name, i) => 
                         <List.Item>
-                            <Button type="link" onClick={onVideoNameClick}>{item}</Button>
+                            <Button type="link" onClick={()=>{onVideoNameClick(i)}}>{name}</Button>
                             <div >
-                                <Button icon={<PlayCircleOutlined />} />
-                                <Button icon={<DeleteOutlined />} />
+                                <Button onClick={()=>{onLoadBtnClick(i)}} icon={<PlayCircleOutlined />} />
+                                <Button onClick={()=>{onDelBtnClick(i)}} icon={<DeleteOutlined />} />
                             </div>
                             
                         </List.Item>
@@ -252,6 +250,7 @@ export default function VideoManager(props) {
                                 <Button onClick={onEditBtnClick} disabled={btnDisable}>Edit</Button>
                             </Space>
                         </div>
+                        <p>{info}</p>
                     </Form>
                 </div>
             {/* </Modal> */}

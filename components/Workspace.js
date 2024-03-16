@@ -57,6 +57,7 @@ export default function Workspace(props) {
     const [saveAnnotation, setSaveAnnotation] = useState(false);
     const [infoOpen, setInfoOpen] = useState(false);
     const [info, setInfo] = useState();
+    const [videoData, setVideoData] = useState({});
 
     console.log('workspace render');
 
@@ -89,6 +90,7 @@ export default function Workspace(props) {
         saveAnnotation: saveAnnotation,
         info: info,
         infoOpen: infoOpen,
+        videoData: videoData
     }
 
     const stateSetters = {
@@ -118,6 +120,7 @@ export default function Workspace(props) {
         setSaveAnnotation: setSaveAnnotation,
         setInfo: setInfo,
         setInfoOpen: setInfoOpen,
+        setVideoData: setVideoData
     }
 
 
@@ -153,7 +156,8 @@ export default function Workspace(props) {
              * {
                     projectName: str,
                     description: str, optional
-                    btnConfigData: {}
+                    btnConfigData: {},
+                    videos: {}
                 }
              */
             projectConfigDataRef.current = obj;
