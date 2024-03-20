@@ -46,6 +46,8 @@ export default function VideoManager(props) {
     const setNewVideoPath = useStateSetters().setNewVideoPath;
     // const setVideoPathToGet = useStateSetters().setVideoPathToGet;
     const setResetVideoPlay = useStateSetters().setResetVideoPlay;
+    const resetVideoDetails = useStates().resetVideoDetails;
+    const setResetVideoDetails = useStateSetters().setResetVideoDetails;
 
     const [form] = Form.useForm();
 
@@ -57,6 +59,17 @@ export default function VideoManager(props) {
     //     }
           
     // }, [props.open])
+
+    useEffect(()=> {
+        if (resetVideoDetails) {
+            form.resetFields();
+            setBtnDisable(true);
+            setInfo(null);
+            setDetailsVideoId(null);
+            
+            setResetVideoDetails(false);
+        }
+    }, [resetVideoDetails])
 
     useEffect(() => {
         const names = [];
@@ -134,7 +147,7 @@ export default function VideoManager(props) {
         // console.log(e);
         const id = new Date().getTime();
         const videoDataCopy =  modifyVideoData(id);
-        console.log(videoDataCopy)
+        // console.log(videoDataCopy)
 
         //trigger posting video to backend in VideoUploader
         if (videoDataCopy) {
@@ -159,6 +172,7 @@ export default function VideoManager(props) {
                 path: videoPath
             };
             setVideoData(videoDataCopy);
+            projectConfigDataRef.current.videos = {...videoDataCopy};
 
             form.resetFields();
             setBtnDisable(true);
@@ -193,8 +207,9 @@ export default function VideoManager(props) {
         const videoDataCopy = {...videoData};
         delete(videoDataCopy[videoIdToDel]);
         setVideoData(videoDataCopy);
+        projectConfigDataRef.current.videos = {...videoDataCopy};
 
-        console.log(i, videoIdToDel, videoId);
+        // console.log(i, videoIdToDel, videoId);
         if (videoIdToDel === videoId) {
             setResetVideoPlay(true);
         }

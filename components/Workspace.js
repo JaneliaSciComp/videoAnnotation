@@ -61,7 +61,7 @@ export default function Workspace(props) {
     const [newVideoPath, setNewVideoPath] = useState(); // new video path obj added by videoManager, to trigger post request in videoUploader. {id: {name: str, path: str}}
     // const [videoPathToGet, setVideoPathToGet] = useState(); // video path obj in videoManager, to trigger get request in videoUploader. {id: {name: str, path: str}}
     const [resetVideoPlay, setResetVideoPlay] = useState(); // used by VideoManager to reset video play status in VideoUploader
-
+    const [resetVideoDetails, setResetVideoDetails] = useState(); // used by JsonUploader to reset video details window in VideoManager
 
     console.log('workspace render');
 
@@ -98,6 +98,7 @@ export default function Workspace(props) {
         newVideoPath: newVideoPath,
         // videoPathToGet: videoPathToGet,
         resetVideoPlay: resetVideoPlay,
+        resetVideoDetails: resetVideoDetails,
     }
 
     const stateSetters = {
@@ -131,6 +132,7 @@ export default function Workspace(props) {
         setNewVideoPath: setNewVideoPath,
         // setVideoPathToGet: setVideoPathToGet,
         setResetVideoPlay: setResetVideoPlay,
+        setResetVideoDetails: setResetVideoDetails,
     }
 
 
@@ -164,57 +166,16 @@ export default function Workspace(props) {
              * {
                     projectName: str,
                     description: str, optional
-                    btnConfigData: {}
+                    btnConfigData: {},
+                    videos: {}
                 }
              */
             projectConfigDataRef.current = obj;
-            const btnConfigObj = {...obj.btnConfigData};
-            console.log(btnConfigObj);
-            // convertEdgeArrToSet(btnConfigObj);
-            setBtnConfigData(btnConfigObj);
+            setBtnConfigData(obj.btnConfigData ? {...obj.btnConfigData} : {}); // btnConfigData could be null
+            setVideoData({...obj.videos}); // videos might be empty obj but not null
         }
     }
 
-
-    // useEffect(()=> {
-    //     if (save) {
-    //         // const annoCopy = clearUnfinishedAnnotation(frameAnnotation);
-    //         // annotationRef.current[frameNum] = annoCopy;
-    //         saveCurrentAnnotation();
-    //         const jsonAnno = JSON.stringify(annotationRef.current);
-    //         const blobAnno = new Blob([jsonAnno], {type: 'text/plain'});
-            
-    //         // console.log(btnConfigData);
-    //         // Object.values(btnConfigData).forEach(groupData => {
-    //         //     if (groupData.groupType === 'skeleton' && groupData.edgeData && groupData.edgeData.edges.length) {
-    //         //         const edgesArr = groupData.edgeData.edges.map(neighborSet => neighborSet?[...neighborSet]:null);
-    //         //         groupData.edgeData.edges = edgesArr;
-    //         //     }
-    //         // })
-    //         // projectConfigDataRef.current = {...projectConfigDataRef.current, btnConfigData: {...btnConfigData}};
-    //         console.log(projectConfigDataRef.current);
-    //         const jsonProjectConfig = JSON.stringify(projectConfigDataRef.current);
-    //         console.log(jsonProjectConfig);
-    //         const blobProjectConfig = new Blob([jsonProjectConfig], {type: 'text/plain'});
-    //         const zip = JSZip();
-    //         zip.file('annotations.json', blobAnno);
-    //         zip.file('projectConfiguration.json', blobProjectConfig);
-    //         zip.generateAsync({type: "blob"})
-    //             .then(res => {
-    //                 const a = document.createElement("a");
-    //                 a.href = URL.createObjectURL(res);
-    //                 a.download = 'archive.zip';
-    //                 a.click();
-    //                 URL.revokeObjectURL(a.href);
-    //             })
-            
-    //         // const btnConfigDataCopy = {...btnConfigData};
-    //         // convertEdgeArrToSet(btnConfigDataCopy);
-    //         // setBtnConfigData(btnConfigDataCopy);
-    //         // console.log(btnConfigData);
-    //         setSave(false);
-    //     }
-    // }, [save])
 
     // function convertEdgeArrToSet(obj) { //obj is a copy of btnConfigData
     //     Object.values(obj).forEach(groupData => {
@@ -232,10 +193,12 @@ export default function Workspace(props) {
             if (!projectConfigDataRef.current?.projectName) {
                 setInfo('Project Name is empty.');
                 setInfoOpen(true);
-            } else if (Object.keys(btnConfigData).length===0 || Object.keys(btnConfigData[Object.keys(btnConfigData)[0]]).length===0) {
-                setInfo('No annotation button is created.');
-                setInfoOpen(true);
-            } else {
+            } 
+            // else if (Object.keys(btnConfigData).length===0 || Object.keys(btnConfigData[Object.keys(btnConfigData)[0]]).length===0) {
+            //     setInfo('No annotation button is created.');
+            //     setInfoOpen(true);
+            // } 
+            else {
                 const jsonProjectConfig = JSON.stringify(projectConfigDataRef.current);
                 console.log(jsonProjectConfig);
                 const blobProjectConfig = new Blob([jsonProjectConfig], {type: 'text/plain'});
@@ -437,6 +400,7 @@ export default function Workspace(props) {
         })
         projectConfigDataRef.current.btnConfigData =btnConfigCopy;
     }, [btnConfigData])
+
 
     useEffect(() => {
         if (btnConfigData) {

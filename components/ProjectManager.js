@@ -16,8 +16,8 @@ import { Modal, Form, Input, Button } from 'antd';
  *              projectName: str,
  *              // projectDirectory: (no need. user still has to upload/save files mannually) Only for local server. '/user/project1', a str pointing to a local folder where all annotation and config data are stored.
  *              description: str, optional
- *              btnConfigData: {}
- *              videos: {videoId: {name: str, path: str}, ...}
+ *              btnConfigData: {} // might not exist
+ *              videos: {videoId: {name: str, path: str}, ...} // might be empty
  *          }
  */
 export default function ProjectManager(props) {

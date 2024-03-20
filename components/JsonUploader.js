@@ -18,6 +18,8 @@ export default function JsonUploader(props) {
 
     const setUploader = useStateSetters().setUploader;
     const projectConfigDataRef = useStates().projectConfigDataRef;
+    const setResetVideoDetails = useStateSetters().setResetVideoDetails;
+    const setResetVideoPlay = useStateSetters(). setResetVideoPlay;
 
     const { Dragger } = Upload;
 
@@ -69,6 +71,7 @@ export default function JsonUploader(props) {
                 type: props.type,
                 file: file
             });
+
         }
 
         if (props.onLoad) {
@@ -85,6 +88,8 @@ export default function JsonUploader(props) {
             type: props.type,
             file: file
         });
+        setResetVideoDetails(true);
+        setResetVideoPlay(true);
     }
 
     function confirmCancelHandler() {
