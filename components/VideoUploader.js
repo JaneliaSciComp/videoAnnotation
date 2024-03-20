@@ -36,8 +36,8 @@ export default function VideoUploader(props) {
     const setTotalFrameCount = useStateSetters().setTotalFrameCount;
     const newVideoPath = useStates().newVideoPath; // trigger post request by VideoManager
     const setNewVideoPath = useStateSetters().setNewVideoPath;
-    const videoPathToGet = useStates().videoPathToGet; // trigger get request by VideoManager
-    const setVideoPathToGet = useStateSetters().setVideoPathToGet;
+    // const videoPathToGet = useStates().videoPathToGet; // trigger get request by VideoManager
+    // const setVideoPathToGet = useStateSetters().setVideoPathToGet;
     const resetVideoPlay = useStates().resetVideoPlay;
     const setResetVideoPlay = useStateSetters().setResetVideoPlay;
 
@@ -51,15 +51,15 @@ export default function VideoUploader(props) {
         }
     }, [resetVideoPlay])
 
-    useEffect(() => {
-        if (videoPathToGet) {
-            const id = Object.keys(videoPathToGet)[0];
-            console.log(id, videoPathToGet[id].path);
-            getVideoByPath(id, videoPathToGet[id].path);
+    // useEffect(() => {
+    //     if (videoPathToGet) {
+    //         const id = Object.keys(videoPathToGet)[0];
+    //         console.log(id, videoPathToGet[id].path);
+    //         getVideoByPath(id, videoPathToGet[id].path);
 
-            setVideoPathToGet(null);
-        }
-    }, [videoPathToGet])
+    //         setVideoPathToGet(null);
+    //     }
+    // }, [videoPathToGet])
 
     useEffect(() => {
         if (newVideoPath) {

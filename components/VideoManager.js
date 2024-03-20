@@ -44,10 +44,12 @@ export default function VideoManager(props) {
     const videoId = useStates().videoId;
     // const setVideoId = useStateSetters().setVideoId;
     const setNewVideoPath = useStateSetters().setNewVideoPath;
-    const setVideoPathToGet = useStateSetters().setVideoPathToGet;
+    // const setVideoPathToGet = useStateSetters().setVideoPathToGet;
     const setResetVideoPlay = useStateSetters().setResetVideoPlay;
 
     const [form] = Form.useForm();
+
+    console.log('VideoManager render', videoId, videoIds);
 
     // useEffect(() => {
     //     if (props.open) {
@@ -173,10 +175,11 @@ export default function VideoManager(props) {
 
 
     function onLoadBtnClick(i) {
-        const videoId = videoIds[i];
-        const videoObj = videoData[videoId];
-        const videoPath = {videoId: {...videoObj}};
-        setVideoPathToGet(videoPath);
+        const id = videoIds[i];
+        const videoObj = videoData[id];
+        const videoPath = {[id]: {...videoObj}};
+
+        setNewVideoPath(videoPath);
     }
 
     function onDelBtnClick(i) {
@@ -214,7 +217,8 @@ export default function VideoManager(props) {
                     bordered
                     dataSource={videoNames}
                     renderItem={(name, i) => 
-                        <List.Item>
+                        <List.Item style={videoIds[i]===videoId ? {backgroundColor: '#EEEEEE'} : null}>
+
                             <Button type="link" onClick={()=>{onVideoNameClick(i)}}>{name}</Button>
                             <div >
                                 <Button onClick={()=>{onLoadBtnClick(i)}} icon={<PlayCircleOutlined />} />

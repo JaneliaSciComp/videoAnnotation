@@ -59,7 +59,7 @@ export default function Workspace(props) {
     const [info, setInfo] = useState();
     const [videoData, setVideoData] = useState({});
     const [newVideoPath, setNewVideoPath] = useState(); // new video path obj added by videoManager, to trigger post request in videoUploader. {id: {name: str, path: str}}
-    const [videoPathToGet, setVideoPathToGet] = useState(); // video path obj in videoManager, to trigger get request in videoUploader. {id: {name: str, path: str}}
+    // const [videoPathToGet, setVideoPathToGet] = useState(); // video path obj in videoManager, to trigger get request in videoUploader. {id: {name: str, path: str}}
     const [resetVideoPlay, setResetVideoPlay] = useState(); // used by VideoManager to reset video play status in VideoUploader
 
 
@@ -96,7 +96,7 @@ export default function Workspace(props) {
         infoOpen: infoOpen,
         videoData: videoData,
         newVideoPath: newVideoPath,
-        videoPathToGet: videoPathToGet,
+        // videoPathToGet: videoPathToGet,
         resetVideoPlay: resetVideoPlay,
     }
 
@@ -129,7 +129,7 @@ export default function Workspace(props) {
         setInfoOpen: setInfoOpen,
         setVideoData: setVideoData,
         setNewVideoPath: setNewVideoPath,
-        setVideoPathToGet: setVideoPathToGet,
+        // setVideoPathToGet: setVideoPathToGet,
         setResetVideoPlay: setResetVideoPlay,
     }
 
