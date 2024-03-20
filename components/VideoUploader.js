@@ -10,7 +10,11 @@ import { useStates, useStateSetters } from './AppContext';
 
 const FRAME_URL_ROOT = 'http://localhost:8000/api/frame';
 
-
+/**
+ * 
+ * @param {*} props 
+ *      hideSubmit: boolean. Whether to hide
+ */
 export default function VideoUploader(props) {
     // const videoRef = useRef(null);
     // const canvasRef = useRef(null);
@@ -25,13 +29,48 @@ export default function VideoUploader(props) {
     // context
     const setFrameUrl = useStateSetters().setFrameUrl;
     const setFrameNum = useStateSetters().setFrameNum;
+    // const videoId = useStates().videoId;
     const setVideoId = useStateSetters().setVideoId;
     const frameNumSignal = useStates().frameNumSignal;
     const totalFrameCount = useStates().totalFrameCount;
     const setTotalFrameCount = useStateSetters().setTotalFrameCount;
+    const newVideoPath = useStates().newVideoPath; // trigger post request by VideoManager
+    const setNewVideoPath = useStateSetters().setNewVideoPath;
+    const videoPathToGet = useStates().videoPathToGet; // trigger get request by VideoManager
+    const setVideoPathToGet = useStateSetters().setVideoPathToGet;
+    const resetVideoPlay = useStates().resetVideoPlay;
+    const setResetVideoPlay = useStateSetters().setResetVideoPlay;
 
 
     console.log('VideoUploader render');
+
+    useEffect(() => {
+        if (resetVideoPlay) {
+            resetVideoStatus();
+            setResetVideoPlay(false);
+        }
+    }, [resetVideoPlay])
+
+    useEffect(() => {
+        if (videoPathToGet) {
+            const id = Object.keys(videoPathToGet)[0];
+            console.log(id, videoPathToGet[id].path);
+            getVideoByPath(id, videoPathToGet[id].path);
+
+            setVideoPathToGet(null);
+        }
+    }, [videoPathToGet])
+
+    useEffect(() => {
+        if (newVideoPath) {
+            const id = Object.keys(newVideoPath)[0];
+            console.log(id, newVideoPath[id]);
+            postVideo(id, newVideoPath[id]);
+
+            setNewVideoPath(null);
+        }
+    }, [newVideoPath])
+
 
     useEffect(() => {
         if (frameNumSignal) {
@@ -113,24 +152,68 @@ export default function VideoUploader(props) {
         // console.log(e.target);
         e.preventDefault();
         e.stopPropagation(); 
-        resetVideoStatus();
+        // resetVideoStatus();
         const id = new Date().getTime();
-        // props.setVideoId(id);
-        setVideoId(id);
+        // setVideoId(id);
 
         const form = new FormData(e.target);
         const videoPath = form.get('videoPath');
-        console.log('form', form.get('videoPath'));
+        const video = {name: videoPath, path: videoPath};
+        // console.log('video', JSON.stringify(video), JSON.stringify(video).replaceAll("/", ""));
+
+        postVideo(id, video);
+        // fetch("http://localhost:8000/api/videopath", {
+        //     method: 'POST',
+        //     headers: {
+        //         'Accept': 'application/json',
+        //         'Content-Type': 'application/json'
+        //       },
+        //     body: JSON.stringify(video), //new FormData(e.target), 
+        // }).then(res => {
+        //     if (res.ok) {
+        //         // console.log('res.ok');
+        //         return res.json(); 
+        //     } else {
+        //         // console.log('res.ok false');
+        //         setSubmitError('Request failed');
+        //     }
+        // }).then((res)=>{
+        //     if (res){
+        //         if (res['error']) {
+        //             // console.log(res['error']);
+        //             setSubmitError(res['error']);
+        //         } else {
+        //             if (res['frame_count'] > 0) {//TODO
+        //                 setFps(res['fps']);
+        //                 setPlayFps(res['fps']);
+        //                 setTotalFrameCount(res['frame_count']);
+        //             } else {
+        //                 setFps(25);
+        //                 setPlayFps(25);
+        //                 setTotalFrameCount(10000);
+        //             }
+        //             setFrame(1);
+        //         } 
+        //     } 
+        // })
+    }
+
+
+    function postVideo(videoId, videoObj) {
+        resetVideoStatus();
+        setVideoId(videoId);
 
         fetch("http://localhost:8000/api/videopath", {
             method: 'POST',
-            body: {video_path: videoPath} //new FormData(e.target),
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+            body: JSON.stringify(videoObj), //new FormData(e.target), 
         }).then(res => {
             if (res.ok) {
-                // console.log('res.ok');
                 return res.json(); 
             } else {
-                // console.log('res.ok false');
                 setSubmitError('Request failed');
             }
         }).then((res)=>{
@@ -139,16 +222,51 @@ export default function VideoUploader(props) {
                     // console.log(res['error']);
                     setSubmitError(res['error']);
                 } else {
-                    if (res['frame_count'] > 0) {//TODO
-                        setFps(res['fps']);
-                        setPlayFps(res['fps']);
-                        setTotalFrameCount(res['frame_count']);
-                    } else {
-                        setFps(25);
-                        setPlayFps(25);
-                        setTotalFrameCount(10000);
-                    }
-                    setFrame(1);
+                    // if (res['frame_count'] > 0) {//TODO
+                    //     setFps(res['fps']);
+                    //     setPlayFps(res['fps']);
+                    //     setTotalFrameCount(res['frame_count']);
+                    // } else {
+                    //     setFps(25);
+                    //     setPlayFps(25);
+                    //     setTotalFrameCount(10000);
+                    // }
+                    // setFrame(1);
+                    initializePlay(res);
+                } 
+            } 
+        })
+    }
+
+    function getVideoByPath(videoId, videoPath) {
+        resetVideoStatus();
+        setVideoId(videoId);
+
+        fetch("http://localhost:8000/api/videometa/"+videoPath, {
+            method: 'GET',
+        }).then(res => {
+            if (res.ok) {
+                return res.json(); 
+            } else {
+                setSubmitError('Request failed');
+            }
+        }).then((res)=>{
+            if (res){
+                if (res['error']) {
+                    // console.log(res['error']);
+                    setSubmitError(res['error']);
+                } else {
+                    // if (res['frame_count'] > 0) {//TODO
+                    //     setFps(res['fps']);
+                    //     setPlayFps(res['fps']);
+                    //     setTotalFrameCount(res['frame_count']);
+                    // } else {
+                    //     setFps(25);
+                    //     setPlayFps(25);
+                    //     setTotalFrameCount(10000);
+                    // }
+                    // setFrame(1);
+                    initializePlay(res);
                 } 
             } 
         })
@@ -164,8 +282,8 @@ export default function VideoUploader(props) {
                 getFrame(newValue-1);
             }
         } else {
-            // props.setFrameUrl(null);
-            // props.setFrameNum(null);
+            setFrameUrl(null);
+            setFrameNum(null);
         }
         
     }
@@ -208,6 +326,20 @@ export default function VideoUploader(props) {
         setFrameError(null);
         setSubmitError(null);
         setFrame(null);
+        setVideoId(null);
+    }
+
+    function initializePlay(res) {
+        if (res['frame_count'] > 0) {//TODO
+            setFps(res['fps']);
+            setPlayFps(res['fps']);
+            setTotalFrameCount(res['frame_count']);
+        } else {
+            setFps(25);
+            setPlayFps(25);
+            setTotalFrameCount(10000);
+        }
+        setFrame(1);
     }
 
 

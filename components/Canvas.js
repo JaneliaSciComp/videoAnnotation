@@ -183,7 +183,7 @@ export default function Canvas(props) {
             selectable: false,
             width: canvasObjRef.current.width,
             height: canvasObjRef.current.height,
-            erasable:false
+            erasable: false
         });
         canvasObjRef.current.add(imageObj);
         canvasObjRef.current.renderAll();

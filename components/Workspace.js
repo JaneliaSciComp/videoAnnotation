@@ -22,10 +22,10 @@ import { Modal } from 'antd';
 
 
 /**
-     * props:
-     *      btnConfigData
-     *      //url: image url or video url // or put this in Canvas
-     */
+ * props:
+ *      btnConfigData
+ *      //url: image url or video url // or put this in Canvas
+ */
 export default function Workspace(props) {
     
     const [videoId, setVideoId] = useState();
@@ -58,6 +58,10 @@ export default function Workspace(props) {
     const [infoOpen, setInfoOpen] = useState(false);
     const [info, setInfo] = useState();
     const [videoData, setVideoData] = useState({});
+    const [newVideoPath, setNewVideoPath] = useState(); // new video path obj added by videoManager, to trigger post request in videoUploader. {id: {name: str, path: str}}
+    const [videoPathToGet, setVideoPathToGet] = useState(); // video path obj in videoManager, to trigger get request in videoUploader. {id: {name: str, path: str}}
+    const [resetVideoPlay, setResetVideoPlay] = useState(); // used by VideoManager to reset video play status in VideoUploader
+
 
     console.log('workspace render');
 
@@ -90,7 +94,10 @@ export default function Workspace(props) {
         saveAnnotation: saveAnnotation,
         info: info,
         infoOpen: infoOpen,
-        videoData: videoData
+        videoData: videoData,
+        newVideoPath: newVideoPath,
+        videoPathToGet: videoPathToGet,
+        resetVideoPlay: resetVideoPlay,
     }
 
     const stateSetters = {
@@ -120,7 +127,10 @@ export default function Workspace(props) {
         setSaveAnnotation: setSaveAnnotation,
         setInfo: setInfo,
         setInfoOpen: setInfoOpen,
-        setVideoData: setVideoData
+        setVideoData: setVideoData,
+        setNewVideoPath: setNewVideoPath,
+        setVideoPathToGet: setVideoPathToGet,
+        setResetVideoPlay: setResetVideoPlay,
     }
 
 
@@ -141,8 +151,6 @@ export default function Workspace(props) {
             saveAnnotationAndUpdateStates(); 
             prevFrameNum.current = null; 
 
-            //TODO: add alert: current annotation will be removed, save locally before upload?
-
             annotationRef.current = obj;
             if (Number.isInteger(frameNum)) { // a video is open
                 setFrameAnnotation({...annotationRef.current[frameNum]});
@@ -156,8 +164,7 @@ export default function Workspace(props) {
              * {
                     projectName: str,
                     description: str, optional
-                    btnConfigData: {},
-                    videos: {}
+                    btnConfigData: {}
                 }
              */
             projectConfigDataRef.current = obj;
@@ -244,19 +251,14 @@ export default function Workspace(props) {
 
     useEffect(()=> {
         if (saveAnnotation) {
-            // const annoCopy = clearUnfinishedAnnotation(frameAnnotation);
-            // annotationRef.current[frameNum] = annoCopy;
             saveCurrentAnnotation();
-            if (Object.keys(annotationRef.current)?.length > 0) {
-                const jsonAnno = JSON.stringify(annotationRef.current);
-                console.log(jsonAnno);
-                const blobAnno = new Blob([jsonAnno], {type: 'text/plain'});
-                const a = document.createElement("a");
-                a.href = URL.createObjectURL(blobAnno);
-                a.download = 'annotation.json';
-                a.click();
-                URL.revokeObjectURL(a.href);
-            }
+            const jsonAnno = JSON.stringify(annotationRef.current);
+            const blobAnno = new Blob([jsonAnno], {type: 'text/plain'});
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blobAnno);
+            a.download = 'annotation.json';
+            a.click();
+            URL.revokeObjectURL(a.href);
             setSaveAnnotation(false);
         }
     }, [saveAnnotation])

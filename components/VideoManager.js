@@ -29,14 +29,11 @@ import { PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
  *          }
  */
 export default function VideoManager(props) {
-
-    //TODO: load initial project videos data
-    //TODO: add and load btn, load video
     
     const [videoNames, setVideoNames] = useState([]); //data source for list: ['video1', 'video2']
     const [videoIds, setVideoIds] = useState([]); // videoIds are the ids of entries in videoNames in the same order
-    const [detailsVideoName, setDetailsVideoName] = useState();
-    const [detailsVideoPath, setDetailsVideoPath] = useState();
+    // const [detailsVideoName, setDetailsVideoName] = useState();
+    // const [detailsVideoPath, setDetailsVideoPath] = useState();
     const [detailsVideoId, setDetailsVideoId] = useState(); 
     const [btnDisable, setBtnDisable] = useState(true);
     const [info, setInfo] = useState();
@@ -44,15 +41,20 @@ export default function VideoManager(props) {
     const projectConfigDataRef = useStates().projectConfigDataRef;
     const videoData = useStates().videoData;
     const setVideoData = useStateSetters().setVideoData;
+    const videoId = useStates().videoId;
+    // const setVideoId = useStateSetters().setVideoId;
+    const setNewVideoPath = useStateSetters().setNewVideoPath;
+    const setVideoPathToGet = useStateSetters().setVideoPathToGet;
+    const setResetVideoPlay = useStateSetters().setResetVideoPlay;
 
     const [form] = Form.useForm();
 
-    useEffect(() => {
-        if (props.open) {
+    // useEffect(() => {
+    //     if (props.open) {
             
-        }
+    //     }
           
-    }, [props.open])
+    // }, [props.open])
 
     useEffect(() => {
         const names = [];
@@ -66,17 +68,17 @@ export default function VideoManager(props) {
     }, [videoData])
     
 
-    function okClickHandler() {
-        // console.log('ok', projectName, description);
+    // function okClickHandler() {
+    //     // console.log('ok', projectName, description);
         
 
-        props.setOpen(false);
-    }
+    //     props.setOpen(false);
+    // }
 
 
-    function cancelClickHandler() {
-        props.setOpen(false);
-    }
+    // function cancelClickHandler() {
+    //     props.setOpen(false);
+    // }
 
     function onVideoNameClick(i) {
         // console.log(e.target);
@@ -129,9 +131,13 @@ export default function VideoManager(props) {
     function onAddLoadBtnClick() {
         // console.log(e);
         const id = new Date().getTime();
-        modifyVideoData(id);
+        const videoDataCopy =  modifyVideoData(id);
+        console.log(videoDataCopy)
 
-        //TODO: submit video to backend
+        //trigger posting video to backend in VideoUploader
+        if (videoDataCopy) {
+            setNewVideoPath(videoDataCopy);
+        }
     }
 
     function onEditBtnClick() {
@@ -156,27 +162,39 @@ export default function VideoManager(props) {
             setBtnDisable(true);
             setInfo(null);
             setDetailsVideoId(null);
+
+            return {[id]: {
+                        name: videoName,
+                        path: videoPath}};
         } else {
             setInfo('Please initialize or load a project first.')
         }
     }
 
-    function onLoadBtnClick() {
 
+    function onLoadBtnClick(i) {
+        const videoId = videoIds[i];
+        const videoObj = videoData[videoId];
+        const videoPath = {videoId: {...videoObj}};
+        setVideoPathToGet(videoPath);
     }
 
     function onDelBtnClick(i) {
-        console.log(i);
-        const videoId = videoIds[i];
-        if (videoId === detailsVideoId) {
+        const videoIdToDel = videoIds[i];
+        if (videoIdToDel === detailsVideoId) {
             form.resetFields();
             setBtnDisable(true);
             setInfo(null);
             setDetailsVideoId(null);
         }
         const videoDataCopy = {...videoData};
-        delete(videoDataCopy[videoId]);
+        delete(videoDataCopy[videoIdToDel]);
         setVideoData(videoDataCopy);
+
+        console.log(i, videoIdToDel, videoId);
+        if (videoIdToDel === videoId) {
+            setResetVideoPlay(true);
+        }
     }
 
     return (
