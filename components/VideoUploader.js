@@ -13,7 +13,7 @@ const FRAME_URL_ROOT = 'http://localhost:8000/api/frame';
 /**
  * 
  * @param {*} props 
- *      hideSubmit: boolean. Whether to hide
+ *      hideSubmit: boolean. Whether to hide video path submit part.
  */
 export default function VideoUploader(props) {
     // const videoRef = useRef(null);
@@ -390,22 +390,27 @@ export default function VideoUploader(props) {
                 <p >{frameError}</p>
                 : null}
             <Row>
-                <Form onSubmit={videoPathSubmitHandler} encType='multipart/form-data'>
-                    <Form.Group as={Row} controlId='videoPath'>
-                        <Form.Label column sm={2}>Video path</Form.Label>
-                        <Col sm={6}>
-                            <Form.Control type='string' defaultValue='/Users/pengxi/video/numbered.mp4' name='videoPath' placeholder='E.g. /somePath/videoName.avi' required />
-                            <Form.Control.Feedback type='invalid'>Please provide video path in your local computer, e.g. /somePath/videoName.avi</Form.Control.Feedback>
-                            {submitError ?
-                            <p >{submitError}</p>
-                            : null}
-                        </Col>
-                        <Col sm={1}>
-                            <Button type='submit' className='btn-submit' >Submit</Button>
-                        </Col>
-                    </Form.Group>
-                    
-                </Form>
+                {props.hideSubmit ?
+                    (submitError ?
+                        <p >{submitError}</p>
+                        : null)
+                    :
+                    <Form onSubmit={videoPathSubmitHandler} encType='multipart/form-data'>
+                        <Form.Group as={Row} controlId='videoPath'>
+                            <Form.Label column sm={2}>Video path</Form.Label>
+                            <Col sm={6}>
+                                <Form.Control type='string' defaultValue='/Users/pengxi/video/numbered.mp4' name='videoPath' placeholder='E.g. /somePath/videoName.avi' required />
+                                <Form.Control.Feedback type='invalid'>Please provide video path in your local computer, e.g. /somePath/videoName.avi</Form.Control.Feedback>
+                                {submitError ?
+                                <p >{submitError}</p>
+                                : null}
+                            </Col>
+                            <Col sm={1}>
+                                <Button type='submit' className='btn-submit' >Submit</Button>
+                            </Col>
+                        </Form.Group>
+                    </Form>
+                }
             </Row>
         </div>
     )
