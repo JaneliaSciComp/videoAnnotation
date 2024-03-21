@@ -66,7 +66,7 @@ export default function VideoManager(props) {
             setBtnDisable(true);
             setInfo(null);
             setDetailsVideoId(null);
-            
+
             setResetVideoDetails(false);
         }
     }, [resetVideoDetails])
@@ -172,7 +172,7 @@ export default function VideoManager(props) {
                 path: videoPath
             };
             setVideoData(videoDataCopy);
-            projectConfigDataRef.current.videos = {...videoDataCopy};
+            // projectConfigDataRef.current.videos = {...videoDataCopy};
 
             form.resetFields();
             setBtnDisable(true);
@@ -207,7 +207,7 @@ export default function VideoManager(props) {
         const videoDataCopy = {...videoData};
         delete(videoDataCopy[videoIdToDel]);
         setVideoData(videoDataCopy);
-        projectConfigDataRef.current.videos = {...videoDataCopy};
+        // projectConfigDataRef.current.videos = {...videoDataCopy};
 
         // console.log(i, videoIdToDel, videoId);
         if (videoIdToDel === videoId) {

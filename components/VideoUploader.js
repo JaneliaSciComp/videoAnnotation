@@ -40,6 +40,9 @@ export default function VideoUploader(props) {
     // const setVideoPathToGet = useStateSetters().setVideoPathToGet;
     const resetVideoPlay = useStates().resetVideoPlay;
     const setResetVideoPlay = useStateSetters().setResetVideoPlay;
+    const videoData = useStates().videoData;
+    const setVideoData = useStateSetters().setVideoData;
+    const projectConfigDataRef = useStates().projectConfigDataRef;
 
 
     console.log('VideoUploader render');
@@ -161,41 +164,19 @@ export default function VideoUploader(props) {
         const video = {name: videoPath, path: videoPath};
         // console.log('video', JSON.stringify(video), JSON.stringify(video).replaceAll("/", ""));
 
+        // add video to videoManager
+        if (projectConfigDataRef.current?.projectName?.length>0) {
+            const videoDataCopy = {...videoData};
+            videoDataCopy[id] = {
+                name: videoPath,
+                path: videoPath
+            };
+            setVideoData(videoDataCopy);
+        } else {
+            setSubmitError('Please initialize or load a project first.')
+        }
+
         postVideo(id, video);
-        // fetch("http://localhost:8000/api/videopath", {
-        //     method: 'POST',
-        //     headers: {
-        //         'Accept': 'application/json',
-        //         'Content-Type': 'application/json'
-        //       },
-        //     body: JSON.stringify(video), //new FormData(e.target), 
-        // }).then(res => {
-        //     if (res.ok) {
-        //         // console.log('res.ok');
-        //         return res.json(); 
-        //     } else {
-        //         // console.log('res.ok false');
-        //         setSubmitError('Request failed');
-        //     }
-        // }).then((res)=>{
-        //     if (res){
-        //         if (res['error']) {
-        //             // console.log(res['error']);
-        //             setSubmitError(res['error']);
-        //         } else {
-        //             if (res['frame_count'] > 0) {//TODO
-        //                 setFps(res['fps']);
-        //                 setPlayFps(res['fps']);
-        //                 setTotalFrameCount(res['frame_count']);
-        //             } else {
-        //                 setFps(25);
-        //                 setPlayFps(25);
-        //                 setTotalFrameCount(10000);
-        //             }
-        //             setFrame(1);
-        //         } 
-        //     } 
-        // })
     }
 
 
@@ -222,55 +203,35 @@ export default function VideoUploader(props) {
                     // console.log(res['error']);
                     setSubmitError(res['error']);
                 } else {
-                    // if (res['frame_count'] > 0) {//TODO
-                    //     setFps(res['fps']);
-                    //     setPlayFps(res['fps']);
-                    //     setTotalFrameCount(res['frame_count']);
-                    // } else {
-                    //     setFps(25);
-                    //     setPlayFps(25);
-                    //     setTotalFrameCount(10000);
-                    // }
-                    // setFrame(1);
                     initializePlay(res);
                 } 
             } 
         })
     }
 
-    function getVideoByPath(videoId, videoPath) {
-        resetVideoStatus();
-        setVideoId(videoId);
+    // function getVideoByPath(videoId, videoPath) {
+    //     resetVideoStatus();
+    //     setVideoId(videoId);
 
-        fetch("http://localhost:8000/api/videometa/"+videoPath, {
-            method: 'GET',
-        }).then(res => {
-            if (res.ok) {
-                return res.json(); 
-            } else {
-                setSubmitError('Request failed');
-            }
-        }).then((res)=>{
-            if (res){
-                if (res['error']) {
-                    // console.log(res['error']);
-                    setSubmitError(res['error']);
-                } else {
-                    // if (res['frame_count'] > 0) {//TODO
-                    //     setFps(res['fps']);
-                    //     setPlayFps(res['fps']);
-                    //     setTotalFrameCount(res['frame_count']);
-                    // } else {
-                    //     setFps(25);
-                    //     setPlayFps(25);
-                    //     setTotalFrameCount(10000);
-                    // }
-                    // setFrame(1);
-                    initializePlay(res);
-                } 
-            } 
-        })
-    }
+    //     fetch("http://localhost:8000/api/videometa/"+videoPath, {
+    //         method: 'GET',
+    //     }).then(res => {
+    //         if (res.ok) {
+    //             return res.json(); 
+    //         } else {
+    //             setSubmitError('Request failed');
+    //         }
+    //     }).then((res)=>{
+    //         if (res){
+    //             if (res['error']) {
+    //                 // console.log(res['error']);
+    //                 setSubmitError(res['error']);
+    //             } else {
+    //                 initializePlay(res);
+    //             } 
+    //         } 
+    //     })
+    // }
     
 
     function setFrame(newValue) {

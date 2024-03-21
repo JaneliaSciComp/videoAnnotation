@@ -401,6 +401,10 @@ export default function Workspace(props) {
         projectConfigDataRef.current.btnConfigData =btnConfigCopy;
     }, [btnConfigData])
 
+    useEffect(() => {
+        projectConfigDataRef.current.videos = {...videoData};
+    }, [videoData])
+
 
     useEffect(() => {
         if (btnConfigData) {

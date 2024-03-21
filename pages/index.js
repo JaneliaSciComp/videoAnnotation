@@ -189,7 +189,8 @@ export default function Home() {
             <AnnotationTable width={400} height={300} ellipsis/>
           </Col>
         </Row>
-        <VideoUploader hideSubmit/>
+        <VideoUploader />
+        {/* hideSubmit */}
         {/* <Chart />
         <ChartMenu /> */}
         <div className='my-3' style={{height: '200px', width: '600px'}} >
