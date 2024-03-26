@@ -162,7 +162,7 @@ export default function Home() {
           setOpen={setOpen}
         /> */}
         {/* <JsonUploader type='configuration' /> */}
-        <JsonUploader type={'annotation'}/>
+        {/* <JsonUploader type={'annotation'}/> */}
         <VideoManager />
         <ProjectDropdown />
         <Row >

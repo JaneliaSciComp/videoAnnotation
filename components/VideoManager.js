@@ -209,8 +209,8 @@ export default function VideoManager(props) {
         setVideoData(videoDataCopy);
         // projectConfigDataRef.current.videos = {...videoDataCopy};
 
-        // console.log(i, videoIdToDel, videoId);
-        if (videoIdToDel === videoId) {
+        // console.log(i, videoIdToDel, videoId, videoIdToDel == videoId, videoIdToDel === videoId);
+        if (videoIdToDel == videoId) { // videoIdToDel is str, videoId is int, so use == instead of ===
             setResetVideoPlay(true);
         }
     }
@@ -232,7 +232,7 @@ export default function VideoManager(props) {
                     bordered
                     dataSource={videoNames}
                     renderItem={(name, i) => 
-                        <List.Item style={videoIds[i]===videoId ? {backgroundColor: '#EEEEEE'} : null}>
+                        <List.Item style={videoIds[i]==videoId ? {backgroundColor: '#EEEEEE'} : null}>
 
                             <Button type="link" onClick={()=>{onVideoNameClick(i)}}>{name}</Button>
                             <div >

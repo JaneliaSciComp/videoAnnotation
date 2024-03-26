@@ -179,15 +179,20 @@ export default function Canvas(props) {
     useEffect(()=> {
         //When switch video, remove current imgObj, create a new blank imgObj
         canvasObjRef.current.remove(imageObjRef.current);
-        const imageObj = new fabric.Image(imgRef.current, {
-            selectable: false,
-            width: canvasObjRef.current.width,
-            height: canvasObjRef.current.height,
-            erasable: false
-        });
-        canvasObjRef.current.add(imageObj);
-        canvasObjRef.current.renderAll();
-        imageObjRef.current = imageObj;
+        console.log(videoId);
+        if (!videoId) {
+            canvasObjRef.current.clear();
+        } else {
+            const imageObj = new fabric.Image(imgRef.current, {
+                selectable: false,
+                width: canvasObjRef.current.width,
+                height: canvasObjRef.current.height,
+                erasable: false
+            });
+            canvasObjRef.current.add(imageObj);
+            canvasObjRef.current.renderAll();
+            imageObjRef.current = imageObj;
+        }
         
       }, [videoId]
     )
