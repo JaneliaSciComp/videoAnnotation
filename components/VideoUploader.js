@@ -126,7 +126,7 @@ export default function VideoUploader(props) {
             && playFps>0) { // make sure some frames are ready
             playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
             // playInterval = setInterval(incrementFrame, Math.floor(1000/playFps));
-            console.log('setInterval',playInterval.current);
+            // console.log('setInterval',playInterval.current);
         }
         
     }
@@ -144,7 +144,7 @@ export default function VideoUploader(props) {
         if (typeof newValue === 'number' 
         && Number.isInteger(newValue) 
         && newValue>=0 ) {
-            console.log('playfps changed');
+            // console.log('playfps changed');
             setPlayFps(newValue);
         }
     }

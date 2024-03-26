@@ -9,7 +9,19 @@ import { PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
  *      open: boolean. Whether to open the modal window
  *      setOpen: setter of open. In order to give controll to VideoManager's internal buttons.
  *      // serverType: 'local' / 'remote'
- *      onVideoNameChange: 
+ *      additionalFields: designed to allow linking additional files such as trajectory data to the video, and showing in the chart component
+ *        [
+ *          {
+ *            name: str, // required, used as var name, no white space
+ *            label: str, // required, label shown to the user, with white space
+ *            required: boolean, // whether required for user, false by default
+ *            showInChart: boolean, // whether to show the data in this file in the chart, false by default. If true, should provide parseFunc to parse the data
+ *            parseFunc: (data)=>{}, //if shownInChart is true, should provide this func to process the data in that file. This func should take the object from the json file as parameter and output the data format the chart component needs
+ *          },
+ *          ...
+ *        ]
+ *      
+ *       
  *      
  *      VideoManager will generate videos data for project.
  *      For reference, projectConfigDataRef: 
@@ -21,7 +33,8 @@ import { PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
  *                  videos: {
  *                      videoId: {
  *                          name: str,
- *                          path: str
+ *                          path: str,
+ *                          additionalFileds: []
  *                      },
  *                      ...
  *                  } 
@@ -37,6 +50,7 @@ export default function VideoManager(props) {
     const [detailsVideoId, setDetailsVideoId] = useState(); 
     const [btnDisable, setBtnDisable] = useState(true);
     const [info, setInfo] = useState();
+    const [additionalFieldsObj, setAdditionalFieldsObj] = useState();
 
     const projectConfigDataRef = useStates().projectConfigDataRef;
     const videoData = useStates().videoData;
@@ -48,6 +62,7 @@ export default function VideoManager(props) {
     const setResetVideoPlay = useStateSetters().setResetVideoPlay;
     const resetVideoDetails = useStates().resetVideoDetails;
     const setResetVideoDetails = useStateSetters().setResetVideoDetails;
+
 
     const [form] = Form.useForm();
 
@@ -81,6 +96,20 @@ export default function VideoManager(props) {
         setVideoNames(names);
         setVideoIds(ids);
     }, [videoData])
+
+    useEffect(() => {
+        if (props.additionalFields?.length > 0) {
+            const fields = {};
+            for (let field of props.additionalFields) {
+                console.log(field);
+                fields[field.name] = {required: field.required};
+            }
+            console.log(fields);
+            setAdditionalFieldsObj(fields);
+        } else {
+            setAdditionalFieldsObj(null);
+        }
+    }, [props.additionalFields])
     
 
     // function okClickHandler() {
@@ -95,6 +124,7 @@ export default function VideoManager(props) {
     //     props.setOpen(false);
     // }
 
+
     function onVideoNameClick(i) {
         // console.log(e.target);
         const videoId = videoIds[i];
@@ -105,6 +135,11 @@ export default function VideoManager(props) {
         })
         setDetailsVideoId(videoId);
         setBtnDisable(false);
+
+        
+        if (props.onVideoNameClick) {
+            props.onVideoNameClick(i);
+        }
     }
 
     function onVideoNameChange(e) {
@@ -121,12 +156,13 @@ export default function VideoManager(props) {
 
     function onVideoPathChange(e) {
         // console.log('videoPath', e);
-        if (e.target.value?.length > 0) {
-            form.setFieldsValue({ videoPath: e.target.value });
-            setBtnDisable(false);
-        } else {
-            setBtnDisable(true);
-        }
+        // if (e.target.value?.length > 0) {
+        //     form.setFieldsValue({ videoPath: e.target.value });
+        //     setBtnDisable(false);
+        // } else {
+        //     setBtnDisable(true);
+        // }
+        onRequiredFieldChange(e.target.value, 'videoPath');
 
         const target = {
             value: e.target.value,
@@ -135,6 +171,41 @@ export default function VideoManager(props) {
         if (props.onVideoPathChange) {
             props.onVideoPathChange(target);
         }
+    }
+
+    function onAdditionalFieldChange(e, fieldName) { 
+        console.log('additionalFieldChange', e.target.value, fieldName);
+        onRequiredFieldChange(e.target.value, fieldName);
+        console.log(form.getFieldsValue());
+    }
+
+    function onRequiredFieldChange(value, fieldName) { 
+        form.setFieldsValue({ [fieldName]: value });
+        console.log('checkRequiredField ', checkRequiredFields());
+        if (checkRequiredFields()) {
+            setBtnDisable(false);
+        } else {
+            setBtnDisable(true);
+        }
+    }
+
+    function checkRequiredFields() {
+        const fields = form.getFieldsValue();
+        console.log(fields);
+        if (fields.videoPath.length == 0) {
+            return false;
+        }
+        
+        for (let f in fields) {
+            console.log(f, additionalFieldsObj[f]?.required, fields[f]?.length);
+            if (additionalFieldsObj 
+                && additionalFieldsObj[f]?.required 
+                && (!fields[f]?.length > 0)) {
+                    return false;
+                }
+        }
+        
+        return true;
     }
 
     function onAddBtnClick() {
@@ -215,6 +286,8 @@ export default function VideoManager(props) {
         }
     }
 
+    
+
     return (
         <>
             {/* <Modal 
@@ -247,22 +320,6 @@ export default function VideoManager(props) {
                     <p className='my-2'>Video Details</p>
                     <Form className='my-4 mx-3' form={form} size='small'>
                         <Form.Item 
-                            name='videoName' 
-                            label="Video Name" 
-                            rules={[
-                                {
-                                //   required: true,
-                                message: 'If name is empty, will directly use path as name',
-                                },
-                            ]}
-                            >
-                            <Input 
-                                // value={detailsVideoName} 
-                                onChange={onVideoNameChange}
-                                allowClear/>
-                        </Form.Item>
-
-                        <Form.Item 
                             name='videoPath' 
                             label="Video Path" 
                             rules={[
@@ -279,6 +336,36 @@ export default function VideoManager(props) {
                                 onChange={onVideoPathChange}
                                 allowClear/>
                         </Form.Item>
+
+                        <Form.Item 
+                            name='videoName' 
+                            label="Video Name" 
+                            rules={[
+                                {
+                                //   required: true,
+                                message: 'If name is empty, will directly use path as name',
+                                },
+                            ]}
+                            >
+                            <Input 
+                                // value={detailsVideoName} 
+                                onChange={onVideoNameChange}
+                                allowClear/>
+                        </Form.Item>
+
+                        {props.additionalFields.length>0 ? 
+                            props.additionalFields.map(
+                                ((params, i) => <Form.Item
+                                    key = {i}
+                                    name={params.name}
+                                    label={params.label}
+                                    rules={params.required ? [{required: true, message: `${params.label} is required.`}] : null}
+                                    >
+                                    <Input 
+                                        onChange={(e) => {onAdditionalFieldChange(e, params.name)}}
+                                        allowClear />
+                                </Form.Item>))
+                            : null}
                         
                         <div className='d-flex justify-content-center'>
                             <Space size="small">

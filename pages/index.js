@@ -163,7 +163,7 @@ export default function Home() {
         /> */}
         {/* <JsonUploader type='configuration' /> */}
         {/* <JsonUploader type={'annotation'}/> */}
-        <VideoManager />
+        <VideoManager additionalFields={[{name: 'trajectory', label: 'Trajectory', required: true}]}/>
         <ProjectDropdown />
         <Row >
           <Col>
