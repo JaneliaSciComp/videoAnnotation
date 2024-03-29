@@ -169,7 +169,8 @@ export default function VideoUploader(props) {
             const videoDataCopy = {...videoData};
             videoDataCopy[id] = {
                 name: videoPath,
-                path: videoPath
+                path: videoPath,
+                additionalFields: []
             };
             setVideoData(videoDataCopy);
         } else {

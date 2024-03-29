@@ -9,14 +9,15 @@ import { PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
  *      open: boolean. Whether to open the modal window
  *      setOpen: setter of open. In order to give controll to VideoManager's internal buttons.
  *      // serverType: 'local' / 'remote'
- *      additionalFields: designed to allow linking additional files such as trajectory data to the video, and showing in the chart component
+ *      includeTrackDataInput: boolean. False by default. If true, show track data input element to allow user upload track data json files. The developer should also specify trackDataParseFunc to parse the data.
+ *      trackDataParseFunc: [(data)=>{}, ...], // array of func, order of entries should match. if includeTrackDataInput is true, should provide funcs to process the data in those files. The func should take the object from the json file as parameter and output the data format the chart component needs
+ *      
+ *      additionalFields: 
  *        [
  *          {
  *            name: str, // required, used as var name, no white space
  *            label: str, // required, label shown to the user, with white space
  *            required: boolean, // whether required for user, false by default
- *            showInChart: boolean, // whether to show the data in this file in the chart, false by default. If true, should provide parseFunc to parse the data
- *            parseFunc: (data)=>{}, //if shownInChart is true, should provide this func to process the data in that file. This func should take the object from the json file as parameter and output the data format the chart component needs
  *          },
  *          ...
  *        ]
@@ -34,7 +35,7 @@ import { PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
  *                      videoId: {
  *                          name: str,
  *                          path: str,
- *                          additionalFileds: []
+ *                          additionalFields: [{name: str, value: str}, ...] // can be null/undefined/empty arr, and this field always exist in video data; value field can be absent if it's not required
  *                      },
  *                      ...
  *                  } 
@@ -101,10 +102,10 @@ export default function VideoManager(props) {
         if (props.additionalFields?.length > 0) {
             const fields = {};
             for (let field of props.additionalFields) {
-                console.log(field);
+                // console.log(field);
                 fields[field.name] = {required: field.required};
             }
-            console.log(fields);
+            // console.log(fields);
             setAdditionalFieldsObj(fields);
         } else {
             setAdditionalFieldsObj(null);
@@ -133,8 +134,19 @@ export default function VideoManager(props) {
             videoName: videoObj.name,
             videoPath: videoObj.path
         })
+        if (props.additionalFields?.length > 0) {
+            props.additionalFields.forEach((f, i) => {
+                if (videoObj.additionalFields[i]) {
+                    form.setFieldsValue({
+                        [f.name]: videoObj.additionalFields[i].value // props.additionalFields and additionalFields field in videoData have the same order of entries
+                    })
+                }
+            })
+        }
         setDetailsVideoId(videoId);
-        setBtnDisable(false);
+        if (checkRequiredFields()) {
+            setBtnDisable(false);
+        }
 
         
         if (props.onVideoNameClick) {
@@ -174,14 +186,14 @@ export default function VideoManager(props) {
     }
 
     function onAdditionalFieldChange(e, fieldName) { 
-        console.log('additionalFieldChange', e.target.value, fieldName);
+        // console.log('additionalFieldChange', e.target.value, fieldName);
         onRequiredFieldChange(e.target.value, fieldName);
-        console.log(form.getFieldsValue());
+        // console.log(form.getFieldsValue());
     }
 
     function onRequiredFieldChange(value, fieldName) { 
         form.setFieldsValue({ [fieldName]: value });
-        console.log('checkRequiredField ', checkRequiredFields());
+        // console.log('checkRequiredField ', checkRequiredFields());
         if (checkRequiredFields()) {
             setBtnDisable(false);
         } else {
@@ -191,13 +203,13 @@ export default function VideoManager(props) {
 
     function checkRequiredFields() {
         const fields = form.getFieldsValue();
-        console.log(fields);
+        // console.log(fields);
         if (fields.videoPath.length == 0) {
             return false;
         }
         
         for (let f in fields) {
-            console.log(f, additionalFieldsObj[f]?.required, fields[f]?.length);
+            // console.log(f, additionalFieldsObj[f]?.required, fields[f]?.length);
             if (additionalFieldsObj 
                 && additionalFieldsObj[f]?.required 
                 && (!fields[f]?.length > 0)) {
@@ -232,15 +244,27 @@ export default function VideoManager(props) {
     }
 
     function modifyVideoData(id) {
-        let {videoName, videoPath} = form.getFieldsValue();
+        let formFields = form.getFieldsValue();
+        console.log(formFields);
+        let videoName = formFields.videoName;
+        const videoPath = formFields.videoPath;
         if (!videoName?.length>0) {
             videoName = videoPath;
         }
+        let additionalFieldsData;
+        if (props.additionalFields?.length > 0) {
+            additionalFieldsData = props.additionalFields.map(f => {
+                return {name: f.name, value: formFields[f.name]}
+            });
+        }
+        // console.log(additionalFieldsData);
+
         if (projectConfigDataRef.current?.projectName?.length>0) {
             const videoDataCopy = {...videoData};
             videoDataCopy[id] = {
                 name: videoName,
-                path: videoPath
+                path: videoPath,
+                additionalFields: additionalFieldsData
             };
             setVideoData(videoDataCopy);
             // projectConfigDataRef.current.videos = {...videoDataCopy};
@@ -252,7 +276,9 @@ export default function VideoManager(props) {
 
             return {[id]: {
                         name: videoName,
-                        path: videoPath}};
+                        path: videoPath,
+                        additionalFields: additionalFieldsData
+                    }};
         } else {
             setInfo('Please initialize or load a project first.')
         }
@@ -265,6 +291,19 @@ export default function VideoManager(props) {
         const videoPath = {[id]: {...videoObj}};
 
         setNewVideoPath(videoPath);
+        parseAdditionalFieldsData(i);
+    }
+
+    /**
+     * invoke provided parseFunc to generate the data format that chart needs 
+     * */
+    function parseAdditionalFieldsData(i) {
+        // const fileInput = document.createElement('input');
+        // fileInput.value = '/Users/pengx/Downloads/configuration (3).json';
+        // fileInput.type = 'file';
+        // fileInput.click();
+        console.log('here');
+        // fetch('/Users/pengx/Downloads/configuration.json').then(response => console.log(response.json()));
     }
 
     function onDelBtnClick(i) {
