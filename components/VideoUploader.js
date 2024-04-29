@@ -9,6 +9,7 @@ import { useStates, useStateSetters } from './AppContext';
 
 
 const FRAME_URL_ROOT = 'http://localhost:8000/api/frame';
+const ADDITIONAL_URL_ROOT = 'http://localhost:8000/api/additional';
 
 /**
  * 
@@ -204,7 +205,7 @@ export default function VideoUploader(props) {
                     // console.log(res['error']);
                     setSubmitError(res['error']);
                 } else {
-                    initializePlay(res);
+                    initializePlay(res, videoObj);
                 } 
             } 
         })
@@ -235,13 +236,23 @@ export default function VideoUploader(props) {
     // }
     
 
-    function setFrame(newValue) {
+    function setFrame(newValue, videoObj=null) {
         // console.log('setFrame called');
         if (newValue) {
             setSliderValue(newValue);
             // let url;
             if (newValue >= 1) {
                 getFrame(newValue-1);
+                if (videoObj) { // uploaded new video
+                    if (videoObj.additionalFields?.length>0) { //videoObj, videoObj.additionalFields could be null
+                        getAdditionalData(newValue-1, videoObj?.additionalFields);
+                    }
+                } else { // video already uploaded beforehand, additionalFields data saved in videoData
+                    if (videoData[videoId].additionalFields?.length>0) { //videoObj, videoObj.additionalFields could be null
+                        getAdditionalData(newValue-1, videoData[videoId].additionalFields);
+                    }
+                }
+                    
             }
         } else {
             setFrameUrl(null);
@@ -291,17 +302,49 @@ export default function VideoUploader(props) {
         setVideoId(null);
     }
 
-    function initializePlay(res) {
-        if (res['frame_count'] > 0) {//TODO
-            setFps(res['fps']);
-            setPlayFps(res['fps']);
-            setTotalFrameCount(res['frame_count']);
+    function initializePlay(meta, videoObj) {
+        if (meta['frame_count'] > 0) {//TODO
+            setFps(meta['fps']);
+            setPlayFps(meta['fps']);
+            setTotalFrameCount(meta['frame_count']);
         } else {
             setFps(25);
             setPlayFps(25);
             setTotalFrameCount(10000);
         }
-        setFrame(1);
+        setFrame(1, videoObj);
+    }
+
+    function getAdditionalData(frameNum, additionalFields) {
+        // if this func is called, then additionalFields must has length>0
+        const additionalData = {};
+        additionalFields.forEach(field => {
+            if (field.value?.length > 0) { // field has name and value, name is required and cannot be null, only value might be null or empty
+                fetch(`${ADDITIONAL_URL_ROOT}/${field.name}/?num=${frameNum}`, {
+                    method: 'GET',
+                }).then(res => {
+                    if (res.ok) {
+                        console.log('res.ok');
+                        return res.json();
+                    } else {
+                        console.log('res.ok false');
+                        // console.log(res);
+                        setFrameError('Additional data request failed');
+                    }
+                }).then((res)=>{
+                    if (res){
+                        if (res['error']) {
+                            setFrameError(res['error']);
+                        } else {
+                            additionalData[field.name] = res;
+                        } 
+                    } 
+                })
+            }
+        })
+        
+        //TODO: pass data to canvas and let canvas draw it.
+
     }
 
 
