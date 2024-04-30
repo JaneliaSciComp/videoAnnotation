@@ -62,6 +62,7 @@ export default function Workspace(props) {
     // const [videoPathToGet, setVideoPathToGet] = useState(); // video path obj in videoManager, to trigger get request in videoUploader. {id: {name: str, path: str}}
     const [resetVideoPlay, setResetVideoPlay] = useState(); // used by VideoManager to reset video play status in VideoUploader
     const [resetVideoDetails, setResetVideoDetails] = useState(); // used by JsonUploader to reset video details window in VideoManager
+    const [videoAdditionalFieldsObj, setVideoAdditionalFieldsObj] = useState(); //generated from props of VideoManager in VideoManager, used by VideoManagerto check whether required fields are empty, by VideoUploader to know if to display the data with video or show in chart. {fieldName1: {required: field.required, uploadWithVideo: field.uploadWithVideo, shape: field.shape}, fieldName2:{}}
 
     console.log('workspace render');
 
@@ -99,6 +100,7 @@ export default function Workspace(props) {
         // videoPathToGet: videoPathToGet,
         resetVideoPlay: resetVideoPlay,
         resetVideoDetails: resetVideoDetails,
+        videoAdditionalFieldsObj: videoAdditionalFieldsObj,
     }
 
     const stateSetters = {
@@ -133,6 +135,7 @@ export default function Workspace(props) {
         // setVideoPathToGet: setVideoPathToGet,
         setResetVideoPlay: setResetVideoPlay,
         setResetVideoDetails: setResetVideoDetails,
+        setVideoAdditionalFieldsObj: setVideoAdditionalFieldsObj,
     }
 
 

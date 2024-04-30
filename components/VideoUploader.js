@@ -9,7 +9,7 @@ import { useStates, useStateSetters } from './AppContext';
 
 
 const FRAME_URL_ROOT = 'http://localhost:8000/api/frame';
-const ADDITIONAL_URL_ROOT = 'http://localhost:8000/api/additional';
+const ADDITIONAL_URL_ROOT = 'http://localhost:8000/api/additional-data';
 
 /**
  * 
@@ -44,6 +44,7 @@ export default function VideoUploader(props) {
     const videoData = useStates().videoData;
     const setVideoData = useStateSetters().setVideoData;
     const projectConfigDataRef = useStates().projectConfigDataRef;
+    const videoAdditionalFieldsObj = useStates().videoAdditionalFieldsObj;
 
 
     console.log('VideoUploader render');
@@ -67,9 +68,10 @@ export default function VideoUploader(props) {
 
     useEffect(() => {
         if (newVideoPath) {
-            const id = Object.keys(newVideoPath)[0];
-            console.log(id, newVideoPath[id]);
-            postVideo(id, newVideoPath[id]);
+            // const id = Object.keys(newVideoPath)[0];
+            // console.log(newVideoPath);
+            // postVideo(id, newVideoPath[id]);
+            postVideo(newVideoPath);
 
             setNewVideoPath(null);
         }
@@ -178,13 +180,18 @@ export default function VideoUploader(props) {
             setSubmitError('Please initialize or load a project first.')
         }
 
-        postVideo(id, video);
+        postVideo({[id] : video});
     }
 
 
-    function postVideo(videoId, videoObj) {
+    // function postVideo(videoId, videoObj) {
+    function postVideo(videoInfo) {
         resetVideoStatus();
+        const videoId = Object.keys(videoInfo)[0];
         setVideoId(videoId);
+        const videoInfoObj = {...videoInfo[videoId]};
+        videoInfoObj.videoId = videoId;
+        console.log(videoInfoObj);
 
         fetch("http://localhost:8000/api/videopath", {
             method: 'POST',
@@ -192,7 +199,7 @@ export default function VideoUploader(props) {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
               },
-            body: JSON.stringify(videoObj), //new FormData(e.target), 
+            body: JSON.stringify(videoInfoObj), //new FormData(e.target), 
         }).then(res => {
             if (res.ok) {
                 return res.json(); 
@@ -205,7 +212,7 @@ export default function VideoUploader(props) {
                     // console.log(res['error']);
                     setSubmitError(res['error']);
                 } else {
-                    initializePlay(res, videoObj);
+                    initializePlay(res, videoInfoObj);
                 } 
             } 
         })
@@ -236,23 +243,20 @@ export default function VideoUploader(props) {
     // }
     
 
-    function setFrame(newValue, videoObj=null) {
+    function setFrame(newValue, videoInfoObj=null) {
         // console.log('setFrame called');
         if (newValue) {
             setSliderValue(newValue);
             // let url;
             if (newValue >= 1) {
                 getFrame(newValue-1);
-                if (videoObj) { // uploaded new video
-                    if (videoObj.additionalFields?.length>0) { //videoObj, videoObj.additionalFields could be null
-                        getAdditionalData(newValue-1, videoObj?.additionalFields);
-                    }
+                if (videoInfoObj) { // uploaded new video
+                    getAdditionalData(newValue-1, videoInfoObj);
                 } else { // video already uploaded beforehand, additionalFields data saved in videoData
-                    if (videoData[videoId].additionalFields?.length>0) { //videoObj, videoObj.additionalFields could be null
-                        getAdditionalData(newValue-1, videoData[videoId].additionalFields);
-                    }
+                    const videoInfo = {...videoData[videoId]};
+                    videoInfo.videoId = videoId;
+                    getAdditionalData(newValue-1, videoInfo);
                 }
-                    
             }
         } else {
             setFrameUrl(null);
@@ -302,7 +306,7 @@ export default function VideoUploader(props) {
         setVideoId(null);
     }
 
-    function initializePlay(meta, videoObj) {
+    function initializePlay(meta, videoInfoObj) {
         if (meta['frame_count'] > 0) {//TODO
             setFps(meta['fps']);
             setPlayFps(meta['fps']);
@@ -312,39 +316,39 @@ export default function VideoUploader(props) {
             setPlayFps(25);
             setTotalFrameCount(10000);
         }
-        setFrame(1, videoObj);
+        setFrame(1, videoInfoObj);
     }
 
-    function getAdditionalData(frameNum, additionalFields) {
-        // if this func is called, then additionalFields must has length>0
-        const additionalData = {};
-        additionalFields.forEach(field => {
-            if (field.value?.length > 0) { // field has name and value, name is required and cannot be null, only value might be null or empty
-                fetch(`${ADDITIONAL_URL_ROOT}/${field.name}/?num=${frameNum}`, {
-                    method: 'GET',
-                }).then(res => {
-                    if (res.ok) {
-                        console.log('res.ok');
-                        return res.json();
-                    } else {
-                        console.log('res.ok false');
-                        // console.log(res);
-                        setFrameError('Additional data request failed');
-                    }
-                }).then((res)=>{
-                    if (res){
-                        if (res['error']) {
-                            setFrameError(res['error']);
+    function getAdditionalData(frameNum, videoInfoObj) {
+        if (videoInfoObj.additionalFields?.length>0) { //videoInfoObj, videoInfoObj.additionalFields could be null
+            const additionalData = {};
+            videoInfoObj.additionalFields.forEach(field => {
+                if (videoAdditionalFieldsObj[field.name].uploadWithVideo) { 
+                    fetch(`${ADDITIONAL_URL_ROOT}/${field.name}/?videoId=${videoInfoObj.videoId}&num=${frameNum}`, {
+                        method: 'GET',
+                    }).then(res => {
+                        if (res.ok) {
+                            console.log('res.ok');
+                            return res.json();
                         } else {
-                            additionalData[field.name] = res;
+                            console.log('res.ok false');
+                            // console.log(res);
+                            setFrameError('Additional data request failed');
+                        }
+                    }).then((res)=>{
+                        if (res){
+                            if (res['error']) {
+                                setFrameError(res['error']);
+                            } else {
+                                additionalData[field.name] = res;
+                            } 
                         } 
-                    } 
-                })
-            }
-        })
-        
-        //TODO: pass data to canvas and let canvas draw it.
-
+                    })
+                }
+            })
+            
+            //TODO: pass data to canvas and let canvas draw it.
+        }
     }
 
 

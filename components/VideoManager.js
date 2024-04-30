@@ -9,22 +9,24 @@ import { PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
  *      open: boolean. Whether to open the modal window
  *      setOpen: setter of open. In order to give controll to VideoManager's internal buttons.
  *      // serverType: 'local' / 'remote'
- *      includeTrackDataInput: boolean. False by default. If true, show track data input element to allow user upload track data json files. The developer should also specify trackDataParseFunc to parse the data.
- *      trackDataParseFunc: [(data)=>{}, ...], // array of func, order of entries should match. if includeTrackDataInput is true, should provide funcs to process the data in those files. The func should take the object from the json file as parameter and output the data format the chart component needs
+//  *      includeTrackDataInput: boolean. False by default. If true, show track data input element to allow user upload track data json files. The developer should also specify trackDataParseFunc to parse the data.
+//  *      trackDataParseFunc: [(data)=>{}, ...], // array of func, order of entries should match. if includeTrackDataInput is true, should provide funcs to process the data in those files. The func should take the object from the json file as parameter and output the data format the chart component needs
  *      
  *      additionalFields: 
  *        [
  *          {
- *            name: str, // required, used as var name, no white space
+ *            name: str, // required and unique, used as var name, no white space.
  *            label: str, // required, label shown to the user, with white space
  *            required: boolean, // whether required for user, false by default
+ *            loadWithVideo: boolean, // whether to draw the data on canvas with each frame. If yes, will fetch the data from backend and ask canvas to draw it, thus the 'shape' field should be defined too.
+ *            shape: str, 'circle'/'rectangle'/... // required when loadWithVideo is true 
  *          },
  *          ...
  *        ]
  *      
  *       
  *      
- *      VideoManager will generate videos data for project.
+ *      VideoManager will generate meta data of videos for project.
  *      For reference, projectConfigDataRef: 
  *          {
  *              projectName: str,
@@ -51,7 +53,7 @@ export default function VideoManager(props) {
     const [detailsVideoId, setDetailsVideoId] = useState(); 
     const [btnDisable, setBtnDisable] = useState(true);
     const [info, setInfo] = useState();
-    const [additionalFieldsObj, setAdditionalFieldsObj] = useState();
+    // const [videoAdditionalFieldsObj, setVideoAdditionalFieldsObj] = useState();
 
     const projectConfigDataRef = useStates().projectConfigDataRef;
     const videoData = useStates().videoData;
@@ -63,6 +65,8 @@ export default function VideoManager(props) {
     const setResetVideoPlay = useStateSetters().setResetVideoPlay;
     const resetVideoDetails = useStates().resetVideoDetails;
     const setResetVideoDetails = useStateSetters().setResetVideoDetails;
+    const videoAdditionalFieldsObj = useStates().videoAdditionalFieldsObj;
+    const setVideoAdditionalFieldsObj = useStateSetters().setVideoAdditionalFieldsObj;
 
 
     const [form] = Form.useForm();
@@ -100,15 +104,26 @@ export default function VideoManager(props) {
 
     useEffect(() => {
         if (props.additionalFields?.length > 0) {
+            const names = new Set();
             const fields = {};
             for (let field of props.additionalFields) {
                 // console.log(field);
-                fields[field.name] = {required: field.required};
+                names.add(field.name);
+                fields[field.name] = {
+                    required: field.required, 
+                    uploadWithVideo: field.uploadWithVideo,
+                    shape: field.shape,
+                };
             }
-            // console.log(fields);
-            setAdditionalFieldsObj(fields);
+            console.log(fields, names);
+            if (names.size < props.additionalFields?.length) {
+                setVideoAdditionalFieldsObj(null);
+                throw new Error("Every field name should be unique.");
+            } else {
+                setVideoAdditionalFieldsObj(fields);
+            }
         } else {
-            setAdditionalFieldsObj(null);
+            setVideoAdditionalFieldsObj(null);
         }
     }, [props.additionalFields])
     
@@ -210,8 +225,8 @@ export default function VideoManager(props) {
         
         for (let f in fields) {
             // console.log(f, additionalFieldsObj[f]?.required, fields[f]?.length);
-            if (additionalFieldsObj 
-                && additionalFieldsObj[f]?.required 
+            if (videoAdditionalFieldsObj 
+                && videoAdditionalFieldsObj[f]?.required 
                 && (!fields[f]?.length > 0)) {
                     return false;
                 }
@@ -291,20 +306,20 @@ export default function VideoManager(props) {
         const videoPath = {[id]: {...videoObj}};
 
         setNewVideoPath(videoPath);
-        parseAdditionalFieldsData(i);
+        // parseAdditionalFieldsData(i);
     }
 
     /**
      * invoke provided parseFunc to generate the data format that chart needs 
      * */
-    function parseAdditionalFieldsData(i) {
-        // const fileInput = document.createElement('input');
-        // fileInput.value = '/Users/pengx/Downloads/configuration (3).json';
-        // fileInput.type = 'file';
-        // fileInput.click();
-        console.log('here');
-        // fetch('/Users/pengx/Downloads/configuration.json').then(response => console.log(response.json()));
-    }
+    // function parseAdditionalFieldsData(i) {
+    //     // const fileInput = document.createElement('input');
+    //     // fileInput.value = '/Users/pengx/Downloads/configuration (3).json';
+    //     // fileInput.type = 'file';
+    //     // fileInput.click();
+    //     console.log('here');
+    //     // fetch('/Users/pengx/Downloads/configuration.json').then(response => console.log(response.json()));
+    // }
 
     function onDelBtnClick(i) {
         const videoIdToDel = videoIds[i];

@@ -163,7 +163,12 @@ export default function Home() {
         /> */}
         {/* <JsonUploader type='configuration' /> */}
         {/* <JsonUploader type={'annotation'}/> */}
-        <VideoManager additionalFields={[{name: 'trajectory', label: 'Trajectory File', required: true}, {name: 'test', label: 'Test'}]}/>
+        <VideoManager 
+          additionalFields={[
+              {name: 'trajectory', label: 'Trajectory File', required: true, uploadWithVideo: true, shape: 'circle'}, 
+              {name: 'test', label: 'Test'}
+          ]}
+        />
         <ProjectDropdown />
         <Row >
           <Col>
