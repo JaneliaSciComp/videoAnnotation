@@ -45,7 +45,7 @@ export default function VideoUploader(props) {
     const setVideoData = useStateSetters().setVideoData;
     const projectConfigDataRef = useStates().projectConfigDataRef;
     const videoAdditionalFieldsObj = useStates().videoAdditionalFieldsObj;
-
+    const videoId = useStates().videoId;
 
     console.log('VideoUploader render');
 
