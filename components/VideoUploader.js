@@ -193,7 +193,7 @@ export default function VideoUploader(props) {
         videoInfoObj.videoId = videoId;
         console.log(videoInfoObj);
 
-        fetch("http://localhost:8000/api/videopath", {
+        fetch("http://localhost:8000/api/video", {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
