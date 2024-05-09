@@ -6,10 +6,11 @@ import { InputNumber, Slider, Space } from 'antd';
 import { CaretRightOutlined, PauseOutlined } from '@ant-design/icons';
 import {Row, Col, Form, Button} from 'react-bootstrap';
 import { useStates, useStateSetters } from './AppContext';
+import { postVideo, getVideo, getFrame, getAdditionalData } from '../utils/requests';
 
 
-const FRAME_URL_ROOT = 'http://localhost:8000/api/frame';
-const ADDITIONAL_URL_ROOT = 'http://localhost:8000/api/additional-data';
+// const FRAME_URL_ROOT = 'http://localhost:8000/api/frame';
+// const ADDITIONAL_URL_ROOT = 'http://localhost:8000/api/additional-data';
 
 /**
  * 
@@ -46,6 +47,8 @@ export default function VideoUploader(props) {
     const projectConfigDataRef = useStates().projectConfigDataRef;
     const videoAdditionalFieldsObj = useStates().videoAdditionalFieldsObj;
     const videoId = useStates().videoId;
+    const projectId = useStates().projectId;
+
 
     console.log('VideoUploader render');
 
@@ -71,7 +74,7 @@ export default function VideoUploader(props) {
             // const id = Object.keys(newVideoPath)[0];
             // console.log(newVideoPath);
             // postVideo(id, newVideoPath[id]);
-            postVideo(newVideoPath);
+            postAndLoadVideo(newVideoPath);
 
             setNewVideoPath(null);
         }
@@ -154,68 +157,76 @@ export default function VideoUploader(props) {
 
 
     
-    function videoPathSubmitHandler(e) {
+    async function videoPathSubmitHandler(e) {
         // console.log(e.target);
         e.preventDefault();
         e.stopPropagation(); 
+
+        if (!projectId) {
+            throw new Error('Please initialize or upload a project first.');
+        }
         // resetVideoStatus();
-        const id = new Date().getTime();
+        const id = new Date().getTime().toString();
         // setVideoId(id);
 
         const form = new FormData(e.target);
         const videoPath = form.get('videoPath');
-        const video = {name: videoPath, path: videoPath};
+        const video = {projectId: projectId, name: videoPath, path: videoPath, additionalFields: []};
         // console.log('video', JSON.stringify(video), JSON.stringify(video).replaceAll("/", ""));
 
         // add video to videoManager
         if (projectConfigDataRef.current?.projectName?.length>0) {
             const videoDataCopy = {...videoData};
-            videoDataCopy[id] = {
-                name: videoPath,
-                path: videoPath,
-                additionalFields: []
-            };
+            videoDataCopy[id] = {...video};
             setVideoData(videoDataCopy);
         } else {
             setSubmitError('Please initialize or load a project first.')
         }
 
-        postVideo({[id] : video});
+        await postAndLoadVideo({[id] : video});
     }
 
 
     // function postVideo(videoId, videoObj) {
-    function postVideo(videoInfo) {
+    async function postAndLoadVideo(videoInfo) {
         resetVideoStatus();
         const videoId = Object.keys(videoInfo)[0];
         setVideoId(videoId);
         const videoInfoObj = {...videoInfo[videoId]};
         videoInfoObj.videoId = videoId;
-        console.log(videoInfoObj);
+        // console.log(videoInfoObj);
 
-        fetch("http://localhost:8000/api/video", {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-              },
-            body: JSON.stringify(videoInfoObj), //new FormData(e.target), 
-        }).then(res => {
-            if (res.ok) {
-                return res.json(); 
-            } else {
-                setSubmitError('Request failed');
-            }
-        }).then((res)=>{
-            if (res){
-                if (res['error']) {
-                    // console.log(res['error']);
-                    setSubmitError(res['error']);
-                } else {
-                    initializePlay(res, videoInfoObj);
-                } 
-            } 
-        })
+        // fetch("http://localhost:8000/api/video", {
+        //     method: 'POST',
+        //     headers: {
+        //         'Accept': 'application/json',
+        //         'Content-Type': 'application/json'
+        //       },
+        //     body: JSON.stringify(videoInfoObj), //new FormData(e.target), 
+        // }).then(res => {
+        //     if (res.ok) {
+        //         return res.json(); 
+        //     } else {
+        //         setSubmitError('Request failed');
+        //     }
+        // }).then((res)=>{
+        //     if (res){
+        //         if (res['error']) {
+        //             // console.log(res['error']);
+        //             setSubmitError(res['error']);
+        //         } else {
+        //             initializePlay(res, videoInfoObj);
+        //         } 
+        //     } 
+        // })
+        const res = await postVideo(videoInfoObj);
+        // console.log(res);
+        if (res['error']) {
+            setSubmitError(res['error']);
+        } else {
+            await initializePlay(videoInfoObj);
+        }
+        
     }
 
     // function getVideoByPath(videoId, videoPath) {
@@ -243,19 +254,28 @@ export default function VideoUploader(props) {
     // }
     
 
-    function setFrame(newValue, videoInfoObj=null) {
+    async function setFrame(newValue, videoInfoObj=null) {
         // console.log('setFrame called');
         if (newValue) {
             setSliderValue(newValue);
             // let url;
             if (newValue >= 1) {
-                getFrame(newValue-1);
+                // request frame
+                setFrameError(null);
+                const res = await getFrame(newValue-1); //blob url or {error: ...}
+                if (res['error']) {
+                    setFrameError(res['error']);
+                } else {
+                    setFrameUrl(res);
+                    setFrameNum(newValue-1);
+                }
+                    
                 if (videoInfoObj) { // uploaded new video
-                    getAdditionalData(newValue-1, videoInfoObj);
+                    getAdditionalFieldsData(newValue-1, videoInfoObj);
                 } else { // video already uploaded beforehand, additionalFields data saved in videoData
                     const videoInfo = {...videoData[videoId]};
                     videoInfo.videoId = videoId;
-                    getAdditionalData(newValue-1, videoInfo);
+                    getAdditionalFieldsData(newValue-1, videoInfo);
                 }
             }
         } else {
@@ -266,34 +286,34 @@ export default function VideoUploader(props) {
     }
 
 
-    function getFrame(frameNum) {
-        ////window.vaFrames[frameNum];  /////
-        setFrameError(null);
-        fetch(`${FRAME_URL_ROOT}?num=${frameNum}`, {
-            method: 'GET',
-        }).then(res => {
-            if (res.ok) {
-                console.log('res.ok');
-                return res.blob();
-            } else {
-                console.log('res.ok false');
-                // console.log(res);
-                setFrameError('Frame request failed');
-            }
-        }).then((res)=>{
-            if (res){
-                if (res['error']) {
-                    setFrameError(res['error']);
-                } else {
-                    const url = URL.createObjectURL(res);
-                    // props.setFrameUrl(url);
-                    // props.setFrameNum(frameNum);
-                    setFrameUrl(url);
-                    setFrameNum(frameNum);
-                } 
-            } 
-        })
-    }
+    // function getFrame(frameNum) {
+    //     ////window.vaFrames[frameNum];  /////
+    //     setFrameError(null);
+    //     fetch(`${FRAME_URL_ROOT}?num=${frameNum}`, {
+    //         method: 'GET',
+    //     }).then(res => {
+    //         if (res.ok) {
+    //             console.log('res.ok');
+    //             return res.blob();
+    //         } else {
+    //             console.log('res.ok false');
+    //             // console.log(res);
+    //             setFrameError('Frame request failed');
+    //         }
+    //     }).then((res)=>{
+    //         if (res){
+    //             if (res['error']) {
+    //                 setFrameError(res['error']);
+    //             } else {
+    //                 const url = URL.createObjectURL(res);
+    //                 // props.setFrameUrl(url);
+    //                 // props.setFrameNum(frameNum);
+    //                 setFrameUrl(url);
+    //                 setFrameNum(frameNum);
+    //             } 
+    //         } 
+    //     })
+    // }
 
     function resetVideoStatus() {
         setFps(0);
@@ -306,7 +326,8 @@ export default function VideoUploader(props) {
         setVideoId(null);
     }
 
-    function initializePlay(meta, videoInfoObj) {
+    async function initializePlay(videoInfoObj) { //meta,
+        const meta = await getVideo(videoInfoObj.videoId);
         if (meta['frame_count'] > 0) {//TODO
             setFps(meta['fps']);
             setPlayFps(meta['fps']);
@@ -319,31 +340,38 @@ export default function VideoUploader(props) {
         setFrame(1, videoInfoObj);
     }
 
-    function getAdditionalData(frameNum, videoInfoObj) {
+    async function getAdditionalFieldsData(frameNum, videoInfoObj) {
         if (videoInfoObj.additionalFields?.length>0) { //videoInfoObj, videoInfoObj.additionalFields could be null
             const additionalData = {};
-            videoInfoObj.additionalFields.forEach(field => {
+            videoInfoObj.additionalFields.forEach(async field => {
                 if (videoAdditionalFieldsObj[field.name].uploadWithVideo) { 
-                    fetch(`${ADDITIONAL_URL_ROOT}/${field.name}/?videoId=${videoInfoObj.videoId}&num=${frameNum}`, {
-                        method: 'GET',
-                    }).then(res => {
-                        if (res.ok) {
-                            console.log('res.ok');
-                            return res.json();
-                        } else {
-                            console.log('res.ok false');
-                            // console.log(res);
-                            setFrameError('Additional data request failed');
-                        }
-                    }).then((res)=>{
-                        if (res){
-                            if (res['error']) {
-                                setFrameError(res['error']);
-                            } else {
-                                additionalData[field.name] = res;
-                            } 
-                        } 
-                    })
+                    // fetch(`${ADDITIONAL_URL_ROOT}/${field.name}/?videoId=${videoInfoObj.videoId}&num=${frameNum}`, {
+                    //     method: 'GET',
+                    // }).then(res => {
+                    //     if (res.ok) {
+                    //         console.log('res.ok');
+                    //         return res.json();
+                    //     } else {
+                    //         console.log('res.ok false');
+                    //         // console.log(res);
+                    //         setFrameError('Additional data request failed');
+                    //     }
+                    // }).then((res)=>{
+                    //     if (res){
+                    //         if (res['error']) {
+                    //             setFrameError(res['error']);
+                    //         } else {
+                    //             additionalData[field.name] = res;
+                    //         } 
+                    //     } 
+                    // })
+                    const res = await getAdditionalData(frameNum, videoInfoObj.videoId, field.name);
+                    // console.log(res);
+                    if (res['error']) {
+                        setFrameError(res['error']);
+                    } else {
+                        additionalData[field.name] = res;
+                    }
                 }
             })
             

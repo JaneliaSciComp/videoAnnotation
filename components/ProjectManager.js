@@ -13,6 +13,7 @@ import { Modal, Form, Input, Button } from 'antd';
  *      
  *      For reference, projectConfigDataRef: 
  *          {
+ *              projectId: str,
  *              projectName: str,
  *              // projectDirectory: (no need. user still has to upload/save files mannually) Only for local server. '/user/project1', a str pointing to a local folder where all annotation and config data are stored.
  *              description: str, optional
@@ -29,6 +30,8 @@ export default function ProjectManager(props) {
     const projectConfigDataRef = useStates().projectConfigDataRef;
     const btnConfigData = useStates().btnConfigData;
     const setConfirmConfig = useStateSetters().setConfirmConfig;
+    const projectId = useStates().projectId;
+    const setProjectId = useStateSetters().setProjectId;
     
     const [form] = Form.useForm();
     // const projectName = Form.useWatch('projectName', form);
@@ -37,6 +40,8 @@ export default function ProjectManager(props) {
     useEffect(() => {
         if (props.open) {
             if (props.status === 'new') {
+                const id = new Date().getTime().toString();
+                setProjectId(id);
                 form.setFieldsValue({ 
                     projectName: null,
                     description: null
@@ -69,6 +74,7 @@ export default function ProjectManager(props) {
         const {projectName, description} = form.getFieldsValue();
         // console.log('ok', projectName, description);
         projectConfigDataRef.current =  {
+            projectId: projectId,
             projectName: projectName,
             description: description,
             // btnConfigData: {...btnConfigData}

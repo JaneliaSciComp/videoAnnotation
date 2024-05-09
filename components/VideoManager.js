@@ -35,6 +35,7 @@ import { PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
  *              *** 
  *                  videos: {
  *                      videoId: {
+ *                          projectId: str,
  *                          name: str,
  *                          path: str,
  *                          additionalFields: [{name: str, value: str}, ...] // can be null/undefined/empty arr, and this field always exist in video data; value field can be absent if it's not required
@@ -67,6 +68,7 @@ export default function VideoManager(props) {
     const setResetVideoDetails = useStateSetters().setResetVideoDetails;
     const videoAdditionalFieldsObj = useStates().videoAdditionalFieldsObj;
     const setVideoAdditionalFieldsObj = useStateSetters().setVideoAdditionalFieldsObj;
+    const projectId = useStates().projectId;
 
 
     const [form] = Form.useForm();
@@ -237,13 +239,13 @@ export default function VideoManager(props) {
 
     function onAddBtnClick() {
         // console.log(e);
-        const id = new Date().getTime();
+        const id = new Date().getTime().toString();
         modifyVideoData(id);
     }
 
     function onAddLoadBtnClick() {
         // console.log(e);
-        const id = new Date().getTime();
+        const id = new Date().getTime().toString();
         const videoDataCopy =  modifyVideoData(id);
         // console.log(videoDataCopy)
 
@@ -277,6 +279,7 @@ export default function VideoManager(props) {
         if (projectConfigDataRef.current?.projectName?.length>0) {
             const videoDataCopy = {...videoData};
             videoDataCopy[id] = {
+                projectId: projectId,
                 name: videoName,
                 path: videoPath,
                 additionalFields: additionalFieldsData
@@ -290,6 +293,7 @@ export default function VideoManager(props) {
             setDetailsVideoId(null);
 
             return {[id]: {
+                        projectId: projectId,
                         name: videoName,
                         path: videoPath,
                         additionalFields: additionalFieldsData

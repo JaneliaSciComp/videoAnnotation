@@ -63,6 +63,8 @@ export default function Workspace(props) {
     const [resetVideoPlay, setResetVideoPlay] = useState(); // used by VideoManager to reset video play status in VideoUploader
     const [resetVideoDetails, setResetVideoDetails] = useState(); // used by JsonUploader to reset video details window in VideoManager
     const [videoAdditionalFieldsObj, setVideoAdditionalFieldsObj] = useState(); //generated from props of VideoManager in VideoManager, used by VideoManagerto check whether required fields are empty, by VideoUploader to know if to display the data with video or show in chart. {fieldName1: {required: field.required, uploadWithVideo: field.uploadWithVideo, shape: field.shape}, fieldName2:{}}
+    const [projectId, setProjectId] = useState('testId'); //TODO: remove 'testId'
+
 
     console.log('workspace render');
 
@@ -101,6 +103,7 @@ export default function Workspace(props) {
         resetVideoPlay: resetVideoPlay,
         resetVideoDetails: resetVideoDetails,
         videoAdditionalFieldsObj: videoAdditionalFieldsObj,
+        projectId: projectId
     }
 
     const stateSetters = {
@@ -136,6 +139,7 @@ export default function Workspace(props) {
         setResetVideoPlay: setResetVideoPlay,
         setResetVideoDetails: setResetVideoDetails,
         setVideoAdditionalFieldsObj: setVideoAdditionalFieldsObj,
+        setProjectId: setProjectId
     }
 
 
@@ -174,6 +178,7 @@ export default function Workspace(props) {
                 }
              */
             projectConfigDataRef.current = obj;
+            setProjectId(obj.projectId);
             setBtnConfigData(obj.btnConfigData ? {...obj.btnConfigData} : {}); // btnConfigData could be null
             setVideoData({...obj.videos}); // videos might be empty obj but not null
         }
