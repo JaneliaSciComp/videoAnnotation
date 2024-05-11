@@ -2,6 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import { useStateSetters, useStates } from './AppContext'; 
 import { Modal, List, Button, Form, Input, Space } from 'antd';
 import { PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
+import { postVideo, editVideo, deleteVideo } from '../utils/requests';
 
 
 /**
@@ -61,7 +62,7 @@ export default function VideoManager(props) {
     const setVideoData = useStateSetters().setVideoData;
     const videoId = useStates().videoId;
     // const setVideoId = useStateSetters().setVideoId;
-    const setNewVideoPath = useStateSetters().setNewVideoPath;
+    const setLoadVideo = useStateSetters().setLoadVideo;
     // const setVideoPathToGet = useStateSetters().setVideoPathToGet;
     const setResetVideoPlay = useStateSetters().setResetVideoPlay;
     const resetVideoDetails = useStates().resetVideoDetails;
@@ -237,27 +238,59 @@ export default function VideoManager(props) {
         return true;
     }
 
-    function onAddBtnClick() {
+    async function onAddBtnClick() {
         // console.log(e);
         const id = new Date().getTime().toString();
-        modifyVideoData(id);
+        const videoInfoObj = modifyVideoData(id);
+        
+        // send post request to db
+        const res = await postVideo(videoInfoObj);
+        // console.log(res);
+        if (res['error']) {
+            setInfo(res['error']);
+        } else {
+            setInfo(null);
+        }
     }
 
-    function onAddLoadBtnClick() {
+    async function onAddLoadBtnClick() {
         // console.log(e);
         const id = new Date().getTime().toString();
         const videoDataCopy =  modifyVideoData(id);
         // console.log(videoDataCopy)
 
-        //trigger posting video to backend in VideoUploader
+        // send post request to db
+        const res = await postVideo(videoDataCopy);
+        // console.log(res);
+        if (res['error']) {
+            setInfo(res['error']);
+        } else {
+            setInfo(null);
+        }
+
+        //trigger loading video in VideoUploader
         if (videoDataCopy) {
-            setNewVideoPath(videoDataCopy);
+            setLoadVideo(videoDataCopy);
         }
     }
 
-    function onEditBtnClick() {
+    async function onEditBtnClick() {
         // console.log(e);
-        modifyVideoData(detailsVideoId);
+        if (detailsVideoId) {
+            const videoInfoObj = modifyVideoData(detailsVideoId);
+            
+            // send put request to db
+            const res = await editVideo(videoInfoObj);
+            // console.log(res);
+            if (res['error']) {
+                setInfo('Editing video data in database failed!');
+            } else {
+                setInfo(null);
+            }
+        } else {
+            setInfo('Can only edit an existing video!')
+        }
+        
     }
 
     function modifyVideoData(id) {
@@ -292,12 +325,13 @@ export default function VideoManager(props) {
             setInfo(null);
             setDetailsVideoId(null);
 
-            return {[id]: {
+            return {    
+                        videoId: id,
                         projectId: projectId,
                         name: videoName,
                         path: videoPath,
                         additionalFields: additionalFieldsData
-                    }};
+                    };
         } else {
             setInfo('Please initialize or load a project first.')
         }
@@ -309,8 +343,7 @@ export default function VideoManager(props) {
         const videoObj = videoData[id];
         const videoPath = {[id]: {...videoObj}};
 
-        setNewVideoPath(videoPath);
-        // parseAdditionalFieldsData(i);
+        setLoadVideo(videoPath);
     }
 
     /**
@@ -325,12 +358,21 @@ export default function VideoManager(props) {
     //     // fetch('/Users/pengx/Downloads/configuration.json').then(response => console.log(response.json()));
     // }
 
-    function onDelBtnClick(i) {
+    async function onDelBtnClick(i) {
         const videoIdToDel = videoIds[i];
+
+        //delete data from db
+        const res = await deleteVideo(videoIdToDel);
+        // console.log(res);
+        if (res['error']) {
+            setInfo('Deleting video data in database failed!');
+            return
+        } 
+
+        setInfo(null);
         if (videoIdToDel === detailsVideoId) {
             form.resetFields();
             setBtnDisable(true);
-            setInfo(null);
             setDetailsVideoId(null);
         }
         const videoDataCopy = {...videoData};

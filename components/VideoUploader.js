@@ -36,8 +36,8 @@ export default function VideoUploader(props) {
     const frameNumSignal = useStates().frameNumSignal;
     const totalFrameCount = useStates().totalFrameCount;
     const setTotalFrameCount = useStateSetters().setTotalFrameCount;
-    const newVideoPath = useStates().newVideoPath; // trigger post request by VideoManager
-    const setNewVideoPath = useStateSetters().setNewVideoPath;
+    const loadVideo = useStates().loadVideo; // trigger post request by VideoManager
+    const setLoadVideo = useStateSetters().setLoadVideo;
     // const videoPathToGet = useStates().videoPathToGet; // trigger get request by VideoManager
     // const setVideoPathToGet = useStateSetters().setVideoPathToGet;
     const resetVideoPlay = useStates().resetVideoPlay;
@@ -70,15 +70,15 @@ export default function VideoUploader(props) {
     // }, [videoPathToGet])
 
     useEffect(() => {
-        if (newVideoPath) {
-            // const id = Object.keys(newVideoPath)[0];
-            // console.log(newVideoPath);
-            // postVideo(id, newVideoPath[id]);
-            postAndLoadVideo(newVideoPath);
+        if (loadVideo) {
+            // postAndLoadVideo(loadVideo);
+            resetVideoStatus();
+            setVideoId(loadVideo.videoId);
+            initializePlay(loadVideo) // no need to use await
 
-            setNewVideoPath(null);
+            setLoadVideo(null);
         }
-    }, [newVideoPath])
+    }, [loadVideo])
 
 
     useEffect(() => {
@@ -183,17 +183,18 @@ export default function VideoUploader(props) {
             setSubmitError('Please initialize or load a project first.')
         }
 
-        await postAndLoadVideo({[id] : video});
+        video.videoId = id;
+        await postAndLoadVideo(video);
     }
 
 
     // function postVideo(videoId, videoObj) {
     async function postAndLoadVideo(videoInfo) {
         resetVideoStatus();
-        const videoId = Object.keys(videoInfo)[0];
-        setVideoId(videoId);
-        const videoInfoObj = {...videoInfo[videoId]};
-        videoInfoObj.videoId = videoId;
+        // const videoId = Object.keys(videoInfo)[0];
+        setVideoId(videoInfo.videoId);
+        // const videoInfoObj = {...videoInfo[videoId]};
+        // videoInfoObj.videoId = videoId;
         // console.log(videoInfoObj);
 
         // fetch("http://localhost:8000/api/video", {
@@ -219,40 +220,16 @@ export default function VideoUploader(props) {
         //         } 
         //     } 
         // })
-        const res = await postVideo(videoInfoObj);
+        const res = await postVideo(videoInfo);
         // console.log(res);
         if (res['error']) {
             setSubmitError(res['error']);
         } else {
-            await initializePlay(videoInfoObj);
+            await initializePlay(videoInfo);
         }
         
     }
 
-    // function getVideoByPath(videoId, videoPath) {
-    //     resetVideoStatus();
-    //     setVideoId(videoId);
-
-    //     fetch("http://localhost:8000/api/videometa/"+videoPath, {
-    //         method: 'GET',
-    //     }).then(res => {
-    //         if (res.ok) {
-    //             return res.json(); 
-    //         } else {
-    //             setSubmitError('Request failed');
-    //         }
-    //     }).then((res)=>{
-    //         if (res){
-    //             if (res['error']) {
-    //                 // console.log(res['error']);
-    //                 setSubmitError(res['error']);
-    //             } else {
-    //                 initializePlay(res);
-    //             } 
-    //         } 
-    //     })
-    // }
-    
 
     async function setFrame(newValue, videoInfoObj=null) {
         // console.log('setFrame called');
@@ -328,16 +305,21 @@ export default function VideoUploader(props) {
 
     async function initializePlay(videoInfoObj) { //meta,
         const meta = await getVideo(videoInfoObj.videoId);
-        if (meta['frame_count'] > 0) {//TODO
-            setFps(meta['fps']);
-            setPlayFps(meta['fps']);
-            setTotalFrameCount(meta['frame_count']);
+        console.log(meta);
+        if (meta['error']) {
+            setSubmitError(meta['error']);
         } else {
-            setFps(25);
-            setPlayFps(25);
-            setTotalFrameCount(10000);
+            if (meta['frame_count'] > 0) {//TODO
+                setFps(meta['fps']);
+                setPlayFps(meta['fps']);
+                setTotalFrameCount(meta['frame_count']);
+            } else {
+                setFps(25);
+                setPlayFps(25);
+                setTotalFrameCount(10000);
+            }
+            await setFrame(1, videoInfoObj);
         }
-        setFrame(1, videoInfoObj);
     }
 
     async function getAdditionalFieldsData(frameNum, videoInfoObj) {

@@ -58,8 +58,8 @@ export default function Workspace(props) {
     const [infoOpen, setInfoOpen] = useState(false);
     const [info, setInfo] = useState();
     const [videoData, setVideoData] = useState({});
-    const [newVideoPath, setNewVideoPath] = useState(); // new video path obj added by videoManager, to trigger post request in videoUploader. {id: {name: str, path: str}}
-    // const [videoPathToGet, setVideoPathToGet] = useState(); // video path obj in videoManager, to trigger get request in videoUploader. {id: {name: str, path: str}}
+    const [loadVideo, setLoadVideo] = useState(); // videoManager to trigger getVideo request in videoUploader. {id: {name:, path:, ...}}
+    // const [videoPathToGet, setVideoPathToGet] = useState(); // video path obj in videoManager, to trigger get request in videoUploader. {videoId: , projectId: , name:, path:,additonalFields:}
     const [resetVideoPlay, setResetVideoPlay] = useState(); // used by VideoManager to reset video play status in VideoUploader
     const [resetVideoDetails, setResetVideoDetails] = useState(); // used by JsonUploader to reset video details window in VideoManager
     const [videoAdditionalFieldsObj, setVideoAdditionalFieldsObj] = useState(); //generated from props of VideoManager in VideoManager, used by VideoManagerto check whether required fields are empty, by VideoUploader to know if to display the data with video or show in chart. {fieldName1: {required: field.required, uploadWithVideo: field.uploadWithVideo, shape: field.shape}, fieldName2:{}}
@@ -98,7 +98,7 @@ export default function Workspace(props) {
         info: info,
         infoOpen: infoOpen,
         videoData: videoData,
-        newVideoPath: newVideoPath,
+        loadVideo: loadVideo,
         // videoPathToGet: videoPathToGet,
         resetVideoPlay: resetVideoPlay,
         resetVideoDetails: resetVideoDetails,
@@ -134,7 +134,7 @@ export default function Workspace(props) {
         setInfo: setInfo,
         setInfoOpen: setInfoOpen,
         setVideoData: setVideoData,
-        setNewVideoPath: setNewVideoPath,
+        setLoadVideo: setLoadVideo,
         // setVideoPathToGet: setVideoPathToGet,
         setResetVideoPlay: setResetVideoPlay,
         setResetVideoDetails: setResetVideoDetails,

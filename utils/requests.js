@@ -16,7 +16,7 @@ export async function postVideo(videoInfoObj) {
     if (res.ok) {
         return res.json()
     } else {
-        return {error: 'Request failed'}
+        return {error: 'POST request failed'}
     }
 }
 
@@ -28,7 +28,36 @@ export async function getVideo(videoId) {
     if (res.ok) {
         return res.json()
     } else {
-        return {error: 'Request failed'}
+        return {error: 'GET request failed'}
+    }
+}
+
+export async function editVideo(videoInfoObj) {
+    const res = await fetch(VIDEO_URL, {
+            method: 'PUT',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+            body: JSON.stringify(videoInfoObj), //new FormData(e.target), 
+        })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'PUT request failed'}
+    }
+}
+
+export async function deleteVideo(videoId) {
+    const res = await fetch(`${VIDEO_URL}?id=${videoId}`, {
+            method: 'DELETE',
+        })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'DELETE request failed'}
     }
 }
 
