@@ -6,7 +6,7 @@ import { InputNumber, Slider, Space } from 'antd';
 import { CaretRightOutlined, PauseOutlined } from '@ant-design/icons';
 import {Row, Col, Form, Button} from 'react-bootstrap';
 import { useStates, useStateSetters } from './AppContext';
-import { postVideo, getVideo, getFrame, getAdditionalData } from '../utils/requests';
+import { postVideo, getVideoMeta, getFrame, getAdditionalData } from '../utils/requests';
 
 
 // const FRAME_URL_ROOT = 'http://localhost:8000/api/frame';
@@ -304,7 +304,7 @@ export default function VideoUploader(props) {
     }
 
     async function initializePlay(videoInfoObj) { //meta,
-        const meta = await getVideo(videoInfoObj.videoId);
+        const meta = await getVideoMeta(videoInfoObj.videoId);
         console.log(meta);
         if (meta['error']) {
             setSubmitError(meta['error']);

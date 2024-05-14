@@ -15,7 +15,6 @@ const BTNNUM_MAX=50
     To configure a annotating btn group.
     Produce btnGroup data: 
         {groupIndex: {
-            // groupIndex:  , // even though this seems redundent, user doesn't need to handle it, so it's ok.
             groupType: 'shape',
             btnType: 'bbox',
             btnNum: 2,
@@ -596,7 +595,7 @@ export default function BtnGroupController(props) {
             if (groupType === 'skeleton') {
                 newData.skeletonName = skeletonName;
             }
-            // console.log(newData);
+            console.log(newData);
             setBtnConfigData({...btnConfigData, [index]: newData });
             setError(null);
         } else {

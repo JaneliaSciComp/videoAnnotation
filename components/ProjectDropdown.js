@@ -3,7 +3,7 @@ import { useStateSetters, useStates } from './AppContext';
 import { Dropdown, Button, Modal } from 'antd';
 import ProjectManager from '../components/ProjectManager.js';
 import ModalJsonUploader from './ModalJsonUploader.js';
-
+import ProjectList from './ProjectList.js';
 
 /**
  *  props:
@@ -18,47 +18,56 @@ export default function ProjectDropdown(props) {
     const [managerOpen, setManagerOpen] = useState(false);
     const [managerStatus, setManagerStatus] = useState(); //'new' / 'edit'
     const [uploaderOpen, setUploaderOpen] = useState(false);
+    const [projectListOpen, setProjectListOpen] = useState(false);
 
     const projectConfigDataRef = useStates().projectConfigDataRef;
     const setBtnConfigData = useStateSetters().setBtnConfigData;
     const setSaveConfig = useStateSetters().setSaveConfig;
+    const projectId = useStates().projectId;
 
     const items = [
         {
-          label: 'New',
+          label: 'New Project',
           key: '0',
         },
         {
-          label: 'Open',
+          label: 'Upload Project',
           key: '1',
         },
         {
-          label: 'Edit',
+          label: 'Edit Project',
           key: '2',
         },
         {
           label: 'Save',
           key: '3',
         },
+        {
+            label: 'Exisiting Projects',
+            key: '4',
+          },
     ];
 
     function onClick(e) {
         const label = items[e.key].label;
         switch (label) {
-            case 'New':
-                if (projectConfigDataRef.current?.projectName
-                    || projectConfigDataRef.current?.description
-                    || (projectConfigDataRef.current?.btnConfigData && Object.keys(projectConfigDataRef.current.btnConfigData).length>0)) { // The btnConfigData field is initialized as existed {} 
+            case 'New Project':
+                if (projectId) {
+                // (projectConfigDataRef.current?.projectName
+                //     || (projectConfigDataRef.current?.btnConfigData && Object.keys(projectConfigDataRef.current.btnConfigData).length>0)) { // The btnConfigData field is initialized as existed {} 
                     confirm();
                 } else {
                     setManagerStatus('new');
                     setManagerOpen(true);
                 }
                 break;
-            case 'Open':
+            case 'Exisiting Projects':
+                setProjectListOpen(true);
+                break;
+            case 'Upload Project':
                 setUploaderOpen(true);
                 break;
-            case 'Edit':
+            case 'Edit Project':
                 setManagerStatus('edit');
                 setManagerOpen(true);
                 break;
@@ -122,6 +131,11 @@ export default function ProjectDropdown(props) {
                 setOpen={setManagerOpen} 
                 // onProjectNameChange={props.onProjectNameChange}
                 // onDescriptionChange={props.onDescriptionChange}
+                />
+            
+            <ProjectList 
+                open={projectListOpen}
+                setOpen={setProjectListOpen}
                 />
             
             <ModalJsonUploader 

@@ -166,6 +166,7 @@ export default function Home() {
         <VideoManager 
           additionalFields={[
               {name: 'trajectory', label: 'Trajectory File', required: true, uploadWithVideo: true, shape: 'circle'}, 
+              // uploadWithVideo: true, shape: 'circle'
               {name: 'test', label: 'Test'}
           ]}
         />

@@ -61,7 +61,7 @@ export default function VideoManager(props) {
     const videoData = useStates().videoData;
     const setVideoData = useStateSetters().setVideoData;
     const videoId = useStates().videoId;
-    // const setVideoId = useStateSetters().setVideoId;
+    const setVideoId = useStateSetters().setVideoId;
     const setLoadVideo = useStateSetters().setLoadVideo;
     // const setVideoPathToGet = useStateSetters().setVideoPathToGet;
     const setResetVideoPlay = useStateSetters().setResetVideoPlay;
@@ -361,13 +361,17 @@ export default function VideoManager(props) {
     async function onDelBtnClick(i) {
         const videoIdToDel = videoIds[i];
 
-        //delete data from db
+        //TODO: add confirm
+
+        //delete video data from db
         const res = await deleteVideo(videoIdToDel);
         // console.log(res);
         if (res['error']) {
             setInfo('Deleting video data in database failed!');
             return
         } 
+
+        //TODO: delete annotation related to this video from db
 
         setInfo(null);
         if (videoIdToDel === detailsVideoId) {
@@ -382,7 +386,9 @@ export default function VideoManager(props) {
 
         // console.log(i, videoIdToDel, videoId, videoIdToDel == videoId, videoIdToDel === videoId);
         if (videoIdToDel == videoId) { // videoIdToDel is str, videoId is int, so use == instead of ===
-            setResetVideoPlay(true);
+            // setResetVideoPlay(true); //TODO: if setVideoId to be null, still need this?
+            setVideoId(null);
+            //TODO: reset annotationTable and chart
         }
     }
 
@@ -409,8 +415,8 @@ export default function VideoManager(props) {
 
                             <Button type="link" onClick={()=>{onVideoNameClick(i)}}>{name}</Button>
                             <div >
-                                <Button onClick={()=>{onLoadBtnClick(i)}} icon={<PlayCircleOutlined />} />
-                                <Button onClick={()=>{onDelBtnClick(i)}} icon={<DeleteOutlined />} />
+                                <Button type='text' onClick={()=>{onLoadBtnClick(i)}} icon={<PlayCircleOutlined />} />
+                                <Button type='text' onClick={()=>{onDelBtnClick(i)}} icon={<DeleteOutlined />} />
                             </div>
                             
                         </List.Item>

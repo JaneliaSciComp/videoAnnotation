@@ -1,7 +1,81 @@
+const PROJECTS_URL = "http://localhost:8000/api/projects";
+const PROJECT_URL = "http://localhost:8000/api/project";
+const BTN_URL = "http://localhost:8000/api/btn";
 const VIDEO_URL = "http://localhost:8000/api/video";
 const FRAME_URL_ROOT = 'http://localhost:8000/api/frame';
 const ADDITIONAL_URL_ROOT = 'http://localhost:8000/api/additional-data';
+const VIDEO_META_URL = "http://localhost:8000/api/videometa";
 
+export async function postProject(projectInfoObj) {
+    const res = await fetch(PROJECT_URL, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+            body: JSON.stringify(projectInfoObj), //new FormData(e.target), 
+        })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'POST project request failed'}
+    }
+}
+
+export async function editProject(projectInfoObj) {
+    const res = await fetch(PROJECT_URL, {
+            method: 'PUT',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+            body: JSON.stringify(projectInfoObj), //new FormData(e.target), 
+        })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'PUT project request failed'}
+    }
+}
+
+export async function getAllProjects() {
+    const res = await fetch(PROJECTS_URL, {
+            method: 'GET',
+    })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'GET all projects request failed'}
+    }
+}
+
+//getProject, getBtnConfig
+export async function getProject(id) {
+    const res = await fetch(`${PROJECT_URL}?id=${id}`, {
+            method: 'GET',
+    })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'GET project request failed'}
+    }
+}
+
+export async function getBtnConfig(projectId) {
+    const res = await fetch(`${BTN_URL}?id=${projectId}`, {
+            method: 'GET',
+    })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'GET btn configuration data request failed'}
+    }
+}
 
 export async function postVideo(videoInfoObj) {
     const res = await fetch(VIDEO_URL, {
@@ -16,21 +90,10 @@ export async function postVideo(videoInfoObj) {
     if (res.ok) {
         return res.json()
     } else {
-        return {error: 'POST request failed'}
+        return {error: 'POST video request failed'}
     }
 }
 
-export async function getVideo(videoId) {
-    const res = await fetch(`${VIDEO_URL}?id=${videoId}`, {
-            method: 'GET',
-    })
-
-    if (res.ok) {
-        return res.json()
-    } else {
-        return {error: 'GET request failed'}
-    }
-}
 
 export async function editVideo(videoInfoObj) {
     const res = await fetch(VIDEO_URL, {
@@ -45,7 +108,7 @@ export async function editVideo(videoInfoObj) {
     if (res.ok) {
         return res.json()
     } else {
-        return {error: 'PUT request failed'}
+        return {error: 'PUT video request failed'}
     }
 }
 
@@ -57,7 +120,20 @@ export async function deleteVideo(videoId) {
     if (res.ok) {
         return res.json()
     } else {
-        return {error: 'DELETE request failed'}
+        return {error: 'DELETE video request failed'}
+    }
+}
+
+
+export async function getVideoMeta(videoId) {
+    const res = await fetch(`${VIDEO_META_URL}?id=${videoId}`, {
+            method: 'GET',
+    })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'GET video meta request failed'}
     }
 }
 
@@ -92,7 +168,7 @@ export async function getFrame(frameNum) {
         const url = URL.createObjectURL(blob);
         return url;
     } else {
-        return {error: 'Frame request failed'}
+        return {error: 'GET frame request failed'}
     }
 }
 
@@ -104,6 +180,6 @@ export async function getAdditionalData(frameNum, videoId, fieldName) {
     if (res.ok) {
         return res.json()
     } else {
-        return {error: 'Additional data request failed'}
+        return {error: 'GET additional data request failed'}
     }
 }

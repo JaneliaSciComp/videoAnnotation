@@ -2,6 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import { useStateSetters, useStates } from './AppContext'; 
 import BtnConfiguration from './BtnConfiguration';
 import { Modal, Form, Input, Button } from 'antd';
+import { postProject, editProject, deleteProject } from '../utils/requests';
 
 
 /**
@@ -26,6 +27,7 @@ export default function ProjectManager(props) {
     const [okDisable, setOkDisable] = useState(true);
     const [btnConfigStatus, setBtnConfigStatus] = useState();
     // const [reloadBtnConfig, setReloadBtnConfig] = useState(false);
+    const [info, setInfo] = useState();
 
     const projectConfigDataRef = useStates().projectConfigDataRef;
     const btnConfigData = useStates().btnConfigData;
@@ -42,10 +44,7 @@ export default function ProjectManager(props) {
             if (props.status === 'new') {
                 const id = new Date().getTime().toString();
                 setProjectId(id);
-                form.setFieldsValue({ 
-                    projectName: null,
-                    description: null
-                });
+                form.resetFields();
                 setOkDisable(true);
                 setBtnConfigStatus('new');
             } else if (props.status === 'edit') {
@@ -58,6 +57,7 @@ export default function ProjectManager(props) {
                 setBtnConfigStatus('edit');
             }
         }
+        setInfo(null);
           
     }, [props.open])
 
@@ -70,16 +70,40 @@ export default function ProjectManager(props) {
     }, [btnConfigStatus])
     
 
-    function okClickHandler() {
+    async function okClickHandler() {
         const {projectName, description} = form.getFieldsValue();
         // console.log('ok', projectName, description);
-        projectConfigDataRef.current =  {
+        const projectObj = {
             projectId: projectId,
             projectName: projectName,
             description: description,
-            // btnConfigData: {...btnConfigData}
-            videos: {}
         }
+        // send put request to db
+        let res;
+        if (props.status === 'new') {
+            res = await postProject(projectObj);
+        } else if (props.status === 'edit') {
+            res = await editProject(projectObj);
+        }
+        if (res['error']) {
+            if (props.status === 'new') {
+                setInfo('Adding new project in database failed!');
+                form.resetFields(); // TODO: if remove everything may frustrate user
+            } else if (props.status === 'edit') {
+                setInfo('Editing project in database failed!');
+                form.setFieldValue({
+                    projectName: projectConfigDataRef.current.projectName,
+                    description: projectConfigDataRef.current.description
+                })
+            }
+        } else {
+            setInfo(null);
+        }
+        
+        console.log(res);
+       
+        projectConfigDataRef.current = {...projectObj};
+        projectConfigDataRef.current.video = {};
 
         setConfirmConfig(true);
         setBtnConfigStatus(null);
@@ -179,6 +203,7 @@ export default function ProjectManager(props) {
                     status={btnConfigStatus} 
                     hideCreateBtn
                     />
+                <p>{info}</p>
             </Modal>
         </>
     )
