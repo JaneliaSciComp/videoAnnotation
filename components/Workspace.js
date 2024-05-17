@@ -57,7 +57,7 @@ export default function Workspace(props) {
     const [saveAnnotation, setSaveAnnotation] = useState(false);
     const [infoOpen, setInfoOpen] = useState(false);
     const [info, setInfo] = useState();
-    const [videoData, setVideoData] = useState({});
+    const [videoData, setVideoData] = useState({}); //{videoId1: {projectId:, name:, path:, additionalFields: [{name: str, value: str}, ...]}, videoId2: {}} // can be null/undefined/empty arr, and this field always exist in video data; value field can be absent if it's not required
     const [loadVideo, setLoadVideo] = useState(); // videoManager to trigger getVideo request in videoUploader. {id: {name:, path:, ...}}
     // const [videoPathToGet, setVideoPathToGet] = useState(); // video path obj in videoManager, to trigger get request in videoUploader. {videoId: , projectId: , name:, path:,additonalFields:}
     const [resetVideoPlay, setResetVideoPlay] = useState(); // used by VideoManager to reset video play status in VideoUploader

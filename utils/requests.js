@@ -65,15 +65,45 @@ export async function getProject(id) {
     }
 }
 
-export async function getBtnConfig(projectId) {
-    const res = await fetch(`${BTN_URL}?id=${projectId}`, {
+
+export async function postBtnGroup(btnGroupObj) {
+    const res = await fetch(BTN_URL, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+            body: JSON.stringify(btnGroupObj), //new FormData(e.target), 
+        })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'POST btn group request failed'}
+    }
+}
+
+export async function deleteBtnGroup(btnGroupId) {
+    const res = await fetch(`${BTN_URL}?btnGroupId=${btnGroupId}`, {
+            method: 'DELETE',
+        })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'DELETE btn group request failed'}
+    }
+}
+
+export async function getProjectBtn(projectId) {
+    const res = await fetch(`${BTN_URL}?projectId=${projectId}`, {
             method: 'GET',
     })
 
     if (res.ok) {
         return res.json()
     } else {
-        return {error: 'GET btn configuration data request failed'}
+        return {error: 'GET project btn configuration data request failed'}
     }
 }
 
@@ -124,6 +154,17 @@ export async function deleteVideo(videoId) {
     }
 }
 
+export async function getProjectVideo(projectId) {
+    const res = await fetch(`${VIDEO_URL}?projectId=${projectId}`, {
+            method: 'GET',
+    })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'GET project video data request failed'}
+    }
+}
 
 export async function getVideoMeta(videoId) {
     const res = await fetch(`${VIDEO_META_URL}?id=${videoId}`, {

@@ -2,7 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import { useStateSetters, useStates } from './AppContext'; 
 import { Modal, List, Button, Form, Input, Space } from 'antd';
 import { PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
-import { getAllProjects, getProject, getBtnConfig, deleteProject } from '../utils/requests';
+import { getAllProjects, getProject, getProjectBtn, getProjectVideo, deleteProject } from '../utils/requests';
 
 /**
  *  To list all existing projects in the db.
@@ -19,10 +19,11 @@ export default function ProjectList(props) {
     
     //context
     const projectId = useStates().projectId;
-    const setProjectId = useStates().setProjectId;
+    const setProjectId = useStateSetters().setProjectId;
     // const projectConfigDataRef = useStates().projectConfigDataRef;
     const setProjectData = useStateSetters().setProjectData;
     const setBtnConfigData = useStateSetters().setBtnConfigData;
+    const setVideoData = useStateSetters().setVideoData;
 
 
     useEffect(()=>{
@@ -33,7 +34,7 @@ export default function ProjectList(props) {
                         setInfo(res['error']);
                     } else {
                         setInfo(null);
-                        setAllProjects(res['projects']); //backend checked if res is empty
+                        setAllProjects(res['projects']); //res could be []
                     }
                 }
             ); 
@@ -58,7 +59,7 @@ export default function ProjectList(props) {
     }
 
     function okClickHandler() {
-        // console.log('cancel');
+        console.log('I am called');
         props.setOpen(false);
     }
 
@@ -75,33 +76,68 @@ export default function ProjectList(props) {
         Modal.confirm({
             title: 'Alert',
             content: 'The current project configuration data including annotation buttons will be removed!',
-            onOk: async ()=>{await loadProject(id)},
+            onOk: async ()=>{
+                await loadProject(id);
+
+            },
             // onCancel: cancelClickHandler,
         });
     }
 
     async function loadProject(projectId) {
-        await Promise.all(['project', 'btn'].map(async (type) => {
+        let projectRes, btnRes, videoRes;
+        await Promise.all(['project', 'btn', 'video'].map(async (type) => {
             if (type === 'project') {
-                const res = await getProject(projectId);
-                if (res['error']) {
-                    setInfo(res['error']);
-                } else {
-                    setInfo(null);
-                    setProjectData(res); //backend checked if res is empty
-                    setProjectId(res['projectId']);
-                }
-            } else if (type === 'btn') {
-                // const res = await getBtnConfig(projectId);
-                // if (res['error']) {
-                //     setInfo(res['error']);
+                projectRes = await getProject(projectId);
+            
+                // if (projectRes['error']) {
+                //     setInfo(projectRes['error']);
                 // } else {
                 //     setInfo(null);
-                //     setBtnConfigData(res); //backend checked if res is empty
+                //     setProjectData(projectRes); //backend checked if res is empty
+                //     setProjectId(projectRes['projectId']);
                 // }
+            } else if (type === 'btn') {
+                btnRes = await getProjectBtn(projectId);
+                // if (btnRes['error']) {
+                //     setInfo(btnRes['error']);
+                // } else {
+                //     setInfo(null);
+                //     setBtnConfigData(btnRes); //backend checked if res is empty
+                // }
+            } else if (type === 'video') {
+                videoRes = await getProjectVideo(projectId);
             }
-            
           }));
+          
+        if (projectRes['error'] || btnRes['error'] || videoRes['error']) {
+            setInfo(`Load project failed: \n Project: ${projectRes?.error} \n Btn: ${btnRes?.error} \n Video: ${videoRes?.error}`);
+        } else {
+            setInfo(null);
+            setProjectData(projectRes); 
+            setProjectId(projectRes['projectId']);
+
+            const btnData = {};
+            btnRes.btnGroups.forEach(group => { //btnRes.btnGroups could be []
+                const groupId = group.btnGroupId;
+                delete(group['btnGroupId']);
+                btnData[groupId] = group;
+            });
+            // console.log(btnData);
+            setBtnConfigData(btnData); 
+
+            const videos = {};
+            videoRes.videos.forEach(v => { //videoRes.videos could be []
+                const videoId = v.videoId;
+                delete(v['videoId']);
+                videos[videoId] = v;
+            });
+            // console.log(btnData);
+            setVideoData(videos);
+            // props.setManagerStatus('edit');
+        }
+        
+        props.setOpen(false);
     }
 
     async function onDelBtnClick(i) {

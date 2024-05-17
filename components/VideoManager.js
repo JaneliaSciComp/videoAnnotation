@@ -242,6 +242,7 @@ export default function VideoManager(props) {
         // console.log(e);
         const id = new Date().getTime().toString();
         const videoInfoObj = modifyVideoData(id);
+        console.log(videoInfoObj);
         
         // send post request to db
         const res = await postVideo(videoInfoObj);
@@ -257,7 +258,7 @@ export default function VideoManager(props) {
         // console.log(e);
         const id = new Date().getTime().toString();
         const videoDataCopy =  modifyVideoData(id);
-        // console.log(videoDataCopy)
+        console.log(videoDataCopy)
 
         // send post request to db
         const res = await postVideo(videoDataCopy);
@@ -309,7 +310,7 @@ export default function VideoManager(props) {
         }
         // console.log(additionalFieldsData);
 
-        if (projectConfigDataRef.current?.projectName?.length>0) {
+        if (projectId) {
             const videoDataCopy = {...videoData};
             videoDataCopy[id] = {
                 projectId: projectId,
@@ -340,10 +341,11 @@ export default function VideoManager(props) {
 
     function onLoadBtnClick(i) {
         const id = videoIds[i];
-        const videoObj = videoData[id];
-        const videoPath = {[id]: {...videoObj}};
+        const videoObj = {...videoData[id]};
+        videoObj.videoId = id;
+        console.log(videoObj);
 
-        setLoadVideo(videoPath);
+        setLoadVideo(videoObj);
     }
 
     /**

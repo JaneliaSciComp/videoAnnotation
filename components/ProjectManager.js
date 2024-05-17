@@ -34,6 +34,9 @@ export default function ProjectManager(props) {
     const setConfirmConfig = useStateSetters().setConfirmConfig;
     const projectId = useStates().projectId;
     const setProjectId = useStateSetters().setProjectId;
+    const projectData = useStates().projectData;
+    const setProjectData = useStateSetters().setProjectData;
+    const setVideoData = useStateSetters().setVideoData;
     
     const [form] = Form.useForm();
     // const projectName = Form.useWatch('projectName', form);
@@ -44,17 +47,24 @@ export default function ProjectManager(props) {
             if (props.status === 'new') {
                 const id = new Date().getTime().toString();
                 setProjectId(id);
+                setProjectData({});
+                setVideoData({});
                 form.resetFields();
                 setOkDisable(true);
                 setBtnConfigStatus('new');
             } else if (props.status === 'edit') {
-                // display existing config data in modal
-                form.setFieldsValue({ 
-                    projectName: projectConfigDataRef.current.projectName,
-                    description: projectConfigDataRef.current.description
-                });
-                setOkDisable(false);
-                setBtnConfigStatus('edit');
+                if (projectId) {
+                    // display existing config data in modal
+                    form.setFieldsValue({ 
+                        projectName: projectData.projectName,
+                        description: projectData.description
+                    });
+                    setOkDisable(false);
+                    setBtnConfigStatus('edit');
+                } else {
+                    setInfo('No project is loaded');
+                }
+                
             }
         }
         setInfo(null);
@@ -102,11 +112,12 @@ export default function ProjectManager(props) {
         
         console.log(res);
        
+        setProjectData(projectObj);
         projectConfigDataRef.current = {...projectObj};
         projectConfigDataRef.current.video = {};
 
         setConfirmConfig(true);
-        setBtnConfigStatus(null);
+        // setBtnConfigStatus(null);
         // props.setOpen(false);
     }
 
@@ -201,6 +212,7 @@ export default function ProjectManager(props) {
                 </Form>
                 <BtnConfiguration 
                     status={btnConfigStatus} 
+                    setStatus = {setBtnConfigStatus}
                     hideCreateBtn
                     />
                 <p>{info}</p>

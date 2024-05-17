@@ -7,6 +7,7 @@ import { DownOutlined, DeleteOutlined} from '@ant-design/icons';
 // import {Button} from 'react-bootstrap';
 import { useStateSetters, useStates } from './AppContext';
 import { btnGroupTypeOptions, btnTypeOptions } from '../utils/utils';
+import { postBtnGroup } from '../utils/requests';
 
 const BTNNUM_MAX=50
 
@@ -14,7 +15,7 @@ const BTNNUM_MAX=50
 /**
     To configure a annotating btn group.
     Produce btnGroup data: 
-        {groupIndex: {
+        {groupId: {
             groupType: 'shape',
             btnType: 'bbox',
             btnNum: 2,
@@ -103,6 +104,7 @@ export default function BtnGroupController(props) {
     //get context
     const btnConfigData = useStates().btnConfigData;
     const setBtnConfigData = useStateSetters().setBtnConfigData;
+    const projectId = useStates().projectId;
 
     // console.log('btnGroupController render');
     
@@ -149,21 +151,12 @@ export default function BtnGroupController(props) {
         const myIndex = getSelfIndex();
         console.log(myIndex, btnConfigData, props.getData);
         if (myIndex && props.getData && props.getData[myIndex]) { 
-            // const labelsValid = checkLabels(); 
-            // if (labelsValid) {
-            //     setBtnConfigData({...btnConfigData, [index]: {
-            //         // groupIndex: getSelfIndex(),
-            //         groupType: groupType,
-            //         btnType: btnType,
-            //         btnNum: btnNum,
-            //         childData: [...groupData]}
-            //     });
-            //     setError(null);
-            // } else {
-            //     setError('Labels cannot be empty!');
-            // }
             addDataToBtnConfigData();
-            props.setGetData({...props.getData, [myIndex]: false});
+            props.setGetData(collection => {
+                const colCopy = {...collection};
+                colCopy[myIndex] = false;
+                return colCopy;
+            });
         }
       }, [props.getData]
     )
@@ -573,7 +566,7 @@ export default function BtnGroupController(props) {
     } 
 
 
-    function addDataToBtnConfigData() {
+    async function addDataToBtnConfigData() {
         const index = getSelfIndex();
         const labelsValid = checkLabels(); 
         console.log(index, 'pass data');
@@ -583,7 +576,8 @@ export default function BtnGroupController(props) {
                 groupType: groupType,
                 btnType: btnType,
                 btnNum: btnNum,
-                childData: [...groupData]
+                childData: [...groupData],
+                projectId: projectId
             };
             let edgeData;
             if (btnConfigData[index]) {
@@ -595,9 +589,23 @@ export default function BtnGroupController(props) {
             if (groupType === 'skeleton') {
                 newData.skeletonName = skeletonName;
             }
-            console.log(newData);
-            setBtnConfigData({...btnConfigData, [index]: newData });
+
+            // post btn group data to db
+            const btnGroupObj = {...newData};
+            btnGroupObj.btnGroupId = index;
+            console.log(newData, btnGroupObj);
+            const res = await postBtnGroup(btnGroupObj)
+            console.log(res)
+            if (res['error']) {
+                setError(res['error']);
+                return
+            }
             setError(null);
+            setBtnConfigData(data => {
+                const dataCopy = {...data}
+                dataCopy[index] = newData
+                return dataCopy
+            } );
         } else {
             setError('Labels cannot be empty!');
         }

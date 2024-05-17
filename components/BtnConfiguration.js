@@ -5,6 +5,7 @@ import { Button, Space } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import SkeletonEdgeController from './SkeletonEdgeController';
 import { useStateSetters, useStates } from './AppContext';
+import { deleteBtnGroup } from '../utils/requests';
 
 const BTNGROUPNUM_MAX=50
 
@@ -64,6 +65,7 @@ export default function BtnConfiguration(props) {
     // const [skeletonData, setSkeletonData] = useState({});
     const [getData, setGetData] = useState({}); // {btnGroupIndex1: false, index2: false, ...}
     // const [hide, setHide] = useState();
+    const [info, setInfo] = useState();
 
     // get context
     const btnConfigData = useStates().btnConfigData;
@@ -82,11 +84,18 @@ export default function BtnConfiguration(props) {
     // )
     useEffect(() => {
         console.log('btnConfiguration status changed', props.status);
+        setInfo(null);
         if (props.status === 'new') {
+            setBtnConfigData({});
             console.log('new btnConfig');
             addGroup('new');            
-        } 
-        
+        } else if (props.status === 'edit') {
+            if (Object.keys(btnConfigData).length > 0) {
+                const newGetData = {};
+                Object.keys(btnConfigData).forEach(index => newGetData[index]=false);
+                setGetData(newGetData);
+            }
+        }
       }, [props.status]
     )
 
@@ -148,10 +157,12 @@ export default function BtnConfiguration(props) {
         const index = Date.now().toString();
         if (useCase === 'new') {
             setGetData({[index]:false});
-            setBtnConfigData({[index]: {}});
+            // setBtnConfigData({[index]: {}});
         } else if (useCase === 'add') {
             setGetData({...getData, [index]:false});
-            setBtnConfigData({...btnConfigData, [index]: {}});
+            // setBtnConfigData({...btnConfigData, [index]: {}});
+            // getData[index]=false;
+            // btnConfigData[index]={};
         }
     }
 
@@ -167,15 +178,34 @@ export default function BtnConfiguration(props) {
     }
 
 
-    function onCreateBtnClick() {
+    async function onCreateBtnClick() {
         // if (props.status) {
-            if (props.status === 'edit') {
-                if (Object.keys(btnConfigData).length > 0) {
-                    Object.keys(btnConfigData).forEach(index => getData[index]=false);
-                }
-            }
+            // if (props.status === 'edit') {
+            //     if (Object.keys(btnConfigData).length > 0) {
+            //         Object.keys(btnConfigData).forEach(index => getData[index]=false);
+            //     }
+            // }
+
+            console.log('createBtn',getData, btnConfigData);
             
-            console.log('createBtn',getData);
+            //send delete request to backend, if succeed, delete data in btnConfigData
+            await Promise.all(Object.keys(btnConfigData).map(async (btnGroupId) => {
+                if (!getData.hasOwnProperty(btnGroupId)) {
+                    const res = await deleteBtnGroup(btnGroupId);
+                    if (res['error']) {
+                        setInfo(res['error']);
+                    } else {
+                        setInfo(null);
+                        setBtnConfigData(data=>{
+                            const dataCopy = {...data};
+                            delete(dataCopy[btnGroupId]);
+                            return dataCopy;
+                        }); 
+                    }
+                }
+            }))
+            
+            
             const newGetData = {};
             for (let i in getData) {
                 // console.log(i);
@@ -184,6 +214,7 @@ export default function BtnConfiguration(props) {
             // console.log(newGetData)
             setGetData(newGetData);
             // setHide(true);
+            props.setStatus(null);
 
             if (props.onCreateBtnClick) {
                 props.onCreateBtnClick();
@@ -192,9 +223,13 @@ export default function BtnConfiguration(props) {
     }
 
     function onDelete(target) {
-        const dataCopy = {...btnConfigData};
-        delete(dataCopy[target.index]);
-        setBtnConfigData(dataCopy);
+        // const dataCopy = {...btnConfigData};
+        // delete(dataCopy[target.index]);
+        // setBtnConfigData(dataCopy);
+
+        const getDataCopy = {...getData};
+        delete(getDataCopy[target.index]);
+        setGetData(getDataCopy);
     }
 
     // function onGroupTypeChange(target) {
@@ -232,10 +267,12 @@ export default function BtnConfiguration(props) {
                 }
             </Space>
             {/* <ConfigProvider configData={data} configDataSetter={setData}> */}
+            
             <Space direction='vertical'>
                 {/* {children} */}
-                {Object.keys(btnConfigData).map(index => 
-                    props.status==='new' ?  
+                {Object.keys(getData).map(index => 
+                    // props.status!=='edit' ? 
+                    (!btnConfigData.hasOwnProperty(index)) ? 
                         <BtnGroupController
                             key={index}
                             index={index}
@@ -263,7 +300,7 @@ export default function BtnConfiguration(props) {
                             // onDownBtnClick={onDownBtnClick}
                             // skeletonData={skeletonData}
                             // setSkeletonData={setSkeletonData}
-                            status={props.status}
+                            status='new'
                             />
                         :
                         <BtnGroupController
@@ -283,7 +320,7 @@ export default function BtnConfiguration(props) {
                             // onDownBtnClick={onDownBtnClick}
                             // skeletonData={skeletonData}
                             // setSkeletonData={setSkeletonData}
-                            status={props.status}
+                            status='edit'
                             />
                     )
                 }
@@ -306,6 +343,7 @@ export default function BtnConfiguration(props) {
                     <Button type="primary" onClick={onCreateBtnClick}>Create</Button>
                 </Space>
             }
+            <p>{info}</p>
         </div>
     )
 }

@@ -48,7 +48,7 @@ export default function ProjectDropdown(props) {
           },
     ];
 
-    function onClick(e) {
+    async function onClick(e) {
         const label = items[e.key].label;
         switch (label) {
             case 'New Project':
@@ -68,7 +68,7 @@ export default function ProjectDropdown(props) {
                 setUploaderOpen(true);
                 break;
             case 'Edit Project':
-                setManagerStatus('edit');
+                await setManagerStatus('edit');
                 setManagerOpen(true);
                 break;
             case 'Save':
@@ -136,6 +136,7 @@ export default function ProjectDropdown(props) {
             <ProjectList 
                 open={projectListOpen}
                 setOpen={setProjectListOpen}
+                setManagerStatus={setManagerStatus}
                 />
             
             <ModalJsonUploader 
