@@ -37,6 +37,7 @@ export default function ProjectManager(props) {
     const projectData = useStates().projectData;
     const setProjectData = useStateSetters().setProjectData;
     const setVideoData = useStateSetters().setVideoData;
+    const setVideoId = useStateSetters().setVideoId;
     
     const [form] = Form.useForm();
     // const projectName = Form.useWatch('projectName', form);
@@ -49,6 +50,7 @@ export default function ProjectManager(props) {
                 setProjectId(id);
                 setProjectData({});
                 setVideoData({});
+                setVideoId(null);
                 form.resetFields();
                 setOkDisable(true);
                 setBtnConfigStatus('new');
@@ -64,7 +66,6 @@ export default function ProjectManager(props) {
                 } else {
                     setInfo('No project is loaded');
                 }
-                
             }
         }
         setInfo(null);

@@ -2,7 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import { useStateSetters, useStates } from './AppContext'; 
 import { Modal, List, Button, Form, Input, Space } from 'antd';
 import { PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
-import { getAllProjects, getProject, getProjectBtn, getProjectVideo, deleteProject } from '../utils/requests';
+import { getAllProjects, getProject, getProjectBtn, getProjectVideo, deleteProject, deleteProjectBtn, deleteProjectVideo } from '../utils/requests';
 
 /**
  *  To list all existing projects in the db.
@@ -24,6 +24,9 @@ export default function ProjectList(props) {
     const setProjectData = useStateSetters().setProjectData;
     const setBtnConfigData = useStateSetters().setBtnConfigData;
     const setVideoData = useStateSetters().setVideoData;
+    const setResetVideoDetails = useStateSetters().setResetVideoDetails;
+    const setVideoId = useStateSetters().setVideoId;
+
 
 
     useEffect(()=>{
@@ -84,29 +87,15 @@ export default function ProjectList(props) {
         });
     }
 
-    async function loadProject(projectId) {
+    async function loadProject(id) {
         let projectRes, btnRes, videoRes;
         await Promise.all(['project', 'btn', 'video'].map(async (type) => {
             if (type === 'project') {
-                projectRes = await getProject(projectId);
-            
-                // if (projectRes['error']) {
-                //     setInfo(projectRes['error']);
-                // } else {
-                //     setInfo(null);
-                //     setProjectData(projectRes); //backend checked if res is empty
-                //     setProjectId(projectRes['projectId']);
-                // }
+                projectRes = await getProject(id);
             } else if (type === 'btn') {
-                btnRes = await getProjectBtn(projectId);
-                // if (btnRes['error']) {
-                //     setInfo(btnRes['error']);
-                // } else {
-                //     setInfo(null);
-                //     setBtnConfigData(btnRes); //backend checked if res is empty
-                // }
+                btnRes = await getProjectBtn(id);
             } else if (type === 'video') {
-                videoRes = await getProjectVideo(projectId);
+                videoRes = await getProjectVideo(id);
             }
           }));
           
@@ -134,6 +123,7 @@ export default function ProjectList(props) {
             });
             // console.log(btnData);
             setVideoData(videos);
+            setVideoId(null);
             // props.setManagerStatus('edit');
         }
         
@@ -142,31 +132,55 @@ export default function ProjectList(props) {
 
     async function onDelBtnClick(i) {
         const projectIdToDel = projectIds[i];
-        deleteProjectConfirm(projectIdToDel);
+        const projectNameToDel = projectNames[i];
+        deleteProjectConfirm(projectIdToDel, projectNameToDel);
     }
 
-    function deleteProjectConfirm(id) {
+    function deleteProjectConfirm(id, name) {
         Modal.confirm({
             title: 'Alert',
             content: 'The current project data including configuration and all annotations will be removed!',
-            onOk: async ()=>{await deleteWholeProject(id)},
+            onOk: async ()=>{await deleteWholeProject(id, name)},
             // onCancel: cancelClickHandler,
         });
     }
 
-    async function deleteWholeProject(id) {
+    async function deleteWholeProject(id, name) {
         // delete projectConfig/btnConfig/video/annotation from db
-        // if the project is current project, reset projectId, videoId, projectData, videoData, btnConfigData, videoPlayer and annotation table and chart.
+        let projectRes, btnRes, videoRes;
+        await Promise.all(['project', 'btn', 'video'].map(async (type) => {
+            if (type === 'project') {
+                projectRes = await deleteProject(id);
+            } else if (type === 'btn') {
+                btnRes = await deleteProjectBtn(id);
+            } else if (type === 'video') {
+                videoRes = await deleteProjectVideo(id);
+            }
+          }));
+        
+        if (projectRes['error']) {
+            setInfo(`Delete project configuration failed: ${projectRes?.error}`)
+        } else {
+            setInfo(`Deleted project ${name}: \n Btn: ${btnRes?.info} \n Video: ${videoRes?.info}`);
+            
+            //reset projectList
+            const newAllProjects = allProjects.filter( p => p.projectId !== id);
+            setAllProjects(newAllProjects);
 
-        // const videoDataCopy = {...videoData};
-        // delete(videoDataCopy[videoIdToDel]);
-        // setVideoData(videoDataCopy);
-        // projectConfigDataRef.current.videos = {...videoDataCopy};
+            // if the project is current project, reset everything. 
+            if (id === projectId) {
+                setProjectData({}); 
+                setProjectId(null);
+                setBtnConfigData({});
+                setVideoData({});
+                setVideoId(null);
+                setResetVideoDetails(true);
 
-        // console.log(i, videoIdToDel, videoId, videoIdToDel == videoId, videoIdToDel === videoId);
-        // if (videoIdToDel == videoId) { // videoIdToDel is str, videoId is int, so use == instead of ===
-        //     setResetVideoPlay(true);
-        // }
+                //TODO: reset annotation table and chart.
+            }
+            
+        }
+        
     }
 
     return (

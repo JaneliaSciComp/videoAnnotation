@@ -1,7 +1,9 @@
 const PROJECTS_URL = "http://localhost:8000/api/projects";
 const PROJECT_URL = "http://localhost:8000/api/project";
 const BTN_URL = "http://localhost:8000/api/btn";
+const BTNS_URL = "http://localhost:8000/api/btns";
 const VIDEO_URL = "http://localhost:8000/api/video";
+const VIDEOS_URL = "http://localhost:8000/api/videos";
 const FRAME_URL_ROOT = 'http://localhost:8000/api/frame';
 const ADDITIONAL_URL_ROOT = 'http://localhost:8000/api/additional-data';
 const VIDEO_META_URL = "http://localhost:8000/api/videometa";
@@ -65,6 +67,18 @@ export async function getProject(id) {
     }
 }
 
+export async function deleteProject(id) {
+    const res = await fetch(`${PROJECT_URL}?id=${id}`, {
+            method: 'DELETE',
+        })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'DELETE project request failed'}
+    }
+}
+
 
 export async function postBtnGroup(btnGroupObj) {
     const res = await fetch(BTN_URL, {
@@ -96,7 +110,7 @@ export async function deleteBtnGroup(btnGroupId) {
 }
 
 export async function getProjectBtn(projectId) {
-    const res = await fetch(`${BTN_URL}?projectId=${projectId}`, {
+    const res = await fetch(`${BTNS_URL}?projectId=${projectId}`, {
             method: 'GET',
     })
 
@@ -104,6 +118,18 @@ export async function getProjectBtn(projectId) {
         return res.json()
     } else {
         return {error: 'GET project btn configuration data request failed'}
+    }
+}
+
+export async function deleteProjectBtn(projectId) {
+    const res = await fetch(`${BTNS_URL}?projectId=${projectId}`, {
+            method: 'DELETE',
+        })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'DELETE project btn request failed'}
     }
 }
 
@@ -155,7 +181,7 @@ export async function deleteVideo(videoId) {
 }
 
 export async function getProjectVideo(projectId) {
-    const res = await fetch(`${VIDEO_URL}?projectId=${projectId}`, {
+    const res = await fetch(`${VIDEOS_URL}?projectId=${projectId}`, {
             method: 'GET',
     })
 
@@ -163,6 +189,18 @@ export async function getProjectVideo(projectId) {
         return res.json()
     } else {
         return {error: 'GET project video data request failed'}
+    }
+}
+
+export async function deleteProjectVideo(projectId) {
+    const res = await fetch(`${VIDEOS_URL}?projectId=${projectId}`, {
+            method: 'DELETE',
+        })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'DELETE project video request failed'}
     }
 }
 
