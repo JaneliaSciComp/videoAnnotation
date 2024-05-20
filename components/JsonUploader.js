@@ -17,9 +17,10 @@ export default function JsonUploader(props) {
     const [info, setInfo] = useState('Click or drag file to this area to upload');
 
     const setUploader = useStateSetters().setUploader;
-    const projectConfigDataRef = useStates().projectConfigDataRef;
+    // const projectConfigDataRef = useStates().projectConfigDataRef;
     const setResetVideoDetails = useStateSetters().setResetVideoDetails;
     const setResetVideoPlay = useStateSetters(). setResetVideoPlay;
+    const projectId = useStates().projectId;
 
     const { Dragger } = Upload;
 
@@ -56,7 +57,9 @@ export default function JsonUploader(props) {
     function uploadFile(file) {
         message.success(`${file.name} file uploaded successfully`);
         setInfo(`${file.name} file uploaded successfully`);
-        if (props.type==='configuration' && (projectConfigDataRef.current?.projectName || (projectConfigDataRef.current?.btnConfigData && Object.keys(projectConfigDataRef.current.btnConfigData).length>0))) { // The btnConfigData field is initialized as not null or undefined 
+        if (props.type==='configuration' && projectId
+        // && (projectConfigDataRef.current?.projectName || (projectConfigDataRef.current?.btnConfigData && Object.keys(projectConfigDataRef.current.btnConfigData).length>0))
+        ) { // The btnConfigData field is initialized as not null or undefined 
             Modal.confirm({
                 title: 'Alert',
                 content: 'The current project configuration data including annotation buttons will be removed!',

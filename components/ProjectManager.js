@@ -127,6 +127,7 @@ export default function ProjectManager(props) {
         // console.log('cancel');
         setBtnConfigStatus(null);
         // props.setOpen(false);
+        setProjectId(null);
     }
 
     function onProjectNameChange(e) {
