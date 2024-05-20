@@ -360,11 +360,19 @@ export default function VideoManager(props) {
     //     // fetch('/Users/pengx/Downloads/configuration.json').then(response => console.log(response.json()));
     // }
 
-    async function onDelBtnClick(i) {
+    function onDelBtnClick(i) {
         const videoIdToDel = videoIds[i];
 
         //TODO: add confirm
+        Modal.confirm({
+            title: 'Alert',
+            content: 'The current project data including configuration and all annotations will be removed!',
+            onOk: async ()=>{await deleteThisVideo(videoIdToDel)},
+            // onCancel: cancelClickHandler,
+        });
+    }
 
+    async function deleteThisVideo(videoIdToDel) {
         //delete video data from db
         const res = await deleteVideo(videoIdToDel);
         // console.log(res);
