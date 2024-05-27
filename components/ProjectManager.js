@@ -29,8 +29,8 @@ export default function ProjectManager(props) {
     // const [reloadBtnConfig, setReloadBtnConfig] = useState(false);
     const [info, setInfo] = useState();
 
-    const projectConfigDataRef = useStates().projectConfigDataRef;
-    const btnConfigData = useStates().btnConfigData;
+    // const projectConfigDataRef = useStates().projectConfigDataRef;
+    // const btnConfigData = useStates().btnConfigData;
     const setConfirmConfig = useStateSetters().setConfirmConfig;
     const projectId = useStates().projectId;
     const setProjectId = useStateSetters().setProjectId;
@@ -98,26 +98,26 @@ export default function ProjectManager(props) {
         }
         if (res['error']) {
             if (props.status === 'new') {
-                setInfo('Adding new project in database failed!');
+                setInfo('Adding new project to database failed!');
                 form.resetFields(); // TODO: if remove everything may frustrate user
             } else if (props.status === 'edit') {
                 setInfo('Editing project in database failed!');
                 form.setFieldValue({
-                    projectName: projectConfigDataRef.current.projectName,
-                    description: projectConfigDataRef.current.description
+                    projectName: projectData.projectName,
+                    description: projectData.description
                 })
             }
         } else {
             setInfo(null);
+            setProjectData(projectObj);
+            setConfirmConfig(true);
         }
         
         console.log(res);
        
-        setProjectData(projectObj);
-        projectConfigDataRef.current = {...projectObj};
-        projectConfigDataRef.current.video = {};
-
-        setConfirmConfig(true);
+        // projectConfigDataRef.current = {...projectObj};
+        // projectConfigDataRef.current.video = {};
+       
         // setBtnConfigStatus(null);
         // props.setOpen(false);
     }

@@ -20,7 +20,7 @@ export default function ProjectDropdown(props) {
     const [uploaderOpen, setUploaderOpen] = useState(false);
     const [projectListOpen, setProjectListOpen] = useState(false);
 
-    const projectConfigDataRef = useStates().projectConfigDataRef;
+    // const projectConfigDataRef = useStates().projectConfigDataRef;
     const setBtnConfigData = useStateSetters().setBtnConfigData;
     const setSaveConfig = useStateSetters().setSaveConfig;
     const projectId = useStates().projectId;
@@ -78,7 +78,7 @@ export default function ProjectDropdown(props) {
     }
 
     function confirmOkClickHandler() {
-        projectConfigDataRef.current = {};
+        // projectConfigDataRef.current = {};
         // setBtnConfigData({}); // put in BtnConfiguration, to make sure first emtpy btnConfigData, then create new btnGroup
         setManagerStatus('new');
         setManagerOpen(true);

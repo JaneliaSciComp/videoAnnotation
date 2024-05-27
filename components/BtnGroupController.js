@@ -587,7 +587,7 @@ export default function BtnGroupController(props) {
                 newData.edgeData = {...edgeData};
             }
             if (groupType === 'skeleton') {
-                newData.skeletonName = skeletonName;
+                newData.skeletonName = skeletonName ? skeletonName : 'skeleton';
             }
 
             // post btn group data to db

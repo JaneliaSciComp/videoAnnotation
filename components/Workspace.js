@@ -19,6 +19,7 @@ import BrushTool from './BrushTool';
 import { StatesProvider } from './AppContext';
 import { clearUnfinishedAnnotation } from '../utils/utils';
 import { Modal } from 'antd';
+import { editProject, postBtnGroup, editVideo } from '../utils/requests';
 
 
 /**
@@ -43,7 +44,7 @@ export default function Workspace(props) {
     const [annoIdToDraw, setAnnoIdToDraw] = useState();
     const [annoIdToDelete, setAnnoIdToDelete] = useState(); // set by AnnotationTable, reset to null by Canvas after deleting from canvas and fabricObjRef
     const [annoIdToShow, setAnnoIdToShow] = useState([]);
-    const [btnConfigData, setBtnConfigData] = useState({});
+    const [btnConfigData, setBtnConfigData] = useState({}); // {id1: {groupType:, btnType:, childData:[], ...}, id2:{...}, ...}
     const [btnGroups, setBtnGroups] = useState();
     // const [projectType, setProjectType] = useState('image'); //'image' or 'video'
     const [frameNumSignal, setFrameNumSignal] = useState(); // Chart use it to tell VideoUploader which frame to go to. 1-based
@@ -51,7 +52,7 @@ export default function Workspace(props) {
     // const [save, setSave] = useState(false);
     // const [chartMetric, setChartMetric] = useState();
     const [uploader, setUploader] = useState(); // {type: 'annotation'/'configuration', file: fileObj}
-    const projectConfigDataRef = useRef({}); //{projectName: 'str', description: 'str'/null, btnConfigData: obj/copy of btnConfigData state,edges are array not set}
+    // const projectConfigDataRef = useRef({}); //{projectName: 'str', description: 'str'/null, btnConfigData: obj/copy of btnConfigData state,edges are array not set}
     const [confirmConfig, setConfirmConfig] = useState(); // ProjectManager use it to tell BtnConfiguration to create btns
     const [saveConfig, setSaveConfig] = useState(false);
     const [saveAnnotation, setSaveAnnotation] = useState(false);
@@ -91,7 +92,7 @@ export default function Workspace(props) {
         // save: save,
         // chartMetric: chartMetric,
         uploader: uploader,
-        projectConfigDataRef: projectConfigDataRef,
+        // projectConfigDataRef: projectConfigDataRef,
         confirmConfig: confirmConfig,
         saveConfig: saveConfig,
         saveAnnotation: saveAnnotation,
@@ -173,19 +174,47 @@ export default function Workspace(props) {
         } else {
             /**
              * {
+             *      projectId: str,
                     projectName: str,
-                    description: str, optional
+                    (description: str,) optional
                     btnConfigData: {},
                     videos: {}
                 }
              */
-            projectConfigDataRef.current = obj;
+            // projectConfigDataRef.current = obj;
             setProjectId(obj.projectId);
+            setProjectData({projectName: obj.projectName, description: obj.get('description')}); // description could be absent in obj, but will be passed undefined
             setBtnConfigData(obj.btnConfigData ? {...obj.btnConfigData} : {}); // btnConfigData could be null
-            setVideoData({...obj.videos}); // videos might be empty obj but not null
+            setVideoData(obj.videos ? {...obj.videos} : {}); // videos might be empty obj but not null
+        
+            // save/update the uploaded project Config data in DB?
+            Modal.confirm({
+                content: 'Save/Update the uploaded data in database?',
+                onOk: () => {confirmSaveConfigDataToDB(obj)},
+            });
         }
     }
 
+    function confirmSaveConfigDataToDB(data) {
+        const projectObj = {
+            projectId: data.projectId, 
+            projectName: data.projectName,
+            description: data.get('description') 
+        }
+        editProject(projectObj);
+        
+        Object.keys(data.btnConfigData).forEach((id)=>{
+            const btnGroupObj = {...data.btnConfigData[id]};
+            btnGroupObj.btnGroupId = id;
+            postBtnGroup(btnGroupObj);
+        })
+
+        Object.keys(data.videos).forEach((id)=>{
+            const videoObj = {...data.videos[id]};
+            videoObj.videoId = id;
+            editVideo(videoObj);
+        })
+    }
 
     // function convertEdgeArrToSet(obj) { //obj is a copy of btnConfigData
     //     Object.values(obj).forEach(groupData => {
@@ -199,9 +228,10 @@ export default function Workspace(props) {
 
     useEffect(()=> {
         if (saveConfig) {
-            console.log(projectConfigDataRef.current);
-            if (!projectConfigDataRef.current?.projectName) {
-                setInfo('Project Name is empty.');
+            // console.log(projectConfigDataRef.current);
+            // if (!projectConfigDataRef.current?.projectName) {
+            if (!projectId) {
+                setInfo('No current project.');
                 setInfoOpen(true);
             } 
             // else if (Object.keys(btnConfigData).length===0 || Object.keys(btnConfigData[Object.keys(btnConfigData)[0]]).length===0) {
@@ -209,8 +239,10 @@ export default function Workspace(props) {
             //     setInfoOpen(true);
             // } 
             else {
-                const jsonProjectConfig = JSON.stringify(projectConfigDataRef.current);
-                console.log(jsonProjectConfig);
+                const projectConfigData = {...projectData, btnConfigData: {...btnConfigData}, videos: {...videoData}};
+                // console.log(projectConfigData);
+                const jsonProjectConfig = JSON.stringify(projectConfigData);
+                // console.log(jsonProjectConfig);
                 const blobProjectConfig = new Blob([jsonProjectConfig], {type: 'text/plain'});
                 const a = document.createElement("a");
                 a.href = URL.createObjectURL(blobProjectConfig);
@@ -408,13 +440,13 @@ export default function Workspace(props) {
                 groupData.edgeData.edges = edgesArr;
             }
         })
-        projectConfigDataRef.current.btnConfigData =btnConfigCopy;
+        // projectConfigDataRef.current.btnConfigData =btnConfigCopy;
 
     }, [btnConfigData])
 
-    useEffect(() => {
-        projectConfigDataRef.current.videos = {...videoData};
-    }, [videoData])
+    // useEffect(() => {
+    //     projectConfigDataRef.current.videos = {...videoData};
+    // }, [videoData])
 
 
     useEffect(() => {

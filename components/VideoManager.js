@@ -57,7 +57,7 @@ export default function VideoManager(props) {
     const [info, setInfo] = useState();
     // const [videoAdditionalFieldsObj, setVideoAdditionalFieldsObj] = useState();
 
-    const projectConfigDataRef = useStates().projectConfigDataRef;
+    // const projectConfigDataRef = useStates().projectConfigDataRef;
     const videoData = useStates().videoData;
     const setVideoData = useStateSetters().setVideoData;
     const videoId = useStates().videoId;

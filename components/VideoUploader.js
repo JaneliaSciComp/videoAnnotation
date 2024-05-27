@@ -44,7 +44,7 @@ export default function VideoUploader(props) {
     const setResetVideoPlay = useStateSetters().setResetVideoPlay;
     const videoData = useStates().videoData;
     const setVideoData = useStateSetters().setVideoData;
-    const projectConfigDataRef = useStates().projectConfigDataRef;
+    // const projectConfigDataRef = useStates().projectConfigDataRef;
     const videoAdditionalFieldsObj = useStates().videoAdditionalFieldsObj;
     const videoId = useStates().videoId;
     const projectId = useStates().projectId;
@@ -175,7 +175,7 @@ export default function VideoUploader(props) {
         // console.log('video', JSON.stringify(video), JSON.stringify(video).replaceAll("/", ""));
 
         // add video to videoManager
-        if (projectConfigDataRef.current?.projectName?.length>0) {
+        if (projectId) {
             const videoDataCopy = {...videoData};
             videoDataCopy[id] = {...video};
             setVideoData(videoDataCopy);
