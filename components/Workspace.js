@@ -183,7 +183,7 @@ export default function Workspace(props) {
              */
             // projectConfigDataRef.current = obj;
             setProjectId(obj.projectId);
-            setProjectData({projectName: obj.projectName, description: obj.get('description')}); // description could be absent in obj, but will be passed undefined
+            setProjectData({projectName: obj.projectName, description: obj.description}); // description could be absent in obj, but will be passed undefined
             setBtnConfigData(obj.btnConfigData ? {...obj.btnConfigData} : {}); // btnConfigData could be null
             setVideoData(obj.videos ? {...obj.videos} : {}); // videos might be empty obj but not null
         
@@ -199,7 +199,7 @@ export default function Workspace(props) {
         const projectObj = {
             projectId: data.projectId, 
             projectName: data.projectName,
-            description: data.get('description') 
+            description: data.description
         }
         editProject(projectObj);
         
