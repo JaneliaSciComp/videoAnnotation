@@ -5,8 +5,13 @@ const BTNS_URL = "http://localhost:8000/api/btns";
 const VIDEO_URL = "http://localhost:8000/api/video";
 const VIDEOS_URL = "http://localhost:8000/api/videos";
 const FRAME_URL_ROOT = 'http://localhost:8000/api/frame';
-const ADDITIONAL_URL_ROOT = 'http://localhost:8000/api/additional-data';
+const ADDITIONAL_URL_ROOT = 'http://localhost:8000/api/additionaldata';
 const VIDEO_META_URL = "http://localhost:8000/api/videometa";
+const SINGLE_ANNOTATION_URL = "http://localhost:8000/api/annotation";
+const FRAME_ANNOTATION_URL = "http://localhost:8000/api/frameannotation";
+const PROJECT_ANNOTATION_URL = "http://localhost:8000/api/projectannotation";
+
+
 
 export async function postProject(projectInfoObj) {
     const res = await fetch(PROJECT_URL, {
@@ -54,7 +59,7 @@ export async function getAllProjects() {
     }
 }
 
-//getProject, getBtnConfig
+
 export async function getProject(id) {
     const res = await fetch(`${PROJECT_URL}?id=${id}`, {
             method: 'GET',
@@ -260,5 +265,72 @@ export async function getAdditionalData(frameNum, videoId, fieldName) {
         return res.json()
     } else {
         return {error: 'GET additional data request failed'}
+    }
+}
+
+
+
+export async function postFrameAnnotation(annotationObjs) { //{annotations: [anno1, anno2, ...]}
+    const res = await fetch(FRAME_ANNOTATION_URL, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+            body: JSON.stringify(annotationObjs), //new FormData(e.target), 
+        })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'POST frame annotation request failed'}
+    }
+}
+
+export async function getFrameAnnotation(frameNum, videoId) {
+    const res = await fetch(`${FRAME_ANNOTATION_URL}?frameNum=${frameNum}&videoId=${videoId}`, {
+            method: 'GET',
+    })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'GET frame annotation request failed'}
+    }
+}
+
+export async function getProjectAnnotation(projectId) {
+    const res = await fetch(`${PROJECT_ANNOTATION_URL}?projectId=${projectId}`, {
+            method: 'GET',
+    })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'GET project annotation request failed'}
+    }
+}
+
+export async function deleteAnnotation(id) {
+    const res = await fetch(`${SINGLE_ANNOTATION_URL}?id=${id}`, {
+            method: 'DELETE',
+        })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'DELETE single annnotation request failed'}
+    }
+}
+
+export async function deleteProjectAnnotation(projectId) {
+    const res = await fetch(`${PROJECT_ANNOTATION_URL}?projectId=${projectId}`, {
+            method: 'DELETE',
+        })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'DELETE project annotation request failed'}
     }
 }

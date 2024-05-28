@@ -100,6 +100,7 @@ export default function BtnGroupController(props) {
     const [disableEdgeBtn, setDisableEdgeBtn] = useState(true);
     const [dataAdded, setDataAdded] = useState(false);
     const [skeletonName, setSkeletonName] = useState();
+    const [edgeData, setEdgeData] = useState();
 
     //get context
     const btnConfigData = useStates().btnConfigData;
@@ -579,10 +580,10 @@ export default function BtnGroupController(props) {
                 childData: [...groupData],
                 projectId: projectId
             };
-            let edgeData;
-            if (btnConfigData[index]) {
-                edgeData = btnConfigData[index].edgeData; //if already set edge data for skeleton
-            }
+            // let edgeData;
+            // if (btnConfigData[index]) {
+            //     edgeData = btnConfigData[index].edgeData; //if already set edge data for skeleton
+            // }
             if (edgeData) {
                 newData.edgeData = {...edgeData};
             }
@@ -687,8 +688,9 @@ export default function BtnGroupController(props) {
                         vertices={generateSkeletonVerticesData()}
                         // data={props.data}
                         // setData={props.setData}
-                        setAddEdge={setAddEdge}
+                        // setAddEdge={setAddEdge}
                         status={props.status}
+                        setEdgeData={setEdgeData}
                         />
                     </div>
                     :null   

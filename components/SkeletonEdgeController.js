@@ -53,7 +53,7 @@ export default function SkeletonEdgeController(props) {
     const [checkedValues, setCheckedValues] = useState();
     const edgeDataRef = useRef([]);
     const [color, setColor] = useState();
-    const [edgeAdded, setEdgeAdded] = useState();
+    const [info, setInfo] = useState();
     // const prevVertex = useRef();
     // const [error, setError] = useState();
 
@@ -86,7 +86,7 @@ export default function SkeletonEdgeController(props) {
             edgeDataRef.current = [];
         }
         setCurrentVertex(0);
-        setEdgeAdded(false);
+        setInfo(null);
     }, [props.status])
 
 
@@ -180,18 +180,24 @@ export default function SkeletonEdgeController(props) {
     }
 
     function onDoneBtnClick() {
-        const btnGroupData = {...btnConfigData[props.index]};
-        console.log(btnGroupData, edgeDataRef.current);
+        // const btnGroupData = {...btnConfigData[props.index]};
+        // console.log(btnGroupData, edgeDataRef.current);
+        let newEdgeData;
         if (edgeDataRef.current?.length) {
             const edgesArr = edgeDataRef.current.map(neighborSet => neighborSet?[...neighborSet]:null);
-            btnGroupData.edgeData = {
+            // btnGroupData.edgeData = {
+            //     color: color,
+            //     edges: edgesArr,
+            // }
+            newEdgeData = {
                 color: color,
                 edges: edgesArr,
             }
-            console.log(btnGroupData);
-            setBtnConfigData({...btnConfigData, [props.index]: btnGroupData});
+            // console.log(btnGroupData);
+            // setBtnConfigData({...btnConfigData, [props.index]: btnGroupData});
             // props.setAddEdge(false);
-            setEdgeAdded(true);
+            props.setEdgeData(newEdgeData);
+            setInfo(`Edge info ${props.status==='new'?'added':'changed'}`);
         } 
         // else if (btnGroupData.edgeData) { //if user already added some edge, and want to reset it to be no edge.
         //     console.log('edge reset');
@@ -267,12 +273,11 @@ export default function SkeletonEdgeController(props) {
             <Row className='my-1 d-flex justify-content-center'>
                 <Button type="primary" onClick={onDoneBtnClick} size='small'>Done</Button>
             </Row>
-            {edgeAdded ? 
-                <Row className='d-flex justify-content-center'>
-                    <p>Edge info Added</p>
-                </Row>
-                :null
-            }
+            
+            <div className='d-flex justify-content-center'>
+                <p>{info}</p>
+            </div>
+            
             
         </div>
     )

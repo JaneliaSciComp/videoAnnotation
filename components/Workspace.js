@@ -319,7 +319,7 @@ export default function Workspace(props) {
         saveAnnotationAndUpdateStates();
         //retrieve next frame anno data
         if (Number.isInteger(frameNum) && annotationRef.current[frameNum]) {
-            // console.log('retrieve1 called', frameNum, annotationRef.current[frameNum]);
+            console.log('retrieve1 called', frameNum, annotationRef.current[frameNum]);
             setFrameAnnotation({...annotationRef.current[frameNum]});
         } else {
             // console.log('retrieve2 called');

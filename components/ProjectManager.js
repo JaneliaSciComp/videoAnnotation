@@ -74,7 +74,7 @@ export default function ProjectManager(props) {
 
     useEffect(() => {
         // btnConfigStatus is changed when click on Cancel or Ok btns.
-        // to ensure btnConfiguration's prop changes first before the modal is removed from page. Otherwise, it's prop won't change
+        // to ensure btnConfiguration's prop changes first before the modal is removed from page. Otherwise, its prop won't change
         if (!btnConfigStatus) {
             props.setOpen(false);
         }
@@ -127,7 +127,9 @@ export default function ProjectManager(props) {
         // console.log('cancel');
         setBtnConfigStatus(null);
         // props.setOpen(false);
-        setProjectId(null);
+        if (props.status === 'new') {
+            setProjectId(null);
+        }   
     }
 
     function onProjectNameChange(e) {
