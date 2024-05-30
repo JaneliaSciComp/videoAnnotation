@@ -14,18 +14,22 @@ export default function SaveBtn(props) {
     
     // const [clicked, setClicked] = useState(false);
 
-    const frameNum = useStates().frameNum;
-    const frameUrl = useStates().frameUrl;
+    // const frameNum = useStates().frameNum;
+    // const frameUrl = useStates().frameUrl;
     // const frameAnnotation = useStates().frameAnnotation;
     // const setFrameAnnotation = useStateSetters().setFrameAnnotation;
     const setSaveConfig = useStateSetters().setSaveConfig;
     const setSaveAnnotation = useStateSetters().setSaveAnnotation;
+    const projectId = useStates().projectId;
 
     function clickHandler() {
         if (props.type === 'configuration') {
-            setSaveConfig(true);
+            if (projectId || frameUrl) {
+                setSaveConfig(true);
+            }
         } else if (props.type === 'annotation') {
-            if (Number.isInteger(frameNum) || frameUrl) {
+            // if (Number.isInteger(frameNum) || frameUrl) {
+            if (projectId || frameUrl) { //frameUrl is for image annotation
                 setSaveAnnotation(true);
             }
         }

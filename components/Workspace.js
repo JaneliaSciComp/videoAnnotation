@@ -19,7 +19,7 @@ import BrushTool from './BrushTool';
 import { StatesProvider } from './AppContext';
 import { clearUnfinishedAnnotation } from '../utils/utils';
 import { Modal } from 'antd';
-import { editProject, postBtnGroup, editVideo, postFrameAnnotation, getFrameAnnotation } from '../utils/requests';
+import { editProject, postBtnGroup, editVideo, postFrameAnnotation, getFrameAnnotation, getProjectAnnotation } from '../utils/requests';
 
 
 /**
@@ -273,17 +273,38 @@ export default function Workspace(props) {
     }, [saveConfig])
 
     useEffect(()=> {
+        console.log(saveAnnotation);
         if (saveAnnotation) {
-            saveCurrentAnnotation();
-            const jsonAnno = JSON.stringify(annotationRef.current);
-            const blobAnno = new Blob([jsonAnno], {type: 'text/plain'});
-            const a = document.createElement("a");
-            a.href = URL.createObjectURL(blobAnno);
-            a.download = 'annotation.json';
-            a.click();
-            URL.revokeObjectURL(a.href);
+            saveCurrentAnnotation()
+                .then((res) => { //saveCurrentAnnotation should be finished first
+                    console.log(res);
+                    if (res?.error) { //if no anno for current frame, res is undefined
+                        console.log(res);
+                    } else {
+                        if (projectId) {
+                            getProjectAnnotation(projectId)
+                                .then((res)=>{
+                                    if (res['error']) {
+                                        console.log(res);
+                                    } else {
+                                        // const jsonAnno = JSON.stringify(annotationRef.current);
+                                        const jsonAnno = JSON.stringify(res);
+                                        const blobAnno = new Blob([jsonAnno], {type: 'text/plain'});
+                                        const a = document.createElement("a");
+                                        a.href = URL.createObjectURL(blobAnno);
+                                        a.download = projectData.projectName + '_annotation.json';
+                                        a.click();
+                                        URL.revokeObjectURL(a.href);
+                                        
+                                    }
+                                })
+                        }
+                    }
+                })
+            
             setSaveAnnotation(false);
         }
+        
     }, [saveAnnotation])
 
 
@@ -417,7 +438,7 @@ export default function Workspace(props) {
         // setAnnoIdToShow([]);
     }
 
-    function saveCurrentAnnotation() {
+    async function saveCurrentAnnotation() {
         // if (Number.isInteger(prevFrameNum.current)) {
             // console.log('saveCurrentAnnotation called', frameAnnotation);
             if ( Object.keys(frameAnnotation).length > 0) {
@@ -425,7 +446,8 @@ export default function Workspace(props) {
                 // console.log(newFrameAnno);
                 if (Object.keys(newFrameAnno).length > 0) {
                     // annotationRef.current[prevFrameNum.current] = newFrameAnno; 
-                    saveFrameAnnotationToDB(newFrameAnno); // async func but no need to await
+                    const res = await saveFrameAnnotationToDB(newFrameAnno); // async func but no need to await
+                    return res;
                 } 
                 // else {
                 //     delete(annotationRef.current[prevFrameNum.current]);
@@ -563,6 +585,7 @@ export default function Workspace(props) {
         console.log('frameAnnoObjs', frameAnnoObjs);
         const res = await postFrameAnnotation(frameAnnoObjs);
         console.log('post frame anno result', res);
+        return res;
     }
 
     return (
