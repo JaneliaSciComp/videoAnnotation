@@ -117,7 +117,7 @@ export default function BrushBtn(props) {
     function clickHandler() {
         // draw brush, finish draw brush, can only be decided by clicking the btn, not by canvas
         if (Number.isInteger(frameNum) || frameUrl) {
-            let annoCopy = clearUnfinishedAnnotation(frameAnnotation);
+            let annoCopy = clearUnfinishedAnnotation({...frameAnnotation});
 
             if (drawType === null || drawType !== 'brush') { // no btn is activated or non-brush btn is activated               
                 if (!annotationIdRef.current) { // brushBtn reuse the same annoObj, so only initialize annoObj when first time click

@@ -87,38 +87,69 @@ export const crowdSelectOptions = [
 ]
 
 
-export function clearUnfinishedAnnotation(frameAnnotation) {
-    /**
-     * when click on a annoBtn, before annoIdToDraw changes,
-     * clear unfinished shape and skeleton annoObj before setting new annoIdToDraw
-     *  */ 
-    let unfinished = [];
-    if (Object.keys(frameAnnotation).length > 0) {
-        unfinished = Object.keys(frameAnnotation).filter(id=>{
-            const annoObj = frameAnnotation[id];
-            // console.log('clear', annoObj);
+// export function clearUnfinishedAnnotation(frameAnnotation) {
+//     /**
+//      * when click on a annoBtn, before annoIdToDraw changes,
+//      * clear unfinished shape and skeleton annoObj before setting new annoIdToDraw
+//      *  */ 
+//     let unfinished = [];
+//     if (Object.keys(frameAnnotation).length > 0) {
+//         unfinished = Object.keys(frameAnnotation).filter(id=>{
+//             const annoObj = frameAnnotation[id];
+//             // console.log('clear', annoObj);
+//             if ((annoObj.type ==='polygon' 
+//             || annoObj.type==='keyPoint' 
+//             || annoObj.type==='bbox')
+//              && !annoObj.data) {
+//                 return true
+//             } else if (annoObj.type === 'skeleton') {
+//                 const unDraw = annoObj.data.filter(
+//                     arr => arr[0]===null && arr[1]===null && arr[2]!==0)
+//                 if (unDraw.length>0) {
+//                     return true;
+//                 } else {
+//                     return false;
+//                 }
+//             } else {
+//                 return false;
+//             }
+//         })
+//     }
+//     const annoCopy = {...frameAnnotation};
+//     unfinished.forEach(id => delete(annoCopy[id]));
+//     // console.log(annoCopy)
+//     return annoCopy;
+// }
+
+export function clearUnfinishedAnnotation(frameAnnotationCopy) {
+    // when switch frame or video, for skeleton, polygon and brush seg, they may not be finished (for brush, no data at all), remove such annoObj from frameAnnotation
+    let unfinished =[];
+    if (Object.keys(frameAnnotationCopy).length > 0) {
+        unfinished = Object.keys(frameAnnotationCopy).filter(id=>{
+            const annoObj = frameAnnotationCopy[id];
+            // console.log('clear', annoObj, annoObj.type, annoObj.data, annoObj.first, annoObj.pathes);
             if ((annoObj.type ==='polygon' 
-            || annoObj.type==='keyPoint' 
-            || annoObj.type==='bbox')
-             && !annoObj.data) {
+                || annoObj.type==='keyPoint' 
+                || annoObj.type==='bbox')
+                    && !annoObj.data) {
                 return true
             } else if (annoObj.type === 'skeleton') {
-                const unDraw = annoObj.data.filter(
-                    arr => arr[0]===null && arr[1]===null && arr[2]!==0)
+                const unDraw = annoObj.data.filter(arr => arr[0]===null && arr[1]===null && arr[2]!==0)
                 if (unDraw.length>0) {
                     return true;
                 } else {
                     return false;
                 }
-            } else {
+            } else if (annoObj.type === 'brush' && (!annoObj.pathes || annoObj.pathes.length===0)) {
+                return true;                    
+            } 
+            else {
                 return false;
             }
         })
     }
-    const annoCopy = {...frameAnnotation};
-    unfinished.forEach(id => delete(annoCopy[id]));
-    // console.log(annoCopy)
-    return annoCopy;
+    // const annoCopy = {...frameAnnotation};
+    unfinished.forEach(id => delete(frameAnnotationCopy[id]));
+    return frameAnnotationCopy; //annoCopy
 }
-
 

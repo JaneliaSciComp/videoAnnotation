@@ -1,9 +1,10 @@
-import React, {useEffect, useRef} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import styles from '../styles/Canvas.module.css';
 // import {fabric} from 'fabric';
 import {fabric} from 'fabric-with-erasing';
 import { useStates, useStateSetters } from './AppContext';
 import { defaultAlpha, hexArr, hexMap } from '../utils/utils';
+import { deleteAnnotation, getFrameAnnotation } from '../utils/requests';
 
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 500;
@@ -40,7 +41,7 @@ export default function Canvas(props) {
                                          // for brush: annoId: {id: annoId, type: 'brush', pathes: []}
     const prevDrawTypeRef = useRef({});
     const prevUploaderRef = useRef(); // to compare if new annotation file is uploaded
-
+    const [info, setInfo] = useState();
 
     // context
     const videoId = useStates().videoId;
@@ -241,15 +242,19 @@ export default function Canvas(props) {
         resetBrush();
 
         // recreate path obj before img load for less work
-        createPathes();
+        createPathes().then(
+            // update image when url changes
+            () => {
+                if (frameUrl) {
+                    imgRef.current.src = frameUrl;
+                } else {
+                    imgRef.current.src = '';
+                }
+            }
+        )
         // console.log(canvas.getObjects());
 
-        // update image when url changes
-        if (frameUrl) {
-            imgRef.current.src = frameUrl;
-        } else {
-            imgRef.current.src = '';
-        }
+        
 
       }, [frameUrl]
     )
@@ -306,7 +311,7 @@ export default function Canvas(props) {
         // // sometimes frameAnnotation changes before img load handler is called
         // // so put createFabricObj here. It will check current frameAnno has the same frameNum as the updated frameNum
         // createFabricObjBasedOnAnnotation(); // doesn't work, will be called everytime clicking on anno btn, result in error
-
+        setInfo(null);
         const canvas = canvasObjRef.current;
         
         // remove unfinished objects
@@ -325,6 +330,7 @@ export default function Canvas(props) {
         if (uploader !== prevUploaderRef.current) {
             removeAllObjFromCanvas();
             fabricObjListRef.current = {};
+            createPathes();
             createFabricObjBasedOnAnnotation();
             prevUploaderRef.current = uploader;
         }
@@ -690,14 +696,16 @@ export default function Canvas(props) {
     }
 
 
-    function createFabricObjBasedOnAnnotation() {
-        removeAllObjFromCanvas();
-        fabricObjListRef.current = {};
+    async function createFabricObjBasedOnAnnotation() {
+        // for both cases where the func is called, already executed the below two lines, so no need to execute again. if execute, will cause pathe obj to be removed
+        // removeAllObjFromCanvas();
+        // fabricObjListRef.current = {};
         
         const canvas = canvasObjRef.current;
         // console.log(canvas.getObjects());
         // console.log(frameNum, annotationRef.current);
-        const nextFrameAnno = annotationRef.current[frameNum];
+        // const nextFrameAnno = annotationRef.current[frameNum];
+        const nextFrameAnno = await getFrameAnnotationFromDB(); // TODO: risk: the retrieved anno data might be different from frameAnnotation because they are retrieved separately 
         if (nextFrameAnno && Object.keys(nextFrameAnno).length>0) {
             Object.keys(nextFrameAnno).forEach(id => {
                 const annoObj = nextFrameAnno[id];
@@ -726,6 +734,7 @@ export default function Canvas(props) {
                             // console.log('skeleton', dataToCanvas);
                             createSkeleton(dataToCanvas, annoObj);
                             break;
+                        // 'brush' is handled in createPahtes() which is always called beside this func
                     }
                 }
             });
@@ -753,6 +762,21 @@ export default function Canvas(props) {
         }
     }
 
+    async function getFrameAnnotationFromDB() {
+        if (Number.isInteger(frameNum) && videoId) {
+            const res = await getFrameAnnotation(frameNum, videoId);
+            if (res?.annotations?.length > 0) { //if no anno for this frame, res: {annotations: []}
+                const frameAnno = {};
+                res.annotations.forEach((anno) => frameAnno[anno.id] = anno);
+                return frameAnno;
+            } else {
+                // console.log(res);
+                return {};
+            }
+        }
+        
+    }
+
     
     function scaleImage(canvas, image) { //image, canvas
         // scale image to fit in the canvas
@@ -772,7 +796,7 @@ export default function Canvas(props) {
     }
 
 
-    function imageLoadHandler(){
+    async function imageLoadHandler(){
         //When new video is loaded
         //scale frame size to fit in canvas 
         // if (frameNum === 0) {
@@ -784,7 +808,7 @@ export default function Canvas(props) {
         // console.log('img load handler');
         
         //Draw fabric objects according to annotation
-        createFabricObjBasedOnAnnotation();
+        await createFabricObjBasedOnAnnotation();
         canvasObjRef.current.renderAll();
     }
 
@@ -1105,6 +1129,7 @@ export default function Canvas(props) {
         && canvasObjRef.current.getActiveObject().type !== 'polygonPoint'
         // && canvasObjRef.current.getActiveObject().type !== 'skeletonPoint'
         ) {
+            setInfo(null);
             removeObj();
         }
         // console.log(e.key); // Backspace
@@ -1540,10 +1565,11 @@ export default function Canvas(props) {
         
     }
 
-    function createPathes() {
+    async function createPathes() {
         // recreate all path obj based by looping through all brush annoObj's .pathes prop
         // console.log('createPath');
-        const nextFrameAnno = annotationRef.current[frameNum];
+        // const nextFrameAnno = annotationRef.current[frameNum];
+        const nextFrameAnno = await getFrameAnnotationFromDB(frameNum, videoId); //TODO: risky
         const pathStrArr=[];
         if (nextFrameAnno && Object.keys(nextFrameAnno).length>0) {
             // const firstId = Object.keys(nextFrameAnno)[0];
@@ -1695,7 +1721,7 @@ export default function Canvas(props) {
     }
 
 
-    function removeObj() {
+    async function removeObj() {
         // remove obj from canvas, objListRef, remove annoObj in parent
         const canvas = canvasObjRef.current;
         const activeObj = canvas.getActiveObject();
@@ -1706,19 +1732,32 @@ export default function Canvas(props) {
                 const skeletonObj = fabricObjListRef.current[annoId];
                 skeletonObj.landmarks.forEach(p => canvas.remove(p));
                 Object.entries(skeletonObj.edges).forEach(([_, line]) => canvas.remove(line));
-                delete(fabricObjListRef.current[annoId]);
-                const frameAnnoCopy = {...frameAnnotation};
-                delete(frameAnnoCopy[annoId]);
-                setFrameAnnotation(frameAnnoCopy);
-                // delete(frameAnnotation[annoId]);
+                
+                const res = await deleteAnnotation(annoId);
+                if (res['error']) {
+                    setInfo(res['error']);
+                } else if (res['success']) {
+                    setInfo(null);
+                    delete(fabricObjListRef.current[annoId]);
+                    const frameAnnoCopy = {...frameAnnotation};
+                    delete(frameAnnoCopy[annoId]);
+                    setFrameAnnotation(frameAnnoCopy);
+                    // delete(frameAnnotation[annoId]);
+                } 
             }
         } else { // for other shapes
-            delete(fabricObjListRef.current[activeObj.id]);
-            const frameAnnoCopy = {...frameAnnotation};
-            delete(frameAnnoCopy[activeObj.id]);
-            setFrameAnnotation(frameAnnoCopy);
-            
-            canvas.remove(activeObj);
+            const res = await deleteAnnotation(activeObj.id);
+            if (res['error']) {
+                setInfo(res['error']);
+            } else if (res['success']) {
+                setInfo(null);
+                delete(fabricObjListRef.current[activeObj.id]);
+                const frameAnnoCopy = {...frameAnnotation};
+                delete(frameAnnoCopy[activeObj.id]);
+                setFrameAnnotation(frameAnnoCopy);
+                
+                canvas.remove(activeObj);
+            }
         }
 
         canvas.activeObj = null;
@@ -1757,7 +1796,7 @@ export default function Canvas(props) {
             <canvas id='canvas' ref={canvasRef} className={styles.canvas}>
                 <img id='image' ref={imgRef} className={styles.image} alt="img"/>
             </canvas>
-            
+            <p>{info}</p>
         </div>
         {/* <div style={{display: 'flex', flexWrap: 'row'}}>
             <canvas ref={testCanvasRef1} style={{border: 'solid'}}></canvas>

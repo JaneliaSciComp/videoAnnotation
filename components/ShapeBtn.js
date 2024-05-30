@@ -69,7 +69,7 @@ export default function ShapeBtn(props) {
     function clickHandler() {
         if (Number.isInteger(frameNum) || frameUrl) {
             // clear unfinished polygon and skeleton annoObj before setting new annoIdToDraw
-            const annoCopy = clearUnfinishedAnnotation(frameAnnotation);
+            const annoCopy = clearUnfinishedAnnotation({...frameAnnotation});
             // setFrameAnnotation(annoCopy);
 
             const id = Date.now().toString();

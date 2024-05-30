@@ -1,6 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import Head from 'next/head';
-import Workspace from '../components/Workspace.js';
+// import Workspace from '../components/Workspace.js';
 import ShapeBtn from '../components/ShapeBtn.js';
 import Category from '../components/Category.js';
 import SkeletonBtn from '../components/SkeletonBtn.js';
@@ -29,6 +29,7 @@ import { Button } from 'antd';
 // client side components
 import dynamic from 'next/dynamic';
 const Chart = dynamic(() => import('../components/ChartCombo.js'), { ssr: false });
+const Workspace = dynamic(() => import('../components/Workspace.js'), { ssr: false });
 
 
 export default function Home() {

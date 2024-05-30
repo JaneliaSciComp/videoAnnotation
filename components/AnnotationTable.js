@@ -3,6 +3,7 @@ import { Table, Button } from 'antd';
 import { DeleteOutlined} from '@ant-design/icons';
 import { useStates, useStateSetters } from './AppContext';
 // import styles from '../styles/Controller.module.css';
+import { deleteAnnotation } from '../utils/requests';
 
 
 /**
@@ -26,6 +27,7 @@ export default function AnnotationTable(props) {
 
     const frameUrlRef = useRef();
     const prevUploaderRef = useRef(); // to compare if new annotation file is uploaded
+    const [info, setInfo] = useState();
 
     // context
     const frameAnnotation = useStates().frameAnnotation;
@@ -187,6 +189,8 @@ export default function AnnotationTable(props) {
             expandedRowRender: (record) => <p style={{margin: '0', maxHeight: '6em', overflowY: 'auto'}}>{record.data}</p>,
             rowExpandable: (record) => record.data,
         });
+
+        setInfo(null);
     }, [frameAnnotation, annoIdToDraw])
 
 
@@ -226,7 +230,7 @@ export default function AnnotationTable(props) {
         setKeysInTable(keptKeys);
     }
 
-    function onDelete(id) {
+    async function onDelete(id) {
         /**
          * Use another state annoIdToDelete instead of letting Canvas use useEffect (frameAnnotation) to delete the fabric obj,
          * because the delete func in useEffect may be triggered by other actions,
@@ -234,12 +238,18 @@ export default function AnnotationTable(props) {
          */
         if (id !== annoIdToDraw) { // if in the process of drawing an obj, cannot delete it
             console.log('onDelete called');
-            const frameAnnoCopy = {...frameAnnotation};
-            delete(frameAnnoCopy[id]);
-            setFrameAnnotation(frameAnnoCopy);
-            if (frameAnnotation[id].type !== 'category') {
-                setAnnoIdToDelete(id);
+            const res = await deleteAnnotation(id);
+            if (res['error']) {
+                setInfo(res['error']);
+            } else if (res['success']) {
+                const frameAnnoCopy = {...frameAnnotation};
+                delete(frameAnnoCopy[id]);
+                setFrameAnnotation(frameAnnoCopy);
+                if (frameAnnotation[id].type !== 'category') {
+                    setAnnoIdToDelete(id);
+                }
             }
+            
         }
     
 }
@@ -256,6 +266,7 @@ export default function AnnotationTable(props) {
                 scroll={{y: props.scrollY, scrollToFirstRowOnChange: true}}
                 expandable={expandableConfig}
                 />
+            <p>{info}</p>
         </div>
         
     )

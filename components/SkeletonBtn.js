@@ -139,7 +139,7 @@ export default function SkeletonBtn(props) {
     function clickHandler() {
         if (Number.isInteger(frameNum) || frameUrl) {
             // clear unfinished polygon and skeleton annoObj before setting new annoIdToDraw
-            const annoCopy = clearUnfinishedAnnotation(frameAnnotation);
+            const annoCopy = clearUnfinishedAnnotation({...frameAnnotation});
             // setFrameAnnotation(annoCopy);
             
             // create anno obj, add to frameAnno, activate draw mode

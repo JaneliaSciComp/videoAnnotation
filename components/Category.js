@@ -37,7 +37,7 @@ export default function Category(props) {
     function clickHandler() {
         if (Number.isInteger(frameNum) || frameUrl) {
             // clear unfinished polygon and skeleton annoObj before setting new annoIdToDraw
-            const annoCopy = clearUnfinishedAnnotation(frameAnnotation);
+            const annoCopy = clearUnfinishedAnnotation({...frameAnnotation});
 
             const id = Date.now().toString();
             const annoObj = {

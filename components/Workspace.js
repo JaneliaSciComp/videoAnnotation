@@ -19,7 +19,7 @@ import BrushTool from './BrushTool';
 import { StatesProvider } from './AppContext';
 import { clearUnfinishedAnnotation } from '../utils/utils';
 import { Modal } from 'antd';
-import { editProject, postBtnGroup, editVideo } from '../utils/requests';
+import { editProject, postBtnGroup, editVideo, postFrameAnnotation, getFrameAnnotation } from '../utils/requests';
 
 
 /**
@@ -63,8 +63,8 @@ export default function Workspace(props) {
     // const [videoPathToGet, setVideoPathToGet] = useState(); // video path obj in videoManager, to trigger get request in videoUploader. {videoId: , projectId: , name:, path:,additonalFields:}
     const [resetVideoPlay, setResetVideoPlay] = useState(); // used by VideoManager to reset video play status in VideoUploader
     const [resetVideoDetails, setResetVideoDetails] = useState(); // used by JsonUploader to reset video details window in VideoManager
-    const [videoAdditionalFieldsObj, setVideoAdditionalFieldsObj] = useState(); //generated from props of VideoManager in VideoManager, used by VideoManagerto check whether required fields are empty, by VideoUploader to know if to display the data with video or show in chart. {fieldName1: {required: field.required, uploadWithVideo: field.uploadWithVideo, shape: field.shape}, fieldName2:{}}
-    const [projectId, setProjectId] = useState('testId'); //TODO: remove 'testId'
+    const [videoAdditionalFieldsObj, setVideoAdditionalFieldsObj] = useState(); //generated from prop of VideoManager(developer defined prop), used by VideoManager to check whether required fields are empty, by VideoUploader to know if to display the data with video or show in chart. {fieldName1: {required: field.required, uploadWithVideo: field.uploadWithVideo, shape: field.shape}, fieldName2:{}}
+    const [projectId, setProjectId] = useState(); //TODO: remove 'testId'
     const [projectData, setProjectData] = useState(); // config data for current project. {projectId: , projectName: , (description: )}
 
     console.log('workspace render');
@@ -146,6 +146,24 @@ export default function Workspace(props) {
     }
 
 
+    
+    useEffect(()=>{
+        // before close the window, save annotation of the current frame to db 
+        window.addEventListener("beforeunload", closeWindowHandler);
+
+        return () => {
+            window.removeEventListener("beforeunload", closeWindowHandler);
+        }
+    })
+
+    function closeWindowHandler(e) {
+        // e.preventDefault();
+        // e.stopPropagation();
+        // console.log('window beforeunload called');
+        saveCurrentAnnotation();
+    }
+
+
     useEffect(() => {
         if (uploader?.type && uploader?.file) {
             const reader = new FileReader();
@@ -161,9 +179,9 @@ export default function Workspace(props) {
         console.log(obj);
         if (type === 'annotation') {
             saveAnnotationAndUpdateStates(); 
-            prevFrameNum.current = null; 
+            // prevFrameNum.current = null; 
 
-            annotationRef.current = obj;
+            // annotationRef.current = obj;
             if (Number.isInteger(frameNum)) { // a video is open
                 setFrameAnnotation({...annotationRef.current[frameNum]});
             } else if (frameUrl) { // an image is open
@@ -282,7 +300,7 @@ export default function Workspace(props) {
         saveAnnotationAndUpdateStates();
         //update totoal anno data for current video. will be replace by retrieving from DB later on.
         // annotationRef.current = {};
-        prevFrameNum.current = null; 
+        // prevFrameNum.current = null; 
         setFrameNum(null); // It's possible last vdieo is showing frame 0, then when switch video, frameNum won't change, then the effect below won't be called. So set frameNum to null, then when show frame 0 for the current video, the effect below will be called
         // setFrameAnnotation({});
         // console.log('videoid');
@@ -318,9 +336,12 @@ export default function Workspace(props) {
         //save cuurent frame anno data
         saveAnnotationAndUpdateStates();
         //retrieve next frame anno data
-        if (Number.isInteger(frameNum) && annotationRef.current[frameNum]) {
-            console.log('retrieve1 called', frameNum, annotationRef.current[frameNum]);
-            setFrameAnnotation({...annotationRef.current[frameNum]});
+        if (Number.isInteger(frameNum) && videoId 
+            // && annotationRef.current[frameNum]
+        ) {
+            console.log('retrieve1 called', frameNum);
+            // setFrameAnnotation({...annotationRef.current[frameNum]});
+            getFrameAnnotationFromDBAndSetState();
         } else {
             // console.log('retrieve2 called');
             setFrameAnnotation({});
@@ -337,37 +358,37 @@ export default function Workspace(props) {
       }, [frameNum]
     )
     
-    function clearUnfinishedAnnotation() {
-        // when switch frame or video, for skeleton, polygon and brush seg, they may not be finished (for brush, no data at all), remove such annoObj from frameAnnotation
-        let unfinished =[];
-        if (Object.keys(frameAnnotation).length > 0) {
-            unfinished = Object.keys(frameAnnotation).filter(id=>{
-                const annoObj = frameAnnotation[id];
-                // console.log('clear', annoObj, annoObj.type, annoObj.data, annoObj.first, annoObj.pathes);
-                if ((annoObj.type ==='polygon' 
-                    || annoObj.type==='keyPoint' 
-                    || annoObj.type==='bbox')
-                        && !annoObj.data) {
-                    return true
-                } else if (annoObj.type === 'skeleton') {
-                    const unDraw = annoObj.data.filter(arr => arr[0]===null && arr[1]===null && arr[2]!==0)
-                    if (unDraw.length>0) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                } else if (annoObj.type === 'brush' && (!annoObj.pathes || annoObj.pathes.length===0)) {
-                    return true;                    
-                } 
-                else {
-                    return false;
-                }
-            })
-        }
-        const annoCopy = {...frameAnnotation};
-        unfinished.forEach(id => delete(annoCopy[id]));
-        return annoCopy;
-    }
+    // function clearUnfinishedAnnotation() {
+    //     // when switch frame or video, for skeleton, polygon and brush seg, they may not be finished (for brush, no data at all), remove such annoObj from frameAnnotation
+    //     let unfinished =[];
+    //     if (Object.keys(frameAnnotation).length > 0) {
+    //         unfinished = Object.keys(frameAnnotation).filter(id=>{
+    //             const annoObj = frameAnnotation[id];
+    //             // console.log('clear', annoObj, annoObj.type, annoObj.data, annoObj.first, annoObj.pathes);
+    //             if ((annoObj.type ==='polygon' 
+    //                 || annoObj.type==='keyPoint' 
+    //                 || annoObj.type==='bbox')
+    //                     && !annoObj.data) {
+    //                 return true
+    //             } else if (annoObj.type === 'skeleton') {
+    //                 const unDraw = annoObj.data.filter(arr => arr[0]===null && arr[1]===null && arr[2]!==0)
+    //                 if (unDraw.length>0) {
+    //                     return true;
+    //                 } else {
+    //                     return false;
+    //                 }
+    //             } else if (annoObj.type === 'brush' && (!annoObj.pathes || annoObj.pathes.length===0)) {
+    //                 return true;                    
+    //             } 
+    //             else {
+    //                 return false;
+    //             }
+    //         })
+    //     }
+    //     const annoCopy = {...frameAnnotation};
+    //     unfinished.forEach(id => delete(annoCopy[id]));
+    //     return annoCopy;
+    // }
 
     function saveAnnotationAndUpdateStates() {
         // console.log('save anno', );
@@ -385,7 +406,7 @@ export default function Workspace(props) {
         //     }
         // }
         saveCurrentAnnotation();
-        prevFrameNum.current = frameNum;
+        // prevFrameNum.current = frameNum;
         setActiveAnnoObj(null);
         setDrawType(null);
         setSkeletonLandmark(null);
@@ -397,19 +418,24 @@ export default function Workspace(props) {
     }
 
     function saveCurrentAnnotation() {
-        if (Number.isInteger(prevFrameNum.current)) {
+        // if (Number.isInteger(prevFrameNum.current)) {
+            // console.log('saveCurrentAnnotation called', frameAnnotation);
             if ( Object.keys(frameAnnotation).length > 0) {
-                const newFrameAnno = clearUnfinishedAnnotation();
-                if (Object.keys(newFrameAnno).length > 0) {
-                    annotationRef.current[prevFrameNum.current] = newFrameAnno; 
-                } else {
-                    delete(annotationRef.current[prevFrameNum.current]);
-                }
+                const newFrameAnno = clearUnfinishedAnnotation({...frameAnnotation});
                 // console.log(newFrameAnno);
-            } else {
-                delete(annotationRef.current[prevFrameNum.current]);
-            }
-        }
+                if (Object.keys(newFrameAnno).length > 0) {
+                    // annotationRef.current[prevFrameNum.current] = newFrameAnno; 
+                    saveFrameAnnotationToDB(newFrameAnno); // async func but no need to await
+                } 
+                // else {
+                //     delete(annotationRef.current[prevFrameNum.current]);
+                // }
+                // console.log(newFrameAnno);
+            } 
+            // else {
+            //     delete(annotationRef.current[prevFrameNum.current]);
+            // }
+        // }
     }
 
 
@@ -513,6 +539,30 @@ export default function Workspace(props) {
     function cancelClickHandler() {
         setInfo(null);
         setInfoOpen(false);
+    }
+
+    async function getFrameAnnotationFromDBAndSetState() {
+        const res = await getFrameAnnotation(frameNum, videoId);
+        if (res?.annotations?.length > 0) { //if no anno for this frame, res: {annotations: []}
+            const frameAnno = {};
+            res.annotations.forEach((anno) => frameAnno[anno.id] = anno);
+            setFrameAnnotation(frameAnno);
+        } else {
+            console.log(res);
+            setFrameAnnotation({});
+        }
+    }
+
+    async function saveFrameAnnotationToDB(cleanFrameAnnotation) {
+        const frameAnnoObjs = {};
+        frameAnnoObjs.annotations = Object.keys(cleanFrameAnnotation).map((id) => {
+            const anno = cleanFrameAnnotation[id];
+            anno.videoId = videoId;
+            return anno
+        })
+        console.log('frameAnnoObjs', frameAnnoObjs);
+        const res = await postFrameAnnotation(frameAnnoObjs);
+        console.log('post frame anno result', res);
     }
 
     return (
