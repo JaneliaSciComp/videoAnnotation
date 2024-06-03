@@ -124,6 +124,7 @@ export default function ProjectList(props) {
             // console.log(btnData);
             setVideoData(videos);
             setVideoId(null);
+            
             // props.setManagerStatus('edit');
         }
         
@@ -139,7 +140,7 @@ export default function ProjectList(props) {
     function deleteProjectConfirm(id, name) {
         Modal.confirm({
             title: 'Alert',
-            content: 'The current project data including configuration and all annotations will be removed!',
+            content: 'The project data including configuration and all annotations will be removed!',
             onOk: async ()=>{await deleteWholeProject(id, name)},
             // onCancel: cancelClickHandler,
         });

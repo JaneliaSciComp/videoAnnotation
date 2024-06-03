@@ -19,7 +19,7 @@ import BrushTool from './BrushTool';
 import { StatesProvider } from './AppContext';
 import { clearUnfinishedAnnotation } from '../utils/utils';
 import { Modal } from 'antd';
-import { editProject, postBtnGroup, editVideo, postFrameAnnotation, getFrameAnnotation, getProjectAnnotation } from '../utils/requests';
+import { editProject, postBtnGroup, editVideo, postFrameAnnotation, getFrameAnnotation, postProjectAnnotation, getProjectAnnotation } from '../utils/requests';
 
 
 /**
@@ -61,7 +61,7 @@ export default function Workspace(props) {
     const [videoData, setVideoData] = useState({}); //{videoId1: {projectId:, name:, path:, additionalFields: [{name: str, value: str}, ...]}, videoId2: {}} // can be null/undefined/empty arr, and this field always exist in video data; value field can be absent if it's not required
     const [loadVideo, setLoadVideo] = useState(); // videoManager to trigger getVideo request in videoUploader. {id: {name:, path:, ...}}
     // const [videoPathToGet, setVideoPathToGet] = useState(); // video path obj in videoManager, to trigger get request in videoUploader. {videoId: , projectId: , name:, path:,additonalFields:}
-    const [resetVideoPlay, setResetVideoPlay] = useState(); // used by VideoManager to reset video play status in VideoUploader
+    const [resetVideoPlay, setResetVideoPlay] = useState(); // used by VideoManager and Workspace (videoId useEffect) to reset video play status in VideoUploader
     const [resetVideoDetails, setResetVideoDetails] = useState(); // used by JsonUploader to reset video details window in VideoManager
     const [videoAdditionalFieldsObj, setVideoAdditionalFieldsObj] = useState(); //generated from prop of VideoManager(developer defined prop), used by VideoManager to check whether required fields are empty, by VideoUploader to know if to display the data with video or show in chart. {fieldName1: {required: field.required, uploadWithVideo: field.uploadWithVideo, shape: field.shape}, fieldName2:{}}
     const [projectId, setProjectId] = useState(); //TODO: remove 'testId'
@@ -175,20 +175,48 @@ export default function Workspace(props) {
 
     function onReaderLoad(e, type){
         // console.log(e.target.result);
+        // setInfo(null);
+        // setInfoOpen(False);
+        
         const obj = JSON.parse(e.target.result);
-        console.log(obj);
+        // console.log(obj);
         if (type === 'annotation') {
+            /**
+             * {
+             *      projectId: str,
+             *      videos: [],
+             *      annotations: []
+             * }
+             */
             saveAnnotationAndUpdateStates(); 
             // prevFrameNum.current = null; 
 
             // annotationRef.current = obj;
-            if (Number.isInteger(frameNum)) { // a video is open
-                setFrameAnnotation({...annotationRef.current[frameNum]});
-            } else if (frameUrl) { // an image is open
-                setFrameAnnotation({...annotationRef.current[0]});
+            if (!projectId || (obj.projectId === projectId)) {
+                // const currentFrameNum = frameNum;
+                postProjectAnnotation(obj.annotations)
+                    .then(res => {
+                        if (res['error']) {
+                            setInfo('Sending project data to DB failed.');
+                            setInfoOpen(True);
+                        } else {
+                            if ((obj.videos.filter(v => v===videoId).length>0) && Number.isInteger(frameNum)) { // a video is open
+                                getFrameAnnotationFromDBAndSetState();
+                                // setFrameAnnotation({...annotationRef.current[frameNum]});
+                            } 
+                            // else if (frameUrl) { // an image is open
+                            //     setFrameAnnotation({...annotationRef.current[0]});
+                            // } 
+                            else {
+                                setFrameAnnotation({});
+                            }
+                        }
+                    })
             } else {
-                setFrameAnnotation({});
+                setInfo('The uploaded annotation does not match the current project id.')
+                setInfoOpen(True);
             }
+            
         } else {
             /**
              * {
@@ -200,39 +228,79 @@ export default function Workspace(props) {
                 }
              */
             // projectConfigDataRef.current = obj;
+            
             setProjectId(obj.projectId);
             setProjectData({projectName: obj.projectName, description: obj.description}); // description could be absent in obj, but will be passed undefined
             setBtnConfigData(obj.btnConfigData ? {...obj.btnConfigData} : {}); // btnConfigData could be null
             setVideoData(obj.videos ? {...obj.videos} : {}); // videos might be empty obj but not null
-        
+            setVideoId(null);
+            // setFrameNum(null);
+            // setFrameUrl(null);
+
             // save/update the uploaded project Config data in DB?
-            Modal.confirm({
-                content: 'Save/Update the uploaded data in database?',
-                onOk: () => {confirmSaveConfigDataToDB(obj)},
-            });
+            // Modal.confirm({
+            //     content: 'Save/Update the uploaded data in database?',
+            //     onOk: () => {confirmSaveConfigDataToDB(obj)},
+            // });
+            const projectObj = {
+                projectId: obj.projectId, 
+                projectName: obj.projectName,
+                description: obj.description
+            }
+            editProject(projectObj)
+                .then((res) => {
+                    if (res['error']) {
+                        setInfo('Sending project data to DB failed.');
+                        setInfoOpen(True);
+                    }
+                });
+            
+            Object.keys(obj.btnConfigData).forEach((id)=>{
+                const btnGroupObj = {...obj.btnConfigData[id]};
+                btnGroupObj.btnGroupId = id;
+                postBtnGroup(btnGroupObj)
+                    .then((res) => {
+                        if (res['error']) {
+                            setInfo('Sending btn configuration data to DB failed.');
+                            setInfoOpen(True);
+                        }
+                    });
+            })
+    
+            Object.keys(obj.videos).forEach((id)=>{
+                const videoObj = {...obj.videos[id]};
+                videoObj.videoId = id;
+                editVideo(videoObj)
+                    .then((res) => {
+                        if (res['error']) {
+                            setInfo('Sending video data to DB failed.');
+                            setInfoOpen(True);
+                        }
+                    });
+            })
         }
     }
 
-    function confirmSaveConfigDataToDB(data) {
-        const projectObj = {
-            projectId: data.projectId, 
-            projectName: data.projectName,
-            description: data.description
-        }
-        editProject(projectObj);
+    // function confirmSaveConfigDataToDB(data) {
+    //     const projectObj = {
+    //         projectId: data.projectId, 
+    //         projectName: data.projectName,
+    //         description: data.description
+    //     }
+    //     editProject(projectObj);
         
-        Object.keys(data.btnConfigData).forEach((id)=>{
-            const btnGroupObj = {...data.btnConfigData[id]};
-            btnGroupObj.btnGroupId = id;
-            postBtnGroup(btnGroupObj);
-        })
+    //     Object.keys(data.btnConfigData).forEach((id)=>{
+    //         const btnGroupObj = {...data.btnConfigData[id]};
+    //         btnGroupObj.btnGroupId = id;
+    //         postBtnGroup(btnGroupObj);
+    //     })
 
-        Object.keys(data.videos).forEach((id)=>{
-            const videoObj = {...data.videos[id]};
-            videoObj.videoId = id;
-            editVideo(videoObj);
-        })
-    }
+    //     Object.keys(data.videos).forEach((id)=>{
+    //         const videoObj = {...data.videos[id]};
+    //         videoObj.videoId = id;
+    //         editVideo(videoObj);
+    //     })
+    // }
 
     // function convertEdgeArrToSet(obj) { //obj is a copy of btnConfigData
     //     Object.values(obj).forEach(groupData => {
@@ -324,6 +392,7 @@ export default function Workspace(props) {
         // prevFrameNum.current = null; 
         setFrameNum(null); // It's possible last vdieo is showing frame 0, then when switch video, frameNum won't change, then the effect below won't be called. So set frameNum to null, then when show frame 0 for the current video, the effect below will be called
         // setFrameAnnotation({});
+        setResetVideoPlay(true); // tell VideoUploader to reset video play status
         // console.log('videoid');
       }, [videoId] //when switch video, videoId will change first, then frameNum change to 0. So this effect called first, then the effect below
     )

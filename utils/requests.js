@@ -299,6 +299,23 @@ export async function getFrameAnnotation(frameNum, videoId) {
     }
 }
 
+export async function postProjectAnnotation(annotationObjs) { //{annotations: [anno1, anno2, ...]}
+    const res = await fetch(PROJECT_ANNOTATION_URL, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+            body: JSON.stringify(annotationObjs), //new FormData(e.target), 
+        })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'POST project annotation request failed'}
+    }
+}
+
 export async function getProjectAnnotation(projectId) {
     const res = await fetch(`${PROJECT_ANNOTATION_URL}?projectId=${projectId}`, {
             method: 'GET',

@@ -203,7 +203,7 @@ export default function Canvas(props) {
     useEffect(() => {
         const canvas = canvasObjRef.current;
         // console.log('canvas frameUrl useEffect: canvas clear', canvas, JSON.stringify(canvas));
-
+        console.log('canvas frameUrl useEffect:', frameUrl);
         // when switch frame, get brush data before clear canvas
         getBrushData();
 
@@ -242,34 +242,39 @@ export default function Canvas(props) {
         resetBrush();
 
         // recreate path obj before img load for less work
-        createPathes().then(
-            // update image when url changes
-            () => {
-                if (frameUrl) {
-                    imgRef.current.src = frameUrl;
-                } else {
-                    imgRef.current.src = '';
+        if (frameUrl) {
+            createPathes().then(
+                // update image when url changes
+                () => {
+                    if (frameUrl) {
+                        imgRef.current.src = frameUrl;
+                    } else {
+                        imgRef.current.src = '';
+                    }
                 }
-            }
-        )
-        // console.log(canvas.getObjects());
-
+            )
+        }
         
+        // console.log(canvas.getObjects());
 
       }, [frameUrl]
     )
 
     function removeAllObjFromCanvas() {
+        console.log(fabricObjListRef.current);
+        console.log('canvas objs before remove', canvasObjRef.current.getObjects())
         if (Object.keys(fabricObjListRef.current).length>0) {
             Object.keys(fabricObjListRef.current).forEach(id => {
                 removeObjFromCanvasById(id);
             });
         }
+        console.log('canvas objs after remove', canvasObjRef.current.getObjects());
     }
 
     function removeObjFromCanvasById(id) {
         const canvas = canvasObjRef.current;
         const obj = fabricObjListRef.current[id];
+        console.log('removeObjFromCanvasById', obj);
         if (obj) { // when delete from AnnotationTable, annoObj may be Category, or may hasn't been finished, so doesn't have corresponding obj in fabricObjRef
             if (obj.type==='skeleton') {
                 obj.landmarks.forEach(l => {
@@ -327,7 +332,8 @@ export default function Canvas(props) {
         
         // canvas.renderAll();
 
-        if (uploader !== prevUploaderRef.current) {
+        if ((uploader?.type==='annotation') && (uploader !== prevUploaderRef.current)) {
+            console.log('frameAnno useEffect uploader', uploader);
             removeAllObjFromCanvas();
             fabricObjListRef.current = {};
             createPathes();
@@ -706,10 +712,11 @@ export default function Canvas(props) {
         // console.log(frameNum, annotationRef.current);
         // const nextFrameAnno = annotationRef.current[frameNum];
         const nextFrameAnno = await getFrameAnnotationFromDB(); // TODO: risk: the retrieved anno data might be different from frameAnnotation because they are retrieved separately 
+        console.log('createObjBasedOnAnno', nextFrameAnno);
         if (nextFrameAnno && Object.keys(nextFrameAnno).length>0) {
             Object.keys(nextFrameAnno).forEach(id => {
                 const annoObj = nextFrameAnno[id];
-                // console.log('1', annoObj);
+                console.log('1', annoObj);
                 if (annoObj.frameNum === frameNum) {
                     // console.log('2', annoObj);
                     let dataToCanvas;
@@ -739,7 +746,7 @@ export default function Canvas(props) {
                 }
             });
 
-            // console.log(canvas.getObjects());
+            console.log('canvas objs after createObjBasedOnAnno', canvas.getObjects());
             canvas.getObjects().forEach(obj=>{
                 if (obj.id || obj.owner) { // path, keypoint, rect, polygon obj have id, circle,line obj have owner
                     // console.log(obj);
@@ -805,7 +812,7 @@ export default function Canvas(props) {
             imageObjRef.current.height = imgRef.current.height;
             scaleImage(canvasObjRef.current, imageObjRef.current);
         }
-        // console.log('img load handler');
+        console.log('img load handler', frameUrl, imgRef.current.url);
         
         //Draw fabric objects according to annotation
         await createFabricObjBasedOnAnnotation();
@@ -1567,7 +1574,7 @@ export default function Canvas(props) {
 
     async function createPathes() {
         // recreate all path obj based by looping through all brush annoObj's .pathes prop
-        // console.log('createPath');
+        console.log('createPath', frameNum);
         // const nextFrameAnno = annotationRef.current[frameNum];
         const nextFrameAnno = await getFrameAnnotationFromDB(frameNum, videoId); //TODO: risky
         const pathStrArr=[];
@@ -1587,7 +1594,7 @@ export default function Canvas(props) {
                 }
             })
         }
-        // console.log(pathStrArr);
+        console.log(pathStrArr);
 
         if (pathStrArr.length > 0) {
             const canvas = canvasObjRef.current;
@@ -1611,7 +1618,8 @@ export default function Canvas(props) {
             // console.log(canvas.getObjects());
             canvas.add(imageObjRef.current);
             // canvas.renderAll();
-        }         
+        }       
+        console.log('canvas objs after createPath:', canvasObjRef.current.getObjects());
     }
 
 
