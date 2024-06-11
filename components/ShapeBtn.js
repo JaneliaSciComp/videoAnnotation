@@ -33,6 +33,7 @@ export default function ShapeBtn(props) {
     const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
     const setUndo = useStateSetters().setUndo;
     const setUseEraser = useStateSetters().setUseEraser;
+    const videoId = useStates().videoId; 
 
     // console.log(drawType, frameNum,frameUrl,setDrawType);
 
@@ -76,6 +77,7 @@ export default function ShapeBtn(props) {
             setDrawType(props.type);
             const annoObj = {
                 id: id,
+                videoId: videoId,
                 frameNum: frameNum,
                 label: props.label,
                 color: props.color,

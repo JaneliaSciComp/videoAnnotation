@@ -163,9 +163,12 @@ export default function VideoUploader(props) {
         e.stopPropagation(); 
 
         if (!projectId) {
-            throw new Error('Please initialize or upload a project first.');
+            // throw new Error('Please initialize or upload a project first.');
+            setSubmitError('Please initialize or upload a project first.');
+            return
         }
         // resetVideoStatus();
+        setSubmitError(null);
         const id = new Date().getTime().toString();
         // setVideoId(id);
 
@@ -175,13 +178,9 @@ export default function VideoUploader(props) {
         // console.log('video', JSON.stringify(video), JSON.stringify(video).replaceAll("/", ""));
 
         // add video to videoManager
-        if (projectId) {
-            const videoDataCopy = {...videoData};
-            videoDataCopy[id] = {...video};
-            setVideoData(videoDataCopy);
-        } else {
-            setSubmitError('Please initialize or load a project first.')
-        }
+        const videoDataCopy = {...videoData};
+        videoDataCopy[id] = {...video};
+        setVideoData(videoDataCopy);
 
         video.videoId = id;
         await postAndLoadVideo(video);
@@ -293,6 +292,7 @@ export default function VideoUploader(props) {
     // }
 
     function resetVideoStatus() {
+        console.log('resetVideoStatus');
         setFps(0);
         setTotalFrameCount(0);
         setSliderValue(0);

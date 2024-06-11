@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef, use} from 'react';
+import React, {useState, useEffect, useRef} from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 // import { saveAs } from 'file-saver';
 import JSZip from "jszip";
@@ -32,8 +32,8 @@ export default function Workspace(props) {
     const [videoId, setVideoId] = useState();
     const [frameUrl, setFrameUrl] = useState(); //for image, '/fly.png'
     const [frameNum, setFrameNum] = useState();
-    const prevFrameNum = useRef();
-    const annotationRef = useRef({}); //if image, only one child with frameNum 0
+    // const prevFrameNum = useRef();
+    // const annotationRef = useRef({}); //if image, only one child with frameNum 0
     const [frameAnnotation, setFrameAnnotation] = useState({}); 
     const [activeAnnoObj, setActiveAnnoObj] = useState();
     const [drawType, setDrawType] = useState();
@@ -59,7 +59,7 @@ export default function Workspace(props) {
     const [infoOpen, setInfoOpen] = useState(false);
     const [info, setInfo] = useState();
     const [videoData, setVideoData] = useState({}); //{videoId1: {projectId:, name:, path:, additionalFields: [{name: str, value: str}, ...]}, videoId2: {}} // can be null/undefined/empty arr, and this field always exist in video data; value field can be absent if it's not required
-    const [loadVideo, setLoadVideo] = useState(); // videoManager to trigger getVideo request in videoUploader. {id: {name:, path:, ...}}
+    const [loadVideo, setLoadVideo] = useState(); // videoManager to trigger getVideo request in videoUploader. {projectId:, videoId, name:, path:, additionalFields:[]}
     // const [videoPathToGet, setVideoPathToGet] = useState(); // video path obj in videoManager, to trigger get request in videoUploader. {videoId: , projectId: , name:, path:,additonalFields:}
     const [resetVideoPlay, setResetVideoPlay] = useState(); // used by VideoManager and Workspace (videoId useEffect) to reset video play status in VideoUploader
     const [resetVideoDetails, setResetVideoDetails] = useState(); // used by JsonUploader to reset video details window in VideoManager
@@ -85,7 +85,7 @@ export default function Workspace(props) {
         annoIdToShow: annoIdToShow,
         btnConfigData: btnConfigData,
         btnGroups: btnGroups,
-        annotationRef: annotationRef,
+        // annotationRef: annotationRef,
         // projectType: projectType,
         frameNumSignal: frameNumSignal,
         totalFrameCount: totalFrameCount,
@@ -147,25 +147,26 @@ export default function Workspace(props) {
 
 
     
-    useEffect(()=>{
-        // before close the window, save annotation of the current frame to db 
-        window.addEventListener("beforeunload", closeWindowHandler);
+    // useEffect(()=>{
+    //     // before close the window, save annotation of the current frame to db 
+    //     window.addEventListener("beforeunload", closeWindowHandler);
 
-        return () => {
-            window.removeEventListener("beforeunload", closeWindowHandler);
-        }
-    })
+    //     return () => {
+    //         window.removeEventListener("beforeunload", closeWindowHandler);
+    //     }
+    // })
 
-    function closeWindowHandler(e) {
-        // e.preventDefault();
-        // e.stopPropagation();
-        // console.log('window beforeunload called');
-        saveCurrentAnnotation();
-    }
+    // function closeWindowHandler(e) {
+    //     // e.preventDefault();
+    //     // e.stopPropagation();
+    //     // console.log('window beforeunload called');
+    //     saveCurrentAnnotation();
+    // }
 
 
     useEffect(() => {
         if (uploader?.type && uploader?.file) {
+            saveAnnotationAndUpdateStates(); 
             const reader = new FileReader();
             reader.onload = (e) => onReaderLoad(e, uploader.type);
             reader.readAsText(uploader.file.originFileObj);
@@ -188,17 +189,22 @@ export default function Workspace(props) {
              *      annotations: []
              * }
              */
-            saveAnnotationAndUpdateStates(); 
+            
             // prevFrameNum.current = null; 
-
             // annotationRef.current = obj;
-            if (!projectId || (obj.projectId === projectId)) {
+            if (!projectId) {
+                setInfo('Please upload the project configuration data first');
+                setInfoOpen(true);
+            } else if (obj.projectId !== projectId) {
+                setInfo('The uploaded project id does not match the current project id.')
+                setInfoOpen(true);
+            } else {
                 // const currentFrameNum = frameNum;
-                postProjectAnnotation(obj.annotations)
+                postProjectAnnotation({annotations: obj.annotations})
                     .then(res => {
                         if (res['error']) {
                             setInfo('Sending project data to DB failed.');
-                            setInfoOpen(True);
+                            setInfoOpen(true);
                         } else {
                             if ((obj.videos.filter(v => v===videoId).length>0) && Number.isInteger(frameNum)) { // a video is open
                                 getFrameAnnotationFromDBAndSetState();
@@ -212,9 +218,6 @@ export default function Workspace(props) {
                             }
                         }
                     })
-            } else {
-                setInfo('The uploaded annotation does not match the current project id.')
-                setInfoOpen(True);
             }
             
         } else {
@@ -392,7 +395,7 @@ export default function Workspace(props) {
         // prevFrameNum.current = null; 
         setFrameNum(null); // It's possible last vdieo is showing frame 0, then when switch video, frameNum won't change, then the effect below won't be called. So set frameNum to null, then when show frame 0 for the current video, the effect below will be called
         // setFrameAnnotation({});
-        setResetVideoPlay(true); // tell VideoUploader to reset video play status
+        // setResetVideoPlay(true); // tell VideoUploader to reset video play status
         // console.log('videoid');
       }, [videoId] //when switch video, videoId will change first, then frameNum change to 0. So this effect called first, then the effect below
     )
@@ -433,7 +436,7 @@ export default function Workspace(props) {
             // setFrameAnnotation({...annotationRef.current[frameNum]});
             getFrameAnnotationFromDBAndSetState();
         } else {
-            // console.log('retrieve2 called');
+            console.log('retrieve2 called');
             setFrameAnnotation({});
         }
         
@@ -646,14 +649,10 @@ export default function Workspace(props) {
 
     async function saveFrameAnnotationToDB(cleanFrameAnnotation) {
         const frameAnnoObjs = {};
-        frameAnnoObjs.annotations = Object.keys(cleanFrameAnnotation).map((id) => {
-            const anno = cleanFrameAnnotation[id];
-            anno.videoId = videoId;
-            return anno
-        })
-        console.log('frameAnnoObjs', frameAnnoObjs);
+        frameAnnoObjs.annotations = Object.keys(cleanFrameAnnotation).map(id => cleanFrameAnnotation[id]);
+        // console.log('frameAnnoObjs', frameAnnoObjs);
         const res = await postFrameAnnotation(frameAnnoObjs);
-        console.log('post frame anno result', res);
+        // console.log('post frame anno result', res);
         return res;
     }
 

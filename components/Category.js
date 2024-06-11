@@ -27,6 +27,7 @@ export default function Category(props) {
     const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
     const setUndo = useStateSetters().setUndo;
     const setUseEraser = useStateSetters().setUseEraser;
+    const videoId = useStates().videoId;
 
     useEffect(()=> {
         if (props.color) {
@@ -42,6 +43,7 @@ export default function Category(props) {
             const id = Date.now().toString();
             const annoObj = {
                 id: id,
+                videoId: videoId,
                 frameNum: frameNum,
                 label: props.label,
                 color: color,

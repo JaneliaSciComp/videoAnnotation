@@ -61,6 +61,7 @@ export default function SkeletonBtn(props) {
     const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
     const setUndo = useStateSetters().setUndo;
     const setUseEraser = useStateSetters().setUseEraser;
+    const videoId = useStates().videoId;
 
     // console.log('skeleton', props);
 
@@ -151,6 +152,7 @@ export default function SkeletonBtn(props) {
             const initData = props.data.map(_ => [null, null, 2]); // initialize data holder and default visibility (2) to each landmark anno arr
             const annoObj = {
                 id: id,
+                videoId: videoId,
                 type: 'skeleton',   
                 groupIndex: props.groupIndex, 
                 frameNum: frameNum,

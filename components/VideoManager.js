@@ -366,7 +366,7 @@ export default function VideoManager(props) {
         //TODO: add confirm
         Modal.confirm({
             title: 'Alert',
-            content: 'The current project data including configuration and all annotations will be removed!',
+            content: 'The current video data including configuration and annotations will be removed!',
             onOk: async ()=>{await deleteThisVideo(videoIdToDel)},
             // onCancel: cancelClickHandler,
         });

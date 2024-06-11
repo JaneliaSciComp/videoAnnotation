@@ -62,6 +62,7 @@ export default function BrushBtn(props) {
     const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
     const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
     const setUndo = useStateSetters().setUndo;
+    const videoId = useStates().videoId; 
 
     useEffect(()=>{
         if (!props.label) {
@@ -153,6 +154,7 @@ export default function BrushBtn(props) {
         annotationIdRef.current = id;
         const annoObj = {
             id: id,
+            videoId: videoId,
             type: 'brush',   
             frameNum: frameNum,
             label: props.label,
