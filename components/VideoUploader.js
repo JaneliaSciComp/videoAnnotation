@@ -1,6 +1,4 @@
 import React, {useState, useEffect, useRef} from 'react';
-// import { saveAs } from 'file-saver';
-// import JSZip from "jszip";
 import styles from '../styles/Video.module.css';
 import { InputNumber, Slider, Space } from 'antd';
 import { CaretRightOutlined, PauseOutlined } from '@ant-design/icons';
@@ -9,8 +7,6 @@ import { useStates, useStateSetters } from './AppContext';
 import { postVideo, getVideoMeta, getFrame, getAdditionalData } from '../utils/requests';
 
 
-// const FRAME_URL_ROOT = 'http://localhost:8000/api/frame';
-// const ADDITIONAL_URL_ROOT = 'http://localhost:8000/api/additional-data';
 
 /**
  * 
@@ -18,33 +14,25 @@ import { postVideo, getVideoMeta, getFrame, getAdditionalData } from '../utils/r
  *      hideSubmit: boolean. Whether to hide video path submit part.
  */
 export default function VideoUploader(props) {
-    // const videoRef = useRef(null);
-    // const canvasRef = useRef(null);
     const [fps, setFps] = useState(0);
-    // const [totalFrameCount, setTotalFrameCount] = useState(0);
     const [sliderValue, setSliderValue] = useState(0);
     const [playFps, setPlayFps] = useState(0);
     const [submitError, setSubmitError] = useState();
     const [frameError, setFrameError] = useState();
     const playInterval = useRef(null);
 
-    // context
     const setFrameUrl = useStateSetters().setFrameUrl;
     const setFrameNum = useStateSetters().setFrameNum;
-    // const videoId = useStates().videoId;
     const setVideoId = useStateSetters().setVideoId;
     const frameNumSignal = useStates().frameNumSignal;
     const totalFrameCount = useStates().totalFrameCount;
     const setTotalFrameCount = useStateSetters().setTotalFrameCount;
-    const loadVideo = useStates().loadVideo; // trigger post request by VideoManager
+    const loadVideo = useStates().loadVideo;
     const setLoadVideo = useStateSetters().setLoadVideo;
-    // const videoPathToGet = useStates().videoPathToGet; // trigger get request by VideoManager
-    // const setVideoPathToGet = useStateSetters().setVideoPathToGet;
     const resetVideoPlay = useStates().resetVideoPlay;
     const setResetVideoPlay = useStateSetters().setResetVideoPlay;
     const videoData = useStates().videoData;
     const setVideoData = useStateSetters().setVideoData;
-    // const projectConfigDataRef = useStates().projectConfigDataRef;
     const videoAdditionalFieldsObj = useStates().videoAdditionalFieldsObj;
     const videoId = useStates().videoId;
     const projectId = useStates().projectId;
@@ -59,22 +47,13 @@ export default function VideoUploader(props) {
         }
     }, [resetVideoPlay])
 
-    // useEffect(() => {
-    //     if (videoPathToGet) {
-    //         const id = Object.keys(videoPathToGet)[0];
-    //         console.log(id, videoPathToGet[id].path);
-    //         getVideoByPath(id, videoPathToGet[id].path);
 
-    //         setVideoPathToGet(null);
-    //     }
-    // }, [videoPathToGet])
 
     useEffect(() => {
         if (loadVideo) {
-            // postAndLoadVideo(loadVideo);
             resetVideoStatus();
             setVideoId(loadVideo.videoId);
-            initializePlay(loadVideo) // no need to use await
+            initializePlay(loadVideo)
 
             setLoadVideo(null);
         }
@@ -89,7 +68,6 @@ export default function VideoUploader(props) {
     
 
     useEffect(()=>{
-        // when playFps changes, update playback effect if it's playing
         if (playInterval.current) {
             clearInterval(playInterval.current);
             playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
@@ -112,7 +90,6 @@ export default function VideoUploader(props) {
     
     let currentSliderValue =sliderValue;
     function incrementFrame() {
-        // console.log('increment called');
         let newFrameNum = ++currentSliderValue;
         if (newFrameNum <= totalFrameCount ) {
             setFrame(newFrameNum);
@@ -124,15 +101,12 @@ export default function VideoUploader(props) {
         }
     }
 
-    // let playInterval;
     function playClickHandler() {
         if (!playInterval.current 
             && totalFrameCount > 0 
             && sliderValue < totalFrameCount 
-            && playFps>0) { // make sure some frames are ready
+            && playFps>0) {
             playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
-            // playInterval = setInterval(incrementFrame, Math.floor(1000/playFps));
-            // console.log('setInterval',playInterval.current);
         }
         
     }
@@ -140,9 +114,7 @@ export default function VideoUploader(props) {
     function pauseClickHandler() {
         if (playInterval.current) {
             clearInterval(playInterval.current);
-            // console.log('clearInterval',playInterval.current);
             playInterval.current = null;
-            // console.log('resetInterval',playInterval.current);
         }
     }
 
@@ -150,7 +122,6 @@ export default function VideoUploader(props) {
         if (typeof newValue === 'number' 
         && Number.isInteger(newValue) 
         && newValue>=0 ) {
-            // console.log('playfps changed');
             setPlayFps(newValue);
         }
     }
@@ -158,26 +129,20 @@ export default function VideoUploader(props) {
 
     
     async function videoPathSubmitHandler(e) {
-        // console.log(e.target);
         e.preventDefault();
         e.stopPropagation(); 
 
         if (!projectId) {
-            // throw new Error('Please initialize or upload a project first.');
             setSubmitError('Please initialize or upload a project first.');
             return
         }
-        // resetVideoStatus();
         setSubmitError(null);
         const id = new Date().getTime().toString();
-        // setVideoId(id);
 
         const form = new FormData(e.target);
         const videoPath = form.get('videoPath');
         const video = {projectId: projectId, name: videoPath, path: videoPath, additionalFields: []};
-        // console.log('video', JSON.stringify(video), JSON.stringify(video).replaceAll("/", ""));
 
-        // add video to videoManager
         const videoDataCopy = {...videoData};
         videoDataCopy[id] = {...video};
         setVideoData(videoDataCopy);
@@ -187,40 +152,11 @@ export default function VideoUploader(props) {
     }
 
 
-    // function postVideo(videoId, videoObj) {
     async function postAndLoadVideo(videoInfo) {
         resetVideoStatus();
-        // const videoId = Object.keys(videoInfo)[0];
         setVideoId(videoInfo.videoId);
-        // const videoInfoObj = {...videoInfo[videoId]};
-        // videoInfoObj.videoId = videoId;
-        // console.log(videoInfoObj);
 
-        // fetch("http://localhost:8000/api/video", {
-        //     method: 'POST',
-        //     headers: {
-        //         'Accept': 'application/json',
-        //         'Content-Type': 'application/json'
-        //       },
-        //     body: JSON.stringify(videoInfoObj), //new FormData(e.target), 
-        // }).then(res => {
-        //     if (res.ok) {
-        //         return res.json(); 
-        //     } else {
-        //         setSubmitError('Request failed');
-        //     }
-        // }).then((res)=>{
-        //     if (res){
-        //         if (res['error']) {
-        //             // console.log(res['error']);
-        //             setSubmitError(res['error']);
-        //         } else {
-        //             initializePlay(res, videoInfoObj);
-        //         } 
-        //     } 
-        // })
         const res = await postVideo(videoInfo);
-        // console.log(res);
         if (res['error']) {
             setSubmitError(res['error']);
         } else {
@@ -231,14 +167,11 @@ export default function VideoUploader(props) {
 
 
     async function setFrame(newValue, videoInfoObj=null) {
-        // console.log('setFrame called');
         if (newValue && videoId) {
             setSliderValue(newValue);
-            // let url;
             if (newValue >= 1) {
-                // request frame
                 setFrameError(null);
-                const res = await getFrame(newValue-1); //blob url or {error: ...}
+                const res = await getFrame(newValue-1);
                 if (res['error']) {
                     setFrameError(res['error']);
                 } else {
@@ -246,9 +179,9 @@ export default function VideoUploader(props) {
                     setFrameNum(newValue-1);
                 }
                     
-                if (videoInfoObj) { // uploaded new video
+                if (videoInfoObj) {
                     getAdditionalFieldsData(newValue-1, videoInfoObj);
-                } else { // video already uploaded beforehand, additionalFields data saved in videoData
+                } else {
                     const videoInfo = {...videoData[videoId]};
                     videoInfo.videoId = videoId;
                     getAdditionalFieldsData(newValue-1, videoInfo);
@@ -262,34 +195,6 @@ export default function VideoUploader(props) {
     }
 
 
-    // function getFrame(frameNum) {
-    //     ////window.vaFrames[frameNum];  /////
-    //     setFrameError(null);
-    //     fetch(`${FRAME_URL_ROOT}?num=${frameNum}`, {
-    //         method: 'GET',
-    //     }).then(res => {
-    //         if (res.ok) {
-    //             console.log('res.ok');
-    //             return res.blob();
-    //         } else {
-    //             console.log('res.ok false');
-    //             // console.log(res);
-    //             setFrameError('Frame request failed');
-    //         }
-    //     }).then((res)=>{
-    //         if (res){
-    //             if (res['error']) {
-    //                 setFrameError(res['error']);
-    //             } else {
-    //                 const url = URL.createObjectURL(res);
-    //                 // props.setFrameUrl(url);
-    //                 // props.setFrameNum(frameNum);
-    //                 setFrameUrl(url);
-    //                 setFrameNum(frameNum);
-    //             } 
-    //         } 
-    //     })
-    // }
 
     function resetVideoStatus() {
         console.log('resetVideoStatus');
@@ -303,13 +208,13 @@ export default function VideoUploader(props) {
         setVideoId(null);
     }
 
-    async function initializePlay(videoInfoObj) { //meta,
+    async function initializePlay(videoInfoObj) {
         const meta = await getVideoMeta(videoInfoObj.videoId);
         console.log(meta);
         if (meta['error']) {
             setSubmitError(meta['error']);
         } else {
-            if (meta['frame_count'] > 0) {//TODO
+            if (meta['frame_count'] > 0) {
                 setFps(meta['fps']);
                 setPlayFps(meta['fps']);
                 setTotalFrameCount(meta['frame_count']);
@@ -323,32 +228,11 @@ export default function VideoUploader(props) {
     }
 
     async function getAdditionalFieldsData(frameNum, videoInfoObj) {
-        if (videoInfoObj.additionalFields?.length>0) { //videoInfoObj, videoInfoObj.additionalFields could be null
+        if (videoInfoObj.additionalFields?.length>0) {
             const additionalData = {};
             videoInfoObj.additionalFields.forEach(async field => {
                 if (videoAdditionalFieldsObj[field.name].uploadWithVideo) { 
-                    // fetch(`${ADDITIONAL_URL_ROOT}/${field.name}/?videoId=${videoInfoObj.videoId}&num=${frameNum}`, {
-                    //     method: 'GET',
-                    // }).then(res => {
-                    //     if (res.ok) {
-                    //         console.log('res.ok');
-                    //         return res.json();
-                    //     } else {
-                    //         console.log('res.ok false');
-                    //         // console.log(res);
-                    //         setFrameError('Additional data request failed');
-                    //     }
-                    // }).then((res)=>{
-                    //     if (res){
-                    //         if (res['error']) {
-                    //             setFrameError(res['error']);
-                    //         } else {
-                    //             additionalData[field.name] = res;
-                    //         } 
-                    //     } 
-                    // })
                     const res = await getAdditionalData(frameNum, videoInfoObj.videoId, field.name);
-                    // console.log(res);
                     if (res['error']) {
                         setFrameError(res['error']);
                     } else {
@@ -357,23 +241,21 @@ export default function VideoUploader(props) {
                 }
             })
             
-            //TODO: pass data to canvas and let canvas draw it.
         }
     }
 
 
-//value='/Users/pengxi/video/numbered.mp4' 
 
 
     return (
         <div className={styles.videoUploaderContainer}>
-            {/* <input type='file' id='videoInput' accept='.jpg, .mp4, .mov, .avi' onChange={submitVideoHandler}></input> */}
+            {}
             <Row className={styles.videoPlayControlContainer}>
                 <Col sm={3} className='px-0'>
                     <span className='me-1'>FPS</span>
                     <InputNumber className={styles.playFpsInput} 
                         min={totalFrameCount==0 ? 0 : 1}
-                        max={fps===0 ? 0 : 2*fps} //TODO
+                        max={fps===0 ? 0 : 2*fps}
                         value={playFps}
                         onChange={playFpsInputChangeHandler}
                         size="small"/>
@@ -396,7 +278,6 @@ export default function VideoUploader(props) {
                             <Slider className={styles.videoSlider}
                                 min={0}
                                 max={totalFrameCount}
-                                // marks={{0:'0', [totalFrameCount]:`${totalFrameCount}`}}
                                 onChange={sliderChangeHandler}
                                 value={sliderValue}
                                 />

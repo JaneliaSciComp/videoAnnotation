@@ -4,7 +4,6 @@ import BtnController from './BtnController';
 import SkeletonEdgeController from './SkeletonEdgeController';
 import { Select, Input, InputNumber, Button, Space } from 'antd';
 import { DownOutlined, DeleteOutlined} from '@ant-design/icons';
-// import {Button} from 'react-bootstrap';
 import { useStateSetters, useStates } from './AppContext';
 import { btnGroupTypeOptions, btnTypeOptions } from '../utils/utils';
 import { postBtnGroup } from '../utils/requests';
@@ -86,14 +85,13 @@ const BTNNUM_MAX=50
 */
 export default function BtnGroupController(props) {
     
-    const [groupData, setGroupData] = useState([]); // cannot be replaced by ref, ref cannot trigger useEffect immediately
+    const [groupData, setGroupData] = useState([]);
     const [index, setIndex] = useState();
     const [groupType, setGroupType] = useState();
     const [btnType, setBtnType] = useState();
     const [btnNum, setBtnNum] = useState(0);
     const [error, setError] = useState();
     const [children, setChildren] = useState([]);
-    // const [childrenData, setChildrenData] = useState([]);
     const prevBtnNumRef = useRef(0);
     const prevBtnTypeRef = useRef();
     const [addEdge, setAddEdge] = useState(false);
@@ -102,17 +100,12 @@ export default function BtnGroupController(props) {
     const [skeletonName, setSkeletonName] = useState();
     const [edgeData, setEdgeData] = useState();
 
-    //get context
     const btnConfigData = useStates().btnConfigData;
     const setBtnConfigData = useStateSetters().setBtnConfigData;
     const projectId = useStates().projectId;
 
-    // console.log('btnGroupController render');
     
     useEffect(()=>{
-        // if (!props.data || !props.setData) {
-        //     throw Error('Property data and setData are required, cannot be null or undefined');
-        // }
         if (!props.index) {
             setIndex(Date.now().toString());
         }
@@ -148,7 +141,6 @@ export default function BtnGroupController(props) {
 
 
     useEffect(()=>{
-        //when Design set getData to true, add the groupData to btnConfigData
         const myIndex = getSelfIndex();
         console.log(myIndex, btnConfigData, props.getData);
         if (myIndex && props.getData && props.getData[myIndex]) { 
@@ -164,42 +156,22 @@ export default function BtnGroupController(props) {
 
 
 
-    // useEffect(() => {
-    //     // to update callback's scope when data changes
-    //     // rerender addEdge btn when disableEdgeBtn state changes
-    //     // console.log('useEffect called');
-    //     if (props.data && getSelfIndex()) { // avoid calling when component just mounted
-    //         renderChildren(); //update callback's scope
-    //     } 
 
-    //   }, [props.data, disableEdgeBtn]
-    // )
     useEffect(() => {
-        // to update callback's scope when data changes
-        // rerender addEdge btn when disableEdgeBtn state changes
-        // console.log('useEffect called');
-        if ((skeletonName || groupData) && getSelfIndex()) { // avoid calling when component just mounted
-            renderChildren(); //update callback's scope
+        if ((skeletonName || groupData) && getSelfIndex()) {
+            renderChildren();
         } 
 
       }, [groupData, disableEdgeBtn, skeletonName]
     )
 
-    // useEffect(() => {
-    //     // when child label change, check if all children have label, if yes, enable add edge
-    //     if (props.data && getSelfIndex() && props.data[getSelfIndex()].groupType === 'skeleton') {
-    //         checkLabels(); 
-    //     }
-    // }, [props.data])
     useEffect(() => {
-        // when groupData changes, remove error info, remove dataAdded info
         if (error) {
             setError(null);
         }
         if (dataAdded) {
             setDataAdded(false);
         }
-        // when child label change, check if all children have label. If yes, enable addEdge btn
         if (groupData && getSelfIndex() && groupType === 'skeleton') {
             const labelsValid = checkLabels();
             if (labelsValid) {
@@ -220,12 +192,9 @@ export default function BtnGroupController(props) {
     }, [props.defaultGroupType])
 
     function onGroupTypeChange(newValue, opt) {
-        // console.log(newValue);
-        // console.log(btnOptions[newValue]);
         setGroupType(newValue);
         setBtnType(btnTypeOptions[newValue][0]['value']);
 
-        // if user has defined custom callback
         if (props.onGroupTypeChange) {
             const target = {
                 index: getSelfIndex(),
@@ -239,7 +208,6 @@ export default function BtnGroupController(props) {
     function onBtnTypeChange(newValue, opt) {
         setBtnType(newValue);
 
-        // if user has defined custom callback
         if (props.onBtnTypeChange) {
             const target = {
                 index: getSelfIndex(),
@@ -258,7 +226,6 @@ export default function BtnGroupController(props) {
         && newValue<=max) {
             setBtnNum(newValue);
             setError(null);
-            // if user has defined custom callback
             if (props.onBtnNumChange) {
                 const target = {
                     index: getSelfIndex(),
@@ -282,14 +249,11 @@ export default function BtnGroupController(props) {
                 data = createChildrenData(0, btnNum);
             } else {
                 if (btnNum > prevBtnNumRef.current) {
-                    // console.log('>');
                     const newData = createChildrenData(prevBtnNumRef.current, btnNum);
                     data = [...childrenData, ...newData];
                 } else if (btnNum < prevBtnNumRef.current) {
-                    // console.log('<');
                     data = [...childrenData].slice(0, btnNum);
                 } else {
-                    // console.log('=');
                     data = childrenData;
                 }
             }
@@ -298,13 +262,6 @@ export default function BtnGroupController(props) {
         prevBtnNumRef.current = btnNum;
         prevBtnTypeRef.current = btnType;
 
-        // props.setData({...props.data, [index]: {
-        //     // groupIndex: getSelfIndex(),
-        //     groupType: groupType,
-        //     btnType: btnType,
-        //     btnNum: btnNum,
-        //     childData: data
-        // }});
         setGroupData(data);
 
         if (props.onDownBtnClick) {
@@ -319,21 +276,12 @@ export default function BtnGroupController(props) {
         }        
     }
 
-    // function getData() {
-    //     const index = getSelfIndex();
-    //     let data = props.data[index].childData;
-    //     if (!data) {
-    //         data=[]
-    //     }
-    //     return data; //arr
-    // }
     function getData() {
-        // const index = getSelfIndex();
         let data = groupData;
         if (!data) {
             data=[]
         }
-        return groupData; //TODO: this func can be deleted
+        return groupData;
     }
 
     function getSelfIndex() {
@@ -346,7 +294,6 @@ export default function BtnGroupController(props) {
         for (let i = startIndex; i < endIndex; i++) {
             const data = {
                 index: i,
-                // groupType: groupType,
                 btnType: btnType,
                 label: '',
                 color: '#1677FF',
@@ -358,26 +305,17 @@ export default function BtnGroupController(props) {
 
 
     function renderChildren() {
-        // console.log('renderChildren called');
         const childrenData = getData();
-        // console.log(childrenData);
         let res = [];
 
         if (childrenData[0]?.btnType === 'skeleton') {
-            // console.log(childrenData[0].btnType=== 'skeleton');
             res.push(
                 <Input key={childrenData.length+1} className={styles.labelText}
-                    // addonBefore="Label"
                     allowClear
                     placeholder="Label: e.g. 'mouse'"
                     value={skeletonName}
                     onChange={onSkeletonNameChange}
                     size='small'
-                    // count={{ //for antd ≥5.10
-                    //     show: true,
-                    //     max: 20,
-                    //     // exceedFormatter: (txt, { max }) => txt.slice(0, max),
-                    // }}
                     />
             );
         }
@@ -387,8 +325,6 @@ export default function BtnGroupController(props) {
                 <BtnController 
                     key={i}
                     index={i} 
-                    // data={childrenData[i]}
-                    // groupType={childrenData[i].groupType}
                     btnType={childrenData[i].btnType}
                     color={childrenData[i].color}
                     label={childrenData[i].label}
@@ -396,16 +332,13 @@ export default function BtnGroupController(props) {
                     labelPlaceHolder={childrenData[i].btnType === 'skeleton' ? "Landmark: 'head'" : "Label: 'mouse'"}
                     disableTypeSelect
                     enableDelete
-                    // onTypeChange={onChildTypeChange}
                     onLabelChange={onChildLabelChange}
                     onColorChange={onChildColorChange}
                     onCrowdChange={onChildCrowdChange}
                     onDelete={onChildDelete}
                     />); 
         }
-        // console.log(childrenData[0], childrenData[0].btnType === 'skeleton');
         if (childrenData[0] && childrenData[0].btnType === 'skeleton') {
-            // console.log(childrenData[0].btnType=== 'skeleton');
             res.push(
                 <Button 
                     key={childrenData.length} 
@@ -416,16 +349,9 @@ export default function BtnGroupController(props) {
                     Add Edge
                 </Button>
             
-            // <SkeletonEdgeController 
-            //             index={getSelfIndex()}
-            //             vertices={generateSkeletonVerticesData()}
-            //             data={props.skeletonData}
-            //             setData={props.setSkeletonData} 
-            //              />
                     );
         }
 
-        // console.log(res);
         setChildren(res);
     }
 
@@ -442,53 +368,28 @@ export default function BtnGroupController(props) {
 
     
     function onChildLabelChange(target) {
-        // console.log('parent ',target);
-        // const index = getSelfIndex();
         const childrenData = getData();
-        const data = {...childrenData[target.index]}; //btn data
-        // console.log('label', children[target.index]);
+        const data = {...childrenData[target.index]};
         data.label = target.value;
-        // console.log(data);
         
-        // childrenData[target.index] = data; // to replace all code below
         const childrenDataCopy = [...childrenData];
         childrenDataCopy[target.index] = data;
-        // props.setData({...props.data, [index]: {
-        //     // groupIndex: getSelfIndex(),
-        //     groupType: groupType,
-        //     btnType: btnType,
-        //     btnNum: btnNum,
-        //     childData: childrenDataCopy
-        // } });
         setGroupData(childrenDataCopy);
     } 
 
     function onChildColorChange(target) {
-        // const index = getSelfIndex();
         const childrenData = getData();
         const data = {...childrenData[target.index]};
-        // console.log('color', childrenData);
         data.color = target.value;
-        // console.log(data);
         const childrenDataCopy = [...childrenData];
         childrenDataCopy[target.index] = data;
-        // props.setData({...props.data, [index]: {
-        //     // groupIndex: getSelfIndex(),
-        //     groupType: groupType,
-        //     btnType: btnType,
-        //     btnNum: btnNum,
-        //     childData: childrenDataCopy
-        // } });
         setGroupData(childrenDataCopy);
     }
 
     function onChildCrowdChange(target) {
-        // const index = getSelfIndex();
         const childrenData = getData();
         const data = {...childrenData[target.index]};
-        // console.log('color', childrenData);
         data.omitCrowdRadio = target.value==='yes'?false : true;
-        // console.log(data);
         const childrenDataCopy = [...childrenData];
         childrenDataCopy[target.index] = data;
         setGroupData(childrenDataCopy);
@@ -497,18 +398,8 @@ export default function BtnGroupController(props) {
     function onChildDelete(target) {
         setBtnNum(btnNum-1);
         prevBtnNumRef.current = prevBtnNumRef.current>0 ? prevBtnNumRef.current-1 : 0;
-        // const index = getSelfIndex();
         const newChildrenData = [...getData().filter(item=>item.index!==target.index)];
-        // newChildrenData.splice(target.index, 1);
         newChildrenData.forEach((item,i) => {item.index=i});
-        // props.setData({...props.data, [index]: newChildrenData});
-        // props.setData({...props.data, [index]: {
-        //     // groupIndex: getSelfIndex(),
-        //     groupType: groupType,
-        //     btnType: btnType,
-        //     btnNum: btnNum,
-        //     childData: newChildrenData
-        // } });
         setGroupData(newChildrenData);
     }
 
@@ -518,29 +409,20 @@ export default function BtnGroupController(props) {
 
     function checkLabels() {
         const childData = getData();
-        // console.log(childData);
         let childWithLabel = 0;
-        // if (childData) {
             for (const child of childData) {
-                // console.log(child, child.label, typeof child.label === 'string', child.label!=='');
                 if (typeof child.label === 'string' && child.label!=='') {
                     childWithLabel++;
                 }
             }
-        // }
-        // console.log(childWithLabel, childWithLabel==childData.length);
         if (childWithLabel===childData.length) {
             return true;
-            // setDisableEdgeBtn(false);
         } else {
             return false;
-            // setDisableEdgeBtn(true);
-            // setAddEdge(false);
         }
     }
 
     function generateSkeletonVerticesData() {
-        // console.log(getData());
         return getData().map(item => item.label);
     }
 
@@ -580,10 +462,6 @@ export default function BtnGroupController(props) {
                 childData: [...groupData],
                 projectId: projectId
             };
-            // let edgeData;
-            // if (btnConfigData[index]) {
-            //     edgeData = btnConfigData[index].edgeData; //if already set edge data for skeleton
-            // }
             if (edgeData) {
                 newData.edgeData = {...edgeData};
             }
@@ -591,7 +469,6 @@ export default function BtnGroupController(props) {
                 newData.skeletonName = skeletonName ? skeletonName : 'skeleton';
             }
 
-            // post btn group data to db
             const btnGroupObj = {...newData};
             btnGroupObj.btnGroupId = index;
             console.log(newData, btnGroupObj);
@@ -636,9 +513,6 @@ export default function BtnGroupController(props) {
                         size='small'
                         />
                     <InputNumber className={styles.numInput}
-                        // className={videoStyles.playFpsInput} 
-                        // min={0}
-                        // max={props.maxBtnNum ? props.maxBtnNum : BTNNUM_MAX}
                         defaultValue={props.defualtBtnNum}
                         value={btnNum}
                         onChange={onBtnNumChange}
@@ -647,9 +521,8 @@ export default function BtnGroupController(props) {
                         />
                 </Space.Compact>
 
-                {/* {props.enableDelete ? */}
+                {}
                     <Button className={styles.generateBtn} 
-                        // shape='circle'
                         tabIndex={-1}
                         type='text'
                         icon={<DownOutlined />}
@@ -661,7 +534,6 @@ export default function BtnGroupController(props) {
                 {props.enableDelete ?
                     <Button className={styles.deleteBtn} 
                         tabIndex={-1}
-                        // shape='circle'
                         type='text'
                         icon={<DeleteOutlined />} 
                         onClick={onDelete}
@@ -686,9 +558,6 @@ export default function BtnGroupController(props) {
                     <SkeletonEdgeController 
                         index={getSelfIndex()}
                         vertices={generateSkeletonVerticesData()}
-                        // data={props.data}
-                        // setData={props.setData}
-                        // setAddEdge={setAddEdge}
                         status={props.status}
                         setEdgeData={setEdgeData}
                         />

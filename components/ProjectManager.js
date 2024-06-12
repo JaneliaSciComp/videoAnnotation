@@ -26,11 +26,8 @@ export default function ProjectManager(props) {
     
     const [okDisable, setOkDisable] = useState(true);
     const [btnConfigStatus, setBtnConfigStatus] = useState();
-    // const [reloadBtnConfig, setReloadBtnConfig] = useState(false);
     const [info, setInfo] = useState();
 
-    // const projectConfigDataRef = useStates().projectConfigDataRef;
-    // const btnConfigData = useStates().btnConfigData;
     const setConfirmConfig = useStateSetters().setConfirmConfig;
     const projectId = useStates().projectId;
     const setProjectId = useStateSetters().setProjectId;
@@ -40,8 +37,6 @@ export default function ProjectManager(props) {
     const setVideoId = useStateSetters().setVideoId;
     
     const [form] = Form.useForm();
-    // const projectName = Form.useWatch('projectName', form);
-    // const description = Form.useWatch('description', form);
 
     useEffect(() => {
         if (props.open) {
@@ -56,7 +51,6 @@ export default function ProjectManager(props) {
                 setBtnConfigStatus('new');
             } else if (props.status === 'edit') {
                 if (projectId) {
-                    // display existing config data in modal
                     form.setFieldsValue({ 
                         projectName: projectData.projectName,
                         description: projectData.description
@@ -73,8 +67,6 @@ export default function ProjectManager(props) {
     }, [props.open])
 
     useEffect(() => {
-        // btnConfigStatus is changed when click on Cancel or Ok btns.
-        // to ensure btnConfiguration's prop changes first before the modal is removed from page. Otherwise, its prop won't change
         if (!btnConfigStatus) {
             props.setOpen(false);
         }
@@ -83,13 +75,11 @@ export default function ProjectManager(props) {
 
     async function okClickHandler() {
         const {projectName, description} = form.getFieldsValue();
-        // console.log('ok', projectName, description);
         const projectObj = {
             projectId: projectId,
             projectName: projectName,
             description: description,
         }
-        // send put request to db
         let res;
         if (props.status === 'new') {
             res = await postProject(projectObj);
@@ -99,7 +89,7 @@ export default function ProjectManager(props) {
         if (res['error']) {
             if (props.status === 'new') {
                 setInfo('Adding new project to database failed!');
-                form.resetFields(); // TODO: if remove everything may frustrate user
+                form.resetFields();
             } else if (props.status === 'edit') {
                 setInfo('Editing project in database failed!');
                 form.setFieldValue({
@@ -115,25 +105,18 @@ export default function ProjectManager(props) {
         
         console.log(res);
        
-        // projectConfigDataRef.current = {...projectObj};
-        // projectConfigDataRef.current.video = {};
        
-        // setBtnConfigStatus(null);
-        // props.setOpen(false);
     }
 
 
     function cancelClickHandler() {
-        // console.log('cancel');
         setBtnConfigStatus(null);
-        // props.setOpen(false);
         if (props.status === 'new') {
             setProjectId(null);
         }   
     }
 
     function onProjectNameChange(e) {
-        // console.log('projectName', e, projectName);
         if (e.target.value?.length > 0) {
             form.setFieldsValue({ projectName: e.target.value });
             setOkDisable(false);
@@ -151,7 +134,6 @@ export default function ProjectManager(props) {
     }
 
     function onDescriptionChange(e) {
-        // console.log('description', e.target.value);
         if (e.target.value?.length > 0) {
             form.setFieldsValue({ description: e.target.value });
         }
@@ -187,16 +169,10 @@ export default function ProjectManager(props) {
                               required: true,
                               message: 'The name is required.',
                             },
-                            // {
-                            //   pattern: /^[a-zA-Z0-9]+$/,
-                            //   message: 'Name can only include letters and numbers.',
-                            // },
                           ]}
                         validateFirst={true}
-                        // labelAlign="left"
                         >
                         <Input 
-                            // value={projectName} 
                             onChange={onProjectNameChange}
                             allowClear/>
                     </Form.Item>
@@ -208,7 +184,6 @@ export default function ProjectManager(props) {
                     } */}
                     <Form.Item name='description' label="Description">
                         <Input.TextArea 
-                            // value={description} 
                             onChange={onDescriptionChange}
                             allowClear/>
                     

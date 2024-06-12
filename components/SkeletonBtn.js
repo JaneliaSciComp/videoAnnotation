@@ -45,14 +45,12 @@ export default function SkeletonBtn(props) {
     
     const [clicked, setClicked] = useState(false);
     const [radioValue, setRadioValue] = useState(2);
-    const annotationIdRef = useRef(); // to remember the annotation id created by clicking the btn, to retrieve anno data so that can add visibility info 
+    const annotationIdRef = useRef();
 
-    // get context
     const drawType = useStates().drawType;
     const frameNum = useStates().frameNum;
     const frameUrl = useStates().frameUrl;
     const setDrawType = useStateSetters().setDrawType;
-    // const addAnnotationObj = useStateSetters().addAnnotationObj;
     const frameAnnotation = useStates().frameAnnotation;
     const setFrameAnnotation = useStateSetters().setFrameAnnotation;
     const skeletonLandmark = useStates().skeletonLandmark;
@@ -63,93 +61,43 @@ export default function SkeletonBtn(props) {
     const setUseEraser = useStateSetters().setUseEraser;
     const videoId = useStates().videoId;
 
-    // console.log('skeleton', props);
 
-    // useEffect(() => {
-    //     if (!props.drawType) { //canvas set drawType=null when drawing is done
-    //         setClicked(false);
-    //         annotationIdRef.current = null;
-    //         // setCurrentLandmark(null);
-    //     } 
-    // }, [props.drawType])
 
     useEffect(() => {
-        if (!drawType || drawType!=='skeleton' || annotationIdRef.current!==annoIdToDraw) { //canvas set drawType=null when drawing is done
+        if (!drawType || drawType!=='skeleton' || annotationIdRef.current!==annoIdToDraw) {
             setClicked(false);
             annotationIdRef.current = null;
-            // setCurrentLandmark(null);
         } 
     }, [drawType])
 
     useEffect(()=> {
-        // when in drawing mode, when go to another landmark, set radio value to be 2 
         if (clicked) {
             setRadioValue(2);
         }
     }, [skeletonLandmark])
 
-    // useEffect(() => {
-    //     if (!clicked) {
-    //         setSkeletonLandmark(null);
-    //     }
-    // }, [clicked])
 
 
-    // function addRadioToAnnotation(value) {
-    //     // update radio value to annotation
-    //     if (clicked) { // only if already activated draw mode
-    //         const annotation = {...props.frameAnnotation[annotationIdRef.current]};
-    //         annotation.data[props.skeletonLandmark][2]=value;
-    //         props.frameAnnotation[annotationIdRef.current] = annotation;
-    //     }
-    // }
 
     function addRadioToAnnotation(value) {
-        // update radio value to annotation
-        if (clicked) { // only if already activated draw mode
-            // const annotation = {...frameAnnotation[annotationIdRef.current]};
-            // annotation.data[skeletonLandmark][2]=value;
-            // setFrameAnnotation({...frameAnnotation, [annotationIdRef.current]: annotation});
+        if (clicked) {
             
-            // directly modify frameAnno without using setFrameAnno to prevent trigger frameAnno useEffect in Canvas
             frameAnnotation[annotationIdRef.current].data[skeletonLandmark][2]=value;
         }
     }
 
     
-    // function clickHandler() {
-    //     if (Number.isInteger(props.frameNum) || props.frameUrl) {
-    //         // create anno obj, add to frameAnno, activate draw mode
-    //         const id = Date.now().toString();
-    //         annotationIdRef.current = id;
-    //         props.setDrawType('skeleton'); // drawType changed, useEffect will add default radio value
-    //         props.setSkeletonLandmark(0);
-    //         const initData = props.data.map(_ => [null, null, 2]); // initialize data holder and default visibility (2) to each landmark anno arr
-    //         props.addAnnotationObj({
-    //             id: id,
-    //             frameNum: props.frameNum,
-    //             data: initData,
-    //             type: 'skeleton',   
-    //             groupIndex: props.groupIndex,      
-    //         });
-    //         // console.log('shape called', props);
-    //         setClicked(true);
-    //     }
-    // }
 
     function clickHandler() {
         if (Number.isInteger(frameNum) || frameUrl) {
-            // clear unfinished polygon and skeleton annoObj before setting new annoIdToDraw
             const annoCopy = clearUnfinishedAnnotation({...frameAnnotation});
-            // setFrameAnnotation(annoCopy);
             
-            // create anno obj, add to frameAnno, activate draw mode
             const id = Date.now().toString();
             annotationIdRef.current = id;
-            setDrawType('skeleton'); // drawType changed, useEffect will add default radio value
+            setDrawType('skeleton');
             setSkeletonLandmark(0);
             setRadioValue(2);
-            const initData = props.data.map(_ => [null, null, 2]); // initialize data holder and default visibility (2) to each landmark anno arr
+            const initData = props.data.map(_ => [null, null, 2]);
             const annoObj = {
                 id: id,
                 videoId: videoId,
@@ -159,10 +107,8 @@ export default function SkeletonBtn(props) {
                 label: props.skeletonName,
                 data: initData,
             };
-            // console.log('shape called', props);
             annoCopy[id] = annoObj;
             setFrameAnnotation(annoCopy);
-            // setFrameAnnotation({...frameAnnotation, [id]: annoObj});
             setClicked(true);
 
             setAnnoIdToDraw(id);
@@ -172,15 +118,13 @@ export default function SkeletonBtn(props) {
     }
 
     function onRadioChange(e) {
-        // console.log('radio checked', e.target.value);
         setRadioValue(e.target.value);
         addRadioToAnnotation(e.target.value);
 
-        // when set radio to invisible, should immediately go to next landmark
         if (clicked && e.target.value===0) { 
-            if (skeletonLandmark < props.data.length-1) { // this is not the last landmark
+            if (skeletonLandmark < props.data.length-1) {
                 setSkeletonLandmark(skeletonLandmark+1);
-            } else { // if this is the last landmark
+            } else {
                 setDrawType(null);
                 setSkeletonLandmark(null);
                 setAnnoIdToDraw(null);
@@ -189,7 +133,6 @@ export default function SkeletonBtn(props) {
         }
     };
 
-    // console.log(props.skeletonLandmark,props.skeletonLandmark?props.skeletonLandmark:0, props.skeletonLandmark?props.skeletonLandmark:0 +1);
 
 
     return (
@@ -199,7 +142,7 @@ export default function SkeletonBtn(props) {
                 background: clicked?props.data[skeletonLandmark?skeletonLandmark:0].color:'white', 
                 border:'2px solid '+props.data[skeletonLandmark?skeletonLandmark:0].color}} 
                 onClick={clickHandler}>
-            {/* {`${(skeletonLandmark?skeletonLandmark:0) +1} ${props.data[skeletonLandmark?skeletonLandmark:0].label}`} */}
+            {}
                 {Number.isInteger(skeletonLandmark) ? `${skeletonLandmark+1} ${props.data[skeletonLandmark].label}` : props.skeletonName}
             </Button>
 

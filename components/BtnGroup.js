@@ -39,31 +39,18 @@ export default function BtnGroup(props) {
 
     useEffect(() => {
         if (props.data) {
-            // console.log('btnGroup', props.data);
             const res = renderBtns();
             setBtns(res);
         }
     }, [props])
 
     function renderBtns() {
-        // console.log('renderBtns called');
         const childData = props.data.childData;
-        // console.log(props.data);
-        // console.log(props.data.childData);
         let btns;
         if (childData && props.data.groupType) {
             switch (props.data.groupType) {
                 case 'category':
                     btns = childData.map((item, i) =>
-                                // <Category 
-                                //     key={i}
-                                //     label={item.label}
-                                //     color={item.color}
-                                //     frameNum={props.frameNum}
-                                //     frameUrl={props.frameUrl}
-                                //     addAnnotationObj={props.addAnnotationObj}
-                                //     setActiveIdObj={props.setActiveIdObj}
-                                //     />
                                 <Category 
                                     key={i}
                                     label={item.label}
@@ -73,17 +60,6 @@ export default function BtnGroup(props) {
                     break;
                 case 'shape':
                     btns = childData.map((item, i) => 
-                                // <ShapeBtn
-                                //     key={i}
-                                //     type={item.btnType} 
-                                //     label={item.label}
-                                //     color={item.color}
-                                //     frameNum={props.frameNum}
-                                //     frameUrl={props.frameUrl}
-                                //     addAnnotationObj={props.addAnnotationObj}
-                                //     drawType={props.drawType}
-                                //     setDrawType={props.setDrawType}
-                                //     />
                                 <ShapeBtn
                                     key={i}
                                     type={item.btnType} 
@@ -94,19 +70,6 @@ export default function BtnGroup(props) {
                     break;
                 case 'skeleton':
                     btns = [
-                            // <SkeletonBtn
-                            //     key={0}
-                            //     groupIndex={props.data.groupIndex}
-                            //     data={childData}
-                            //     frameNum={props.frameNum}
-                            //     frameUrl={props.frameUrl}
-                            //     addAnnotationObj={props.addAnnotationObj}
-                            //     drawType={props.drawType}
-                            //     setDrawType={props.setDrawType}
-                            //     skeletonLandmark={props.skeletonLandmark}
-                            //     setSkeletonLandmark={props.setSkeletonLandmark}
-                            //     frameAnnotation={props.frameAnnotation}
-                            //     />
                             <SkeletonBtn
                                 key={0}
                                 groupIndex={props.data.groupIndex}
@@ -142,10 +105,8 @@ export default function BtnGroup(props) {
     }
 
     return (
-        // <Fragment>
         <div className='my-1' >
             {btns? btns:null}
         </div>
-        // </Fragment>
     )
 }

@@ -54,18 +54,13 @@ export default function SkeletonEdgeController(props) {
     const edgeDataRef = useRef([]);
     const [color, setColor] = useState();
     const [info, setInfo] = useState();
-    // const prevVertex = useRef();
-    // const [error, setError] = useState();
 
-    //get context
     const btnConfigData = useStates().btnConfigData;
     const setBtnConfigData = useStateSetters().setBtnConfigData;
     
 
-    // console.log('edgeGroupController render');
 
     useEffect(()=>{
-        // console.log('[] useEffect called');
         if (!props.index) {
             throw Error('Property Index is required');
         }
@@ -91,8 +86,6 @@ export default function SkeletonEdgeController(props) {
 
 
     useEffect(() => {
-        // generate input data for radioGroup when props.vertices changes
-        // console.log('props.vertices useEffect called');
         if (props.vertices) {
             const options = props.vertices.map((item, i) => {
                 return {
@@ -100,7 +93,6 @@ export default function SkeletonEdgeController(props) {
                         value: i
                     }
             })
-            // console.log(options);
             setVerticesOptions(options);
         }
         
@@ -108,7 +100,6 @@ export default function SkeletonEdgeController(props) {
     )
 
     useEffect(() => {
-        //initialize color state based on props
         if (props.color) {
             setColor(props.color);
         } else {
@@ -118,7 +109,6 @@ export default function SkeletonEdgeController(props) {
     )
 
     useEffect(() => {
-        // update ui when goes to another vertex
         if (edgeDataRef.current[currentVertex]) {
             setCheckedValues(Array.from(edgeDataRef.current[currentVertex]));
         } else {
@@ -129,16 +119,14 @@ export default function SkeletonEdgeController(props) {
     )
 
     function onCheckBoxChange(newCheckedValues) {
-        // console.log('checked = ', newCheckedValues);
         setCheckedValues(newCheckedValues);
         const existingEdges = edgeDataRef.current[currentVertex] ? edgeDataRef.current[currentVertex] : new Set();
-        // const existingEdges = edgeDataRef.current[currentVertex] ? edgeDataRef.current[currentVertex] : [];
         let neighbor, neighborEdges;
-        if (existingEdges.size < newCheckedValues.length) { //user checked a new value, add edge to this new neighbor's data
+        if (existingEdges.size < newCheckedValues.length) {
             neighbor = newCheckedValues.filter(v => !existingEdges.has(v))[0];
             neighborEdges = new Set(edgeDataRef.current[neighbor]);
             neighborEdges.add(currentVertex);
-        } else { // user unchecked a value, delete the edge from this neighbor's data
+        } else {
             const newCheckedValuesSet = new Set(newCheckedValues);
             neighbor = Array.from(existingEdges).filter(v => !newCheckedValuesSet.has(v))[0];
             neighborEdges = new Set(edgeDataRef.current[neighbor]);
@@ -180,31 +168,16 @@ export default function SkeletonEdgeController(props) {
     }
 
     function onDoneBtnClick() {
-        // const btnGroupData = {...btnConfigData[props.index]};
-        // console.log(btnGroupData, edgeDataRef.current);
         let newEdgeData;
         if (edgeDataRef.current?.length) {
             const edgesArr = edgeDataRef.current.map(neighborSet => neighborSet?[...neighborSet]:null);
-            // btnGroupData.edgeData = {
-            //     color: color,
-            //     edges: edgesArr,
-            // }
             newEdgeData = {
                 color: color,
                 edges: edgesArr,
             }
-            // console.log(btnGroupData);
-            // setBtnConfigData({...btnConfigData, [props.index]: btnGroupData});
-            // props.setAddEdge(false);
             props.setEdgeData(newEdgeData);
             setInfo(`Edge info ${props.status==='new'?'added':'changed'}`);
         } 
-        // else if (btnGroupData.edgeData) { //if user already added some edge, and want to reset it to be no edge.
-        //     console.log('edge reset');
-        //     delete(btnGroupData[edgeData]);
-        //     setBtnConfigData({...btnConfigData, [props.index]: btnGroupData});
-        //     setEdgeAdded(true);
-        // }
         
 
         const target = {
@@ -254,7 +227,7 @@ export default function SkeletonEdgeController(props) {
                 <Button onClick={onNextBtnClick} size='small' className='mx-2'>Next</Button>
             </Row>
             <br />
-            {verticesOptions ? // verticesOptions will be calculated (useEffect) after initial render, so avoid rendering before it's ready
+            {verticesOptions ?
                 <Row >
                     <Col span={12} className='d-flex justify-content-center align-items-center'>
                         <Tag className={styles.edgeTag}>{verticesOptions[currentVertex].label}</Tag>

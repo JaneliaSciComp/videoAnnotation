@@ -1,6 +1,5 @@
 import React, {useEffect, useState, useRef} from 'react';
 import styles from '../styles/Canvas.module.css';
-// import {fabric} from 'fabric';
 import {fabric} from 'fabric-with-erasing';
 import { useStates, useStateSetters } from './AppContext';
 import { defaultAlpha, hexArr, hexMap } from '../utils/utils';
@@ -13,7 +12,6 @@ const STROKE_WIDTH = 2;
 
 const WHEEL_SENSITIVITY = 10;
 const CLICK_TOLERANCE = 5;
-// const COLOR_TOLERANCE = 10; //TODO
 const ANNOTATION_TYPES = new Set(['keyPoint', 'bbox', 'polygon', 'skeleton', 'brush']);
 
 
@@ -34,16 +32,11 @@ export default function Canvas(props) {
     const canvasObjRef = useRef();
     const testCanvasRef1 = useRef();
     const testCanvasRef2 = useRef();
-    // const keyPointObjListRef = useRef({});
-    // const bboxObjListRef = useRef({});
-    // const polygonObjListRef = useRef({});
-    const fabricObjListRef = useRef({}); // for skeleton: annoId: {id: annoId, type: 'skeleton', landmarks: [KeyPoints (if not labelled, then that entry is empty/undefined)], edges: {'0-1': Line, ...} }
-                                         // for brush: annoId: {id: annoId, type: 'brush', pathes: []}
+    const fabricObjListRef = useRef({});
     const prevDrawTypeRef = useRef({});
-    const prevUploaderRef = useRef(); // to compare if new annotation file is uploaded
+    const prevUploaderRef = useRef();
     const [info, setInfo] = useState();
 
-    // context
     const videoId = useStates().videoId;
     const frameUrl = useStates().frameUrl;
     const frameNum = useStates().frameNum;
@@ -58,30 +51,21 @@ export default function Canvas(props) {
     const brushThickness = useStates().brushThickness;
     const useEraser = useStates().useEraser;
     const undo = useStates().undo;
-    // const setUndo = useStateSetters().setUndo;
     const annoIdToDraw = useStates().annoIdToDraw;
     const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
     const annoIdToDelete = useStates().annoIdToDelete;
     const setAnnoIdToDelete = useStateSetters().setAnnoIdToDelete;
     const annoIdToShow = useStates().annoIdToShow;
     const annotationRef = useStates().annotationRef;
-    // const projectType = useStates().projectType;
-    const uploader = useStates().uploader; // to compare if new annotation file is uploaded
+    const uploader = useStates().uploader;
 
 
     
     console.log('canvas render');
     fabric.Object.prototype.erasable = false;
 
-    //Set up canvas
     useEffect(() => {
         if (!canvasObjRef.current) {
-            // activate brushCanvas
-            // const brushCanvasObj = new fabric.Canvas('brushCanvas', {
-            //     width: props.width ? props.width : CANVAS_WIDTH,
-            //     height: props.height ? props.height : CANVAS_HEIGHT,
-            // })
-            // brushCanvasObjRef.current = brushCanvasObj;
 
             const canvasObj = new fabric.Canvas('canvas', {
                 width: props.width ? props.width : CANVAS_WIDTH,
@@ -90,16 +74,13 @@ export default function Canvas(props) {
                 polygonLines: [],
                 bboxLines: [],
                 skeletonPoints: [],
-                skeletonLines: {}, //{'pointIndex1-pointIndex2': Line(), ...}, index1 < index2
+                skeletonLines: {},
                 hoverCursor: 'pointer',
                 freeDrawingCursor: 'pointer',
                 enableRetinaScaling: false,
                 stopContextMenu: true
             });
             
-            // canvasObj.on('mouse:down', //(opt) => {
-            //     mouseDownHandler//(opt.e, canvasObj);
-            // );
 
             canvasObjRef.current = canvasObj;
 
@@ -118,37 +99,29 @@ export default function Canvas(props) {
         if (imgRef.current) {
             imgRef.current.addEventListener("load", imageLoadHandler);
         }
-        // if (canvasObjRef.current) {
             canvasObjRef.current.on('mouse:wheel', wheelHandler);
             canvasObjRef.current.on('mouse:down', mouseDownHandler);
             canvasObjRef.current.on('mouse:dblclick', mouseDblclickHandler);
             canvasObjRef.current.on('mouse:move', mouseMoveHandler);
             canvasObjRef.current.on('mouse:up', mouseUpHandler);
-            canvasObjRef.current.on("path:created", pathCreateHandler); // make draw brush unselectable
+            canvasObjRef.current.on("path:created", pathCreateHandler);
                 
-        // }
-        document.addEventListener("keydown", deleteKeyHandler); // add delete key event listener
+        document.addEventListener("keydown", deleteKeyHandler);
 
-        // console.log(canvasObjRef.current.__eventListeners);
 
         return () => {
-            // if (canvasObjRef.current) {
                 const eventListeners = canvasObjRef.current.__eventListeners;
-                // if (eventListeners) {
                     Object.keys(eventListeners).forEach(key => eventListeners[key]=[]);
-                // }
-            // }
             document.removeEventListener("keydown", deleteKeyHandler);
             if (imgRef.current) {
                 imgRef.current.removeEventListener("load", imageLoadHandler);
             }
         }
-      }, [useStates()] /////check 
+      }, [useStates()]
     )
 
 
     useEffect(() => {
-        // delete obj from canvas and fabricObjRef when delete annoObj in AnnotationTable
         if (annoIdToDelete) {
             removeObjFromCanvasById(annoIdToDelete);
             delete(fabricObjListRef.current[annoIdToDelete]);
@@ -157,18 +130,7 @@ export default function Canvas(props) {
     }, [annoIdToDelete])
 
     useEffect(() => {
-        // console.log('annoIdToShow useEffect', annoIdToShow);
-        // only show selected obj on canvas when select annoObj in AnnotationTable
-        // const annoIdToShowSet =  new Set(annoIdToShow);
         Object.keys(fabricObjListRef.current).forEach(id => {
-            // console.log(id, canvasObjRef.current.getObjects());
-            //if do it in this way, needs to check if canvas already has the obj, 
-            //otherwise will result in duplicate obj
-            // if (annoIdToShowSet.has(id)) { 
-            //     addObjToCanvasById(id);
-            // } else {
-            //     removeObjFromCanvasById(id);
-            // }
             removeObjFromCanvasById(id);
         });
         annoIdToShow.forEach(id => {
@@ -178,7 +140,6 @@ export default function Canvas(props) {
 
 
     useEffect(()=> {
-        //When switch video, remove current imgObj, create a new blank imgObj
         canvasObjRef.current.remove(imageObjRef.current);
         console.log(videoId);
         if (!videoId) {
@@ -202,17 +163,13 @@ export default function Canvas(props) {
 
     useEffect(() => {
         const canvas = canvasObjRef.current;
-        // console.log('canvas frameUrl useEffect: canvas clear', canvas, JSON.stringify(canvas));
         console.log('canvas frameUrl useEffect:', frameUrl);
-        // when switch frame, get brush data before clear canvas
         getBrushData();
 
-        // remove fabric object
         removeAllObjFromCanvas();
         fabricObjListRef.current = {};
         
 
-        // remove unfinished objects
         canvas.polygonPoints.forEach(p=>canvas.remove(p));
         canvas.polygonLines.forEach(l=>canvas.remove(l));
         canvas.bboxLines.forEach(l=>canvas.remove(l));
@@ -224,7 +181,6 @@ export default function Canvas(props) {
         canvas.skeletonPoints = [];
         canvas.skeletonLines = {};
         
-        //reset all drawing/editing/dragging property
         canvas.isDragging = null;
         canvas.lastPosX = null;
         canvas.lastPosY = null;
@@ -241,10 +197,8 @@ export default function Canvas(props) {
         prevDrawTypeRef.current = null;
         resetBrush();
 
-        // recreate path obj before img load for less work
         if (frameUrl) {
             createPathes().then(
-                // update image when url changes
                 () => {
                     if (frameUrl) {
                         imgRef.current.src = frameUrl;
@@ -255,7 +209,6 @@ export default function Canvas(props) {
             )
         }
         
-        // console.log(canvas.getObjects());
 
       }, [frameUrl]
     )
@@ -275,10 +228,10 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
         const obj = fabricObjListRef.current[id];
         console.log('removeObjFromCanvasById', obj);
-        if (obj) { // when delete from AnnotationTable, annoObj may be Category, or may hasn't been finished, so doesn't have corresponding obj in fabricObjRef
+        if (obj) {
             if (obj.type==='skeleton') {
                 obj.landmarks.forEach(l => {
-                    if (l) { //if l is labelled
+                    if (l) {
                         canvas.remove(l);
                     };
                 });
@@ -294,11 +247,11 @@ export default function Canvas(props) {
     function addObjToCanvasById(id) {
         const canvas = canvasObjRef.current;
         const obj = fabricObjListRef.current[id];
-        if (obj) { // when select in AnnotationTable, annoObj may be Category, or may hasn't been finished, so doesn't have corresponding obj in fabricObjRef
+        if (obj) {
             if (obj.type==='skeleton') {
                 Object.entries(obj.edges).forEach(([_, line])=>canvas.add(line));
                 obj.landmarks.forEach(l => {
-                    if (l) { //if l is labelled
+                    if (l) {
                         canvas.add(l);
                     };
                 });
@@ -312,14 +265,9 @@ export default function Canvas(props) {
 
 
     useEffect(() => {
-        // console.log('frameAnno useEffect', frameAnnotation);
-        // // sometimes frameAnnotation changes before img load handler is called
-        // // so put createFabricObj here. It will check current frameAnno has the same frameNum as the updated frameNum
-        // createFabricObjBasedOnAnnotation(); // doesn't work, will be called everytime clicking on anno btn, result in error
         setInfo(null);
         const canvas = canvasObjRef.current;
         
-        // remove unfinished objects
         canvas.polygonPoints.forEach(p=>canvas.remove(p));
         canvas.polygonLines.forEach(l=>canvas.remove(l));
         canvas.skeletonPoints.forEach(p=>canvas.remove(p));
@@ -330,7 +278,6 @@ export default function Canvas(props) {
         canvas.skeletonLines = {};
         canvas.isDrawingSkeleton = null;
         
-        // canvas.renderAll();
 
         if ((uploader?.type==='annotation') && (uploader !== prevUploaderRef.current)) {
             console.log('frameAnno useEffect uploader', uploader);
@@ -353,33 +300,25 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
 
         if (!drawType) {
-            if (canvas.isDrawingSkeleton) { // user choose the last landmark as 'not labelled' in skeletonBtn and finish drawing skeleton
-                finishDrawSkeleton(); //pass skeletonObj to fabricObjListRef
+            if (canvas.isDrawingSkeleton) {
+                finishDrawSkeleton();
                 canvas.isDrawingSkeleton=false;
             }
 
-            if (prevDrawTypeRef.current==='brush') { // user click on the same brush btn to inactivate it
+            if (prevDrawTypeRef.current==='brush') {
                 resetBrush();
-                // canvas.clear();
-                // const ctx = canvasRef.current.getContext("2d");
-                // const img = imageObjRef.current;
-                // const imageData = ctx.getImageData(0,0,500,50);
-                // console.log('imgData', img.left, img.top, img.width,img.scaleX, img.height,img.scaleY, img);
-                // console.log( imageData, imageData.data.filter(n=>n>0));
                 
-                // console.log('paths', fabricObjListRef.current);
                 getBrushData();
-                setAnnoIdToDraw(null); // should not be set too early, since need annoId to generate rle 
+                setAnnoIdToDraw(null);
             }
         }
-        else if (drawType==='brush') { // when other anno is being drawn, user clicked on brush btn
+        else if (drawType==='brush') {
             setPencilBrush();
         }
         else {
-            if (prevDrawTypeRef.current==='brush') { // when brush btn is activated, user click on another draw btn
+            if (prevDrawTypeRef.current==='brush') {
                 resetBrush();
                 getBrushData();
-                // setAnnoIdToDraw(null); // should not use. the other draw btn already set annoIdToDraw to their id
             }
         }
         prevDrawTypeRef.current = drawType;
@@ -387,15 +326,13 @@ export default function Canvas(props) {
 
     
     useEffect(()=> {
-        // when a brushBtn is clicked, user click on another brushBtn, thus change annoIdToDraw but keep drawType 'brush', should call getBrushData()
-        // console.log(annoIdToDraw, frameAnnotation, frameAnnotation[annoIdToDraw]);
         if (annoIdToDraw && frameAnnotation[annoIdToDraw]?.type==='brush' && prevDrawTypeRef.current==='brush') {
             resetBrush();
             setPencilBrush();
         }
 
         return ()=>{
-            if (annoIdToDraw && frameAnnotation[annoIdToDraw]?.type==='brush'){ //annoIdToDraw hasn't changed, should point to prev brush annoObj
+            if (annoIdToDraw && frameAnnotation[annoIdToDraw]?.type==='brush'){
                 getBrushData(); 
             }
         }
@@ -407,13 +344,10 @@ export default function Canvas(props) {
         const annoObj = frameAnnotation[annoIdToDraw];
         canvas.isDrawingMode = true;
         canvas.freeDrawingBrush = new fabric.PencilBrush(canvas);
-        // console.log('drawBrush');
-        canvas.freeDrawingBrush.limitedToCanvasSize = true; //When `true`, the free drawing is limited to the whiteboard size
+        canvas.freeDrawingBrush.limitedToCanvasSize = true;
         const alphaFloat = props.alpha?props.alpha:defaultAlpha;
         canvas.freeDrawingBrush.color = annoObj.color + convertAlphaFloatToHex(alphaFloat);
-        // console.log('setBrush', annoObj,canvas.freeDrawingBrush.color);
         canvas.freeDrawingBrush.width = brushThickness;
-        // console.log('setPencilBrush');
     }
 
     function resetBrush() {
@@ -423,12 +357,9 @@ export default function Canvas(props) {
     }
 
     useEffect(()=>{
-        // if (drawType==='brush') {
-            // console.log('eraser useEffect', drawType);
             if (useEraser) {
                 setEraserBrush();
             } else {
-                // setPencilBrush();
                 if (drawType !== 'brush') {
                     resetBrush();
                 } else {
@@ -436,31 +367,25 @@ export default function Canvas(props) {
                 }
                 
             }
-        // }        
         
     }, [useEraser])
 
     function setEraserBrush() {
         const canvas = canvasObjRef.current;
-        // const annoObj = frameAnnotation[annoIdToDraw];
         canvas.isDrawingMode = true;
         canvas.freeDrawingBrush = new fabric.EraserBrush(canvas);
-        // console.log('setEraserBrush');
-        canvas.freeDrawingBrush.limitedToCanvasSize = true; //When `true`, the free drawing is limited to the whiteboard size
+        canvas.freeDrawingBrush.limitedToCanvasSize = true;
         canvas.freeDrawingBrush.width = brushThickness;
     }
 
     function pathCreateHandler(e) {
-        // console.log('pathcreateHandler');
         if (drawType==='brush') {
             e.path.selectable=false;
             e.path.erasable=true;
             e.path.id = annoIdToDraw;
-            // console.log(e.path);
             
             addPathObjToRef(e.path);
-            // frameAnnotation[annoIdToDraw].hasPath = true;
-            if (e.path.globalCompositeOperation!=="destination-out") { //exclude eraser path
+            if (e.path.globalCompositeOperation!=="destination-out") {
                 if (!frameAnnotation[annoIdToDraw].pathes) {
                     frameAnnotation[annoIdToDraw].pathes = [];
                 }
@@ -470,13 +395,7 @@ export default function Canvas(props) {
     }
 
     function addPathObjToRef(pathObj){
-        // the eraser path has a prop globalCompositeOperation='destination-out'
-        // other objects (img, pencilPath) has globalCompositeOperation='source-over'
-        // use this to distinguish them. 
-        // The eraser path is already included in the pencilPath obj's prop 'eraser', 
-        // no need to add to fabricObjRef. if added, it will be drawn as a redundant black path and visible on canvas
         if (pathObj.globalCompositeOperation!=="destination-out") { 
-            // check if fabricObjListRef has this brush obj, if not, create one
             const existingIds = new Set(Object.keys(fabricObjListRef.current));
             if (!existingIds.has(pathObj.id)) {
                 const brushObj = {
@@ -495,54 +414,40 @@ export default function Canvas(props) {
     async function getBrushData() {
         console.log('get brush data', frameAnnotation);
         const canvas = canvasObjRef.current;
-        canvas.discardActiveObject(); //remove active object's control border
+        canvas.discardActiveObject();
         
         const img = imageObjRef.current;
         const upperCanvasCtx = canvas.getSelectionContext();
         const brushObjArr = Object.values(fabricObjListRef.current).filter(obj=>obj.type==='brush');
-        // console.log(brushObjArr);
 
         if (brushObjArr.length > 0) {
             let offscreen = new OffscreenCanvas(img.width, img.height);
             const offscreenCtx = offscreen.getContext('2d');
             
             const vptCopy = [...canvas.viewportTransform];
-            // canvas.zoom = 1;
             let vpt = [...canvas.viewportTransform];
-            // canvas.set({width: img.width, height: img.height}); // useless, only update when refresh page
             vpt[0] = 1; 
             vpt[3] = 1; 
             vpt[4] = -img.left;
             vpt[5] = -img.top; 
             canvas.setViewportTransform(vpt);
-            canvas.renderAll(); // must have
-            // console.log(zoomCopy, vptCopy, widthCopy, heightCopy, canvas);
+            canvas.renderAll();
             
             const pixelDataCollection = {};
             
-            // frameAnnotation['pathStrArr'] = [];
             
             for (let brushObj of brushObjArr) {
                 canvas.clearContext(upperCanvasCtx);
                 canvas.renderCanvas(upperCanvasCtx, brushObj.pathes);
                 const upperCanvasData = upperCanvasCtx.getImageData(0,0,img.width*img.scaleX,img.height*img.scaleY);
-                // const upperCanvasData = canvasRef.current.getContext("2d").getImageData(0,0,img.width*img.scaleX,img.height*img.scaleY);
                 pixelDataCollection[brushObj.id] = upperCanvasData;
 
                 frameAnnotation[brushObj.id].pathes = getPathInfo(brushObj);
-                // frameAnnotation['pathStrArr'].push(getPathInfo(brushObj));
-                // frameAnnotation[brushObj.id].hasPath=true;
             }
             
             canvas.clearContext(upperCanvasCtx);
             canvas.setViewportTransform(vptCopy);
 
-            // const testCanvasCollection = {};
-            // let i = 1;
-            // for (let id in pixelDataCollection) {
-            //     testCanvasCollection[id] = i===1?testCanvasRef1.current:testCanvasRef2.current;
-            //     i++;
-            // }
             for (let id in pixelDataCollection) {
                 const upperCanvasData = pixelDataCollection[id];
                 const resizedData = await window.createImageBitmap(upperCanvasData, 0, 0, 
@@ -552,25 +457,17 @@ export default function Canvas(props) {
                 offscreenCtx.drawImage(resizedData, 0, 0);
                 const offscreenData = offscreenCtx.getImageData(0,0,img.width, img.height);
                 console.log('offscreen data', id, offscreenData);
-                offscreenCtx.clearRect(0, 0, img.width, img.height); //clear ctx for redrawing
+                offscreenCtx.clearRect(0, 0, img.width, img.height);
 
                 const pixelData = offscreenData.data;
-                const pixelDataFiltered = new Uint8ClampedArray(offscreenData.data); //for testing
+                const pixelDataFiltered = new Uint8ClampedArray(offscreenData.data);
                 const rle = [];
-                // let first;
-                // const [r,g,b] = convertColorHexToBit(frameAnnotation[annoIdToDraw].color); 
-                // const alpha = (props.alpha ? props.alpha : defaultAlpha) * 255;
-                // console.log('rgb', r, g, b);
                 let count = 1;
                 let inSeg = false;
                 for (let i=0; i<pixelData.length; i=i+4) {
-                    // if (Math.abs(pixelData[i]-r) <= COLOR_TOLERANCE 
-                    // && Math.abs(pixelData[i+1]-g) <= COLOR_TOLERANCE 
-                    // && Math.abs(pixelData[i+2]-b) <= COLOR_TOLERANCE) {
                     if (pixelData[i+3] > 0) {
                         if (i===0) {
                             inSeg = true;
-                            // first = 1;
                             rle.push(0);
                         } else {
                             if (inSeg) {
@@ -581,15 +478,9 @@ export default function Canvas(props) {
                                 inSeg = true;
                             }
                         }
-                        // //for testing
-                        // pixelDataFiltered[i] = r;
-                        // pixelDataFiltered[i+1] = g;
-                        // pixelDataFiltered[i+2] = b;
-                        // pixelDataFiltered[i+3] = (props.alpha?props.alpha:defaultAlpha)*255;
                     } else {
                         if (i===0) {
                             inSeg = false;
-                            // first = 0;
                         } else {
                             if (!inSeg) {
                                 count++;
@@ -600,7 +491,6 @@ export default function Canvas(props) {
                             }
                         }
 
-                        //for testing
                         pixelDataFiltered[i] = 0;
                         pixelDataFiltered[i+1] = 0;
                         pixelDataFiltered[i+2] = 0;
@@ -609,34 +499,12 @@ export default function Canvas(props) {
                 }
                 rle.push(count);
                 console.log(id, rle);
-                // fabricObjListRef.current[id].rle = rle;
-                // const annoObj = {...frameAnnotation[id]};
-                // annoObj.data = rle;
-                // console.log(frameAnnotation);
-                // setFrameAnnotation({...frameAnnotation, [id]: annoObj});
                 frameAnnotation[id].data = rle;
 
-                // //for testing
                 console.log(rle.reduce((res, count) => res+count, 0), img.width*img.height);
-                // const imageDataFiltered = new ImageData(pixelDataFiltered, img.width, img.height) ;
-                // const testCanvas = testCanvasCollection[id];
-                // testCanvas.width = img.width; //*img.scaleX;
-                // testCanvas.height = img.height; //*img.scaleY;
-                // const testCtx = testCanvas.getContext("2d");
-                // // testCtx.scale(img.scaleX, img.scaleY);
-                // // testCtx.putImageData(upperCanvasData, 0, 0);
-                // // testCtx.drawImage(resizedData, 0, 0);
-                // // console.log(img.width*img.scaleX,img.height*img.scaleY);
-                // // console.log('canvas', upperCanvasData, resizedData);
-                // testCtx.putImageData(imageDataFiltered, 0,0);
             }
-            offscreen = null; // delete offscreen canvas when done
-            // console.log();
-            // setAnnoIdToDraw(null);
+            offscreen = null;
         } 
-        // else {
-        //     delete(frameAnnotation['pathStrArr']);
-        // }
     }
 
     function getPathInfo(brushObj) {
@@ -665,17 +533,6 @@ export default function Canvas(props) {
                 }
                 if (brushObj.pathes.length === 0) {
                     delete(fabricObjListRef.current[annoIdToDraw]);
-                    // frameAnnotation[annoIdToDraw].hasPath = false;
-                    // let hasPath = false;
-                    // for (let id in frameAnnotation) {
-                    //     const annoObj = frameAnnotation[id];
-                    //     if (annoObj.type === 'brush' && annoObj.hasPath) {
-                    //         hasPath = true;
-                    //     }
-                    // }
-                    // if (!hasPath) {
-                    //     delete(frameAnnotation['pathStrArr']);
-                    // }
                     frameAnnotation[annoIdToDraw].pathes = null;
                 }
             }
@@ -684,7 +541,6 @@ export default function Canvas(props) {
 
 
     function convertAlphaFloatToHex(alphaFloat) {
-        // convert alpha float to hex string, e.g. 0.5 return '7F'
         const alphaBit = alphaFloat * 255;
         const secondDigit = Math.floor(alphaBit / 16);
         const firstDigit = Math.floor(alphaBit % 16);
@@ -693,7 +549,6 @@ export default function Canvas(props) {
     }
 
     function convertColorHexToBit(colorHex) {
-        // convert color hex string to bit, e.g. '#FFFFFF' return [255, 255, 255]
         const charArr = colorHex.split('');
         const r = hexMap[charArr[1]] * 16 + hexMap[charArr[2]];
         const g = hexMap[charArr[3]] * 16 + hexMap[charArr[4]];
@@ -703,81 +558,56 @@ export default function Canvas(props) {
 
 
     async function createFabricObjBasedOnAnnotation() {
-        // for both cases where the func is called, already executed the below two lines, so no need to execute again. if execute, will cause pathe obj to be removed
-        // removeAllObjFromCanvas();
-        // fabricObjListRef.current = {};
         
         const canvas = canvasObjRef.current;
-        // console.log(canvas.getObjects());
-        // console.log(frameNum, annotationRef.current);
-        // const nextFrameAnno = annotationRef.current[frameNum];
-        const nextFrameAnno = await getFrameAnnotationFromDB(); // TODO: risk: the retrieved anno data might be different from frameAnnotation because they are retrieved separately 
+        const nextFrameAnno = await getFrameAnnotationFromDB();
         console.log('createObjBasedOnAnno', nextFrameAnno);
         if (nextFrameAnno && Object.keys(nextFrameAnno).length>0) {
             Object.keys(nextFrameAnno).forEach(id => {
                 const annoObj = nextFrameAnno[id];
                 console.log('1', annoObj);
                 if (annoObj.frameNum === frameNum) {
-                    // console.log('2', annoObj);
                     let dataToCanvas;
                     switch (annoObj.type) {
                         case 'keyPoint':
                             dataToCanvas = getKeypointCoordToCanvas(annoObj);
-                            // console.log('keypoint', dataToCanvas);
                             createKeyPoint(dataToCanvas, annoObj);
                             break;
                         case 'bbox':
                             dataToCanvas = getBBoxCoordToCanvas(annoObj);
-                            // console.log('bbox', dataToCanvas);
                             createBBox(dataToCanvas, annoObj);
                             break;
                         case 'polygon':
                             dataToCanvas = getPolygonCoordToCanvas(annoObj);
-                            // console.log('polygon', dataToCanvas);
                             createPolygon(dataToCanvas, annoObj);
                             break;
                         case 'skeleton':
                             dataToCanvas = getSkeletonCoordToCanvas(annoObj);
-                            // console.log('skeleton', dataToCanvas);
                             createSkeleton(dataToCanvas, annoObj);
                             break;
-                        // 'brush' is handled in createPahtes() which is always called beside this func
                     }
                 }
             });
 
             console.log('canvas objs after createObjBasedOnAnno', canvas.getObjects());
             canvas.getObjects().forEach(obj=>{
-                if (obj.id || obj.owner) { // path, keypoint, rect, polygon obj have id, circle,line obj have owner
-                    // console.log(obj);
+                if (obj.id || obj.owner) {
                     canvas.bringToFront(obj);
                 }
             });
             canvas.renderAll();
-            // console.log(canvas, canvas.getObjects());
-            // console.log(JSON.stringify(canvas));
 
-            // const firstId = Object.keys(nextFrameAnno)[0];
-            // if (nextFrameAnno[firstId].frameNum === frameNum) {
-            //     Object.keys(nextFrameAnno).forEach(id => {
-            //         if (id === 'pathStrArr') {
-            //             createPathes(nextFrameAnno[id]);
-            //         }
-            //     })
-            // }
-            // createPathes();
         }
     }
 
     async function getFrameAnnotationFromDB() {
         if (Number.isInteger(frameNum) && videoId) {
             const res = await getFrameAnnotation(frameNum, videoId);
-            if (res?.annotations?.length > 0) { //if no anno for this frame, res: {annotations: []}
+            if (res?.annotations?.length > 0) {
                 const frameAnno = {};
                 res.annotations.forEach((anno) => frameAnno[anno.id] = anno);
                 return frameAnno;
             } else {
-                // console.log(res);
                 return {};
             }
         }
@@ -785,12 +615,9 @@ export default function Canvas(props) {
     }
 
     
-    function scaleImage(canvas, image) { //image, canvas
-        // scale image to fit in the canvas
+    function scaleImage(canvas, image) {
         const scale = Math.min(canvas.width/image.width, canvas.height/image.height);
-        // console.log(canvas.width, image.width);
         image.set({scaleX: scale, scaleY: scale});
-        // align image to the center, css styling doesn't work
         const offsetX = (canvas.width - image.width * scale) / 2;
         const offsetY = (canvas.height - image.height * scale) / 2;
         if (offsetX > 0) {
@@ -798,23 +625,17 @@ export default function Canvas(props) {
         } else {
             image.set({top: offsetY});
         }
-        // console.log('scaled: ', image.getScaledWidth(), image.getScaledHeight());
-        // console.log('original: ', image.get('width'), image.get('height'));
     }
 
 
     async function imageLoadHandler(){
-        //When new video is loaded
-        //scale frame size to fit in canvas 
-        // if (frameNum === 0) {
-        if (!frameNum) { //including frameNum==0 (new video), frameNum==null (image instead of video)
+        if (!frameNum) {
             imageObjRef.current.width = imgRef.current.width;
             imageObjRef.current.height = imgRef.current.height;
             scaleImage(canvasObjRef.current, imageObjRef.current);
         }
         console.log('img load handler', frameUrl, imgRef.current.url);
         
-        //Draw fabric objects according to annotation
         await createFabricObjBasedOnAnnotation();
         canvasObjRef.current.renderAll();
     }
@@ -861,18 +682,17 @@ export default function Canvas(props) {
         return newPoints;
     }
 
-    function getSkeletonCoordToImage(obj) { //obj is the skeleton obj in fabricObjRef: {id: , type:'skeleton', landmarks: [...], edges: {'0-1': Line, ...}}
-        const oldData = frameAnnotation[obj.id].data; // anno data is already created before skeleton finish drawing
-        const newData = oldData.map((coorArr,i) => { //coorArr:[x,y,v]. Loop through oldData, not obj.landmarks, because landmark could be unlabelled in obj.landmarks, but has to be existed in oldData
+    function getSkeletonCoordToImage(obj) {
+        const oldData = frameAnnotation[obj.id].data;
+        const newData = oldData.map((coorArr,i) => {
             const p = obj.landmarks[i];
-            if (p) { //p could be unlabelled, thus undefined
+            if (p) {
                 const newPoint = getPointCoordToImage(p.getCenterPoint());
                 return [newPoint.x, newPoint.y, coorArr[2]];
             } else {
                 return coorArr;
             }
         });
-        // console.log(oldData, newData);
         return newData;
     }
 
@@ -884,7 +704,6 @@ export default function Canvas(props) {
         convert to coordinates relative to canvas plane 
     */
     function getPointCoordToCanvas(point){
-        // point: {x:..., y:...}, the coord relative to img plane 
         const img = imageObjRef.current;
         return ({
             x: point.x * img.scaleX + img.left, 
@@ -926,30 +745,25 @@ export default function Canvas(props) {
 
 
     function wheelHandler(opt) {
-        // zoom in/out
         const e = opt.e;
         const canvas = canvasObjRef.current;
         let zoom = canvas.getZoom();
-        // zoom *= 0.999 ** (-opt.e.deltaY);
         const sensitivity = props.wheelSensitivity ? props.wheelSensitivity : WHEEL_SENSITIVITY;
         zoom += e.deltaY * sensitivity /10000;
         zoom = Math.max(1, zoom);
         canvas.zoomToPoint({x: e.offsetX, y: e.offsetY}, zoom);
-        if (zoom == 1) { //recenter canvas
+        if (zoom == 1) {
             let vpt = canvas.viewportTransform;
             vpt[4] = 0;
             vpt[5] = 0;
-            // canvas.requestRenderAll();
         }
         e.preventDefault();
         e.stopPropagation();
-        // console.log('zooming',imageObjRef.current);
     }
 
 
     function mouseDblclickHandler() {
         console.log('dbclick');
-        // console.log(canvasObjRef.current.getActiveObject());
         const canvas = canvasObjRef.current;
         if (canvas.getActiveObject() && canvas.getActiveObject().type === 'polygon') {
             const polygon = canvas.getActiveObject();
@@ -974,7 +788,6 @@ export default function Canvas(props) {
         console.log('mouse down');
 
         if (!canvas.getActiveObject()){
-            // drag image (mouse down + alt/option key down)
             if (e.altKey === true) {
                 setupCanvasDrag(e);
             }
@@ -984,7 +797,7 @@ export default function Canvas(props) {
             setActiveAnnoObj(null);
         }
 
-        if (canvas.getActiveObject()){ // when click on an obj
+        if (canvas.getActiveObject()){
             const activeObj = canvas.getActiveObject();
             if (ANNOTATION_TYPES.has(activeObj.type)) {
                 addActiveIdObj(activeObj);
@@ -994,15 +807,12 @@ export default function Canvas(props) {
             }
         }
 
-        // console.log(drawType);
         if (drawType === 'keyPoint') {
-            // const idTodraw = getIdToDraw();
             const annoObjToDraw = {...frameAnnotation[annoIdToDraw]};
             createKeyPoint(canvas.getPointer(), annoObjToDraw);
         }
 
         if (drawType === 'bbox') {
-            // const idToDraw = getIdToDraw();
             canvas.bboxIdObjToDraw = {...frameAnnotation[annoIdToDraw]};
             canvas.bboxStartPosition = canvas.getPointer();
         }
@@ -1012,14 +822,12 @@ export default function Canvas(props) {
         }
 
         if (canvas.editPolygon) {
-            // console.log('mouse down', canvas.getActiveObject(), drawType);
             if (!canvas.getActiveObject()) {
                 finishEditPolygon();
             } else if (canvas.getActiveObject()?.type !== 'polygonPoint'
             || canvas.getActiveObject()?.owner != canvas.editingPolygonId){
                 const activeObj = canvas.getActiveObject();
                 finishEditPolygon();
-                // canvas.setActiveObject(null);
                 if (ANNOTATION_TYPES.has(activeObj.type)) {
                     addActiveIdObj(activeObj);
                 } else if (activeObj.type==='skeletonPoint' && drawType !== 'skeleton') {
@@ -1033,8 +841,6 @@ export default function Canvas(props) {
             }
         }
 
-        // console.log('mouse down', canvas.getActiveObject(), drawType);
-        // this if must be above next if, otherwise dragSkeletonPoint will be called right after drawing the last landmark and cause error
         if (canvas.getActiveObject() && canvas.getActiveObject().type==='skeletonPoint' && drawType !== 'skeleton') {
             canvas.isDraggingSkeletonPoint = true;
             console.log(canvas.isDraggingSkeletonPoint);
@@ -1045,10 +851,6 @@ export default function Canvas(props) {
             drawSkeleton();
         }
 
-        // if (drawType === 'brush' && useEraser) {
-        //     eraseBrush();
-        //     canvas.isErasing = true;
-        // }
     }
 
 
@@ -1058,7 +860,6 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
         if (canvas.isDragging) {
             dragCanvas(e);
-            // console.log('dragging',imageObjRef.current);
         }
         if (canvas.isDraggingPolygonPoint) {
             dragPolygonPoint();
@@ -1066,12 +867,10 @@ export default function Canvas(props) {
         if (drawType==='bbox' && canvas.bboxStartPosition) {
             drawBBox();
         }
-        if (canvas.activeObj && canvas.isEditingObj) { //when drag, rotate, scale obj, update coord
+        if (canvas.activeObj && canvas.isEditingObj) {
             setActiveObjData();
-            // props.setActiveIdObj(props.rectIdList[canvas.activeObj.id]);
         }
-        // console.log('mouse move')
-        if (canvas.isDraggingSkeletonPoint) { //when drag skeletonPoint, the if above also holds, so will update coord when drag skeletonPoint
+        if (canvas.isDraggingSkeletonPoint) {
             dragSkeletonPoint();
         }
        
@@ -1085,7 +884,6 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
         const obj = canvas.activeObj;
         let data;
-        // console.log('setActiveObjData');
         switch (obj.type) {
             case 'keyPoint':
                 data = getKeypointCoordToImage(obj);
@@ -1102,7 +900,6 @@ export default function Canvas(props) {
         }
         const newAnnoObj = {...frameAnnotation[obj.id], data: data}; 
         setFrameAnnotation({...frameAnnotation, [obj.id]: newAnnoObj});
-        // frameAnnotation[obj.id] = newAnnoObj;
         setActiveAnnoObj(newAnnoObj)
     }
 
@@ -1118,14 +915,12 @@ export default function Canvas(props) {
         canvas.isDraggingPolygonPoint = false;
         canvas.isDraggingSkeletonPoint = false;
         canvas.isEditingObj = false;
-        // canvas.isErasing = false;
 
-        // finish drawing bbox
         if (drawType === 'bbox') {
             canvas.bboxEndPosition = canvas.getPointer();
             finishDrawBBox();
 
-            canvas.isEditingObj = false;// createRect() set it to be true, should be reset to be false
+            canvas.isEditingObj = false;
         }
     }
 
@@ -1134,13 +929,10 @@ export default function Canvas(props) {
         if ((e.key === 'Backspace' || e.key === 'Delete') 
         && canvasObjRef.current.getActiveObject()
         && canvasObjRef.current.getActiveObject().type !== 'polygonPoint'
-        // && canvasObjRef.current.getActiveObject().type !== 'skeletonPoint'
         ) {
             setInfo(null);
             removeObj();
         }
-        // console.log(e.key); // Backspace
-        // console.log(e.keyCode); // 8
     }
 
 
@@ -1174,48 +966,39 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
         canvas.selection = false;
         
-        const idToDraw = annoIdToDraw; //getIdToDraw();
+        const idToDraw = annoIdToDraw;
         const idObjToDraw = {...frameAnnotation[idToDraw]};
 
         const clickPoint = canvas.getPointer();
-        // console.log('draw polygon', canvas.polygonPoints, canvas.polygonLines);
        
         if (canvas.polygonPoints.length===0 && canvas.polygonLines.length===0) {
             const point = createPoint(clickPoint, idObjToDraw, 0);
             canvas.add(point).setActiveObject(point);
             canvas.polygonPoints.push(point);
-            // console.log('first',point.getCenterPoint(), point.getCoords());
         } else if (canvas.polygonPoints.length - canvas.polygonLines.length == 1) {
             const startPoint = canvas.polygonPoints[0].getCenterPoint();
-            //if user click on the startPoint, then finish drawing
             if (Math.abs(startPoint.x - clickPoint.x) <= CLICK_TOLERANCE 
             && Math.abs(startPoint.y - clickPoint.y) <= CLICK_TOLERANCE 
             && canvas.polygonPoints.length >= 3) {
                 const prePoint = canvas.polygonPoints[canvas.polygonPoints.length-1].getCenterPoint();
-                const line = createLine(prePoint, startPoint, idObjToDraw)//, canvas.polygonLines.length);
+                const line = createLine(prePoint, startPoint, idObjToDraw)
                 canvas.polygonLines.push(line);
                 canvas.add(line);
 
-                // console.log(canvas.polygonPoints.map(p => p.getCenterPoint()));
                 createPolygon(canvas.polygonPoints.map(p => p.getCenterPoint()), idObjToDraw);
-                // fabricObjListRef.current = {...fabricObjListRef.current, [polygonObj.id]: polygonObj};
-                // canvas.add(polygonObj).setActiveObject(polygonObj);
                 
                 canvas.polygonPoints.forEach(p=>canvas.remove(p));
                 canvas.polygonLines.forEach(l=>canvas.remove(l));
                 canvas.polygonPoints=[];
                 canvas.polygonLines=[];
-                // canvas.selection = true;
                 setDrawType(null);
                 setAnnoIdToDraw(null);
 
-                // addActiveIdObj(polygonObj);
-                // console.log('poly',canvas.activeObj, canvas.isEditingObj);
 
             } else {
                 const point = createPoint(clickPoint, idObjToDraw, canvas.polygonPoints.length);
                 const prePoint = canvas.polygonPoints[canvas.polygonPoints.length-1];
-                const line = createLine(prePoint.getCenterPoint(), point.getCenterPoint(), idObjToDraw)//, canvas.polygonLines.length);
+                const line = createLine(prePoint.getCenterPoint(), point.getCenterPoint(), idObjToDraw)
                 canvas.add(line);
                 canvas.bringToFront(prePoint);
                 canvas.add(point).setActiveObject(point);
@@ -1230,27 +1013,22 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
         canvas.selection = false;
         
-        const idToDraw = annoIdToDraw //getIdToDraw();
-        const annoObjToDraw = {...frameAnnotation[idToDraw]}; //{annoId: {id: annoId, groupIndex: , frameNum: , type: 'skeleton', data: [[null, null, 2], ...}}
-        // console.log(annoObjToDraw);
-        const landmarkToDraw = btnConfigData[annoObjToDraw.groupIndex].childData[skeletonLandmark]; //{index: 0, btnType: 'skeleton',label: 'head',color: '#1677FF'}
+        const idToDraw = annoIdToDraw
+        const annoObjToDraw = {...frameAnnotation[idToDraw]};
+        const landmarkToDraw = btnConfigData[annoObjToDraw.groupIndex].childData[skeletonLandmark];
         const landmarkInfo = {
             id: idToDraw,
             color: landmarkToDraw.color,
             type: landmarkToDraw.btnType,
         }
-        // console.log('landmark', landmarkInfo);
         const landmarkTotalNum = btnConfigData[annoObjToDraw.groupIndex].childData.length;
-        const edgesInfo = btnConfigData[annoObjToDraw.groupIndex].edgeData; // {color: '', edges: [[], [],...]}
+        const edgesInfo = btnConfigData[annoObjToDraw.groupIndex].edgeData;
         
         const clickPoint = canvas.getPointer();
-        //console.log(clickPoint);
-        //create landmark
         const landmark = createPoint(clickPoint, landmarkInfo, skeletonLandmark);
         
         canvas.add(landmark).setActiveObject(landmark);
         
-        //create edges
         if (edgesInfo?.edges && edgesInfo.edges[skeletonLandmark]) {
             const neighbors = new Set(edgesInfo.edges[skeletonLandmark]);
             const edgeColor = edgesInfo.color;
@@ -1259,7 +1037,6 @@ export default function Canvas(props) {
                 type: landmarkToDraw.btnType,
                 color: edgeColor,
             }
-            // console.log('edge',edgeInfo);
             canvas.skeletonPoints.forEach(p => {
                 if (neighbors.has(p.index)) {
                     const line = createLine(p.getCenterPoint(), landmark.getCenterPoint(), edgeInfo);
@@ -1271,22 +1048,20 @@ export default function Canvas(props) {
             })
         }
 
-        canvas.skeletonPoints[skeletonLandmark] = (landmark); // must be after creating edges
+        canvas.skeletonPoints[skeletonLandmark] = (landmark);
 
 
-        if (skeletonLandmark < landmarkTotalNum - 1) { // if not done with drawing
+        if (skeletonLandmark < landmarkTotalNum - 1) {
             setSkeletonLandmark(skeletonLandmark + 1);
-        } else { // if done
+        } else {
             setSkeletonLandmark(null);
-            setDrawType(null); // will trigger useEffect to call finishDrawSkeleton(), and in skeletonBtn trigger useEffect to reset clicked and skeletonLandmark
+            setDrawType(null);
             setAnnoIdToDraw(null);
         }
     }
 
 
     function finishDrawSkeleton() {
-        // pass skeletonObj to fabricObjListRef
-        // called by useEffect (monitor drawType)
         console.log('finishDrawSkeleton called');
         const canvas = canvasObjRef.current;
         canvas.skeletonPoints.forEach(p => {p.lockMovementX=false; p.lockMovementY=false});
@@ -1301,28 +1076,20 @@ export default function Canvas(props) {
         canvas.skeletonPoints = [];
         canvas.skeletonLines = {};
         
-        //add coord data to annotation
         addActiveIdObj(skeletonObj);
         
-        // canvas.selection = true;
     }
 
 
     function createKeyPoint(data, annoObjToDraw) {
         const canvas = canvasObjRef.current;
-        // canvas.selection = false;
         const idTodraw = annoObjToDraw.id;
-        // console.log('canvas',annoObjToDraw);
         const point = createPoint(data, annoObjToDraw, 0);
         point.id = idTodraw;
         point.type = 'keyPoint';
         point.hasControls = false;
         point.hasBorders = false;
-        // console.log('keyPointObj', point);
-        // console.log(point.__eventListeners);
-        // fabricObjListRef.current = {...fabricObjListRef.current, [idTodraw]: point};
         fabricObjListRef.current[idTodraw] = point;
-        // console.log('keyPointObjListRef', keyPointObjListRef.current);
         canvas.add(point)
         if (drawType==='keyPoint') {
             canvas.setActiveObject(point);
@@ -1330,7 +1097,6 @@ export default function Canvas(props) {
             setDrawType(null);
             setAnnoIdToDraw(null);
         }
-        // canvas.selection = true;
     }
 
 
@@ -1348,7 +1114,6 @@ export default function Canvas(props) {
                 id: idObj.id,
                 label: idObj.label,
                 type: idObj.type,
-                //left,top,width,height need to consider user's drag direction
                 left: Math.min(startPos.x, endPos.x),
                 top: Math.min(startPos.y, endPos.y),
                 width: width,
@@ -1363,17 +1128,13 @@ export default function Canvas(props) {
                 lockSkewingY: true,
                 hasRotatingPoint: false
             });
-            // console.log(bboxObj);
-            // fabricObjListRef.current = {...fabricObjListRef.current, [bboxObj.id]: bboxObj};
             fabricObjListRef.current[bboxObj.id] = bboxObj;
-            // console.log('drawbboxObj', bboxObj.left, bboxObj.height, bboxObj.width, bboxObj.height);
             canvas.add(bboxObj).setActiveObject(bboxObj);
             addActiveIdObj(bboxObj);
         } else {
             const annotationList = {...frameAnnotation};
             delete(annotationList[idObj.id]);
             setFrameAnnotation(annotationList);
-            // delete(frameAnnotation[idObj.id])
         }   
         canvas.bboxStartPosition = null;
         canvas.bboxEndPosition = null;
@@ -1382,8 +1143,6 @@ export default function Canvas(props) {
         canvas.bboxLines = [];
         setDrawType(null);
         setAnnoIdToDraw(null);
-        // canvas.selection = true;
-        // console.log('rect',canvas.activeObj, canvas.isEditingObj);
     }
 
 
@@ -1397,7 +1156,6 @@ export default function Canvas(props) {
             id: annoObjToDraw.id,
             label: annoObjToDraw.label,
             type: annoObjToDraw.type,
-            //left,top,width,height need to consider user's drag direction
             left: data.left,
             top: data.top,
             width: data.width,
@@ -1412,25 +1170,22 @@ export default function Canvas(props) {
             lockSkewingY: true,
             hasRotatingPoint: false
         });
-        // fabricObjListRef.current = {...fabricObjListRef.current, [bboxObj.id]: bboxObj};
         fabricObjListRef.current[bboxObj.id] = bboxObj;
         canvas.add(bboxObj);
-        // console.log('createbboxObj', bboxObj.left, bboxObj.height, bboxObj.width, bboxObj.height);
     }
 
     
     function createPoint(clickPoint, annoObj, index) {
-        // console.log(annoObj.type==='skeleton'||annoObj.type==='polygon');
         const point = new fabric.Circle({
-            left: clickPoint.x,  /////
-            top: clickPoint.y,  /////
+            left: clickPoint.x,
+            top: clickPoint.y,
             radius: props.circleRadius ? props.circleRadius : CIRCLE_RADIUS,
             originX: 'center',
             originY: 'center',
             strokeWidth: 1,
             strokeUniform: true,
             stroke: annoObj.color,
-            fill: annoObj.type==='keyPoint'?annoObj.color:'white', //'white',//idObj.color,
+            fill: annoObj.type==='keyPoint'?annoObj.color:'white',
             lockScalingX: true,
             lockScalingY: true,
             lockRotation: true,
@@ -1440,31 +1195,25 @@ export default function Canvas(props) {
             hasControls: false,
             lockMovementX: annoObj.type==='skeleton'||annoObj.type==='polygon' ? true : false,
             lockMovementY: annoObj.type==='skeleton'||annoObj.type==='polygon' ? true : false,
-            //centeredScaling: true,
             type: annoObj.type + 'Point', 
             owner: annoObj.id,
-            index: index, // point index for polygon or skeleton
+            index: index,
         })
-        // console.log('point', point);
         point.on('mouseover', (opt)=>{
             opt.target.set({
-                // radius: 10,
                 strokeWidth: 2,
                 fill: annoObj.type==='keyPoint'?false:'white',
                 scaleX: 2,
                 scaleY: 2,
-                //centeredScaling: true,
             });
             canvasObjRef.current.renderAll();
         });
         point.on('mouseout', (opt)=>{
             opt.target.set({
-                // radius: CIRCLE_RADIUS,
                 strokeWidth: 1,
                 fill: annoObj.type==='keyPoint'?annoObj.color:'white',
                 scaleX: 1,
                 scaleY: 1,
-                //centeredScaling: true,
             });
             canvasObjRef.current.renderAll();
         });
@@ -1472,7 +1221,7 @@ export default function Canvas(props) {
     }
 
 
-    function createLine(startPoint, endPoint, idObj){//, index) {
+    function createLine(startPoint, endPoint, idObj){
         return new fabric.Line([
             startPoint.x, startPoint.y, endPoint.x, endPoint.y
         ], {
@@ -1481,7 +1230,6 @@ export default function Canvas(props) {
             selectable: false,
             type: idObj.type+'Line',
             owner: idObj.id,
-            //index: index, 
             lockRotation: true,
             lockScalingFlip: true,
             lockSkewingX: true,
@@ -1501,14 +1249,11 @@ export default function Canvas(props) {
             strokeWidth: props.strokeWidth ? props.strokeWidth : STROKE_WIDTH,
             strokeUniform: true,
             fill: false,
-            // lockRotation: true,
             lockScalingFlip: true,
             lockSkewingX: true,
             lockSkewingY: true,
-            // lockScalingX: true,
-            // lockScalingY: true,
         }); 
-        fabricObjListRef.current[polygon.id] = polygon;/////
+        fabricObjListRef.current[polygon.id] = polygon;
         canvas.add(polygon);
         if (drawType || canvas.editPolygon) {
             canvas.setActiveObject(polygon);
@@ -1517,18 +1262,16 @@ export default function Canvas(props) {
     }
 
     function createSkeleton(points, annoObjToDraw) {
-        // called only when go to a frame with skeleton annotation, to draw skeleton landmarks and edges
-        // points: arr of point. [{x1: , y1: }, {x2:, y2: }, ...]
         const canvas = canvasObjRef.current;
         const id = annoObjToDraw.id;
         if (btnConfigData[annoObjToDraw.groupIndex]?.groupType==='skeleton') {
-            const landmarksToDraw = btnConfigData[annoObjToDraw.groupIndex].childData; //[{index: 0, btnType: 'skeleton',label: 'head',color: '#1677FF'}, ...]
-            const edgesInfo = btnConfigData[annoObjToDraw.groupIndex].edgeData; // {color: '', edges: [set(), ...]}
+            const landmarksToDraw = btnConfigData[annoObjToDraw.groupIndex].childData;
+            const edgesInfo = btnConfigData[annoObjToDraw.groupIndex].edgeData;
             const landmarksDrawn = [];
             const edgesDrawn = {};
     
-            points.forEach((point, i) => { //point: {x: , y: }
-                if (annoObjToDraw.data[i][2]!==0) { //to exclude unlabelled landmark
+            points.forEach((point, i) => {
+                if (annoObjToDraw.data[i][2]!==0) {
                     const landmarkInfo = {
                         id: id,
                         color: landmarksToDraw[i].color,
@@ -1547,7 +1290,7 @@ export default function Canvas(props) {
                             color: edgeColor,
                         }
                         for (let n=0; n<i; n++) {
-                            if (landmarksDrawn[n] && neighbors.has(n)) { // the landmark is labelled and is a neighbor
+                            if (landmarksDrawn[n] && neighbors.has(n)) {
                                 const line = createLine(point, points[n], edgeInfo);
                                 canvas.add(line);
                                 edgesDrawn[`${landmarksDrawn[n].index}-${landmark.index}`] = line;
@@ -1567,26 +1310,16 @@ export default function Canvas(props) {
                 landmarks: landmarksDrawn,
                 edges: edgesDrawn,
             };
-            fabricObjListRef.current[id] = skeletonObj; /////
+            fabricObjListRef.current[id] = skeletonObj;
         }
         
     }
 
     async function createPathes() {
-        // recreate all path obj based by looping through all brush annoObj's .pathes prop
         console.log('createPath', frameNum);
-        // const nextFrameAnno = annotationRef.current[frameNum];
-        const nextFrameAnno = await getFrameAnnotationFromDB(frameNum, videoId); //TODO: risky
+        const nextFrameAnno = await getFrameAnnotationFromDB(frameNum, videoId);
         const pathStrArr=[];
         if (nextFrameAnno && Object.keys(nextFrameAnno).length>0) {
-            // const firstId = Object.keys(nextFrameAnno)[0];
-            // if (nextFrameAnno[firstId].frameNum === frameNum) {
-            //     Object.keys(nextFrameAnno).forEach(id => {
-            //         if (id === 'pathStrArr') {
-            //             pathStrArr = nextFrameAnno['pathStrArr'];
-            //         }
-            //     })
-            // }
             Object.keys(nextFrameAnno).forEach(id => {
                 const annoObj = nextFrameAnno[id];
                 if (annoObj.frameNum === frameNum && annoObj.type === 'brush' && annoObj.pathes?.length > 0) {
@@ -1604,20 +1337,17 @@ export default function Canvas(props) {
             console.log('path',pathStr);
             const canvasStr = JSON.stringify(canvas);
             console.log('before add path',canvasStr);
-            // canvas.loadFromJSON(canvasStr);
             const prefix = canvasStr.search('objects');
             const newCanvasStr = canvasStr.slice(0, prefix-1) + '"objects":[' 
-                                    + pathStr +canvasStr.slice(prefix+10); //+ ','
+                                    + pathStr +canvasStr.slice(prefix+10);
             console.log('after add path',newCanvasStr);
             canvas.loadFromJSON(newCanvasStr,canvas.renderAll.bind(canvas));
             const pathes = canvas.getObjects();
             pathes.forEach(obj=>{
-                obj.selectable = false; //for some reason, this prop is not kept
+                obj.selectable = false;
                 addPathObjToRef(obj);
             });
-            // console.log(canvas.getObjects());
             canvas.add(imageObjRef.current);
-            // canvas.renderAll();
         }       
         console.log('canvas objs after createPath:', canvasObjRef.current.getObjects());
     }
@@ -1629,12 +1359,8 @@ export default function Canvas(props) {
         let zoom = canvas.getZoom();
         let tempX = vpt[4] + e.clientX - canvas.lastPosX;
         let tempY = vpt[5] + e.clientY - canvas.lastPosY;
-        // Doesn't let drag go infinitely
         vpt[4] = Math.max(Math.min(0, tempX), canvas.getWidth() - canvas.getWidth()*zoom);
         vpt[5] = Math.max(Math.min(0, tempY), canvas.getHeight() - canvas.getHeight()*zoom);
-        // Free drag
-        // vpt[4] += e.clientX - canvas.lastPosX;
-        // vpt[5] += e.clientY - canvas.lastPosY;
         canvas.requestRenderAll();
         canvas.lastPosX = e.clientX;
         canvas.lastPosY = e.clientY;
@@ -1642,20 +1368,14 @@ export default function Canvas(props) {
 
     function dragPolygonPoint() {
         const canvas = canvasObjRef.current;
-        // console.log('dragging');
         const point = canvas.getActiveObject();
-        // console.log('point ', point, point.getCenterPoint());
-        // console.log(point.calcTransformMatrix(),point.calcOwnMatrix());
         const polygon = fabricObjListRef.current[point.owner];
         const idObjToEdit = frameAnnotation[point.owner];
-        // console.log('polygon ', polygon);
         const prePointIndex = point.index>0 ? point.index-1 : polygon.lineObjects.length-1;
         const postPointIndex = point.index<polygon.pointObjects.length-1 ? point.index+1 : 0;
-        const newPreLine = createLine(polygon.pointObjects[prePointIndex].getCenterPoint(), point.getCenterPoint(), idObjToEdit)//, prePointIndex);
-        const newPostLine = createLine(point.getCenterPoint(), polygon.pointObjects[postPointIndex].getCenterPoint(), idObjToEdit)//, point.index);
+        const newPreLine = createLine(polygon.pointObjects[prePointIndex].getCenterPoint(), point.getCenterPoint(), idObjToEdit)
+        const newPostLine = createLine(point.getCenterPoint(), polygon.pointObjects[postPointIndex].getCenterPoint(), idObjToEdit)
         canvas.remove(polygon.lineObjects[prePointIndex], polygon.lineObjects[point.index]);
-        // delete(polygon.lineObjects[prePointIndex]);
-        // delete(polygon.lineObjects[point.index]);
         polygon.lineObjects[prePointIndex] = newPreLine;
         polygon.lineObjects[point.index] = newPostLine;
         canvas.add(newPreLine, newPostLine);
@@ -1667,8 +1387,7 @@ export default function Canvas(props) {
         const canvas = canvasObjRef.current;
         
         const point = canvas.getActiveObject();
-        // console.log('dragging skeleton point', point);
-        const edgesInfo = btnConfigData[frameAnnotation[point.owner].groupIndex].edgeData; // {color: '', edges: [[], ...]}
+        const edgesInfo = btnConfigData[frameAnnotation[point.owner].groupIndex].edgeData;
         if (edgesInfo) {
             const landmarks = fabricObjListRef.current[point.owner].landmarks;
             const edgeInfo = {
@@ -1676,12 +1395,11 @@ export default function Canvas(props) {
                 type: 'skeleton',
                 color: edgesInfo.color,
             }
-            // console.log(point, landmarks, edgesInfo);
             if (edgesInfo.edges[point.index]?.length>0) {
                 const neighbors = edgesInfo.edges[point.index];
                 neighbors.forEach(n => {
                     const neighborObj = landmarks[n];
-                    if (neighborObj) { // check if neighbor exists, if not labelled, then undefined
+                    if (neighborObj) {
                         const edge = createLine(neighborObj.getCenterPoint(), point.getCenterPoint(), edgeInfo);
                         let name;
                         if (n < point.index) {
@@ -1718,24 +1436,19 @@ export default function Canvas(props) {
         const polygon = fabricObjListRef.current[canvas.editingPolygonId];
         const idObjToEdit = frameAnnotation[canvas.editingPolygonId];
         createPolygon(polygon.pointObjects.map(p => p.getCenterPoint()),idObjToEdit);
-        // fabricObjListRef.current[newPolygon.id] = newPolygon;/////
-        // canvas.add(newPolygon).setActiveObject(newPolygon);
         polygon.pointObjects.forEach(p=>canvas.remove(p));
         polygon.lineObjects.forEach(l=>canvas.remove(l));
         canvas.editPolygon = false;
         canvas.editingPolygonId = null;
-        // delete(polygon);
-        // addActiveIdObj(newPolygon);
     }
 
 
     async function removeObj() {
-        // remove obj from canvas, objListRef, remove annoObj in parent
         const canvas = canvasObjRef.current;
         const activeObj = canvas.getActiveObject();
         
-        if (activeObj.type === 'skeletonPoint') { //for skeleton
-            if (!drawType) { // if already finished drawing, allow deleting, and will delete the entire skeleton
+        if (activeObj.type === 'skeletonPoint') {
+            if (!drawType) {
                 const annoId = activeObj.owner;
                 const skeletonObj = fabricObjListRef.current[annoId];
                 skeletonObj.landmarks.forEach(p => canvas.remove(p));
@@ -1750,10 +1463,9 @@ export default function Canvas(props) {
                     const frameAnnoCopy = {...frameAnnotation};
                     delete(frameAnnoCopy[annoId]);
                     setFrameAnnotation(frameAnnoCopy);
-                    // delete(frameAnnotation[annoId]);
                 } 
             }
-        } else { // for other shapes
+        } else {
             const res = await deleteAnnotation(activeObj.id);
             if (res['error']) {
                 setInfo(res['error']);
@@ -1773,34 +1485,28 @@ export default function Canvas(props) {
         setActiveAnnoObj(null);
     }
 
-    function addActiveIdObj(activeObj) { // for skeleton: the skeleton Obj in fabricObjListRef
-        // these commands will be used at multiple places, when create, choose, edit, and delete an object
+    function addActiveIdObj(activeObj) {
         const canvas = canvasObjRef.current;
         canvas.activeObj = activeObj;
-        canvas.isEditingObj = true; // when drag, rotate, scale obj
+        canvas.isEditingObj = true;
         setActiveObjData();
     }
 
-    //TODO: remove this func, replace by annoIdToDraw context, but need to change btn clickHandler to set the context
     function getIdToDraw() {
         const existingIds = new Set(Object.keys(fabricObjListRef.current));
         let idToDraw;
-        // if (drawType==='brush') {
 
-        // } else {
             idToDraw = Object.entries(frameAnnotation).filter(([id, annoObj]) => !existingIds.has(id) && ANNOTATION_TYPES.has(annoObj.type))[0][0];
-        // } 
         return idToDraw;
     }
 
 
 
-    // src={props.imgUrl}ref={imgRef} 
     return (
         <>
         <div className={styles.canvasContainer}
              style={{width: props.width?props.width:CANVAS_WIDTH, height: props.height?props.height:CANVAS_HEIGHT}}>
-            {/* <canvas id='brushCanvas' ref={brushCanvasRef} className={styles.brushCanvas} /> */}
+            {}
             <canvas id='canvas' ref={canvasRef} className={styles.canvas}>
                 <img id='image' ref={imgRef} className={styles.image} alt="img"/>
             </canvas>
@@ -1811,7 +1517,7 @@ export default function Canvas(props) {
             <canvas ref={testCanvasRef2} style={{border: 'solid'}}></canvas>
         </div> */}
         
-        {/* width:300, height:200,  */}
+        {}
         </>
       )
 }

@@ -118,9 +118,6 @@ export default function ChartController(props) {
         }
     }
 
-
-    //justify-content-center
-    // + (props.vertical?'flex-column':('justify-content-'+(props.align?props.align:'start')))
     return (
         <Row className={'d-flex ' + (props.vertical?'flex-column':('justify-content-'+(props.align?props.align:'start')))}>
             <Col xs='auto' className='mb-1'>

@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Table, Button } from 'antd';
 import { DeleteOutlined} from '@ant-design/icons';
 import { useStates, useStateSetters } from './AppContext';
-// import styles from '../styles/Controller.module.css';
 import { deleteAnnotation } from '../utils/requests';
 
 
@@ -22,31 +21,26 @@ export default function AnnotationTable(props) {
     const [selectedRowKeys, setSelectedRowKeys] = useState([]);
     const [tableData, setTableData] = useState([]);
     const [columns, setColumns] = useState([]);
-    const [keysInTable, setKeysInTable] = useState([]); // changes when selection and filter
+    const [keysInTable, setKeysInTable] = useState([]);
     const [expandableConfig, setExpandableConfig] = useState([]);
 
     const frameUrlRef = useRef();
-    const prevUploaderRef = useRef(); // to compare if new annotation file is uploaded
+    const prevUploaderRef = useRef();
     const [info, setInfo] = useState();
 
-    // context
     const frameAnnotation = useStates().frameAnnotation;
     const setFrameAnnotation = useStateSetters().setFrameAnnotation;
     const frameUrl = useStates().frameUrl;
     const setAnnoIdToDelete = useStateSetters().setAnnoIdToDelete;
-    // const annoIdToShow = useStates().annoIdToShow;
-    const setAnnoIdToShow = useStateSetters().setAnnoIdToShow; // to pass data to canvas according to currentKeys
+    const setAnnoIdToShow = useStateSetters().setAnnoIdToShow;
     const annoIdToDraw = useStates().annoIdToDraw;
-    const uploader = useStates().uploader; // to compare if new annotation file is uploaded
+    const uploader = useStates().uploader;
 
 
 
     useEffect(() => {
-        // console.log('annoTable useEffect', frameAnnotation, tableData, frameUrl, frameUrlRef.current);
         let data;
-        if (frameUrl !== frameUrlRef.current || uploader !== prevUploaderRef.current) { // when switch frame, or load new annotation file
-            // console.log('if called', uploader !== prevUploaderRef.current, uploader);
-            // construct data source
+        if (frameUrl !== frameUrlRef.current || uploader !== prevUploaderRef.current) {
             data = Object.entries(frameAnnotation).map(
                 ([id, annoObj]) => {
                     return {
@@ -63,8 +57,7 @@ export default function AnnotationTable(props) {
             frameUrlRef.current = frameUrl;
             prevUploaderRef.current = uploader;
         
-        } else { // when add or delete annoObj
-            // console.log('else called');
+        } else {
             data = [...tableData];
             const newFrameKeys = Object.keys(frameAnnotation);
             const newFrameKeysSet = new Set(newFrameKeys);
@@ -72,9 +65,8 @@ export default function AnnotationTable(props) {
             const frameKeysSet = new Set(frameKeys);
             let newSelectedKeys;
             let newKeysInTable;
-            if (newFrameKeys.length > frameKeys.length) { // added annoObj
+            if (newFrameKeys.length > frameKeys.length) {
                 const idAdded = newFrameKeys.filter(key => !frameKeysSet.has(key))[0];
-                // console.log('idadded', idAdded, !frameKeysSet.has(idAdded), frameKeysSet, newFrameKeysSet);
                 data.push({
                     key: idAdded,
                     label: frameAnnotation[idAdded].label,
@@ -85,21 +77,15 @@ export default function AnnotationTable(props) {
                 newKeysInTable = [...keysInTable];
                 newKeysInTable.push(idAdded);
                 
-            } else if (newFrameKeys.length < frameKeys.length) { // deleted annoObj
+            } else if (newFrameKeys.length < frameKeys.length) {
                 const idDeleted = frameKeys.filter(key => !newFrameKeysSet.has(key))[0];
-                // console.log('idDeleted', idDeleted, !newFrameKeysSet.has(idDeleted), tableData, frameAnnotation);
                 data = data.filter(obj => obj.key != idDeleted);
-                // console.log(data);
                 newSelectedKeys = selectedRowKeys.filter(key => key!==idDeleted);
                 newKeysInTable = keysInTable.filter(key => key!==idDeleted);
             } else { 
-                // 1. other modification on frameAnno or annoIdToDraw (canvas or annoBtn)
-                // 2. when clearUnfinishedAnnoObj() and create new AnnoObj happen
-                //    clearUnfinishedAnnoObj() can only remove one annoObj when create one new, 
-                //    so the other two conditions (>,<) won't happen
                 const idAdded = newFrameKeys.filter(key => !frameKeysSet.has(key))[0];
                 const idDeleted = frameKeys.filter(key => !newFrameKeysSet.has(key))[0];
-                if (idAdded && idDeleted) { // 2
+                if (idAdded && idDeleted) {
                     data.push({
                         key: idAdded,
                         label: frameAnnotation[idAdded].label,
@@ -112,11 +98,10 @@ export default function AnnotationTable(props) {
                     newKeysInTable = [...keysInTable];
                     newKeysInTable.push(idAdded);
                     newKeysInTable = newKeysInTable.filter(key => key!==idDeleted);
-                } else { // 1
+                } else {
                     newSelectedKeys = selectedRowKeys;
                     newKeysInTable = keysInTable;
                 }
-                // console.log(data);
             }
             data = data.map(obj => { return {...obj, data: JSON.stringify(frameAnnotation[obj.key]?.data)}});
             setSelectedRowKeys(newSelectedKeys);
@@ -124,7 +109,6 @@ export default function AnnotationTable(props) {
         }
         setTableData(data);
 
-        // construct columns and filters, sorters
         const labels = new Set();
         const types = new Set();
         Object.entries(frameAnnotation).forEach(
@@ -174,17 +158,14 @@ export default function AnnotationTable(props) {
                 dataIndex: '',
                 key: 'x',
                 render: (_, record) => <Button  
-                                        // shape='circle'
                                         type='text'
                                         icon={<DeleteOutlined />} 
                                         onClick={()=>onDelete(record.key)}
-                                        // size='small'
                                         />,
                 },
         ]
         setColumns(col);
 
-        // config expandable
         setExpandableConfig({
             expandedRowRender: (record) => <p style={{margin: '0', maxHeight: '6em', overflowY: 'auto'}}>{record.data}</p>,
             rowExpandable: (record) => record.data,
@@ -195,14 +176,12 @@ export default function AnnotationTable(props) {
 
 
     useEffect(() => {
-        // console.log('keysInTable useEffect', keysInTable);
         const selectedKeysSet = new Set(selectedRowKeys);
         const res = keysInTable.filter(key => selectedKeysSet.has(key) && frameAnnotation[key].type !== 'category');
         setAnnoIdToShow(res);
     }, [keysInTable])
 
     useEffect(() => {
-        // console.log('selectedRowKeys useEffect', selectedRowKeys);
         const selectedKeysSet = new Set(selectedRowKeys);
         const res = keysInTable.filter(k => selectedKeysSet.has(k) && frameAnnotation[k].type !== 'category');
         setAnnoIdToShow(res);
@@ -210,22 +189,15 @@ export default function AnnotationTable(props) {
 
 
     function onSelectChange(newSelectedRowKeys) {
-        // console.log('selectedRowKeys changed: ', newSelectedRowKeys);
         setSelectedRowKeys(newSelectedRowKeys);
     };
 
     const rowSelection = {
         selectedRowKeys,
         onChange: onSelectChange,
-        // selections: [
-        //     Table.SELECTION_ALL,
-        //     Table.SELECTION_INVERT,
-        //     Table.SELECTION_NONE,
-        // ],
     };
 
     function onChange(pagination, filters, sorter, extra){
-        // console.log('onChange', extra.currentDataSource);
         const keptKeys = extra.currentDataSource.map(item => item.key);
         setKeysInTable(keptKeys);
     }
@@ -236,7 +208,7 @@ export default function AnnotationTable(props) {
          * because the delete func in useEffect may be triggered by other actions,
          * so just use annoIdToDelete to trigger deleting on Canvas 
          */
-        if (id !== annoIdToDraw) { // if in the process of drawing an obj, cannot delete it
+        if (id !== annoIdToDraw) {
             console.log('onDelete called');
             const res = await deleteAnnotation(id);
             if (res['error']) {

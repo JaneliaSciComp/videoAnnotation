@@ -2,7 +2,6 @@ import React, {useState, useEffect, useRef, Fragment} from 'react';
 import styles from '../styles/Controller.module.css';
 import { Select, Button, Input, ColorPicker, Space } from 'antd';
 import { DeleteOutlined} from '@ant-design/icons';
-// import {Button} from 'react-bootstrap';
 import {predefinedColors, btnTypeOptions, crowdSelectOptions} from '../utils/utils.js';
 
 
@@ -38,12 +37,9 @@ import {predefinedColors, btnTypeOptions, crowdSelectOptions} from '../utils/uti
 */
 export default function BtnController(props) {
     
-    // console.log('btnController render', props.index);
 
 
     function onBtnTypeChange(value, opt) {
-        // console.log('BtnType', value, opt);
-        // no need to use if (props.onLabelChange), because the developer has to use props to set up the callback
         const target = {
             index: props.index,
             value: value,
@@ -57,8 +53,6 @@ export default function BtnController(props) {
 
 
     function onLabelChange(e) {
-        // console.log('label', e);
-        // no need to use if (props.onLabelChange), because the developer has to use props to set up the callback
         const target = {
             index: props.index,
             value: e.target.value,
@@ -71,7 +65,6 @@ export default function BtnController(props) {
 
 
     function onColorChange(value) {
-        // console.log('color', value.metaColor.originalInput); //metaColor: {originalInput: '#000000A6', r: float, g:float, b:float, a:float, ...}
         const target = {
             index: props.index,
             value: value.metaColor.originalInput,
@@ -85,11 +78,9 @@ export default function BtnController(props) {
     
     function onCrowdChange(value, opt) {
         console.log('crowd', value, opt);
-        // no need to use if (props.onLabelChange), because the developer has to use props to set up the callback
         const target = {
             index: props.index,
             value: value,
-            // label: opt.label
         };
         
         if (props.onCrowdChange) {
@@ -120,10 +111,8 @@ export default function BtnController(props) {
                     size='small'
                     />
                 <Input className={styles.labelText}
-                    // addonBefore="Label"
                     allowClear
                     value={props.label ? props.label : null}
-                    // onPressEnter={onLabelEnter}
                     onChange={onLabelChange}
                     placeholder={props.labelPlaceHolder}
                     disabled = {props.disableLabelInput}
@@ -142,7 +131,6 @@ export default function BtnController(props) {
                 }
                 
                 <ColorPicker className={styles.colorPicker}
-                    // className={videoStyles.playFpsInput} 
                     value={props.color ? props.color : '#1677FF'}
                     onChange={onColorChange}
                     disabled = {props.disableColorPicker}
@@ -156,7 +144,6 @@ export default function BtnController(props) {
             </Space.Compact>
             {props.enableDelete ?
                 <Button className={styles.deleteBtn} 
-                // shape='circle'
                 tabIndex={-1}
                 type='text'
                 icon={<DeleteOutlined />} 

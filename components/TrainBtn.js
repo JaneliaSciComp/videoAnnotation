@@ -18,21 +18,8 @@ export default function TrainBtn(props) {
     const setFrameAnnotation = useStateSetters().setFrameAnnotation;
 
     function clickHandler() {
-        // if (Number.isInteger(frameNum) || frameUrl) {
-        //     //TODO: trigger getBrushData()
             
-        //     // clear unfinished polygon and skeleton annoObj before setting new annoIdToDraw
-        //     const annoCopy = clearUnfinishedAnnotation(frameAnnotation);
-        //     setFrameAnnotation(annoCopy);
 
-        //     const json = JSON.stringify(annoCopy);
-        //     const a = document.createElement("a");
-        //     const file = new Blob([json], {type: 'text/plain'});
-        //     a.href = URL.createObjectURL(file);
-        //     a.download = 'annotations.json';
-        //     a.click();
-        //     URL.revokeObjectURL(a.href);
-        // }
         if (props.onClick) {
             props.onClick();
         }

@@ -60,28 +60,15 @@ const BTNGROUPNUM_MAX=50
 */
 export default function BtnConfiguration(props) {
     
-    // const [data, setData] = useState({}); //To prevent too many rerenders of parent comp. feel like it's not useful, as the btnGroupController can directly modify Workspace's btnConfigData, and Design can do that too.
-    // const [children, setChildren] = useState([]);
-    // const [skeletonData, setSkeletonData] = useState({});
-    const [getData, setGetData] = useState({}); // {btnGroupIndex1: false, index2: false, ...}
-    // const [hide, setHide] = useState();
+    const [getData, setGetData] = useState({});
     const [info, setInfo] = useState();
 
-    // get context
     const btnConfigData = useStates().btnConfigData;
     const setBtnConfigData = useStateSetters().setBtnConfigData;    
     const confirmConfig = useStates().confirmConfig;
     const setConfirmConfig = useStateSetters().setConfirmConfig;
 
     
-    // useEffect(() => {
-    //     // initialize a group when comp mount
-    //     if (Object.keys(btnConfigData).length===0) {
-    //         console.log('btnConfigData.length=0', btnConfigData);
-    //         addGroup();
-    //     }
-    //   }, []
-    // )
     useEffect(() => {
         console.log('btnConfiguration status changed', props.status);
         setInfo(null);
@@ -99,19 +86,8 @@ export default function BtnConfiguration(props) {
       }, [props.status]
     )
 
-    // useEffect(() => {
-    //     if (props.reload) {
-    //         if (Object.keys(btnConfigData).length===0) {
-    //             console.log('btnConfigData.length=0', btnConfigData);
-    //             addGroup();
-    //         } else {
     
-    //         }
-    //         props.setReload(false);
-    //     }
         
-    //   }, [props.reload]
-    // )
 
     useEffect(() => {
         console.log('confirmConfig changed', confirmConfig)
@@ -121,48 +97,15 @@ export default function BtnConfiguration(props) {
         }
     }, [confirmConfig])
     
-    // useEffect(() => {
-    //     renderChildren();
-    //   }, [data]
-    // )
-
-    // function renderChildren() {
-    //     const res = Object.keys(data).map(index => 
-    //             <BtnGroupController
-    //                 key={index}
-    //                 index={index}
-    //                 // data={data}
-    //                 // setData={setData}
-    //                 groupTypePlaceHolder='Group Type'
-    //                 btnTypePlaceHolder='Btn type'
-    //                 enableDelete
-    //                 onDelete={onDelete}
-    //                 // onGroupTypeChange={onGroupTypeChange}
-    //                 // onBtnTypeChange={onBtnTypeChange}
-    //                 // onBtnNumChange={onBtnNumChange}
-    //                 // onDownBtnClick={onDownBtnClick}
-    //                 // skeletonData={skeletonData}
-    //                 // setSkeletonData={setSkeletonData}
-    //                 />
-    //         ); 
-    //     setChildren(res);
-    // }
 
 
-    // function addGroup() {
-    //     const index = Date.now().toString();
-    //     setData({...data, [index]: {}});
-    // }
+
     function addGroup(useCase) {
         const index = Date.now().toString();
         if (useCase === 'new') {
             setGetData({[index]:false});
-            // setBtnConfigData({[index]: {}});
         } else if (useCase === 'add') {
             setGetData({...getData, [index]:false});
-            // setBtnConfigData({...btnConfigData, [index]: {}});
-            // getData[index]=false;
-            // btnConfigData[index]={};
         }
     }
 
@@ -179,16 +122,9 @@ export default function BtnConfiguration(props) {
 
 
     async function onCreateBtnClick() {
-        // if (props.status) {
-            // if (props.status === 'edit') {
-            //     if (Object.keys(btnConfigData).length > 0) {
-            //         Object.keys(btnConfigData).forEach(index => getData[index]=false);
-            //     }
-            // }
 
             console.log('createBtn',getData, btnConfigData);
             
-            //send delete request to backend, if succeed, delete data in btnConfigData
             await Promise.all(Object.keys(btnConfigData).map(async (btnGroupId) => {
                 if (!getData.hasOwnProperty(btnGroupId)) {
                     const res = await deleteBtnGroup(btnGroupId);
@@ -208,50 +144,30 @@ export default function BtnConfiguration(props) {
             
             const newGetData = {};
             for (let i in getData) {
-                // console.log(i);
                 newGetData[i] = true;
             }
-            // console.log(newGetData)
             setGetData(newGetData);
-            // setHide(true);
             props.setStatus(null);
 
             if (props.onCreateBtnClick) {
                 props.onCreateBtnClick();
             }
-        // }
     }
 
     function onDelete(target) {
-        // const dataCopy = {...btnConfigData};
-        // delete(dataCopy[target.index]);
-        // setBtnConfigData(dataCopy);
 
         const getDataCopy = {...getData};
         delete(getDataCopy[target.index]);
         setGetData(getDataCopy);
     }
 
-    // function onGroupTypeChange(target) {
-    //     console.log('groupType', target);
-    // }
 
-    // function onBtnTypeChange(target) {
-    //     console.log('btnType', target);
-    // }
 
-    // function onBtnNumChange(target) {
-    //     console.log('btnNum', target);
-    // }
 
-    // function onDownBtnClick(target) {
-    //     console.log('downBtn', target);
-    // }
 
 
     return (
         <div className={styles.btnConfigContainer} 
-                // style={{display: hide?'none':'block'}}
                 >
             <Space className='my-2 d-flex justify-content-left' wrap>
                 <p className='my-2'>Customize Annotation Buttons</p>
@@ -261,23 +177,20 @@ export default function BtnConfiguration(props) {
                         size='small' 
                         icon={<PlusOutlined />} 
                         >
-                        {/* Add */}
+                        {}
                     </Button>
                     :null
                 }
             </Space>
-            {/* <ConfigProvider configData={data} configDataSetter={setData}> */}
+            {}
             
             <Space direction='vertical'>
-                {/* {children} */}
+                {}
                 {Object.keys(getData).map(index => 
-                    // props.status!=='edit' ? 
                     (!btnConfigData.hasOwnProperty(index)) ? 
                         <BtnGroupController
                             key={index}
                             index={index}
-                            // data={data}
-                            // setData={setData}
                             groupTypePlaceHolder='Group Type'
                             btnTypePlaceHolder='Btn Type'
                             defaultGroupType={props.defaultGroupType}
@@ -294,12 +207,6 @@ export default function BtnConfiguration(props) {
                             getData={getData}
                             setGetData={setGetData}
                             disableDoneBtn
-                            // onGroupTypeChange={onGroupTypeChange}
-                            // onBtnTypeChange={onBtnTypeChange}
-                            // onBtnNumChange={onBtnNumChange}
-                            // onDownBtnClick={onDownBtnClick}
-                            // skeletonData={skeletonData}
-                            // setSkeletonData={setSkeletonData}
                             status='new'
                             />
                         :
@@ -314,18 +221,12 @@ export default function BtnConfiguration(props) {
                             getData={getData}
                             setGetData={setGetData}
                             disableDoneBtn
-                            // onGroupTypeChange={onGroupTypeChange}
-                            // onBtnTypeChange={onBtnTypeChange}
-                            // onBtnNumChange={onBtnNumChange}
-                            // onDownBtnClick={onDownBtnClick}
-                            // skeletonData={skeletonData}
-                            // setSkeletonData={setSkeletonData}
                             status='edit'
                             />
                     )
                 }
             </Space>
-            {/* </ConfigProvider> */}
+            {}
             
             <br />
             {/* <Space>
@@ -338,7 +239,7 @@ export default function BtnConfiguration(props) {
             <br />
             {props.hideCreateBtn ? null : 
                 <Space className='my-3 d-flex justify-content-center' wrap>
-                    {/* icon={<PlusOutlined />} */}
+                    {}
                     <Button onClick={onAddBtnClick}>Add</Button>
                     <Button type="primary" onClick={onCreateBtnClick}>Create</Button>
                 </Space>
