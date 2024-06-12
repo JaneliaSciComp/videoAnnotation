@@ -18,9 +18,9 @@ export default function JsonUploader(props) {
 
     const setUploader = useStateSetters().setUploader;
     // const projectConfigDataRef = useStates().projectConfigDataRef;
-    const setResetVideoDetails = useStateSetters().setResetVideoDetails;
-    const setResetVideoPlay = useStateSetters(). setResetVideoPlay;
-    const projectId = useStates().projectId;
+    // const setResetVideoDetails = useStateSetters().setResetVideoDetails;
+    // const setResetVideoPlay = useStateSetters(). setResetVideoPlay;
+    // const projectId = useStates().projectId;
 
     const { Dragger } = Upload;
 
@@ -57,16 +57,16 @@ export default function JsonUploader(props) {
     function uploadFile(file) {
         message.success(`${file.name} file uploaded successfully`);
         setInfo(`${file.name} file uploaded successfully`);
-        if (props.type==='configuration' && projectId
-        // && (projectConfigDataRef.current?.projectName || (projectConfigDataRef.current?.btnConfigData && Object.keys(projectConfigDataRef.current.btnConfigData).length>0))
-        ) { // The btnConfigData field is initialized as not null or undefined 
-            Modal.confirm({
-                title: 'Alert',
-                content: 'The current project configuration data including annotation buttons will be removed!',
-                onOk: ()=>confirmOkHandler(file),
-                onCancel: confirmCancelHandler,
-            });
-        } else {
+        // if (props.type==='configuration' && projectId // checked in Workspace
+        // // && (projectConfigDataRef.current?.projectName || (projectConfigDataRef.current?.btnConfigData && Object.keys(projectConfigDataRef.current.btnConfigData).length>0))
+        // ) { // The btnConfigData field is initialized as not null or undefined 
+        //     Modal.confirm({
+        //         title: 'Alert',
+        //         content: 'The current project configuration data including annotation buttons will be removed!',
+        //         onOk: ()=>confirmOkHandler(file),
+        //         onCancel: confirmCancelHandler,
+        //     });
+        // } else {
             if (props.setModalOpen) {
                 props.setModalOpen(false);
             }
@@ -75,31 +75,31 @@ export default function JsonUploader(props) {
                 file: file
             });
 
-        }
+        // }
 
         if (props.onLoad) {
             props.onLoad(file);
         }
     }
 
-    function confirmOkHandler(file) {
-        if (props.setModalOpen) {
-            props.setModalOpen(false);
-        }
+    // function confirmOkHandler(file) {
+    //     if (props.setModalOpen) {
+    //         props.setModalOpen(false);
+    //     }
         
-        setUploader({
-            type: props.type,
-            file: file
-        });
-        setResetVideoDetails(true);
-        setResetVideoPlay(true);
-    }
+    //     setUploader({
+    //         type: props.type,
+    //         file: file
+    //     });
+    //     setResetVideoDetails(true);
+    //     setResetVideoPlay(true);
+    // }
 
-    function confirmCancelHandler() {
-        if (props.setModalOpen) {
-            props.setModalOpen(false);
-        }
-    }
+    // function confirmCancelHandler() {
+    //     if (props.setModalOpen) {
+    //         props.setModalOpen(false);
+    //     }
+    // }
 
     return (
         <div style={{width: '100%'}}>

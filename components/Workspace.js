@@ -196,28 +196,14 @@ export default function Workspace(props) {
                 setInfo('Please upload the project configuration data first');
                 setInfoOpen(true);
             } else if (obj.projectId !== projectId) {
-                setInfo('The uploaded project id does not match the current project id.')
+                setInfo('The project id in the uploaded data does not match the current project id. Please upload the project configuration file first.')
                 setInfoOpen(true);
             } else {
                 // const currentFrameNum = frameNum;
-                postProjectAnnotation({annotations: obj.annotations})
-                    .then(res => {
-                        if (res['error']) {
-                            setInfo('Sending project data to DB failed.');
-                            setInfoOpen(true);
-                        } else {
-                            if ((obj.videos.filter(v => v===videoId).length>0) && Number.isInteger(frameNum)) { // a video is open
-                                getFrameAnnotationFromDBAndSetState();
-                                // setFrameAnnotation({...annotationRef.current[frameNum]});
-                            } 
-                            // else if (frameUrl) { // an image is open
-                            //     setFrameAnnotation({...annotationRef.current[0]});
-                            // } 
-                            else {
-                                setFrameAnnotation({});
-                            }
-                        }
-                    })
+                Modal.confirm({
+                    content: 'Upload and save/update the uploaded annotation data to database?\nThis will override the data in database.',
+                    onOk: () => {confirmSaveUploadedAnnotationToDB(obj)},
+                });
             }
             
         } else {
@@ -231,79 +217,143 @@ export default function Workspace(props) {
                 }
              */
             // projectConfigDataRef.current = obj;
-            
-            setProjectId(obj.projectId);
-            setProjectData({projectName: obj.projectName, description: obj.description}); // description could be absent in obj, but will be passed undefined
-            setBtnConfigData(obj.btnConfigData ? {...obj.btnConfigData} : {}); // btnConfigData could be null
-            setVideoData(obj.videos ? {...obj.videos} : {}); // videos might be empty obj but not null
-            setVideoId(null);
-            // setFrameNum(null);
-            // setFrameUrl(null);
-
-            // save/update the uploaded project Config data in DB?
-            // Modal.confirm({
-            //     content: 'Save/Update the uploaded data in database?',
-            //     onOk: () => {confirmSaveConfigDataToDB(obj)},
-            // });
-            const projectObj = {
-                projectId: obj.projectId, 
-                projectName: obj.projectName,
-                description: obj.description
-            }
-            editProject(projectObj)
-                .then((res) => {
-                    if (res['error']) {
-                        setInfo('Sending project data to DB failed.');
-                        setInfoOpen(True);
-                    }
+            if (projectId) { // no matter projectId===obj.projectId or not
+                Modal.confirm({
+                    title: 'Alert',
+                    content: 'The current project data will be replaced!\nThe uploaded configuration data will be saved to database. This may override the existing data in database.',
+                    onOk: ()=>{confirmUploadConfiguration(obj)},
                 });
+            } else {
+                Modal.confirm({
+                    title: 'Alert',
+                    content: 'The uploaded configuration data will be saved to database. This may override the existing data in database.',
+                    onOk: ()=>{confirmUploadConfiguration(obj)},
+                });
+            }
+            // setProjectId(obj.projectId);
+            // setProjectData({projectName: obj.projectName, description: obj.description}); // description could be absent in obj, but will be passed undefined
+            // setBtnConfigData(obj.btnConfigData ? {...obj.btnConfigData} : {}); // btnConfigData could be null
+            // setVideoData(obj.videos ? {...obj.videos} : {}); // videos might be empty obj but not null
+            // setResetVideoPlay(true); // will set videoId to be null
+            // setVideoId(null);
+            // // setFrameNum(null);
+            // // setFrameUrl(null);
+
+            // const projectObj = {
+            //     projectId: obj.projectId, 
+            //     projectName: obj.projectName,
+            //     description: obj.description
+            // }
+            // editProject(projectObj)
+            //     .then((res) => {
+            //         if (res['error']) {
+            //             setInfo('Sending project data to DB failed.');
+            //             setInfoOpen(true);
+            //         }
+            //     });
             
-            Object.keys(obj.btnConfigData).forEach((id)=>{
-                const btnGroupObj = {...obj.btnConfigData[id]};
-                btnGroupObj.btnGroupId = id;
-                postBtnGroup(btnGroupObj)
-                    .then((res) => {
-                        if (res['error']) {
-                            setInfo('Sending btn configuration data to DB failed.');
-                            setInfoOpen(True);
-                        }
-                    });
-            })
+            // Object.keys(obj.btnConfigData).forEach((id)=>{
+            //     const btnGroupObj = {...obj.btnConfigData[id]};
+            //     btnGroupObj.btnGroupId = id;
+            //     postBtnGroup(btnGroupObj)
+            //         .then((res) => {
+            //             if (res['error']) {
+            //                 setInfo('Sending btn configuration data to DB failed.');
+            //                 setInfoOpen(true);
+            //             }
+            //         });
+            // })
     
-            Object.keys(obj.videos).forEach((id)=>{
-                const videoObj = {...obj.videos[id]};
-                videoObj.videoId = id;
-                editVideo(videoObj)
-                    .then((res) => {
-                        if (res['error']) {
-                            setInfo('Sending video data to DB failed.');
-                            setInfoOpen(True);
-                        }
-                    });
-            })
+            // Object.keys(obj.videos).forEach((id)=>{
+            //     const videoObj = {...obj.videos[id]};
+            //     videoObj.videoId = id;
+            //     editVideo(videoObj)
+            //         .then((res) => {
+            //             if (res['error']) {
+            //                 setInfo('Sending video data to DB failed.');
+            //                 setInfoOpen(true);
+            //             }
+            //         });
+            // })
         }
     }
 
-    // function confirmSaveConfigDataToDB(data) {
-    //     const projectObj = {
-    //         projectId: data.projectId, 
-    //         projectName: data.projectName,
-    //         description: data.description
-    //     }
-    //     editProject(projectObj);
-        
-    //     Object.keys(data.btnConfigData).forEach((id)=>{
-    //         const btnGroupObj = {...data.btnConfigData[id]};
-    //         btnGroupObj.btnGroupId = id;
-    //         postBtnGroup(btnGroupObj);
-    //     })
+    async function confirmUploadConfiguration(obj) {
+        setProjectId(obj.projectId);
+        setProjectData({projectName: obj.projectName, description: obj.description}); // description could be absent in obj, but will be passed undefined
+        setBtnConfigData(obj.btnConfigData ? {...obj.btnConfigData} : {}); // btnConfigData could be null
+        setVideoData(obj.videos ? {...obj.videos} : {}); // videos might be empty obj but not null
+        setResetVideoPlay(true); // will set videoId to be null
+        setResetVideoDetails(true);
 
-    //     Object.keys(data.videos).forEach((id)=>{
-    //         const videoObj = {...data.videos[id]};
-    //         videoObj.videoId = id;
-    //         editVideo(videoObj);
-    //     })
-    // }
+        const projectObj = {
+            projectId: obj.projectId, 
+            projectName: obj.projectName,
+            description: obj.description
+        }
+        const projectRes = await editProject(projectObj);
+        if (projectRes['error']) {
+            setInfo('Saving project configuration data to DB failed.');
+            setInfoOpen(true);
+        }
+        
+        Object.keys(obj.btnConfigData).forEach(async (id)=>{
+            const btnGroupObj = {...obj.btnConfigData[id]};
+            btnGroupObj.btnGroupId = id;
+            let res = await postBtnGroup(btnGroupObj);
+            if (res['error']) {
+                setInfo('Saving btn configuration data to DB failed.');
+                setInfoOpen(true);
+            }
+        })
+
+        Object.keys(obj.videos).forEach(async (id)=>{
+            const videoObj = {...obj.videos[id]};
+            videoObj.videoId = id;
+            let res = await editVideo(videoObj);
+            if (res['error']) {
+                setInfo('Saving video data to DB failed.');
+                setInfoOpen(true);
+            }
+        })
+        // const projectObj = {
+        //     projectId: data.projectId, 
+        //     projectName: data.projectName,
+        //     description: data.description
+        // }
+        // editProject(projectObj);
+        
+        // Object.keys(data.btnConfigData).forEach((id)=>{
+        //     const btnGroupObj = {...data.btnConfigData[id]};
+        //     btnGroupObj.btnGroupId = id;
+        //     postBtnGroup(btnGroupObj);
+        // })
+
+        // Object.keys(data.videos).forEach((id)=>{
+        //     const videoObj = {...data.videos[id]};
+        //     videoObj.videoId = id;
+        //     editVideo(videoObj);
+        // })
+    }
+
+    async function confirmSaveUploadedAnnotationToDB(data) {
+        const res = await postProjectAnnotation({annotations: data.annotations})
+        if (res['error']) {
+            setInfo('Saving annotation data to DB failed.');
+            setInfoOpen(true);
+        } else {
+            if ((data.videos.filter(v => v===videoId).length>0) && Number.isInteger(frameNum)) { // a video is open
+                getFrameAnnotationFromDBAndSetState();
+                // setFrameAnnotation({...annotationRef.current[frameNum]});
+            } 
+            // else if (frameUrl) { // an image is open
+            //     setFrameAnnotation({...annotationRef.current[0]});
+            // } 
+            else {
+                setFrameAnnotation({});
+            }
+        }
+    }
 
     // function convertEdgeArrToSet(obj) { //obj is a copy of btnConfigData
     //     Object.values(obj).forEach(groupData => {
@@ -422,7 +472,7 @@ export default function Workspace(props) {
    
 
     useEffect(() => {
-        /* when videouploader switch to a new frame, save the annotation for current frame
+        /* when videouploader switch to a new frame, save the annotation for the current frame
            then retrieve the annotation for the new frame
          */
         // console.log('workspace frameNum useEffect: save frameAnnotation ', prevFrameNum.current, frameNum, frameAnnotation, annotationRef.current);
@@ -432,11 +482,11 @@ export default function Workspace(props) {
         if (Number.isInteger(frameNum) && videoId 
             // && annotationRef.current[frameNum]
         ) {
-            console.log('retrieve1 called', frameNum);
+            // console.log('retrieve1 called', frameNum);
             // setFrameAnnotation({...annotationRef.current[frameNum]});
             getFrameAnnotationFromDBAndSetState();
         } else {
-            console.log('retrieve2 called');
+            // console.log('retrieve2 called');
             setFrameAnnotation({});
         }
         

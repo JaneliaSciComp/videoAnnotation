@@ -232,7 +232,7 @@ export default function VideoUploader(props) {
 
     async function setFrame(newValue, videoInfoObj=null) {
         // console.log('setFrame called');
-        if (newValue) {
+        if (newValue && videoId) {
             setSliderValue(newValue);
             // let url;
             if (newValue >= 1) {

@@ -48,7 +48,7 @@ export default function ProjectDropdown(props) {
           },
     ];
 
-    async function onClick(e) {
+    function onClick(e) {
         const label = items[e.key].label;
         switch (label) {
             case 'New Project':
@@ -68,7 +68,7 @@ export default function ProjectDropdown(props) {
                 setUploaderOpen(true);
                 break;
             case 'Edit Project':
-                await setManagerStatus('edit');
+                setManagerStatus('edit');
                 setManagerOpen(true);
                 break;
             case 'Save':
