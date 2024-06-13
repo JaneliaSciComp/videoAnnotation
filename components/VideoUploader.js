@@ -167,7 +167,7 @@ export default function VideoUploader(props) {
 
 
     async function setFrame(newValue, videoInfoObj=null) {
-        if (newValue && videoId) {
+        if (newValue) {
             setSliderValue(newValue);
             if (newValue >= 1) {
                 setFrameError(null);

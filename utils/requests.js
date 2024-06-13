@@ -20,7 +20,7 @@ export async function postProject(projectInfoObj) {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
               },
-            body: JSON.stringify(projectInfoObj), //new FormData(e.target), 
+            body: JSON.stringify(projectInfoObj),
         })
 
     if (res.ok) {
@@ -37,7 +37,7 @@ export async function editProject(projectInfoObj) {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
               },
-            body: JSON.stringify(projectInfoObj), //new FormData(e.target), 
+            body: JSON.stringify(projectInfoObj),
         })
 
     if (res.ok) {
@@ -92,7 +92,7 @@ export async function postBtnGroup(btnGroupObj) {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
               },
-            body: JSON.stringify(btnGroupObj), //new FormData(e.target), 
+            body: JSON.stringify(btnGroupObj),
         })
 
     if (res.ok) {
@@ -138,6 +138,30 @@ export async function deleteProjectBtn(projectId) {
     }
 }
 
+export async function postProjectBtn(data) { 
+    /**
+     * data: {
+            btnGroups: [btnGroup1, btnGroup2, ...],
+            projectId: str
+        } 
+     *  */ 
+    const res = await fetch(BTNS_URL, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+            body: JSON.stringify(data),  
+        })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'POST project btn request failed'}
+    }
+}
+
+
 export async function postVideo(videoInfoObj) {
     const res = await fetch(VIDEO_URL, {
             method: 'POST',
@@ -145,7 +169,7 @@ export async function postVideo(videoInfoObj) {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
               },
-            body: JSON.stringify(videoInfoObj), //new FormData(e.target), 
+            body: JSON.stringify(videoInfoObj),
         })
 
     if (res.ok) {
@@ -163,7 +187,7 @@ export async function editVideo(videoInfoObj) {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
               },
-            body: JSON.stringify(videoInfoObj), //new FormData(e.target), 
+            body: JSON.stringify(videoInfoObj),
         })
 
     if (res.ok) {
@@ -209,6 +233,31 @@ export async function deleteProjectVideo(projectId) {
     }
 }
 
+export async function postProjectVideo(data) { 
+    /**
+     * data: {
+            videos: [video1, video2, ...],
+            projectId: str
+        } 
+     */
+    
+    const res = await fetch(VIDEOS_URL, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+            body: JSON.stringify(data),  
+        })
+
+    if (res.ok) {
+        return res.json()
+    } else {
+        return {error: 'POST project videos request failed'}
+    }
+}
+
+
 export async function getVideoMeta(videoId) {
     const res = await fetch(`${VIDEO_META_URL}?id=${videoId}`, {
             method: 'GET',
@@ -225,30 +274,8 @@ export async function getFrame(frameNum) {
     const res = await fetch(`${FRAME_URL_ROOT}?num=${frameNum}`, {
         method: 'GET',
     })
-    // .then(res => {
-    //     if (res.ok) {
-    //         console.log('res.ok');
-    //         return res.blob();
-    //     } else {
-    //         console.log('res.ok false');
-    //         // console.log(res);
-    //         setFrameError('Frame request failed');
-    //     }
-    // }).then((res)=>{
-    //     if (res){
-    //         if (res['error']) {
-    //             setFrameError(res['error']);
-    //         } else {
-    //             const url = URL.createObjectURL(res);
-    //             // props.setFrameUrl(url);
-    //             // props.setFrameNum(frameNum);
-    //             setFrameUrl(url);
-    //             setFrameNum(frameNum);
-    //         } 
-    //     } 
-    // })
     if (res.ok) {
-        const blob = await res.blob(); // .blob() is also async, it's reading data from the stream
+        const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         return url;
     } else {
@@ -270,14 +297,14 @@ export async function getAdditionalData(frameNum, videoId, fieldName) {
 
 
 
-export async function postFrameAnnotation(annotationObjs) { //{annotations: [anno1, anno2, ...]}
+export async function postFrameAnnotation(annotationObjs) {
     const res = await fetch(FRAME_ANNOTATION_URL, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
               },
-            body: JSON.stringify(annotationObjs), //new FormData(e.target), 
+            body: JSON.stringify(annotationObjs),
         })
 
     if (res.ok) {
@@ -299,14 +326,21 @@ export async function getFrameAnnotation(frameNum, videoId) {
     }
 }
 
-export async function postProjectAnnotation(annotationObjs) { //{annotations: [anno1, anno2, ...]}
+export async function postProjectAnnotation(data) {
+    /**
+     * data: {
+            annotations: [anno1, anno2, ...],
+            projectId: str
+            videos: [videoId1, videoId2, ...]
+        } 
+     */
     const res = await fetch(PROJECT_ANNOTATION_URL, {
             method: 'POST',
             headers: {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
               },
-            body: JSON.stringify(annotationObjs), //new FormData(e.target), 
+            body: JSON.stringify(data),  
         })
 
     if (res.ok) {

@@ -11,7 +11,7 @@ import BrushTool from './BrushTool';
 import { StatesProvider } from './AppContext';
 import { clearUnfinishedAnnotation } from '../utils/utils';
 import { Modal } from 'antd';
-import { editProject, postBtnGroup, editVideo, postFrameAnnotation, getFrameAnnotation, postProjectAnnotation, getProjectAnnotation } from '../utils/requests';
+import { editProject, postBtnGroup, editVideo, postFrameAnnotation, getFrameAnnotation, postProjectAnnotation, getProjectAnnotation, postProjectBtn, postProjectVideo } from '../utils/requests';
 
 
 /**
@@ -191,12 +191,6 @@ export default function Workspace(props) {
     }
 
     async function confirmUploadConfiguration(obj) {
-        setProjectId(obj.projectId);
-        setProjectData({projectName: obj.projectName, description: obj.description});
-        setBtnConfigData(obj.btnConfigData ? {...obj.btnConfigData} : {});
-        setVideoData(obj.videos ? {...obj.videos} : {});
-        setResetVideoPlay(true);
-        setResetVideoDetails(true);
 
         const projectObj = {
             projectId: obj.projectId, 
@@ -207,33 +201,54 @@ export default function Workspace(props) {
         if (projectRes['error']) {
             setInfo('Saving project configuration data to DB failed.');
             setInfoOpen(true);
-        }
+            return
+        } 
         
-        Object.keys(obj.btnConfigData).forEach(async (id)=>{
+        const btns = Object.keys(obj.btnConfigData).map((id)=>{
             const btnGroupObj = {...obj.btnConfigData[id]};
             btnGroupObj.btnGroupId = id;
-            let res = await postBtnGroup(btnGroupObj);
-            if (res['error']) {
-                setInfo('Saving btn configuration data to DB failed.');
-                setInfoOpen(true);
-            }
+            return btnGroupObj;
         })
+        const btnDataForDB = {
+            btnGroups: btns,
+            projectId: obj.projectId
+        }
+        let btnRes = await postProjectBtn(btnDataForDB);
+        if (btnRes['error']) {
+            setInfo('Saving btn configuration data to DB failed.');
+            setInfoOpen(true);
+            return
+        } 
 
-        Object.keys(obj.videos).forEach(async (id)=>{
+        const videos = Object.keys(obj.videos).map((id)=>{
             const videoObj = {...obj.videos[id]};
             videoObj.videoId = id;
-            let res = await editVideo(videoObj);
-            if (res['error']) {
-                setInfo('Saving video data to DB failed.');
-                setInfoOpen(true);
-            }
+            return videoObj;
         })
-        
+        const videoDataForDB = {
+            videos: videos,
+            projectId: obj.projectId
+        }
+        let videoRes = await postProjectVideo(videoDataForDB);
+        if (videoRes['error']) {
+            setInfo('Saving video data to DB failed.');
+            setInfoOpen(true);
+            return
+        }
 
+        setProjectId(obj.projectId);
+        setProjectData({projectId: obj.projectId, projectName: obj.projectName, description: obj.description});
+        setBtnConfigData(obj.btnConfigData ? {...obj.btnConfigData} : {});
+        setVideoData(obj.videos ? {...obj.videos} : {});
+        setResetVideoPlay(true);
+        setResetVideoDetails(true);
+
+
+        
     }
 
     async function confirmSaveUploadedAnnotationToDB(data) {
-        const res = await postProjectAnnotation({annotations: data.annotations})
+        const res = await postProjectAnnotation({...data});
         if (res['error']) {
             setInfo('Saving annotation data to DB failed.');
             setInfoOpen(true);
@@ -241,9 +256,6 @@ export default function Workspace(props) {
             if ((data.videos.filter(v => v===videoId).length>0) && Number.isInteger(frameNum)) {
                 getFrameAnnotationFromDBAndSetState();
             } 
-            else {
-                setFrameAnnotation({});
-            }
         }
     }
 

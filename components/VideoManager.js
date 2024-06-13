@@ -48,22 +48,17 @@ import { postVideo, editVideo, deleteVideo } from '../utils/requests';
  */
 export default function VideoManager(props) {
     
-    const [videoNames, setVideoNames] = useState([]); //data source for list: ['video1', 'video2']
-    const [videoIds, setVideoIds] = useState([]); // videoIds are the ids of entries in videoNames in the same order
-    // const [detailsVideoName, setDetailsVideoName] = useState();
-    // const [detailsVideoPath, setDetailsVideoPath] = useState();
+    const [videoNames, setVideoNames] = useState([]);
+    const [videoIds, setVideoIds] = useState([]);
     const [detailsVideoId, setDetailsVideoId] = useState(); 
     const [btnDisable, setBtnDisable] = useState(true);
     const [info, setInfo] = useState();
-    // const [videoAdditionalFieldsObj, setVideoAdditionalFieldsObj] = useState();
 
-    // const projectConfigDataRef = useStates().projectConfigDataRef;
     const videoData = useStates().videoData;
     const setVideoData = useStateSetters().setVideoData;
     const videoId = useStates().videoId;
     const setVideoId = useStateSetters().setVideoId;
     const setLoadVideo = useStateSetters().setLoadVideo;
-    // const setVideoPathToGet = useStateSetters().setVideoPathToGet;
     const setResetVideoPlay = useStateSetters().setResetVideoPlay;
     const resetVideoDetails = useStates().resetVideoDetails;
     const setResetVideoDetails = useStateSetters().setResetVideoDetails;
@@ -76,12 +71,8 @@ export default function VideoManager(props) {
 
     console.log('VideoManager render', videoId, videoIds);
 
-    // useEffect(() => {
-    //     if (props.open) {
             
-    //     }
           
-    // }, [props.open])
 
     useEffect(()=> {
         if (resetVideoDetails) {
@@ -110,7 +101,6 @@ export default function VideoManager(props) {
             const names = new Set();
             const fields = {};
             for (let field of props.additionalFields) {
-                // console.log(field);
                 names.add(field.name);
                 fields[field.name] = {
                     required: field.required, 
@@ -131,21 +121,13 @@ export default function VideoManager(props) {
     }, [props.additionalFields])
     
 
-    // function okClickHandler() {
-    //     // console.log('ok', projectName, description);
         
 
-    //     props.setOpen(false);
-    // }
 
 
-    // function cancelClickHandler() {
-    //     props.setOpen(false);
-    // }
 
 
     function onVideoNameClick(i) {
-        // console.log(e.target);
         const videoId = videoIds[i];
         const videoObj = videoData[videoId];
         form.setFieldsValue({
@@ -156,7 +138,7 @@ export default function VideoManager(props) {
             props.additionalFields.forEach((f, i) => {
                 if (videoObj.additionalFields[i]) {
                     form.setFieldsValue({
-                        [f.name]: videoObj.additionalFields[i].value // props.additionalFields and additionalFields field in videoData have the same order of entries
+                        [f.name]: videoObj.additionalFields[i].value
                     })
                 }
             })
@@ -173,7 +155,6 @@ export default function VideoManager(props) {
     }
 
     function onVideoNameChange(e) {
-        // console.log('videoName', e);
         form.setFieldsValue({ videoName: e.target.value });
 
         const target = {
@@ -185,13 +166,6 @@ export default function VideoManager(props) {
     }
 
     function onVideoPathChange(e) {
-        // console.log('videoPath', e);
-        // if (e.target.value?.length > 0) {
-        //     form.setFieldsValue({ videoPath: e.target.value });
-        //     setBtnDisable(false);
-        // } else {
-        //     setBtnDisable(true);
-        // }
         onRequiredFieldChange(e.target.value, 'videoPath');
 
         const target = {
@@ -204,14 +178,11 @@ export default function VideoManager(props) {
     }
 
     function onAdditionalFieldChange(e, fieldName) { 
-        // console.log('additionalFieldChange', e.target.value, fieldName);
         onRequiredFieldChange(e.target.value, fieldName);
-        // console.log(form.getFieldsValue());
     }
 
     function onRequiredFieldChange(value, fieldName) { 
         form.setFieldsValue({ [fieldName]: value });
-        // console.log('checkRequiredField ', checkRequiredFields());
         if (checkRequiredFields()) {
             setBtnDisable(false);
         } else {
@@ -221,13 +192,11 @@ export default function VideoManager(props) {
 
     function checkRequiredFields() {
         const fields = form.getFieldsValue();
-        // console.log(fields);
         if (fields.videoPath.length == 0) {
             return false;
         }
         
         for (let f in fields) {
-            // console.log(f, additionalFieldsObj[f]?.required, fields[f]?.length);
             if (videoAdditionalFieldsObj 
                 && videoAdditionalFieldsObj[f]?.required 
                 && (!fields[f]?.length > 0)) {
@@ -239,14 +208,11 @@ export default function VideoManager(props) {
     }
 
     async function onAddBtnClick() {
-        // console.log(e);
         const id = new Date().getTime().toString();
         const videoInfoObj = modifyVideoData(id);
         console.log(videoInfoObj);
         
-        // send post request to db
         const res = await postVideo(videoInfoObj);
-        // console.log(res);
         if (res['error']) {
             setInfo(res['error']);
         } else {
@@ -255,34 +221,27 @@ export default function VideoManager(props) {
     }
 
     async function onAddLoadBtnClick() {
-        // console.log(e);
         const id = new Date().getTime().toString();
         const videoDataCopy =  modifyVideoData(id);
         console.log(videoDataCopy)
 
-        // send post request to db
         const res = await postVideo(videoDataCopy);
-        // console.log(res);
         if (res['error']) {
             setInfo(res['error']);
         } else {
             setInfo(null);
         }
 
-        //trigger loading video in VideoUploader
         if (videoDataCopy) {
             setLoadVideo(videoDataCopy);
         }
     }
 
     async function onEditBtnClick() {
-        // console.log(e);
         if (detailsVideoId) {
             const videoInfoObj = modifyVideoData(detailsVideoId);
             
-            // send put request to db
             const res = await editVideo(videoInfoObj);
-            // console.log(res);
             if (res['error']) {
                 setInfo('Editing video data in database failed!');
             } else {
@@ -308,7 +267,6 @@ export default function VideoManager(props) {
                 return {name: f.name, value: formFields[f.name]}
             });
         }
-        // console.log(additionalFieldsData);
 
         if (projectId) {
             const videoDataCopy = {...videoData};
@@ -319,7 +277,6 @@ export default function VideoManager(props) {
                 additionalFields: additionalFieldsData
             };
             setVideoData(videoDataCopy);
-            // projectConfigDataRef.current.videos = {...videoDataCopy};
 
             form.resetFields();
             setBtnDisable(true);
@@ -351,37 +308,24 @@ export default function VideoManager(props) {
     /**
      * invoke provided parseFunc to generate the data format that chart needs 
      * */
-    // function parseAdditionalFieldsData(i) {
-    //     // const fileInput = document.createElement('input');
-    //     // fileInput.value = '/Users/pengx/Downloads/configuration (3).json';
-    //     // fileInput.type = 'file';
-    //     // fileInput.click();
-    //     console.log('here');
-    //     // fetch('/Users/pengx/Downloads/configuration.json').then(response => console.log(response.json()));
-    // }
 
     function onDelBtnClick(i) {
         const videoIdToDel = videoIds[i];
 
-        //TODO: add confirm
         Modal.confirm({
             title: 'Alert',
             content: 'The current video data including configuration and annotations will be removed!',
             onOk: async ()=>{await deleteThisVideo(videoIdToDel)},
-            // onCancel: cancelClickHandler,
         });
     }
 
     async function deleteThisVideo(videoIdToDel) {
-        //delete video data from db
         const res = await deleteVideo(videoIdToDel);
-        // console.log(res);
         if (res['error']) {
             setInfo('Deleting video data in database failed!');
             return
         } 
 
-        //TODO: delete annotation related to this video from db
 
         setInfo(null);
         if (videoIdToDel === detailsVideoId) {
@@ -392,13 +336,10 @@ export default function VideoManager(props) {
         const videoDataCopy = {...videoData};
         delete(videoDataCopy[videoIdToDel]);
         setVideoData(videoDataCopy);
-        // projectConfigDataRef.current.videos = {...videoDataCopy};
+        setResetVideoPlay(true);
 
-        // console.log(i, videoIdToDel, videoId, videoIdToDel == videoId, videoIdToDel === videoId);
-        if (videoIdToDel == videoId) { // videoIdToDel is str, videoId is int, so use == instead of ===
-            // setResetVideoPlay(true); //TODO: if setVideoId to be null, still need this?
+        if (videoIdToDel == videoId) {
             setVideoId(null);
-            //TODO: reset annotationTable and chart
         }
     }
 
@@ -416,8 +357,6 @@ export default function VideoManager(props) {
                 > */}
                 <List
                     size="small"
-                    // header={<div>Header</div>}
-                    // footer={<div>Footer</div>}
                     bordered
                     dataSource={videoNames}
                     renderItem={(name, i) => 
@@ -444,11 +383,8 @@ export default function VideoManager(props) {
                                 message: 'Video path is required',
                                 },
                             ]}
-                            // validateFirst={true}
-                            // labelAlign="left"
                             >
                             <Input 
-                                // value={detailsVideoPath} 
                                 onChange={onVideoPathChange}
                                 allowClear/>
                         </Form.Item>
@@ -458,13 +394,11 @@ export default function VideoManager(props) {
                             label="Video Name" 
                             rules={[
                                 {
-                                //   required: true,
                                 message: 'If name is empty, will directly use path as name',
                                 },
                             ]}
                             >
                             <Input 
-                                // value={detailsVideoName} 
                                 onChange={onVideoNameChange}
                                 allowClear/>
                         </Form.Item>
@@ -493,7 +427,7 @@ export default function VideoManager(props) {
                         <p>{info}</p>
                     </Form>
                 </div>
-            {/* </Modal> */}
+            {}
         </>
     )
 }

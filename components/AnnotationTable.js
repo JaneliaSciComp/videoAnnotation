@@ -177,13 +177,13 @@ export default function AnnotationTable(props) {
 
     useEffect(() => {
         const selectedKeysSet = new Set(selectedRowKeys);
-        const res = keysInTable.filter(key => selectedKeysSet.has(key) && frameAnnotation[key].type !== 'category');
+        const res = keysInTable.filter(key => selectedKeysSet.has(key) && frameAnnotation[key]?.type !== 'category');
         setAnnoIdToShow(res);
     }, [keysInTable])
 
     useEffect(() => {
         const selectedKeysSet = new Set(selectedRowKeys);
-        const res = keysInTable.filter(k => selectedKeysSet.has(k) && frameAnnotation[k].type !== 'category');
+        const res = keysInTable.filter(k => selectedKeysSet.has(k) && frameAnnotation[k]?.type !== 'category');
         setAnnoIdToShow(res);
     }, [selectedRowKeys])
 
