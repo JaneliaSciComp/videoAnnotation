@@ -86,6 +86,10 @@ export const crowdSelectOptions = [
     {value: 'no', label: 'No'},
 ]
 
+export const defaultAdditionalDataRange = 20;
+export const additionalDataBufferFold = 3; 
+export const additionalDataExtraBufferRange = 25*additionalDataBufferFold;
+
 
 // export function clearUnfinishedAnnotation(frameAnnotation) {
 //     /**

@@ -2,14 +2,15 @@ import React, {useState, useEffect, useRef} from 'react';
 import styles from '../styles/Chart.module.css';
 import {Dropdown, InputNumber} from 'antd';
 import {Row, Col} from 'react-bootstrap';
-import { useStates } from './AppContext'; 
+import { useStateSetters, useStates } from './AppContext'; 
+import {defaultAdditionalDataRange} from '../utils/utils';
 
 
 /**
  *  props:
  *      metrics: ['length', 'width', ...]. Array of metrics for dropdown menu
- *      range: int. Frame range to display.
- *      setRange: setter of range.
+ *      //range: int. Frame range to display.
+ *      //setRange: setter of range.
  *      setChartMetrics: setter of chartMetrics. 
  *      chartType: 'Line' or 'Bar'.
  *      setChartType: setter of chartType
@@ -22,8 +23,21 @@ export default function ChartController(props) {
     const [selectedMetrics, setSelectedMetrics] = useState([]);
 
     //context
-    const totalFrameCount = useStates().totalFrameCount;
+    const totalFrameCount = useStates().videoMetaRef.current.totalFrameCount;
+    const additionalDataRange = useStates().additionalDataRange;
+    const setAdditionalDataRange = useStateSetters().setAdditionalDataRange;
+    const resetChart = useStates().resetChart;
+    const setResetChart = useStateSetters().setResetChart;
 
+    // console.log('chartController render', props.metrics, additionalDataRange);
+    
+    useEffect(() => {
+        if (resetChart) {
+            setSelectedMetrics([]);
+            props.setChartMetrics([]);
+            setResetChart(() => false);
+        }
+    }, [resetChart])
 
     useEffect(() => {
         const items = props.metrics.map((item, i) => {
@@ -53,7 +67,7 @@ export default function ChartController(props) {
     // }
 
     function metricsSelectHandler(e) {
-        // console.log('select',e);
+        // console.log('select metrics',e);
         const selectedMetrics = e.selectedKeys.map(keyStr => props.metrics[parseInt(keyStr)]);
         // console.log(selectedMetrics);
         props.setChartMetrics(selectedMetrics);
@@ -111,13 +125,24 @@ export default function ChartController(props) {
     // }
 
     function rangeChangeHandler(newValue) {
+        // console.log('chartController range new value', newValue, additionalDataRange);
         if (typeof newValue === 'number' 
         && Number.isInteger(newValue) 
         ) {
-            props.setRange(newValue);
+            // props.setRange(newValue);
+
+            // const halfRange = Math.floor(newValue/2);
+            const newRange = {...additionalDataRange};
+            props.metrics.forEach(m => {
+                newRange[m] = newValue;
+            })
+            setAdditionalDataRange(newRange);
         }
     }
 
+
+    //justify-content-center
+    // + (props.vertical?'flex-column':('justify-content-'+(props.align?props.align:'start')))
     return (
         <Row className={'d-flex ' + (props.vertical?'flex-column':('justify-content-'+(props.align?props.align:'start')))}>
             <Col xs='auto' className='mb-1'>
@@ -152,8 +177,10 @@ export default function ChartController(props) {
                         <InputNumber  
                             min={1}
                             max={totalFrameCount ? totalFrameCount : null}
-                            // defaultValue={1}
-                            value={props.range}
+                            // defaultValue={40}
+                            defaultValue={props.metrics.length>0?(additionalDataRange[props.metrics[0]]*2) : defaultAdditionalDataRange}
+                            // value={props.metrics.length>0?(additionalDataRange[props.metrics[0]]*2) : null}
+                            // value={props.range}
                             onChange={rangeChangeHandler}
                             size="small"
                             />
@@ -171,7 +198,7 @@ export default function ChartController(props) {
                             menu={menuProps} 
                             //   onClick={handleButtonClick}
                             trigger={['click']}>
-                            {selectedMetrics.join(',')}
+                            {selectedMetrics.length==0 ? 'Choose' : selectedMetrics.join(',')}
                         </Dropdown.Button>
                     </Col>
                 </Row>

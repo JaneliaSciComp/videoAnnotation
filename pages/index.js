@@ -121,16 +121,19 @@ export default function Home() {
   const nums = [71,56,-24,56,26,42,10,-82,82,47,-77,29,54,-40,54,91,96,-15,90,23];
   const data = {
           length: {
+              range: [0, 19],
               data: nums,
               // borderColor: '#F5222D', //'rgb(255, 99, 132)',
               // backgroundColor: '#F5222D80' //'rgba(255, 99, 132, 0.5)',
           },
           width: {
+              range: [0, 19],
               data: nums.map(n => n+10), 
               // borderColor: '#3DDCF9', //'rgb(22, 119, 255)',
               // backgroundColor: '#3DDCF980' //'rgba(22, 119, 255, 0.5)',
           },
           chase: {
+              range: [0, 19],
               data: [0,0,0,0,0,1,1,1,1,1,0,0,0,0,1,1,1,1,1,1],
           }
         }
@@ -168,12 +171,17 @@ export default function Home() {
         <JsonUploader type='annotation'/>
         <VideoManager 
           additionalFields={[
-              {name: 'trajectory', label: 'Trajectory File', required: true, uploadWithVideo: true, shape: 'circle'}, 
-              // uploadWithVideo: true, shape: 'circle'
+              {name: 'trajectory', label: 'Trajectory File', required: true, loadIn: 'chart'}, 
               {name: 'test', label: 'Test'}
           ]}
         />
-        <ProjectDropdown />
+        <ProjectDropdown 
+            defaultGroupType='category'
+            defaultBtnType='category'
+            disableGroupTypeSelect
+            disableBtnTypeSelect
+            hidePlusBtn
+          />
         <Row >
           <Col>
             {/* <Category label='chase'/>
@@ -203,7 +211,9 @@ export default function Home() {
         {/* <Chart />
         <ChartMenu /> */}
         <div className='my-3' style={{height: '200px', width: '600px'}} >
-          <Chart data={data} />
+          <Chart 
+            // data={data} 
+            />
           {/* <ChartCombo data={data} /> */}
         </div>
         

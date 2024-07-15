@@ -6,6 +6,7 @@ const VIDEO_URL = "http://localhost:8000/api/video";
 const VIDEOS_URL = "http://localhost:8000/api/videos";
 const FRAME_URL_ROOT = 'http://localhost:8000/api/frame';
 const ADDITIONAL_URL_ROOT = 'http://localhost:8000/api/additionaldata';
+const ADDITIONAL_NAMES_URL = 'http://localhost:8000/api/additionaldataname';
 const VIDEO_META_URL = "http://localhost:8000/api/videometa";
 const SINGLE_ANNOTATION_URL = "http://localhost:8000/api/annotation";
 const FRAME_ANNOTATION_URL = "http://localhost:8000/api/frameannotation";
@@ -20,11 +21,11 @@ export async function postProject(projectInfoObj) {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
               },
-            body: JSON.stringify(projectInfoObj),
+            body: JSON.stringify(projectInfoObj), 
         })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'POST project request failed'}
     }
@@ -37,11 +38,11 @@ export async function editProject(projectInfoObj) {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
               },
-            body: JSON.stringify(projectInfoObj),
+            body: JSON.stringify(projectInfoObj), 
         })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'PUT project request failed'}
     }
@@ -53,7 +54,7 @@ export async function getAllProjects() {
     })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'GET all projects request failed'}
     }
@@ -66,7 +67,7 @@ export async function getProject(id) {
     })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'GET project request failed'}
     }
@@ -78,7 +79,7 @@ export async function deleteProject(id) {
         })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'DELETE project request failed'}
     }
@@ -92,11 +93,11 @@ export async function postBtnGroup(btnGroupObj) {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
               },
-            body: JSON.stringify(btnGroupObj),
+            body: JSON.stringify(btnGroupObj), 
         })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'POST btn group request failed'}
     }
@@ -108,7 +109,7 @@ export async function deleteBtnGroup(btnGroupId) {
         })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'DELETE btn group request failed'}
     }
@@ -120,7 +121,7 @@ export async function getProjectBtn(projectId) {
     })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'GET project btn configuration data request failed'}
     }
@@ -132,7 +133,7 @@ export async function deleteProjectBtn(projectId) {
         })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'DELETE project btn request failed'}
     }
@@ -155,7 +156,7 @@ export async function postProjectBtn(data) {
         })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'POST project btn request failed'}
     }
@@ -169,11 +170,11 @@ export async function postVideo(videoInfoObj) {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
               },
-            body: JSON.stringify(videoInfoObj),
+            body: JSON.stringify(videoInfoObj), 
         })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'POST video request failed'}
     }
@@ -187,11 +188,11 @@ export async function editVideo(videoInfoObj) {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
               },
-            body: JSON.stringify(videoInfoObj),
+            body: JSON.stringify(videoInfoObj), 
         })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'PUT video request failed'}
     }
@@ -203,7 +204,7 @@ export async function deleteVideo(videoId) {
         })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'DELETE video request failed'}
     }
@@ -215,7 +216,7 @@ export async function getProjectVideo(projectId) {
     })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'GET project video data request failed'}
     }
@@ -227,7 +228,7 @@ export async function deleteProjectVideo(projectId) {
         })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'DELETE project video request failed'}
     }
@@ -251,7 +252,7 @@ export async function postProjectVideo(data) {
         })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'POST project videos request failed'}
     }
@@ -264,7 +265,7 @@ export async function getVideoMeta(videoId) {
     })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'GET video meta request failed'}
     }
@@ -283,18 +284,38 @@ export async function getFrame(frameNum) {
     }
 }
 
-export async function getAdditionalData(frameNum, videoId, fieldName) {
-    const res = await fetch(`${ADDITIONAL_URL_ROOT}/${fieldName}/?videoId=${videoId}&num=${frameNum}`, {
+export async function getAdditionalData(frameNum, fieldName, range) {
+    const res = await fetch(`${ADDITIONAL_URL_ROOT}/${fieldName}/?frameNum=${frameNum}&range=${range}`, {
         method: 'GET',
     })
     
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
-        return {error: 'GET additional data request failed'}
+        return {error: `GET additional data ${fieldName} request failed`}
     }
 }
 
+export async function postAdditionalDataNameToRetrieve(videoId, additionalDataNameToRetrieve) {
+    const body = {
+        videoId: videoId,
+        names: additionalDataNameToRetrieve
+    }
+    const res = await fetch(ADDITIONAL_NAMES_URL, {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          },
+        body: JSON.stringify(body),
+    })
+
+    if (res.ok) {
+        return await res.json()
+    } else {
+        return {error: 'POST additional data name failed'}
+    }
+}
 
 
 export async function postFrameAnnotation(annotationObjs) {
@@ -304,11 +325,11 @@ export async function postFrameAnnotation(annotationObjs) {
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
               },
-            body: JSON.stringify(annotationObjs),
+            body: JSON.stringify(annotationObjs), 
         })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'POST frame annotation request failed'}
     }
@@ -320,7 +341,7 @@ export async function getFrameAnnotation(frameNum, videoId) {
     })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'GET frame annotation request failed'}
     }
@@ -344,7 +365,7 @@ export async function postProjectAnnotation(data) {
         })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'POST project annotation request failed'}
     }
@@ -356,7 +377,7 @@ export async function getProjectAnnotation(projectId) {
     })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'GET project annotation request failed'}
     }
@@ -368,7 +389,7 @@ export async function deleteAnnotation(id) {
         })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'DELETE single annnotation request failed'}
     }
@@ -380,7 +401,7 @@ export async function deleteProjectAnnotation(projectId) {
         })
 
     if (res.ok) {
-        return res.json()
+        return await res.json()
     } else {
         return {error: 'DELETE project annotation request failed'}
     }

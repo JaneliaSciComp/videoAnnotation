@@ -55,6 +55,7 @@ const BTNGROUPNUM_MAX=50
         hideCreateBtn: boolean. Useful when BtnConfiguration is nested in ProjectManager.
         status: 'new' / 'edit' / null. Required when btnConfiguration is used either solely (needs to have parent comp to update its value) or inside ProjectManager.
             If 'new', show empty window; if 'edit', load btnConfigData; null is just to enable change of status, otherwise if open it twice as 'new', useEffect won't be triggered.
+        hidePlusBtn: whether to hide the + btn of adding btn group
         // reload: boolean. The parent use this to signal btnConfiguration to display BtnConfigData. Useful when BtnConfiguration is nested in ProjectManager.
         // setReload: setter of reload.
 */
@@ -171,7 +172,7 @@ export default function BtnConfiguration(props) {
                 >
             <Space className='my-2 d-flex justify-content-left' wrap>
                 <p className='my-2'>Customize Annotation Buttons</p>
-                {props.hideCreateBtn ?
+                {(props.hideCreateBtn && !props.hidePlusBtn) ?
                     <Button 
                         onClick={onAddBtnClick} 
                         size='small' 
@@ -202,7 +203,6 @@ export default function BtnConfiguration(props) {
                             disableGroupTypeSelect={props.disableGroupTypeSelect}
                             disableBtnTypeSelect={props.disableBtnTypeSelect}
                             disableBtnNumInput={props.disableBtnNumInput}
-                            enableDelete
                             onDelete={onDelete}
                             getData={getData}
                             setGetData={setGetData}
@@ -216,7 +216,9 @@ export default function BtnConfiguration(props) {
                             groupType={btnConfigData[index].groupType}
                             btnType={btnConfigData[index].btnType}
                             btnNum={btnConfigData[index].btnNum}
-                            enableDelete
+                            disableGroupTypeSelect={props.disableGroupTypeSelect}
+                            disableBtnTypeSelect={props.disableBtnTypeSelect}
+                            disableBtnNumInput={props.disableBtnNumInput}
                             onDelete={onDelete}
                             getData={getData}
                             setGetData={setGetData}
@@ -237,7 +239,7 @@ export default function BtnConfiguration(props) {
                     index={'1'} />
             </Space> */}
             <br />
-            {props.hideCreateBtn ? null : 
+            {(props.hideCreateBtn || props.hidePlusBtn) ? null : 
                 <Space className='my-3 d-flex justify-content-center' wrap>
                     {}
                     <Button onClick={onAddBtnClick}>Add</Button>

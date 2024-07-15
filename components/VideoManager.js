@@ -3,7 +3,7 @@ import { useStateSetters, useStates } from './AppContext';
 import { Modal, List, Button, Form, Input, Space } from 'antd';
 import { PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { postVideo, editVideo, deleteVideo } from '../utils/requests';
-
+import { defaultAdditionalDataRange } from '../utils/utils';
 
 /**
  *  props:
@@ -13,14 +13,14 @@ import { postVideo, editVideo, deleteVideo } from '../utils/requests';
 //  *      includeTrackDataInput: boolean. False by default. If true, show track data input element to allow user upload track data json files. The developer should also specify trackDataParseFunc to parse the data.
 //  *      trackDataParseFunc: [(data)=>{}, ...], // array of func, order of entries should match. if includeTrackDataInput is true, should provide funcs to process the data in those files. The func should take the object from the json file as parameter and output the data format the chart component needs
  *      
- *      additionalFields: 
+ *      additionalFields: //for developer to configure additionalFields, not saved in db. Annotator should fill in path of the file and is saved in db.
  *        [
  *          {
- *            name: str, // required and unique, used as var name, no white space.
- *            label: str, // required, label shown to the user, with white space
+ *            name: str, // required and unique, used as var name, no white space allowed.
+ *            label: str, // required, label shown to the user, allow white space
  *            required: boolean, // whether required for user, false by default
- *            loadWithVideo: boolean, // whether to draw the data on canvas with each frame. If yes, will fetch the data from backend and ask canvas to draw it, thus the 'shape' field should be defined too.
- *            shape: str, 'circle'/'rectangle'/... // required when loadWithVideo is true 
+ *            loadIn: 'canvas'/'chart'/null, default to null, // whether to draw the data on canvas/chart with each frame. If yes, will fetch the data from backend and ask canvas/chart to draw it, thus the 'shape' field should be defined too.
+ *            //shape: str, 'circle'/'rectangle'/... // required when loadWithVideo is true 
  *          },
  *          ...
  *        ]
@@ -39,7 +39,7 @@ import { postVideo, editVideo, deleteVideo } from '../utils/requests';
  *                          projectId: str,
  *                          name: str,
  *                          path: str,
- *                          additionalFields: [{name: str, value: str}, ...] // can be null/undefined/empty arr, and this field always exist in video data; value field can be absent if it's not required
+ *                          additionalFields: [{name: str, path: str/null}, ...] // can be null/undefined/empty arr, and this field always exist in video data; value field can be absent if it's not required
  *                      },
  *                      ...
  *                  } 
@@ -62,14 +62,17 @@ export default function VideoManager(props) {
     const setResetVideoPlay = useStateSetters().setResetVideoPlay;
     const resetVideoDetails = useStates().resetVideoDetails;
     const setResetVideoDetails = useStateSetters().setResetVideoDetails;
-    const videoAdditionalFieldsObj = useStates().videoAdditionalFieldsObj;
-    const setVideoAdditionalFieldsObj = useStateSetters().setVideoAdditionalFieldsObj;
+    const setResetChart = useStateSetters().setResetChart;
+    const videoAdditionalFieldsConfig = useStates().videoAdditionalFieldsConfig;
+    const setVideoAdditionalFieldsConfig = useStateSetters().setVideoAdditionalFieldsConfig;
     const projectId = useStates().projectId;
+    const setAdditionalDataNameToRetrieve = useStateSetters().setAdditionalDataNameToRetrieve;
+    const setAdditionalDataRange = useStateSetters().setAdditionalDataRange;
 
 
     const [form] = Form.useForm();
 
-    console.log('VideoManager render', videoId, videoIds);
+    console.log('VideoManager render');
 
             
           
@@ -100,23 +103,31 @@ export default function VideoManager(props) {
         if (props.additionalFields?.length > 0) {
             const names = new Set();
             const fields = {};
+            const ranges = {};
+            const toRetrieve = [];
             for (let field of props.additionalFields) {
                 names.add(field.name);
                 fields[field.name] = {
                     required: field.required, 
-                    uploadWithVideo: field.uploadWithVideo,
-                    shape: field.shape,
+                    loadIn: field.loadIn,
                 };
+                if (field.loadIn) {
+                    toRetrieve.push(field.name);
+                    ranges[field.name] = defaultAdditionalDataRange;
+                }
             }
-            console.log(fields, names);
             if (names.size < props.additionalFields?.length) {
-                setVideoAdditionalFieldsObj(null);
+                setVideoAdditionalFieldsConfig({});
                 throw new Error("Every field name should be unique.");
             } else {
-                setVideoAdditionalFieldsObj(fields);
+                setVideoAdditionalFieldsConfig(fields);
+                setAdditionalDataRange(ranges);
+                setAdditionalDataNameToRetrieve(toRetrieve);
             }
         } else {
-            setVideoAdditionalFieldsObj(null);
+            setVideoAdditionalFieldsConfig({});
+            setAdditionalDataRange({});
+            setAdditionalDataNameToRetrieve([]);
         }
     }, [props.additionalFields])
     
@@ -138,7 +149,7 @@ export default function VideoManager(props) {
             props.additionalFields.forEach((f, i) => {
                 if (videoObj.additionalFields[i]) {
                     form.setFieldsValue({
-                        [f.name]: videoObj.additionalFields[i].value
+                        [f.name]: videoObj.additionalFields[i].path
                     })
                 }
             })
@@ -197,8 +208,8 @@ export default function VideoManager(props) {
         }
         
         for (let f in fields) {
-            if (videoAdditionalFieldsObj 
-                && videoAdditionalFieldsObj[f]?.required 
+            if (videoAdditionalFieldsConfig 
+                && videoAdditionalFieldsConfig[f]?.required 
                 && (!fields[f]?.length > 0)) {
                     return false;
                 }
@@ -264,7 +275,7 @@ export default function VideoManager(props) {
         let additionalFieldsData;
         if (props.additionalFields?.length > 0) {
             additionalFieldsData = props.additionalFields.map(f => {
-                return {name: f.name, value: formFields[f.name]}
+                return {name: f.name, path: formFields[f.name]}
             });
         }
 
@@ -336,10 +347,12 @@ export default function VideoManager(props) {
         const videoDataCopy = {...videoData};
         delete(videoDataCopy[videoIdToDel]);
         setVideoData(videoDataCopy);
-        setResetVideoPlay(true);
+
 
         if (videoIdToDel == videoId) {
             setVideoId(null);
+            setResetVideoPlay(true);
+            setResetChart(true);
         }
     }
 

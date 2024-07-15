@@ -4,7 +4,7 @@ import { InputNumber, Slider, Space } from 'antd';
 import { CaretRightOutlined, PauseOutlined } from '@ant-design/icons';
 import {Row, Col, Form, Button} from 'react-bootstrap';
 import { useStates, useStateSetters } from './AppContext';
-import { postVideo, getVideoMeta, getFrame, getAdditionalData } from '../utils/requests';
+import { postVideo, getVideoMeta, getFrame, postAdditionalDataNameToRetrieve } from '../utils/requests';
 
 
 
@@ -15,6 +15,7 @@ import { postVideo, getVideoMeta, getFrame, getAdditionalData } from '../utils/r
  */
 export default function VideoUploader(props) {
     const [fps, setFps] = useState(0);
+    const [totalFrameCount, setTotalFrameCount] = useState(0);
     const [sliderValue, setSliderValue] = useState(0);
     const [playFps, setPlayFps] = useState(0);
     const [submitError, setSubmitError] = useState();
@@ -25,18 +26,18 @@ export default function VideoUploader(props) {
     const setFrameNum = useStateSetters().setFrameNum;
     const setVideoId = useStateSetters().setVideoId;
     const frameNumSignal = useStates().frameNumSignal;
-    const totalFrameCount = useStates().totalFrameCount;
-    const setTotalFrameCount = useStateSetters().setTotalFrameCount;
     const loadVideo = useStates().loadVideo;
     const setLoadVideo = useStateSetters().setLoadVideo;
     const resetVideoPlay = useStates().resetVideoPlay;
     const setResetVideoPlay = useStateSetters().setResetVideoPlay;
     const videoData = useStates().videoData;
     const setVideoData = useStateSetters().setVideoData;
-    const videoAdditionalFieldsObj = useStates().videoAdditionalFieldsObj;
+    const videoAdditionalFieldsConfig = useStates().videoAdditionalFieldsConfig;
     const videoId = useStates().videoId;
     const projectId = useStates().projectId;
-
+    const additionalDataNameToRetrieve = useStates().additionalDataNameToRetrieve;
+    const setAdditionalData = useStateSetters().setAdditionalData;
+    const videoMetaRef = useStates().videoMetaRef;
 
     console.log('VideoUploader render');
 
@@ -143,10 +144,6 @@ export default function VideoUploader(props) {
         const videoPath = form.get('videoPath');
         const video = {projectId: projectId, name: videoPath, path: videoPath, additionalFields: []};
 
-        const videoDataCopy = {...videoData};
-        videoDataCopy[id] = {...video};
-        setVideoData(videoDataCopy);
-
         video.videoId = id;
         await postAndLoadVideo(video);
     }
@@ -154,12 +151,18 @@ export default function VideoUploader(props) {
 
     async function postAndLoadVideo(videoInfo) {
         resetVideoStatus();
-        setVideoId(videoInfo.videoId);
+        const videoId = videoInfo.videoId;
 
         const res = await postVideo(videoInfo);
         if (res['error']) {
             setSubmitError(res['error']);
         } else {
+            delete(videoInfo['videoId']);
+            const videoDataCopy = {...videoData};
+            videoDataCopy[videoId] = {...videoInfo};
+            setVideoData(videoDataCopy);
+            setVideoId(videoId);
+            videoInfo['videoId'] = videoId;
             await initializePlay(videoInfo);
         }
         
@@ -179,13 +182,6 @@ export default function VideoUploader(props) {
                     setFrameNum(newValue-1);
                 }
                     
-                if (videoInfoObj) {
-                    getAdditionalFieldsData(newValue-1, videoInfoObj);
-                } else {
-                    const videoInfo = {...videoData[videoId]};
-                    videoInfo.videoId = videoId;
-                    getAdditionalFieldsData(newValue-1, videoInfo);
-                }
             }
         } else {
             setFrameUrl(null);
@@ -209,6 +205,7 @@ export default function VideoUploader(props) {
     }
 
     async function initializePlay(videoInfoObj) {
+        videoMetaRef.current = {};
         const meta = await getVideoMeta(videoInfoObj.videoId);
         console.log(meta);
         if (meta['error']) {
@@ -218,31 +215,23 @@ export default function VideoUploader(props) {
                 setFps(meta['fps']);
                 setPlayFps(meta['fps']);
                 setTotalFrameCount(meta['frame_count']);
+                videoMetaRef.current = {fps: meta['fps'], totalFrameCount: meta['frame_count']};
             } else {
                 setFps(25);
                 setPlayFps(25);
                 setTotalFrameCount(10000);
             }
-            await setFrame(1, videoInfoObj);
+            
+            setAdditionalData({});
+            const res = await postAdditionalDataNameToRetrieve(videoInfoObj.videoId, additionalDataNameToRetrieve);
+            if (res['error']) {
+                setSubmitError(res['error']);
+            } 
+                await setFrame(1);
         }
     }
 
-    async function getAdditionalFieldsData(frameNum, videoInfoObj) {
-        if (videoInfoObj.additionalFields?.length>0) {
-            const additionalData = {};
-            videoInfoObj.additionalFields.forEach(async field => {
-                if (videoAdditionalFieldsObj[field.name].uploadWithVideo) { 
-                    const res = await getAdditionalData(frameNum, videoInfoObj.videoId, field.name);
-                    if (res['error']) {
-                        setFrameError(res['error']);
-                    } else {
-                        additionalData[field.name] = res;
-                    }
-                }
-            })
             
-        }
-    }
 
 
 

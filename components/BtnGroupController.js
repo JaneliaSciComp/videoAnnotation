@@ -110,14 +110,24 @@ export default function BtnGroupController(props) {
             setIndex(Date.now().toString());
         }
 
+        if (props.defaultGroupType) {
+            setGroupType(() => props.defaultGroupType);
+        }
+        if (props.defaultBtnType) {
+            setBtnType(() => props.defaultBtnType);
+        }
+        if (props.defaultBtnNum) {
+            setBtnNum(() => props.defaultBtnNum);
+        }
+
         if (props.groupType) {
-            setGroupType(props.groupType);
+            setGroupType(() => props.groupType);
         }
         if (props.btnType) {
-            setBtnType(props.btnType);
+            setBtnType(() => props.btnType);
         }
         if (props.btnNum) {
-            setBtnNum(props.btnNum);
+            setBtnNum(() => props.btnNum);
         }
       },[]
     )
@@ -242,6 +252,7 @@ export default function BtnGroupController(props) {
     function onDownBtnClick() {
         const index = getSelfIndex();
         const childrenData = getData();
+        console.log(childrenData);
         let data = [];
         if (groupType && btnType) {
             if (btnType !== prevBtnTypeRef.current) {
@@ -329,7 +340,8 @@ export default function BtnGroupController(props) {
                     color={childrenData[i].color}
                     label={childrenData[i].label}
                     typeSelectPlaceHolder='Btn type'
-                    labelPlaceHolder={childrenData[i].btnType === 'skeleton' ? "Landmark: 'head'" : "Label: 'mouse'"}
+                    labelPlaceHolder={childrenData[i].btnType === 'skeleton' ? "Landmark: 'head'" : (childrenData[i].btnType === 'category' ? 'Label: chase' : 'Label: mouse')}
+                    hasCrowdOption={childrenData[i].omitCrowdRadio ? 'no' : 'yes'}
                     disableTypeSelect
                     enableDelete
                     onLabelChange={onChildLabelChange}

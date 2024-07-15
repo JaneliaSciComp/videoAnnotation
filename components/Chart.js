@@ -3,13 +3,9 @@ import styles from '../styles/Chart.module.css';
 import { predefinedColors, staticVerticalLineColor, dynamicVerticalLineColor } from '../utils/utils';
 import { useStateSetters, useStates } from './AppContext'; 
 import Zoom from 'chartjs-plugin-zoom';
-// import Zoom from '../utils/chartjs-plugin-zoom.esm.js';
 import { 
     Line,
     Bar,
-    // getElementAtEvent,
-    // getElementsAtEvent,
-    // getDatasetAtEvent
  } from 'react-chartjs-2';
 import {
     Chart as ChartJS,
@@ -20,7 +16,6 @@ import {
     BarElement,
     Tooltip,
     Legend,
-    // Title,
   } from 'chart.js';
 
   
@@ -31,23 +26,18 @@ ChartJS.register(
     LineElement,
     BarElement,
     Tooltip,
-    // Title,
     Legend,
     Zoom,
 );
 
-// plugins
 const staticVerticalLine = {
     id: 'staticVerticalLine',
     afterDraw: function(chart, args, options) {
-        // console.log('staticVLine', chart, argv, options, options.position);
         if ( (options.position>=0)
           && chart?.getDatasetMeta() 
           && chart.getDatasetMeta(0)?.data?.length
           && (chart.getDatasetMeta(0)?.data?.length > options.position)) {
-            // get first dataset, to get X coord of a point
             const data = chart.getDatasetMeta(0).data; 
-            // console.log(data);
             let singleElemWidth = data[options.position].width;
             singleElemWidth = singleElemWidth ? singleElemWidth : 0;
             const width = singleElemWidth * options.metricsNumber;
@@ -63,10 +53,8 @@ const staticVerticalLine = {
 const dynamicVerticalLine = {
     id: 'dynamicVerticalLine',
     afterDraw: function(chart, args, options) {
-        // console.log('dynamicVLine', chart, args, args.event);
         if (chart.tooltip._active?.length) {
             const activePoint = chart.tooltip._active[0];
-            // console.log(activePoint);
             const ctx = chart.ctx;
             let singleElemWidth = activePoint.element.width;
             singleElemWidth = singleElemWidth ? singleElemWidth : 0;
@@ -74,15 +62,13 @@ const dynamicVerticalLine = {
             const x = activePoint.element.x - singleElemWidth/2 * (activePoint.datasetIndex*2+1) + width/2;
             const topY = chart.scales.y.top;
             const bottomY = chart.scales.y.bottom;
-            ctxDrawLine(ctx, x, topY, bottomY, options.color, width); //'rgb(220,220,220, 0.5)'
+            ctxDrawLine(ctx, x, topY, bottomY, options.color, width);
         }
     },
 
-    //Click on the vertical line to reset frameNum
     afterEvent: function(chart, args, options) {
         if (args?.event?.type === 'click' && chart.tooltip._active?.length) {
             const activePoint = chart.tooltip._active[0];
-            // console.log(chart, activePoint);
             const focusFrame = activePoint.index + options.startIndex + 1;
             options.clickHandler(focusFrame);
         }
@@ -96,7 +82,7 @@ function ctxDrawLine(ctx, x, topY, bottomY, color, width) {
     ctx.moveTo(x, topY);
     ctx.lineTo(x, bottomY);
     ctx.lineWidth = width ? width : 2;
-    ctx.strokeStyle = color; //'rgb(220,220,220, 0.5)';
+    ctx.strokeStyle = color;
     ctx.stroke();
     ctx.restore();
 }
@@ -118,19 +104,22 @@ const MAX_OFFSET = 5;
 //  *          If 'backend', change of metric should trigger fetching data from backend.
 //  *          If 'local', props.data should provide data to display.
 //  *      frameRange: [start, end]. [0, 10] means [0, 1,..., 9,10]
-        range: frame range to display. 
-            The first and the last frame are calculated based on range and current frameNum.
-            The current frameNum should be the center of range. If the calculated first/last frame is out of bound,
-            then use frame 1 or the final frame.
+        // range: frame range to display. (replaced by additionalDataRange, not useful anymore )
+        //     The start and the end frame nums are calculated based on range and current frameNum.
+        //     The current frameNum should be the center of range. 
+        //     If the calculated start/end frame is out of bound, then use frame 1 or the final frame.
+            
         data: data to display in chart. 
             Format:
             {
                 datasetName1: {
+                                range: [startIndex, endIndex], //inclusively
                                 data: [num1, num2, ...], // frameRange will extract the items from this array. Its length should be bigger than frameRange, and should fill up missing data
                                 //borderColor: 'rgb(255, 99, 132)',
                                 //backgroundColor: 'rgba(255, 99, 132, 0.5)',
                             },
                 datasetName2: {
+                                range: [startIndex, endIndex], 
                                 data: [num1, num2, ...], 
                             }
 
@@ -149,7 +138,6 @@ const MAX_OFFSET = 5;
 export default function MyChart(props) {
 
     const chartRef = useRef();
-    // const [frameNumsToDisplay, setFrameNumsToDisplay] = useState([]);
     const [dataToDisplay, setDataToDisplay] = useState(
         {
             labels: [],  
@@ -168,46 +156,50 @@ export default function MyChart(props) {
         }
     });
 
-    //context
-    const setFrameNumSignal = useStateSetters().setFrameNumSignal; //1-based
+    const setFrameNumSignal = useStateSetters().setFrameNumSignal;
     const frameNum = useStates().frameNum;
-    const totalFrameCount = useStates().totalFrameCount;
+    const totalFrameCount = useStates().videoMetaRef.current.totalFrameCount;
+    const additionalDataRange = useStates().additionalDataRange;
+    const additionalData = useStates().additionalData;
+
 
 
     useEffect(() => {
-        const frameNums = [];
-        // for (let i = props.frameRange[0]+1; i <= props.frameRange[1]+1; i++) {
-        //     frameNums.push(i.toString());
-        // }
-
-        const [start, end] = getStartEndNum();
-        // console.log(frameRange);
-        for (let i = start+1; i <= end+1; i++) {
+        let data = {labels: [], datasets: [{}]};
+        let scaleLimits = [], startNeeded=0, endNeeded=0, start=0, end=0;
+        if (props.metrics?.length>0 && Object.keys(props.data).length>0) {
+            const frameNums = [];
+            const range = additionalDataRange[props.metrics[0]];
+            startNeeded = (frameNum-range>0) ? (frameNum-range) : 0;
+            endNeeded = (frameNum+range<totalFrameCount) ? (frameNum+range) : (totalFrameCount-1);
+            for (let i = startNeeded+1; i <= endNeeded+1; i++) {
                 frameNums.push(i.toString());
-        }
+            }
 
-        const colorsCopy = [...predefinedColors];
-        colorsCopy.shift(); // remove the first color '#000000' 
-        const scaleLimits = []; 
-        const data = {
-            labels: frameNums,
-            datasets: props.metrics.map((m, i) => {
-                const dataset = props.data[m];
-                // console.log(m, dataset);
-                scaleLimits.push(getScaleLimits(dataset?.data));
-                return {
-                    label: m,
-                    // data: dataset?.data.slice(props.frameRange[0], props.frameRange[1]+1),
-                    data: dataset?.data.slice(start, end+1),
-                    borderColor: dataset.borderColor ? dataset.borderColor : colorsCopy[i % colorsCopy.length], //'#F5222D' / 'rgb(255, 99, 132)',
-                    backgroundColor: dataset.backgroundColor ? dataset.backgroundColor : (colorsCopy[i % colorsCopy.length]+'80'), //'#F5222D' / 'rgba(255, 99, 132, 0.5)',
-                    categoryPercentage: 0.95, 
-                    barPercentage: 1,  
-                }
-            }),
-        };
-        // console.log(data);
+            const [startBuffered, endBuffered] = props.data[props.metrics[0]].range;
+            start = startNeeded - startBuffered;
+            end = start + (endNeeded - startNeeded);
+
+            const colorsCopy = [...predefinedColors];
+            colorsCopy.shift();
+            data = {
+                labels: frameNums,
+                datasets: props.metrics.map((m, i) => {
+                    const dataset = props.data[m];
+                    scaleLimits.push(getScaleLimits(dataset?.data));
+                    return {
+                        label: m,
+                        data: dataset?.data.slice(start, end+1),
+                        borderColor: dataset.borderColor ? dataset.borderColor : colorsCopy[i % colorsCopy.length],
+                        backgroundColor: dataset.backgroundColor ? dataset.backgroundColor : (colorsCopy[i % colorsCopy.length]+'80'),
+                        categoryPercentage: 0.95, 
+                        barPercentage: 1,  
+                    }
+                }),
+            };
+        }
         setDataToDisplay(data);
+
 
         const [min, max] = getScaleLimits(scaleLimits.flat());
 
@@ -236,7 +228,7 @@ export default function MyChart(props) {
                         drawTicks: false,
                     },
                     afterFit(scale) {
-                        scale.paddingLeft = 50; // min-width for left side y-axis
+                        scale.paddingLeft = 50;
                     }
                 },
             },
@@ -245,19 +237,12 @@ export default function MyChart(props) {
                     display: props.metrics?.length > 1 ? true : false,
                     position: props.legendPosition ? props.legendPosition : 'bottom',
                     align: props.legendAlign ? props.legendAlign : 'end',
-                    // labels: {
-                    //     color: 'rgb(255, 99, 132)'
-                    // }
                 },
-            //   title: {
-            //     display: true,
-            //     text: 'Chart.js Line Chart',
-            //   },
                 tooltip: {
                     intersect: false
                 },
                 staticVerticalLine: {
-                    position: frameNum - start,
+                    position: frameNum - startNeeded,
                     metricsNumber: props.metrics.length,
                     color: props.staticVerticalLineColor ? props.staticVerticalLine : staticVerticalLineColor
                 },
@@ -289,17 +274,8 @@ export default function MyChart(props) {
 
     }, [props, frameNum])
 
-    // console.log('chart', data);
 
     
-    // function clickHandler(e) {
-    //     // console.log(getElementAtEvent(chartRef.current, e));
-    //     const elem = getElementAtEvent(chartRef.current, e)[0];
-    //     if (elem) {
-    //         const frameNumStr = dataToDisplay.labels[elem.index];
-    //         setFrameNumSignal(parseInt(frameNumStr));
-    //     }   
-    // }
 
 
     function generateChart() {
@@ -308,43 +284,17 @@ export default function MyChart(props) {
                 return <Line ref={chartRef} 
                         options={options} 
                         data={dataToDisplay} 
-                        // onClick={clickHandler}
-                        // onMouseMove={mouseMoveHandler}
                         />
                 break;
             case 'Bar':
                 return <Bar ref={chartRef} 
                         options={options} 
                         data={dataToDisplay} 
-                        // onClick={clickHandler}
                         />
         }
     }
 
-
-    function getStartEndNum() {
-        let start, end; // start and end are both included frames, 0-based
-        if (props.range >= totalFrameCount) {
-            start = 0;
-            end = totalFrameCount - 1;
-        } else {
-            start = frameNum+1 - Math.ceil(props.range/2);
-            if (start < 0) { // start out of bound
-                start = 0;
-                end = start + props.range - 1;
-                end = (end <= totalFrameCount-1) ? end : (totalFrameCount-1);
-            } else {
-                end = start + props.range - 1;
-                if (end >= totalFrameCount) { // end out of bound
-                    end = totalFrameCount - 1;
-                    start = end - props.range + 1;
-                    start = start >= 0 ? start : 0;
-                }
-            }
-        }
         
-        return [start, end]
-    }
 
     function getScaleLimits(dataArr) {
         let min, max;
@@ -374,7 +324,7 @@ export default function MyChart(props) {
 
     return (
         <div id='chart' style={{width: props.width ? props.width:'100%', height: props.height ? props.height:'100%'}}>
-            {/* <canvas ref={canvasRef} width={800} height={150}/> */}
+            {}
             
             {/* <Line ref={chartRef} 
                 options={options} 

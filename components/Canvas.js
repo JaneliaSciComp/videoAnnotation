@@ -56,9 +56,8 @@ export default function Canvas(props) {
     const annoIdToDelete = useStates().annoIdToDelete;
     const setAnnoIdToDelete = useStateSetters().setAnnoIdToDelete;
     const annoIdToShow = useStates().annoIdToShow;
-    const annotationRef = useStates().annotationRef;
     const uploader = useStates().uploader;
-
+    const setGetAdditionalDataSignal = useStateSetters().setGetAdditionalDataSignal;
 
     
     console.log('canvas render');
@@ -162,41 +161,6 @@ export default function Canvas(props) {
 
 
     useEffect(() => {
-        const canvas = canvasObjRef.current;
-        console.log('canvas frameUrl useEffect:', frameUrl);
-        getBrushData();
-
-        removeAllObjFromCanvas();
-        fabricObjListRef.current = {};
-        
-
-        canvas.polygonPoints.forEach(p=>canvas.remove(p));
-        canvas.polygonLines.forEach(l=>canvas.remove(l));
-        canvas.bboxLines.forEach(l=>canvas.remove(l));
-        canvas.skeletonPoints.forEach(p=>canvas.remove(p));
-        Object.keys(canvas.skeletonLines).forEach(name=>canvas.remove(canvas.skeletonLines[name]));
-        canvas.polygonPoints = [];
-        canvas.polygonLines = [];
-        canvas.bboxLines = [];
-        canvas.skeletonPoints = [];
-        canvas.skeletonLines = {};
-        
-        canvas.isDragging = null;
-        canvas.lastPosX = null;
-        canvas.lastPosY = null;
-        canvas.bboxStartPosition = null;
-        canvas.bboxEndPosition = null;
-        canvas.bboxIdObjToDraw = null;
-        canvas.isDrawingSkeleton = null;
-        canvas.isDraggingSkeletonPoint = false;
-        canvas.editPolygon = null;
-        canvas.editingPolygonId = null;
-        canvas.isDraggingPolygonPoint = false;
-        canvas.isEditingObj = null;
-        canvas.activeObj = null;
-        prevDrawTypeRef.current = null;
-        resetBrush();
-
         if (frameUrl) {
             createPathes().then(
                 () => {
@@ -209,6 +173,42 @@ export default function Canvas(props) {
             )
         }
         
+        return ()=>{
+            const canvas = canvasObjRef.current;
+            console.log('canvas frameUrl useEffect return:', frameUrl);
+            getBrushData();
+    
+            removeAllObjFromCanvas();
+            fabricObjListRef.current = {};
+            
+    
+            canvas.polygonPoints.forEach(p=>canvas.remove(p));
+            canvas.polygonLines.forEach(l=>canvas.remove(l));
+            canvas.bboxLines.forEach(l=>canvas.remove(l));
+            canvas.skeletonPoints.forEach(p=>canvas.remove(p));
+            Object.keys(canvas.skeletonLines).forEach(name=>canvas.remove(canvas.skeletonLines[name]));
+            canvas.polygonPoints = [];
+            canvas.polygonLines = [];
+            canvas.bboxLines = [];
+            canvas.skeletonPoints = [];
+            canvas.skeletonLines = {};
+            
+            canvas.isDragging = null;
+            canvas.lastPosX = null;
+            canvas.lastPosY = null;
+            canvas.bboxStartPosition = null;
+            canvas.bboxEndPosition = null;
+            canvas.bboxIdObjToDraw = null;
+            canvas.isDrawingSkeleton = null;
+            canvas.isDraggingSkeletonPoint = false;
+            canvas.editPolygon = null;
+            canvas.editingPolygonId = null;
+            canvas.isDraggingPolygonPoint = false;
+            canvas.isEditingObj = null;
+            canvas.activeObj = null;
+            prevDrawTypeRef.current = null;
+            resetBrush();
+        }
 
       }, [frameUrl]
     )
@@ -597,7 +597,11 @@ export default function Canvas(props) {
             });
             canvas.renderAll();
 
+
         }
+
+        setGetAdditionalDataSignal(true);
+
     }
 
     async function getFrameAnnotationFromDB() {

@@ -12,7 +12,18 @@ import ProjectList from './ProjectList.js';
  *      //uploaderCancelClickHandler: will be called after natural behavior of closing the uploader modal window
  *      onProjectNameChange: called after inherent behavior in ProjectManager
  *      onDescriptionChange: called after inherent behavior in ProjectManager
- */
+
+        // following props are passed to child ProjectManager, then further passed to BtnCofniguration
+ *      groupType: set groupType for each child btnGroupController
+        defaultBtnType: set defaultGroupType for each child btnGroupController
+        btnType: set btnType for each child btnGroupController
+        defaultBtnNum: set defaultBtnNum for each child btnGroupController
+        btnNum: set btnNum for each child btnGroupController
+        disableGroupTypeSelect: disable child btnGroupController's groupTypeSelect
+        disableBtnTypeSelect: disable child btnGroupController's btnTypeSelect
+        disableBtnNumInput: disable child btnGroupController's btnNumInput
+        hidePlusBtn: whether to hide the + btn of adding btn group
+*/
 export default function ProjectDropdown(props) {
 
     const [managerOpen, setManagerOpen] = useState(false);
@@ -131,6 +142,17 @@ export default function ProjectDropdown(props) {
                 setOpen={setManagerOpen} 
                 // onProjectNameChange={props.onProjectNameChange}
                 // onDescriptionChange={props.onDescriptionChange}
+                
+                defaultGroupType={props.defaultGroupType}
+                groupType={props.groupType}
+                defaultBtnType={props.defualtBtnType}
+                btnType={props.btnType}
+                defaultBtnNum={props.defaultBtnNum}
+                btnNum={props.btnNum}
+                disableGroupTypeSelect={props.disableGroupTypeSelect}
+                disableBtnTypeSelect={props.disableBtnTypeSelect}
+                disableBtnNumInput={props.disableBtnNumInput}
+                hidePlusBtn={props.hidePlusBtn}
                 />
             
             <ProjectList 

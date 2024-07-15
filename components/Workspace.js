@@ -9,9 +9,9 @@ import {Row, Col, Button} from 'react-bootstrap';
 import BtnGroup from './BtnGroup';
 import BrushTool from './BrushTool';
 import { StatesProvider } from './AppContext';
-import { clearUnfinishedAnnotation } from '../utils/utils';
+import { clearUnfinishedAnnotation, additionalDataBufferFold, additionalDataExtraBufferRange } from '../utils/utils';
 import { Modal } from 'antd';
-import { editProject, postBtnGroup, editVideo, postFrameAnnotation, getFrameAnnotation, postProjectAnnotation, getProjectAnnotation, postProjectBtn, postProjectVideo } from '../utils/requests';
+import { editProject, postFrameAnnotation, getFrameAnnotation, postProjectAnnotation, getProjectAnnotation, postProjectBtn, postProjectVideo, getAdditionalData, postAdditionalDataNameToRetrieve } from '../utils/requests';
 
 
 /**
@@ -37,20 +37,27 @@ export default function Workspace(props) {
     const [btnConfigData, setBtnConfigData] = useState({});
     const [btnGroups, setBtnGroups] = useState();
     const [frameNumSignal, setFrameNumSignal] = useState();
-    const [totalFrameCount, setTotalFrameCount] = useState(0);
     const [uploader, setUploader] = useState();
     const [confirmConfig, setConfirmConfig] = useState();
     const [saveConfig, setSaveConfig] = useState(false);
     const [saveAnnotation, setSaveAnnotation] = useState(false);
-    const [infoOpen, setInfoOpen] = useState(false);
+    const [modalInfoOpen, setModalInfoOpen] = useState(false);
+    const [modalInfo, setModalInfo] = useState();
     const [info, setInfo] = useState();
     const [videoData, setVideoData] = useState({});
     const [loadVideo, setLoadVideo] = useState();
     const [resetVideoPlay, setResetVideoPlay] = useState();
     const [resetVideoDetails, setResetVideoDetails] = useState();
-    const [videoAdditionalFieldsObj, setVideoAdditionalFieldsObj] = useState();
-    const [projectId, setProjectId] = useState();
+    const [resetChart, setResetChart] = useState();
+    const [videoAdditionalFieldsConfig, setVideoAdditionalFieldsConfig] = useState({});
+    const [projectId, setProjectId] = useState(); 
     const [projectData, setProjectData] = useState();
+    const [getAdditionalDataSignal, setGetAdditionalDataSignal] = useState(false);
+    const [additionalDataRange, setAdditionalDataRange] = useState({});
+    const [additionalData, setAdditionalData] = useState({});
+    const [additionalDataNameToRetrieve, setAdditionalDataNameToRetrieve] = useState([]);
+    const videoMetaRef = useRef({});
+
 
     console.log('workspace render');
 
@@ -71,20 +78,24 @@ export default function Workspace(props) {
         btnConfigData: btnConfigData,
         btnGroups: btnGroups,
         frameNumSignal: frameNumSignal,
-        totalFrameCount: totalFrameCount,
         uploader: uploader,
         confirmConfig: confirmConfig,
         saveConfig: saveConfig,
         saveAnnotation: saveAnnotation,
-        info: info,
-        infoOpen: infoOpen,
+        info: modalInfo,
+        infoOpen: modalInfoOpen,
         videoData: videoData,
         loadVideo: loadVideo,
         resetVideoPlay: resetVideoPlay,
         resetVideoDetails: resetVideoDetails,
-        videoAdditionalFieldsObj: videoAdditionalFieldsObj,
+        videoAdditionalFieldsConfig: videoAdditionalFieldsConfig,
         projectId: projectId,
         projectData: projectData,
+        additionalDataRange: additionalDataRange,
+        additionalData: additionalData,
+        additionalDataNameToRetrieve: additionalDataNameToRetrieve,
+        videoMetaRef: videoMetaRef,
+        resetChart: resetChart,
     }
 
     const stateSetters = {
@@ -104,26 +115,96 @@ export default function Workspace(props) {
         setBtnConfigData: setBtnConfigData,
         setBtnGroups: setBtnGroups,
         setFrameNumSignal: setFrameNumSignal,
-        setTotalFrameCount: setTotalFrameCount,
         setUploader: setUploader,
         setConfirmConfig: setConfirmConfig,
         setSaveConfig: setSaveConfig,
         setSaveAnnotation: setSaveAnnotation,
-        setInfo: setInfo,
-        setInfoOpen: setInfoOpen,
+        setInfo: setModalInfo,
+        setInfoOpen: setModalInfoOpen,
         setVideoData: setVideoData,
         setLoadVideo: setLoadVideo,
         setResetVideoPlay: setResetVideoPlay,
         setResetVideoDetails: setResetVideoDetails,
-        setVideoAdditionalFieldsObj: setVideoAdditionalFieldsObj,
+        setVideoAdditionalFieldsConfig: setVideoAdditionalFieldsConfig,
         setProjectId: setProjectId,
         setProjectData: setProjectData,
+        setGetAdditionalDataSignal: setGetAdditionalDataSignal,
+        setAdditionalDataRange: setAdditionalDataRange,
+        setAdditionalDataNameToRetrieve: setAdditionalDataNameToRetrieve,
+        setAdditionalData: setAdditionalData,
+        setResetChart: setResetChart,
     }
 
 
     
 
 
+
+    useEffect(() => {
+        setResetVideoPlay(true);
+        setResetVideoDetails(true);
+        setResetChart(true);
+    }, [projectId])
+
+
+    useEffect(() => {
+        if (getAdditionalDataSignal) {
+            getAdditionalFieldsData();
+            setGetAdditionalDataSignal(false);
+        }
+    }, [getAdditionalDataSignal])
+
+    useEffect(() => {
+        getAdditionalFieldsData();
+    }, [additionalDataRange])
+
+    useEffect(() => {
+        if (videoId) {
+            setInfo(null);
+            setAdditionalData({});
+            postAdditionalDataNameToRetrieve(videoId, additionalDataNameToRetrieve)
+                .then(res => {
+                    if (res['error']) {
+                        setInfo(res['error']);
+                    } else {
+                        if (additionalDataNameToRetrieve.length > 0) {
+                            getAdditionalFieldsData();
+                        }
+                    }
+                })
+        }
+    }, [additionalDataNameToRetrieve])
+
+    async function getAdditionalFieldsData() {
+        console.log('getAdditioanlData called');
+        setInfo(null);
+        if (additionalDataNameToRetrieve.length>0 && Number.isInteger(frameNum)) { 
+            const retrievedAdditionalData = {...additionalData};
+            await Promise.all(additionalDataNameToRetrieve.map(async name => {
+                const rangeNeeded = additionalDataRange[name];
+                if (rangeNeeded > 0) {
+                    const rangeStartNeeded = ((frameNum-rangeNeeded)<0) ? 0 : (frameNum-rangeNeeded);
+                    const rangeEndNeeded = ((frameNum+rangeNeeded)>(videoMetaRef.current.totalFrameCount-1)) ? (videoMetaRef.current.totalFrameCount-1) : (frameNum+rangeNeeded);
+                    const rangeInBuffer = additionalData[name] ? additionalData[name].range : null;
+                    if (!rangeInBuffer || rangeStartNeeded < rangeInBuffer[0] || rangeEndNeeded > rangeInBuffer[1]) {
+                        const extraRange = videoMetaRef.current.fps ? (videoMetaRef.current.fps*additionalDataBufferFold) : additionalDataExtraBufferRange;
+                        console.log(rangeInBuffer, videoMetaRef.current, rangeStartNeeded, rangeEndNeeded, extraRange);
+                        const res = await getAdditionalData(frameNum, name, rangeNeeded+extraRange);
+                        if (res['error']) {
+                            setInfo(res['error']);
+                            retrievedAdditionalData[name] = 'error';
+                        } else {
+                            retrievedAdditionalData[name] = res;
+                        }
+                    }
+                }
+            }))
+            console.log(retrievedAdditionalData);
+                setAdditionalData(retrievedAdditionalData);
+            
+        }
+    }        
+    
 
 
     useEffect(() => {
@@ -149,14 +230,14 @@ export default function Workspace(props) {
              */
             
             if (!projectId) {
-                setInfo('Please upload the project configuration data first');
-                setInfoOpen(true);
+                setModalInfo('Please upload the project configuration data first');
+                setModalInfoOpen(true);
             } else if (obj.projectId !== projectId) {
-                setInfo('The project id in the uploaded data does not match the current project id. Please upload the project configuration file first.')
-                setInfoOpen(true);
+                setModalInfo('The project id in the uploaded data does not match the current project id. Please upload the project configuration file first.')
+                setModalInfoOpen(true);
             } else {
                 Modal.confirm({
-                    content: 'Upload and save/update the uploaded annotation data to database?\nThis will override the data in database.',
+                    content: 'Upload and save/update the uploaded annotation data to database?\nThis will overwrite the data in database.',
                     onOk: () => {confirmSaveUploadedAnnotationToDB(obj)},
                 });
             }
@@ -174,19 +255,17 @@ export default function Workspace(props) {
             if (projectId) {
                 Modal.confirm({
                     title: 'Alert',
-                    content: 'The current project data will be replaced!\nThe uploaded configuration data will be saved to database. This may override the existing data in database.',
+                    content: 'The current project data will be replaced!\nThe uploaded configuration data will be saved to database. This may overwrite the existing data in database.',
                     onOk: ()=>{confirmUploadConfiguration(obj)},
                 });
             } else {
                 Modal.confirm({
                     title: 'Alert',
-                    content: 'The uploaded configuration data will be saved to database. This may override the existing data in database.',
+                    content: 'The uploaded configuration data will be saved to database. This may overwrite the existing data in database.',
                     onOk: ()=>{confirmUploadConfiguration(obj)},
                 });
             }
-
             
-    
         }
     }
 
@@ -199,8 +278,8 @@ export default function Workspace(props) {
         }
         const projectRes = await editProject(projectObj);
         if (projectRes['error']) {
-            setInfo('Saving project configuration data to DB failed.');
-            setInfoOpen(true);
+            setModalInfo('Saving project configuration data to DB failed.');
+            setModalInfoOpen(true);
             return
         } 
         
@@ -215,8 +294,8 @@ export default function Workspace(props) {
         }
         let btnRes = await postProjectBtn(btnDataForDB);
         if (btnRes['error']) {
-            setInfo('Saving btn configuration data to DB failed.');
-            setInfoOpen(true);
+            setModalInfo('Saving btn configuration data to DB failed.');
+            setModalInfoOpen(true);
             return
         } 
 
@@ -231,8 +310,8 @@ export default function Workspace(props) {
         }
         let videoRes = await postProjectVideo(videoDataForDB);
         if (videoRes['error']) {
-            setInfo('Saving video data to DB failed.');
-            setInfoOpen(true);
+            setModalInfo('Saving video data to DB failed.');
+            setModalInfoOpen(true);
             return
         }
 
@@ -240,18 +319,14 @@ export default function Workspace(props) {
         setProjectData({projectId: obj.projectId, projectName: obj.projectName, description: obj.description});
         setBtnConfigData(obj.btnConfigData ? {...obj.btnConfigData} : {});
         setVideoData(obj.videos ? {...obj.videos} : {});
-        setResetVideoPlay(true);
-        setResetVideoDetails(true);
 
-
-        
     }
 
     async function confirmSaveUploadedAnnotationToDB(data) {
         const res = await postProjectAnnotation({...data});
         if (res['error']) {
-            setInfo('Saving annotation data to DB failed.');
-            setInfoOpen(true);
+            setModalInfo('Saving annotation data to DB failed.');
+            setModalInfoOpen(true);
         } else {
             if ((data.videos.filter(v => v===videoId).length>0) && Number.isInteger(frameNum)) {
                 getFrameAnnotationFromDBAndSetState();
@@ -263,8 +338,8 @@ export default function Workspace(props) {
     useEffect(()=> {
         if (saveConfig) {
             if (!projectId) {
-                setInfo('No current project.');
-                setInfoOpen(true);
+                setModalInfo('No current project.');
+                setModalInfoOpen(true);
             } 
             else {
                 const projectConfigData = {...projectData, btnConfigData: {...btnConfigData}, videos: {...videoData}};
@@ -281,19 +356,20 @@ export default function Workspace(props) {
     }, [saveConfig])
 
     useEffect(()=> {
-        console.log(saveAnnotation);
         if (saveAnnotation) {
             saveCurrentAnnotation()
                 .then((res) => {
                     console.log(res);
                     if (res?.error) {
                         console.log(res);
+                        setInfo(res);
                     } else {
                         if (projectId) {
                             getProjectAnnotation(projectId)
                                 .then((res)=>{
                                     if (res['error']) {
                                         console.log(res);
+                                        setInfo(res);
                                     } else {
                                         const jsonAnno = JSON.stringify(res);
                                         const blobAnno = new Blob([jsonAnno], {type: 'text/plain'});
@@ -376,7 +452,6 @@ export default function Workspace(props) {
     
 
     useEffect(() => {
-        console.log('btnConfigData changed', btnConfigData);
         const btnConfigCopy = {...btnConfigData};
         Object.values(btnConfigCopy).forEach(groupData => {
             if (groupData?.edgeData && groupData.edgeData.edges.length) {
@@ -391,7 +466,6 @@ export default function Workspace(props) {
 
     useEffect(() => {
         if (btnConfigData) {
-            console.log(btnConfigData);
             renderBtnGroup();
         }
       }, [btnConfigData, frameNum, frameAnnotation, drawType, skeletonLandmark]
@@ -443,13 +517,13 @@ export default function Workspace(props) {
     }
 
     function okClickHandler() {
-        setInfo(null);
-        setInfoOpen(false);
+        setModalInfo(null);
+        setModalInfoOpen(false);
     }
 
     function cancelClickHandler() {
-        setInfo(null);
-        setInfoOpen(false);
+        setModalInfo(null);
+        setModalInfoOpen(false);
     }
 
     async function getFrameAnnotationFromDBAndSetState() {
@@ -475,13 +549,14 @@ export default function Workspace(props) {
         <div className={styles.container}>
             <main className={styles.main}>
                 <StatesProvider states={states} stateSetters={stateSetters}>
+                    {info ? <p>{info}</p> : null}
                     {props.children}
                     {}
                 </StatesProvider>
 
                 <Modal
                     title='Info'
-                    open={infoOpen}
+                    open={modalInfoOpen}
                     onOk={okClickHandler} 
                     onCancel={cancelClickHandler}
                     footer={(_, { OkBtn, CancelBtn }) => (
@@ -490,7 +565,7 @@ export default function Workspace(props) {
                         </>
                     )}
                     >
-                    <p className="ant-upload-text ms-4">{info}</p>
+                    <p className="ant-upload-text ms-4">{modalInfo}</p>
                 </Modal>
             </main>
 

@@ -11,6 +11,17 @@ import { postProject, editProject, deleteProject } from '../utils/requests';
  *      setOpen: setter of open. In order to give controll to ProjectManager's internal buttons.
  *      // serverType: 'local' / 'remote'
  *      status: 'new' / 'edit'
+ * 
+ *      // following props are passed to child BtnConfiguration
+ *      groupType: set groupType for each child btnGroupController
+        defaultBtnType: set defaultGroupType for each child btnGroupController
+        btnType: set btnType for each child btnGroupController
+        defaultBtnNum: set defaultBtnNum for each child btnGroupController
+        btnNum: set btnNum for each child btnGroupController
+        disableGroupTypeSelect: disable child btnGroupController's groupTypeSelect
+        disableBtnTypeSelect: disable child btnGroupController's btnTypeSelect
+        disableBtnNumInput: disable child btnGroupController's btnNumInput
+        hidePlusBtn: whether to hide the + btn of adding btn group
  *      
  *      For reference, projectConfigDataRef: 
  *          {
@@ -193,6 +204,16 @@ export default function ProjectManager(props) {
                     status={btnConfigStatus} 
                     setStatus = {setBtnConfigStatus}
                     hideCreateBtn
+                    defaultGroupType={props.defaultGroupType}
+                    groupType={props.groupType}
+                    defaultBtnType={props.defualtBtnType}
+                    btnType={props.btnType}
+                    defaultBtnNum={props.defaultBtnNum}
+                    btnNum={props.btnNum}
+                    disableGroupTypeSelect={props.disableGroupTypeSelect}
+                    disableBtnTypeSelect={props.disableBtnTypeSelect}
+                    disableBtnNumInput={props.disableBtnNumInput}
+                    hidePlusBtn={props.hidePlusBtn}
                     />
                 <p>{info}</p>
             </Modal>
