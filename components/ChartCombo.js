@@ -43,7 +43,6 @@ export default function ChartCombo(props) {
     // context
     const additionalData = useStates().additionalData;
     const videoAdditionalFieldsConfig = useStates().videoAdditionalFieldsConfig;
-
     
     useEffect(() => {
         // setChartMetrics([]);
@@ -67,7 +66,7 @@ export default function ChartCombo(props) {
             style={{height:'100%'}}>
             <Col sm='auto'>
                 <ChartController 
-                    metrics={Object.keys(data)} 
+                    metrics={Object.keys(videoAdditionalFieldsConfig).filter(name=>videoAdditionalFieldsConfig[name].loadIn==='chart')} 
                     vertical={props.horizontal ? true : false}
                     align={props.controllerAlign}
                     setChartMetrics={setChartMetrics} 

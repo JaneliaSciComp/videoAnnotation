@@ -36,6 +36,8 @@ export default function Canvas(props) {
     const prevDrawTypeRef = useRef({});
     const prevUploaderRef = useRef();
     const [info, setInfo] = useState();
+    const additionalFabricObjListRef = useRef({});
+
 
     const videoId = useStates().videoId;
     const frameUrl = useStates().frameUrl;
@@ -58,8 +60,13 @@ export default function Canvas(props) {
     const annoIdToShow = useStates().annoIdToShow;
     const uploader = useStates().uploader;
     const setGetAdditionalDataSignal = useStateSetters().setGetAdditionalDataSignal;
+    const additionalData = useStates().additionalData;
+    const videoAdditionalFieldsConfig = useStates().videoAdditionalFieldsConfig;
+    const additionalDataRange = useStates().additionalDataRange;
+    const additionalDataNameToRetrieve = useStates().additionalDataNameToRetrieve;
+    const videoMetaRef = useStates().videoMetaRef;
 
-    
+
     console.log('canvas render');
     fabric.Object.prototype.erasable = false;
 
@@ -118,6 +125,80 @@ export default function Canvas(props) {
         }
       }, [useStates()]
     )
+
+
+    useEffect(() => {
+        drawAdditionalDataObj();
+
+        return () => {
+            removeAllAdditionalDataObj();
+            additionalFabricObjListRef.current = {}; 
+        }
+    }, [additionalData])
+
+    function drawAdditionalDataObj() {
+        console.log('drawAdditionalDataObj called');
+        setInfo(null);
+        const eligibleDataName =  additionalDataNameToRetrieve.filter(name => videoAdditionalFieldsConfig[name].loadIn === 'canvas' && additionalData[name])[0];
+        if (eligibleDataName) {
+            const rangeNeeded = additionalDataRange[eligibleDataName];
+            if (rangeNeeded >= 0) {
+                const rangeStartNeeded = ((frameNum-rangeNeeded)<0) ? 0 : (frameNum-rangeNeeded);
+                const rangeEndNeeded = ((frameNum+rangeNeeded)>(videoMetaRef.current.totalFrameCount-1)) ? (videoMetaRef.current.totalFrameCount-1) : (frameNum+rangeNeeded);
+                const rangeInBuffer = additionalData[eligibleDataName].range;
+                if (rangeInBuffer && rangeStartNeeded>=rangeInBuffer[0] && rangeEndNeeded<=rangeInBuffer[1]) {
+                    const dataFailedRetrive = []
+                    Object.keys(additionalData).forEach((name) => {
+                        if (videoAdditionalFieldsConfig[name].loadIn === 'canvas') {
+                            if (additionalData[name] !== 'error') {
+                                const start = rangeStartNeeded - rangeInBuffer[0];
+                                const end = start + (rangeEndNeeded - rangeStartNeeded);
+                                const params = {
+                                    target: {
+                                        additionalDataName: name,
+                                        objListRef: additionalFabricObjListRef,
+                                        canvas: canvasObjRef.current,
+                                        img: imageObjRef.current,
+                                    },
+                                    data: [...additionalData[name].data.slice(start, end+1)]
+                                }
+                                const onLoadFunc = videoAdditionalFieldsConfig[name].onLoad;
+                                onLoadFunc(params);
+                            } else {
+                                dataFailedRetrive.push(name);
+                            }
+                        }
+                    })
+                    
+                    if (dataFailedRetrive.length > 0) {
+                        setInfo(`${dataFailedRetrive} failed in retrieving data`)
+                    }
+                }
+            }
+        }
+    }
+
+    function removeAllAdditionalDataObj() {
+        console.log('removeAdditionalDataObj called');
+        Object.keys(additionalFabricObjListRef.current).forEach(name => {
+            removeAdditionalDataObjByName(name);
+        })
+    }
+
+    function removeAdditionalDataObjByName(name) {
+        additionalFabricObjListRef.current[name].forEach(obj => {
+            canvasObjRef.current.remove(obj);
+        })
+    }
+
+    function addAdditionalDataObjByName(name) {
+        if (additionalFabricObjListRef.current[name]) {
+            additionalFabricObjListRef.current[name].forEach(obj => {
+                canvasObjRef.current.add(obj);
+            })
+        }
+        
+    }
 
 
     useEffect(() => {
@@ -180,6 +261,8 @@ export default function Canvas(props) {
     
             removeAllObjFromCanvas();
             fabricObjListRef.current = {};
+            removeAllAdditionalDataObj();
+            additionalFabricObjListRef.current = {}; 
             
     
             canvas.polygonPoints.forEach(p=>canvas.remove(p));
@@ -214,20 +297,16 @@ export default function Canvas(props) {
     )
 
     function removeAllObjFromCanvas() {
-        console.log(fabricObjListRef.current);
-        console.log('canvas objs before remove', canvasObjRef.current.getObjects())
         if (Object.keys(fabricObjListRef.current).length>0) {
             Object.keys(fabricObjListRef.current).forEach(id => {
                 removeObjFromCanvasById(id);
             });
         }
-        console.log('canvas objs after remove', canvasObjRef.current.getObjects());
     }
 
     function removeObjFromCanvasById(id) {
         const canvas = canvasObjRef.current;
         const obj = fabricObjListRef.current[id];
-        console.log('removeObjFromCanvasById', obj);
         if (obj) {
             if (obj.type==='skeleton') {
                 obj.landmarks.forEach(l => {
@@ -283,8 +362,10 @@ export default function Canvas(props) {
             console.log('frameAnno useEffect uploader', uploader);
             removeAllObjFromCanvas();
             fabricObjListRef.current = {};
-            createPathes();
-            createFabricObjBasedOnAnnotation();
+            createPathes().then(() => {
+                    createFabricObjBasedOnAnnotation();
+                }
+            )
             prevUploaderRef.current = uploader;
         }
 
@@ -561,11 +642,9 @@ export default function Canvas(props) {
         
         const canvas = canvasObjRef.current;
         const nextFrameAnno = await getFrameAnnotationFromDB();
-        console.log('createObjBasedOnAnno', nextFrameAnno);
         if (nextFrameAnno && Object.keys(nextFrameAnno).length>0) {
             Object.keys(nextFrameAnno).forEach(id => {
                 const annoObj = nextFrameAnno[id];
-                console.log('1', annoObj);
                 if (annoObj.frameNum === frameNum) {
                     let dataToCanvas;
                     switch (annoObj.type) {
@@ -589,7 +668,6 @@ export default function Canvas(props) {
                 }
             });
 
-            console.log('canvas objs after createObjBasedOnAnno', canvas.getObjects());
             canvas.getObjects().forEach(obj=>{
                 if (obj.id || obj.owner) {
                     canvas.bringToFront(obj);
@@ -641,6 +719,7 @@ export default function Canvas(props) {
         console.log('img load handler', frameUrl, imgRef.current.url);
         
         await createFabricObjBasedOnAnnotation();
+        drawAdditionalDataObj();
         canvasObjRef.current.renderAll();
     }
 
@@ -930,9 +1009,10 @@ export default function Canvas(props) {
 
 
     function deleteKeyHandler(e) {
+        const target = canvasObjRef.current.getActiveObject();
         if ((e.key === 'Backspace' || e.key === 'Delete') 
-        && canvasObjRef.current.getActiveObject()
-        && canvasObjRef.current.getActiveObject().type !== 'polygonPoint'
+        && target && target.type !== 'polygonPoint'
+        && target.type !== 'additional'
         ) {
             setInfo(null);
             removeObj();

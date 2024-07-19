@@ -3,7 +3,7 @@ import { useStateSetters, useStates } from './AppContext';
 import { Modal, List, Button, Form, Input, Space } from 'antd';
 import { PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { postVideo, editVideo, deleteVideo } from '../utils/requests';
-import { defaultAdditionalDataRange } from '../utils/utils';
+import { defaultAdditionalDataRange, allowedCanvasShapes } from '../utils/utils';
 
 /**
  *  props:
@@ -20,7 +20,15 @@ import { defaultAdditionalDataRange } from '../utils/utils';
  *            label: str, // required, label shown to the user, allow white space
  *            required: boolean, // whether required for user, false by default
  *            loadIn: 'canvas'/'chart'/null, default to null, // whether to draw the data on canvas/chart with each frame. If yes, will fetch the data from backend and ask canvas/chart to draw it, thus the 'shape' field should be defined too.
- *            //shape: str, 'circle'/'rectangle'/... // required when loadWithVideo is true 
+ *            onLoad: func to draw shape on canvas and do other things. required when loadin='canvas' 
+ *                  Passed a parameter e: 
+ *                  {
+ *                      canvas: fabricjs canvas obj, 
+ *                      data: {
+ *                          range: [startIndex, endIndex], 
+ *                          data: [additional data]
+ *                      }
+ *                  }
  *          },
  *          ...
  *        ]
@@ -104,17 +112,22 @@ export default function VideoManager(props) {
             const names = new Set();
             const fields = {};
             const ranges = {};
-            const toRetrieve = [];
             for (let field of props.additionalFields) {
-                names.add(field.name);
+                names.add(field.name)
                 fields[field.name] = {
                     required: field.required, 
                     loadIn: field.loadIn,
                 };
                 if (field.loadIn) {
-                    toRetrieve.push(field.name);
                     ranges[field.name] = defaultAdditionalDataRange;
                 }
+
+                if (field.loadIn === 'canvas') {
+                    if (!field.onLoad) { 
+                        throw new Error("If loadin is 'canvas', then attribute onLoad is required");
+                    } 
+                    fields[field.name].onLoad = field.onLoad;
+                } 
             }
             if (names.size < props.additionalFields?.length) {
                 setVideoAdditionalFieldsConfig({});
@@ -122,12 +135,10 @@ export default function VideoManager(props) {
             } else {
                 setVideoAdditionalFieldsConfig(fields);
                 setAdditionalDataRange(ranges);
-                setAdditionalDataNameToRetrieve(toRetrieve);
             }
         } else {
             setVideoAdditionalFieldsConfig({});
             setAdditionalDataRange({});
-            setAdditionalDataNameToRetrieve([]);
         }
     }, [props.additionalFields])
     
@@ -311,14 +322,10 @@ export default function VideoManager(props) {
         const id = videoIds[i];
         const videoObj = {...videoData[id]};
         videoObj.videoId = id;
-        console.log(videoObj);
 
         setLoadVideo(videoObj);
     }
 
-    /**
-     * invoke provided parseFunc to generate the data format that chart needs 
-     * */
 
     function onDelBtnClick(i) {
         const videoIdToDel = videoIds[i];

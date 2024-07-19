@@ -22,8 +22,11 @@ import ProjectManager from '../components/ProjectManager.js';
 import ProjectDropdown from '../components/ProjectDropdown.js';
 import ModalJsonUploader from '../components/ModalJsonUploader.js';
 import VideoManager from '../components/VideoManager.js';
+import CanvasAdditionalDataController from '../components/CanvasAdditionalDataController.js';
 import {Row, Col} from 'react-bootstrap';
 import { Button } from 'antd';
+import { drawCircle, drawLine } from '../utils/canvasUtils.js';
+
 
 
 // client side components
@@ -143,6 +146,19 @@ export default function Home() {
     setOpen(true);
   }
 
+  function drawTrajectory(e) {
+    /**
+     * e: {
+     *      target: fabric obj needed to do the drawing. Just need to be passed to imported func from canvasUtils.js
+*           data: [additional data in needed range]
+*         }
+     */
+    for (let c of e.data) {
+      c.push(3); // add radius
+      drawCircle(e.target, c, 'red');
+    }
+  }
+
 //btnConfigData={btnConfigData}
 
   return (
@@ -171,7 +187,7 @@ export default function Home() {
         <JsonUploader type='annotation'/>
         <VideoManager 
           additionalFields={[
-              {name: 'trajectory', label: 'Trajectory File', required: true, loadIn: 'chart'}, 
+              {name: 'trajectory', label: 'Trajectory File', required: true, loadIn: 'canvas', onLoad: drawTrajectory}, 
               {name: 'test', label: 'Test'}
           ]}
         />
@@ -200,6 +216,7 @@ export default function Home() {
         </Row>
         <Row >
           <Col >
+            <CanvasAdditionalDataController />
             <Canvas width={400} height={300}/>
           </Col>
           <Col >

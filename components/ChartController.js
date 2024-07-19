@@ -1,5 +1,4 @@
 import React, {useState, useEffect, useRef} from 'react';
-import styles from '../styles/Chart.module.css';
 import {Dropdown, InputNumber} from 'antd';
 import {Row, Col} from 'react-bootstrap';
 import { useStateSetters, useStates } from './AppContext'; 
@@ -8,7 +7,7 @@ import {defaultAdditionalDataRange} from '../utils/utils';
 
 /**
  *  props:
- *      metrics: ['length', 'width', ...]. Array of metrics for dropdown menu
+ *      metrics: ['length', 'width', ...]. Array of metrics for dropdown menu, generated from videoAdditionalFieldsConfig
  *      //range: int. Frame range to display.
  *      //setRange: setter of range.
  *      setChartMetrics: setter of chartMetrics. 
@@ -28,6 +27,9 @@ export default function ChartController(props) {
     const setAdditionalDataRange = useStateSetters().setAdditionalDataRange;
     const resetChart = useStates().resetChart;
     const setResetChart = useStateSetters().setResetChart;
+    const additionalDataNameToRetrieve = useStates().additionalDataNameToRetrieve;
+    const setAdditionalDataNameToRetrieve = useStateSetters().setAdditionalDataNameToRetrieve;
+    const videoAdditionalFieldsConfig = useStates().videoAdditionalFieldsConfig;
 
     // console.log('chartController render', props.metrics, additionalDataRange);
     
@@ -57,7 +59,7 @@ export default function ChartController(props) {
         };
 
         setMenuProps(menuPropsObj);
-    }, [props])
+    }, [props.metrics])
     
 
     // function menuClickHandler(e) {
@@ -70,17 +72,20 @@ export default function ChartController(props) {
         // console.log('select metrics',e);
         const selectedMetrics = e.selectedKeys.map(keyStr => props.metrics[parseInt(keyStr)]);
         // console.log(selectedMetrics);
-        props.setChartMetrics(selectedMetrics);
+
+        // update additionalDataNameToRetrieve
+        // will cause additionalData to change, then parent useEffect is called
+        // then sibling Chart is rerendered. 
+        const selectedMetricsSet = new Set(selectedMetrics);
+        const nameToRetrieveForChart = props.metrics.filter(name => selectedMetricsSet.has(name));
+        let nameToRetrieve = additionalDataNameToRetrieve.filter(name => videoAdditionalFieldsConfig[name].loadIn && videoAdditionalFieldsConfig[name].loadIn!=='chart');
+        nameToRetrieve = nameToRetrieve.concat(nameToRetrieveForChart);
+        setAdditionalDataNameToRetrieve(nameToRetrieve);
+
+        props.setChartMetrics(selectedMetrics); //sibling Chart rerender again
         setSelectedMetrics(selectedMetrics);
     }
 
-    // function menuDeselectHandler(e) {
-    //     // console.log('deselect',e);
-    //     const selectedMetrics = e.selectedKeys.map(keyStr => props.metrics[parseInt(keyStr)]);
-    //     // console.log(selectedMetrics);
-    //     props.setChartMetrics(selectedMetrics);
-    //     setSelectedMetrics(selectedMetrics);
-    // }
 
     const chartTypeItems = [
         {
@@ -106,24 +111,7 @@ export default function ChartController(props) {
         props.setChartType(type);
     }
 
-    // function startChangeHandler(newValue) {
-    //     if (typeof newValue === 'number' 
-    //     && Number.isInteger(newValue) 
-    //     && newValue>=1 ) {
-    //         // setStart(newValue - 1);
-    //         props.setStart(newValue - 1);
-    //     }
-    // }
-
-    // function endChangeHandler(newValue) {
-    //     if (typeof newValue === 'number' 
-    //     && Number.isInteger(newValue) 
-    //     ) {
-    //         // setEnd(newValue - 1);
-    //         props.setEnd(newValue - 1);
-    //     }
-    // }
-
+    
     function rangeChangeHandler(newValue) {
         // console.log('chartController range new value', newValue, additionalDataRange);
         if (typeof newValue === 'number' 
@@ -175,7 +163,7 @@ export default function ChartController(props) {
                     </Col>
                     <Col xs='auto'>
                         <InputNumber  
-                            min={1}
+                            min={0}
                             max={totalFrameCount ? totalFrameCount : null}
                             // defaultValue={40}
                             defaultValue={props.metrics.length>0?(additionalDataRange[props.metrics[0]]*2) : defaultAdditionalDataRange}

@@ -144,6 +144,7 @@ export default function Workspace(props) {
         setResetVideoPlay(true);
         setResetVideoDetails(true);
         setResetChart(true);
+        setAdditionalDataNameToRetrieve([]);
     }, [projectId])
 
 
@@ -182,13 +183,12 @@ export default function Workspace(props) {
             const retrievedAdditionalData = {...additionalData};
             await Promise.all(additionalDataNameToRetrieve.map(async name => {
                 const rangeNeeded = additionalDataRange[name];
-                if (rangeNeeded > 0) {
+                if (rangeNeeded >= 0) {
                     const rangeStartNeeded = ((frameNum-rangeNeeded)<0) ? 0 : (frameNum-rangeNeeded);
                     const rangeEndNeeded = ((frameNum+rangeNeeded)>(videoMetaRef.current.totalFrameCount-1)) ? (videoMetaRef.current.totalFrameCount-1) : (frameNum+rangeNeeded);
                     const rangeInBuffer = additionalData[name] ? additionalData[name].range : null;
                     if (!rangeInBuffer || rangeStartNeeded < rangeInBuffer[0] || rangeEndNeeded > rangeInBuffer[1]) {
                         const extraRange = videoMetaRef.current.fps ? (videoMetaRef.current.fps*additionalDataBufferFold) : additionalDataExtraBufferRange;
-                        console.log(rangeInBuffer, videoMetaRef.current, rangeStartNeeded, rangeEndNeeded, extraRange);
                         const res = await getAdditionalData(frameNum, name, rangeNeeded+extraRange);
                         if (res['error']) {
                             setInfo(res['error']);
@@ -199,7 +199,6 @@ export default function Workspace(props) {
                     }
                 }
             }))
-            console.log(retrievedAdditionalData);
                 setAdditionalData(retrievedAdditionalData);
             
         }

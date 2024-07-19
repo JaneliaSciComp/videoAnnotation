@@ -272,7 +272,7 @@ export default function MyChart(props) {
             },
         });
 
-    }, [props, frameNum])
+    }, [props, frameNum, additionalDataRange])
 
 
     
