@@ -15,13 +15,15 @@ import {defaultAdditionalDataRange} from '../utils/utils';
  *      setChartType: setter of chartType
  *      vertical: boolean. Arrange the components vertically or horizontally.
  *      align: 'start'/'end'/'center'/'between'/'around'/'evenly'. 'start' by default. How to horizontally align componentes, if vertical is false.
+ *      hideRange: boolean. Hide the range input.
+ *      halfRange: int. Allow developer to set half range value when hideRange is true. Required and only available when hideRange is true.
+ *      defaultHalfRange: int. Default value for half range input. Should only be used when hideRange is false.
  */
 export default function ChartController(props) {
     
     const [menuProps, setMenuProps] = useState();
     const [selectedMetrics, setSelectedMetrics] = useState([]);
 
-    //context
     const totalFrameCount = useStates().videoMetaRef.current.totalFrameCount;
     const additionalDataRange = useStates().additionalDataRange;
     const setAdditionalDataRange = useStateSetters().setAdditionalDataRange;
@@ -31,7 +33,6 @@ export default function ChartController(props) {
     const setAdditionalDataNameToRetrieve = useStateSetters().setAdditionalDataNameToRetrieve;
     const videoAdditionalFieldsConfig = useStates().videoAdditionalFieldsConfig;
 
-    // console.log('chartController render', props.metrics, additionalDataRange);
     
     useEffect(() => {
         if (resetChart) {
@@ -53,37 +54,69 @@ export default function ChartController(props) {
             items,
             selectable: true,
             multiple: true,
-            // onClick: menuClickHandler,
             onSelect: metricsSelectHandler,
             onDeselect: metricsSelectHandler,
         };
 
         setMenuProps(menuPropsObj);
     }, [props.metrics])
+
+    useEffect(() => {
+        const newRange = {};
+        if (props.hideRange) {
+            if (Number.isInteger(props.halfRange) && props.halfRange>=0) {
+                console.log('halfRange set', props.halfRange);
+                Object.keys(videoAdditionalFieldsConfig).forEach(name => {
+                    if (videoAdditionalFieldsConfig[name]?.loadIn==='chart') {
+                        newRange[name] = props.halfRange;
+                    } else if (videoAdditionalFieldsConfig[name]?.loadIn==='canvas') {
+                        newRange[name] = additionalDataRange[name];
+                    }
+                })
+                
+            } else {
+                throw new Error("When hideRange is true, halfRange must be set to be a non-negative integer.");
+            }
+            if (props.defaultHalfRange) {
+                throw new Error("When hideRange is true, defaultHalfRange should not be used. Please use halfRange instead.");
+            }
+        } else {
+            if (Number.isInteger(props.defaultHalfRange) && props.defaultHalfRange>=0) {
+                console.log('defaultHalfRange set', props.defaultHalfRange);
+                Object.keys(videoAdditionalFieldsConfig).forEach(name => {
+                    if (videoAdditionalFieldsConfig[name]?.loadIn==='chart') {
+                        newRange[name] = props.defaultHalfRange;
+                    } else if (videoAdditionalFieldsConfig[name]?.loadIn==='canvas') {
+                        newRange[name] = additionalDataRange[name];
+                    }
+                })
+            } else {
+                console.log('defaultHalfRange not set, use defaultAdditionalDataRange');
+                Object.keys(videoAdditionalFieldsConfig).forEach(name => {
+                    if (videoAdditionalFieldsConfig[name]?.loadIn==='chart') {
+                        newRange[name] = defaultAdditionalDataRange;
+                    } else if (videoAdditionalFieldsConfig[name]?.loadIn==='canvas') {
+                        newRange[name] = additionalDataRange[name];
+                    }
+                })
+            }
+        }
+        console.log(newRange);
+        setAdditionalDataRange(oldObj => newRange);
+
+    }, [videoAdditionalFieldsConfig])
     
 
-    // function menuClickHandler(e) {
-    //     const metric = items[e.key].label;
-    //     console.log(e);
-    //     props.setChartMetric(metric);
-    // }
 
     function metricsSelectHandler(e) {
-        // console.log('select metrics',e);
-        const selectedMetrics = e.selectedKeys.map(keyStr => props.metrics[parseInt(keyStr)]);
-        // console.log(selectedMetrics);
+        const currentSelectedMetrics = e.selectedKeys.map(keyStr => props.metrics[parseInt(keyStr)]);
 
-        // update additionalDataNameToRetrieve
-        // will cause additionalData to change, then parent useEffect is called
-        // then sibling Chart is rerendered. 
-        const selectedMetricsSet = new Set(selectedMetrics);
-        const nameToRetrieveForChart = props.metrics.filter(name => selectedMetricsSet.has(name));
         let nameToRetrieve = additionalDataNameToRetrieve.filter(name => videoAdditionalFieldsConfig[name].loadIn && videoAdditionalFieldsConfig[name].loadIn!=='chart');
-        nameToRetrieve = nameToRetrieve.concat(nameToRetrieveForChart);
+        nameToRetrieve = nameToRetrieve.concat(currentSelectedMetrics);
         setAdditionalDataNameToRetrieve(nameToRetrieve);
 
-        props.setChartMetrics(selectedMetrics); //sibling Chart rerender again
-        setSelectedMetrics(selectedMetrics);
+        props.setChartMetrics(currentSelectedMetrics);
+        setSelectedMetrics(currentSelectedMetrics);
     }
 
 
@@ -105,76 +138,42 @@ export default function ChartController(props) {
     };
 
     function typeSelectHandler(e) {
-        // console.log(e);
         const type = chartTypeItems[parseInt(e.key)].label;
-        // console.log(type);
         props.setChartType(type);
     }
 
-    
     function rangeChangeHandler(newValue) {
-        // console.log('chartController range new value', newValue, additionalDataRange);
-        if (typeof newValue === 'number' 
-        && Number.isInteger(newValue) 
-        ) {
-            // props.setRange(newValue);
+        if (Number.isInteger(newValue) && newValue>=0) {
 
-            // const halfRange = Math.floor(newValue/2);
             const newRange = {...additionalDataRange};
             props.metrics.forEach(m => {
                 newRange[m] = newValue;
             })
-            setAdditionalDataRange(newRange);
+            setAdditionalDataRange(oldObj => newRange);
         }
     }
 
 
-    //justify-content-center
-    // + (props.vertical?'flex-column':('justify-content-'+(props.align?props.align:'start')))
     return (
         <Row className={'d-flex ' + (props.vertical?'flex-column':('justify-content-'+(props.align?props.align:'start')))}>
-            <Col xs='auto' className='mb-1'>
-                <Row className={'d-flex '}> 
-                    {/* <Col xs='auto' style={{'white-space': 'nowrap'}}>
-                        <span >Frame Range</span>
-                    </Col>
-                    <Col xs='auto'>
-                        <div className='d-inline'>
-                        <InputNumber  
-                            min={1}
-                            max={props.end ? props.end+1 : undefined} //make sure it cannot go beyond end number
-                            // defaultValue={1}
-                            value={props.start+1}
-                            onChange={startChangeHandler}
-                            size="small"
-                            />
-                        <span className='mx-1'>-</span>
-                        <InputNumber 
-                            min={props.start ? props.start+1 : undefined}
-                            // max={totalFrameCount}
-                            value={props.end+1}
-                            onChange={endChangeHandler}
-                            size='small'
-                            />
-                        </div>
-                    </Col> */}
-                    <Col xs='auto' className='pe-0'>
-                        <span>Range</span>
-                    </Col>
-                    <Col xs='auto'>
-                        <InputNumber  
-                            min={0}
-                            max={totalFrameCount ? totalFrameCount : null}
-                            // defaultValue={40}
-                            defaultValue={props.metrics.length>0?(additionalDataRange[props.metrics[0]]*2) : defaultAdditionalDataRange}
-                            // value={props.metrics.length>0?(additionalDataRange[props.metrics[0]]*2) : null}
-                            // value={props.range}
-                            onChange={rangeChangeHandler}
-                            size="small"
-                            />
-                    </Col>
-                </Row>
-            </Col>
+            {props.hideRange ? null :
+                <Col xs='auto' className='mb-1'>
+                    <Row className={'d-flex '}> 
+                        <Col xs='auto' className='pe-0'>
+                            <span>Half Range</span>
+                        </Col>
+                        <Col xs='auto'>
+                            <InputNumber  
+                                min={0}
+                                max={totalFrameCount ? totalFrameCount : null}
+                                defaultValue={props.defaultHalfRange ?? defaultAdditionalDataRange}
+                                onChange={rangeChangeHandler}
+                                size="small"
+                                />
+                        </Col>
+                    </Row>
+                </Col>
+            }
             <Col xs='auto' className='mb-1'>
                 <Row className={'d-flex '}>
                     <Col xs='auto' className='pe-0'>
@@ -184,7 +183,6 @@ export default function ChartController(props) {
                         <Dropdown.Button 
                             size='small'
                             menu={menuProps} 
-                            //   onClick={handleButtonClick}
                             trigger={['click']}>
                             {selectedMetrics.length==0 ? 'Choose' : selectedMetrics.join(',')}
                         </Dropdown.Button>
@@ -201,7 +199,6 @@ export default function ChartController(props) {
                         <Dropdown.Button 
                             size='small'
                             menu={chartTypeProps} 
-                            // onClick={handleButtonClick}
                             trigger={['click']}>
                             {props.chartType}
                         </Dropdown.Button>

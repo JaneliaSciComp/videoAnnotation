@@ -75,6 +75,7 @@ export default function VideoManager(props) {
     const setVideoAdditionalFieldsConfig = useStateSetters().setVideoAdditionalFieldsConfig;
     const projectId = useStates().projectId;
     const setAdditionalDataNameToRetrieve = useStateSetters().setAdditionalDataNameToRetrieve;
+    const additionalDataRange = useStates().additionalDataRange;
     const setAdditionalDataRange = useStateSetters().setAdditionalDataRange;
 
 
@@ -108,19 +109,16 @@ export default function VideoManager(props) {
     }, [videoData])
 
     useEffect(() => {
+        console.log('addtionalConfig useEffect');
         if (props.additionalFields?.length > 0) {
             const names = new Set();
             const fields = {};
-            const ranges = {};
             for (let field of props.additionalFields) {
                 names.add(field.name)
                 fields[field.name] = {
                     required: field.required, 
                     loadIn: field.loadIn,
                 };
-                if (field.loadIn) {
-                    ranges[field.name] = defaultAdditionalDataRange;
-                }
 
                 if (field.loadIn === 'canvas') {
                     if (!field.onLoad) { 
@@ -134,11 +132,10 @@ export default function VideoManager(props) {
                 throw new Error("Every field name should be unique.");
             } else {
                 setVideoAdditionalFieldsConfig(fields);
-                setAdditionalDataRange(ranges);
             }
         } else {
             setVideoAdditionalFieldsConfig({});
-            setAdditionalDataRange({});
+            setAdditionalDataRange(oldObj => {});
         }
     }, [props.additionalFields])
     
@@ -245,7 +242,6 @@ export default function VideoManager(props) {
     async function onAddLoadBtnClick() {
         const id = new Date().getTime().toString();
         const videoDataCopy =  modifyVideoData(id);
-        console.log(videoDataCopy)
 
         const res = await postVideo(videoDataCopy);
         if (res['error']) {

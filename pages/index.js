@@ -146,16 +146,32 @@ export default function Home() {
     setOpen(true);
   }
 
-  function drawTrajectory(e) {
+  function drawDataAsCircle(params) {
     /**
-     * e: {
-     *      target: fabric obj needed to do the drawing. Just need to be passed to imported func from canvasUtils.js
+     * params: {
+     *      target: fabric obj needed for the drawing. Just pass it to the imported func from canvasUtils.js
 *           data: [additional data in needed range]
 *         }
      */
-    for (let c of e.data) {
+    for (let c of params.data) {
+
       c.push(3); // add radius
-      drawCircle(e.target, c, 'red');
+      // drawCircle(e.target, c, 'red');
+      // console.log(c);
+      drawCircle(params.target, c, 'red');
+    }
+  }
+
+  function drawDataAsLine(params) {
+    /**
+     * params: {
+     *      target: fabric obj needed for the drawing. Just pass it to imported func from canvasUtils.js
+*           data: [additional data in needed range]
+*         }
+     */
+    for (let l of params.data) {
+      // console.log(l);
+      drawLine(params.target, l, 'white');
     }
   }
 
@@ -187,8 +203,10 @@ export default function Home() {
         <JsonUploader type='annotation'/>
         <VideoManager 
           additionalFields={[
-              {name: 'trajectory', label: 'Trajectory File', required: true, loadIn: 'canvas', onLoad: drawTrajectory}, 
-              {name: 'test', label: 'Test'}
+              {name: 'canvas1', label: 'canvas1', required: true, loadIn: 'canvas', onLoad: drawDataAsCircle}, 
+              {name: 'canvas2', label: 'canvas2', required: true, loadIn: 'canvas', onLoad: drawDataAsLine},
+              {name: 'chart1', label: 'chart1', required: true, loadIn: 'chart'}, 
+              {name: 'chart2', label: 'chart2', required: true, loadIn: 'chart'}
           ]}
         />
         <ProjectDropdown 
@@ -230,6 +248,9 @@ export default function Home() {
         <div className='my-3' style={{height: '200px', width: '600px'}} >
           <Chart 
             // data={data} 
+            // hideRange
+            // halfRange={5}
+            // defaultHalfRange={2}
             />
           {/* <ChartCombo data={data} /> */}
         </div>

@@ -30,6 +30,10 @@ import { useStates } from './AppContext';
     *  staticVerticalLineColor: 'rgb()', '#xxxxxx', 'red'. The color of the static vertical Line
     dynamicVerticalLineColor:  'rgb()', '#xxxxxx', 'red'. The color of the dynamic vertical Line
     zoomSpeed: number. Speed for zooming on y axis. 0.01 by default.
+ *  hideRange: boolean. Hide the range input.
+ *  halfRange: int. Allow developer to set half range value when hideRange is true. Required and only available when hideRange is true.
+ *  defaultHalfRange: int. Default value for half range input. Should only be used when hideRange is false.
+
 */
 export default function ChartCombo(props) {
     
@@ -46,6 +50,7 @@ export default function ChartCombo(props) {
     
     useEffect(() => {
         // setChartMetrics([]);
+        // console.log('charCombo additionalData');
         if (props.data) {
             setData({...props.data});
         } else {
@@ -74,6 +79,9 @@ export default function ChartCombo(props) {
                     // setRange={setRange}
                     chartType={chartType}
                     setChartType={setChartType}
+                    hideRange={props.hideRange}
+                    halfRange={props.halfRange}
+                    defaultHalfRange={props.defaultHalfRange}
                     />
             </Col>
             <Col sm='' style={{'maxWidth': props.horizontal?'calc(100% - 11em)':'', 

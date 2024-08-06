@@ -190,8 +190,8 @@ export default function MyChart(props) {
                     return {
                         label: m,
                         data: dataset?.data.slice(start, end+1),
-                        borderColor: dataset.borderColor ? dataset.borderColor : colorsCopy[i % colorsCopy.length],
-                        backgroundColor: dataset.backgroundColor ? dataset.backgroundColor : (colorsCopy[i % colorsCopy.length]+'80'),
+                        borderColor: dataset?.borderColor ? dataset?.borderColor : colorsCopy[i % colorsCopy.length],
+                        backgroundColor: dataset?.backgroundColor ? dataset?.backgroundColor : (colorsCopy[i % colorsCopy.length]+'80'),
                         categoryPercentage: 0.95, 
                         barPercentage: 1,  
                     }
@@ -323,7 +323,7 @@ export default function MyChart(props) {
 
 
     return (
-        <div id='chart' style={{width: props.width ? props.width:'100%', height: props.height ? props.height:'100%'}}>
+        <div id='chart' style={{width: props.width ?? '100%', height: props.height ?? '100%'}}>
             {}
             
             {/* <Line ref={chartRef} 

@@ -128,7 +128,10 @@ export default function Canvas(props) {
 
 
     useEffect(() => {
-        drawAdditionalDataObj();
+        console.log('canvas additionalData');
+        if (Object.keys(additionalData).length > 0) {
+            drawAdditionalDataObj();
+        }
 
         return () => {
             removeAllAdditionalDataObj();
@@ -137,7 +140,6 @@ export default function Canvas(props) {
     }, [additionalData])
 
     function drawAdditionalDataObj() {
-        console.log('drawAdditionalDataObj called');
         setInfo(null);
         const eligibleDataName =  additionalDataNameToRetrieve.filter(name => videoAdditionalFieldsConfig[name].loadIn === 'canvas' && additionalData[name])[0];
         if (eligibleDataName) {
@@ -153,6 +155,7 @@ export default function Canvas(props) {
                             if (additionalData[name] !== 'error') {
                                 const start = rangeStartNeeded - rangeInBuffer[0];
                                 const end = start + (rangeEndNeeded - rangeStartNeeded);
+                                const dataCopy = JSON.parse(JSON.stringify(additionalData[name].data.slice(start, end+1)));
                                 const params = {
                                     target: {
                                         additionalDataName: name,
@@ -160,7 +163,7 @@ export default function Canvas(props) {
                                         canvas: canvasObjRef.current,
                                         img: imageObjRef.current,
                                     },
-                                    data: [...additionalData[name].data.slice(start, end+1)]
+                                    data: dataCopy
                                 }
                                 const onLoadFunc = videoAdditionalFieldsConfig[name].onLoad;
                                 onLoadFunc(params);
@@ -179,7 +182,7 @@ export default function Canvas(props) {
     }
 
     function removeAllAdditionalDataObj() {
-        console.log('removeAdditionalDataObj called');
+        console.log('removeAdditionalDataObj called', additionalFabricObjListRef.current);
         Object.keys(additionalFabricObjListRef.current).forEach(name => {
             removeAdditionalDataObjByName(name);
         })
@@ -261,8 +264,6 @@ export default function Canvas(props) {
     
             removeAllObjFromCanvas();
             fabricObjListRef.current = {};
-            removeAllAdditionalDataObj();
-            additionalFabricObjListRef.current = {}; 
             
     
             canvas.polygonPoints.forEach(p=>canvas.remove(p));
@@ -719,7 +720,6 @@ export default function Canvas(props) {
         console.log('img load handler', frameUrl, imgRef.current.url);
         
         await createFabricObjBasedOnAnnotation();
-        drawAdditionalDataObj();
         canvasObjRef.current.renderAll();
     }
 
