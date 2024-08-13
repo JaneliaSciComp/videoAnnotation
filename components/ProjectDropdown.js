@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
 import { useStateSetters, useStates } from './AppContext'; 
 import { Dropdown, Button, Modal } from 'antd';
-import ProjectManager from '../components/ProjectManager.js';
+import ProjectManager from './ProjectManager.js';
 import ModalJsonUploader from './ModalJsonUploader.js';
 import ProjectList from './ProjectList.js';
 
@@ -13,7 +13,7 @@ import ProjectList from './ProjectList.js';
  *      onProjectNameChange: called after inherent behavior in ProjectManager
  *      onDescriptionChange: called after inherent behavior in ProjectManager
 
-        // following props are passed to child ProjectManager, then further passed to BtnCofniguration
+        // These props are passed to child ProjectManager, then further passed to BtnCofniguration
  *      groupType: set groupType for each child btnGroupController
         defaultBtnType: set defaultGroupType for each child btnGroupController
         btnType: set btnType for each child btnGroupController
@@ -27,11 +27,10 @@ import ProjectList from './ProjectList.js';
 export default function ProjectDropdown(props) {
 
     const [managerOpen, setManagerOpen] = useState(false);
-    const [managerStatus, setManagerStatus] = useState(); //'new' / 'edit'
+    const [managerStatus, setManagerStatus] = useState();
     const [uploaderOpen, setUploaderOpen] = useState(false);
     const [projectListOpen, setProjectListOpen] = useState(false);
 
-    // const projectConfigDataRef = useStates().projectConfigDataRef;
     const setBtnConfigData = useStateSetters().setBtnConfigData;
     const setSaveConfig = useStateSetters().setSaveConfig;
     const projectId = useStates().projectId;
@@ -50,13 +49,13 @@ export default function ProjectDropdown(props) {
           key: '2',
         },
         {
-          label: 'Save',
+          label: 'Save Config',
           key: '3',
         },
         {
-            label: 'Exisiting Projects',
-            key: '4',
-          },
+          label: 'Exisiting Projects',
+          key: '4',
+        },
     ];
 
     function onClick(e) {
@@ -64,8 +63,6 @@ export default function ProjectDropdown(props) {
         switch (label) {
             case 'New Project':
                 if (projectId) {
-                // (projectConfigDataRef.current?.projectName
-                //     || (projectConfigDataRef.current?.btnConfigData && Object.keys(projectConfigDataRef.current.btnConfigData).length>0)) { // The btnConfigData field is initialized as existed {} 
                     confirm();
                 } else {
                     setManagerStatus('new');
@@ -82,15 +79,13 @@ export default function ProjectDropdown(props) {
                 setManagerStatus('edit');
                 setManagerOpen(true);
                 break;
-            case 'Save':
+            case 'Save Config':
                 setSaveConfig(true);
                 break;
         }
     }
 
     function confirmOkClickHandler() {
-        // projectConfigDataRef.current = {};
-        // setBtnConfigData({}); // put in BtnConfiguration, to make sure first emtpy btnConfigData, then create new btnGroup
         setManagerStatus('new');
         setManagerOpen(true);
     }
@@ -109,17 +104,8 @@ export default function ProjectDropdown(props) {
         });
     }
 
-    // function uploaderOkClickHandler() {
-    //     confirm('open');
-    // }
 
-    // function uploaderCancelClickHandler() {
-    //     setUploaderOpen(false);
 
-    //     if (props.uploaderCancelClickHandler) {
-    //         props.uploaderCancelClickHandler();
-    //     }
-    // }
 
     return (
         <>
@@ -136,12 +122,9 @@ export default function ProjectDropdown(props) {
             </Dropdown>
 
             <ProjectManager
-                // serverType={props.serverType} 
                 status={managerStatus} 
                 open={managerOpen} 
                 setOpen={setManagerOpen} 
-                // onProjectNameChange={props.onProjectNameChange}
-                // onDescriptionChange={props.onDescriptionChange}
                 
                 defaultGroupType={props.defaultGroupType}
                 groupType={props.groupType}
@@ -158,15 +141,12 @@ export default function ProjectDropdown(props) {
             <ProjectList 
                 open={projectListOpen}
                 setOpen={setProjectListOpen}
-                setManagerStatus={setManagerStatus}
                 />
             
             <ModalJsonUploader 
                 type='configuration'
                 open={uploaderOpen}
                 setOpen={setUploaderOpen}
-                // onOk={props.uploaderOkClickHandler} 
-                // onCancel={uploaderCancelClickHandler}
                 />
 
         </>

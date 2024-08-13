@@ -37,7 +37,6 @@ export default function CanvasAdditionalDataController(props) {
     }, [resetChart])
 
     useEffect(() => {
-        console.log('additionalConfig useEffect called', videoAdditionalFieldsConfig);
         const metricsForCanvas = Object.keys(videoAdditionalFieldsConfig).filter(name => videoAdditionalFieldsConfig[name].loadIn==='canvas');
         setMetrics(metricsForCanvas);
 
@@ -59,7 +58,6 @@ export default function CanvasAdditionalDataController(props) {
         const newRange = {};
         if (props.hideRange) {
             if (Number.isInteger(props.halfRange) && props.halfRange>=0) {
-                console.log('halfRange set', props.halfRange);
                 Object.keys(videoAdditionalFieldsConfig).forEach(name => {
                     if (videoAdditionalFieldsConfig[name]?.loadIn==='canvas') {
                         newRange[name] = props.halfRange;
@@ -76,7 +74,6 @@ export default function CanvasAdditionalDataController(props) {
             }
         } else {
             if (Number.isInteger(props.defaultHalfRange) && props.defaultHalfRange>=0) {
-                console.log('defaultHalfRange set', props.defaultHalfRange);
                 Object.keys(videoAdditionalFieldsConfig).forEach(name => {
                     if (videoAdditionalFieldsConfig[name]?.loadIn==='canvas') {
                         newRange[name] = props.defaultHalfRange;
@@ -85,7 +82,6 @@ export default function CanvasAdditionalDataController(props) {
                     }
                 })
             } else {
-                console.log('defaultHalfRange not set, use defaultAdditionalDataRange');
                 Object.keys(videoAdditionalFieldsConfig).forEach(name => {
                     if (videoAdditionalFieldsConfig[name]?.loadIn==='canvas') {
                         newRange[name] = defaultAdditionalDataRange;
@@ -95,7 +91,6 @@ export default function CanvasAdditionalDataController(props) {
                 })
             }
         }
-        console.log(newRange);
         setAdditionalDataRange(oldObj => newRange);
     }, [videoAdditionalFieldsConfig]) 
     

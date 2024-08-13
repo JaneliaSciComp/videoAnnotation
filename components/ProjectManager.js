@@ -38,6 +38,7 @@ export default function ProjectManager(props) {
     const [okDisable, setOkDisable] = useState(true);
     const [btnConfigStatus, setBtnConfigStatus] = useState();
     const [info, setInfo] = useState();
+    const [noProject, setNoProject] = useState(true);
 
     const setConfirmConfig = useStateSetters().setConfirmConfig;
     const projectId = useStates().projectId;
@@ -52,6 +53,7 @@ export default function ProjectManager(props) {
     useEffect(() => {
         if (props.open) {
             if (props.status === 'new') {
+                setInfo(null);
                 const id = new Date().getTime().toString();
                 setProjectId(id);
                 setProjectData({});
@@ -60,8 +62,11 @@ export default function ProjectManager(props) {
                 form.resetFields();
                 setOkDisable(true);
                 setBtnConfigStatus('new');
+                setNoProject(false);
             } else if (props.status === 'edit') {
                 if (projectId) {
+                    setNoProject(false);
+                    setInfo(null);
                     form.setFieldsValue({ 
                         projectName: projectData.projectName,
                         description: projectData.description
@@ -69,16 +74,16 @@ export default function ProjectManager(props) {
                     setOkDisable(false);
                     setBtnConfigStatus('edit');
                 } else {
+                    setNoProject(true);
                     setInfo('No project is loaded');
                 }
             }
         }
-        setInfo(null);
           
     }, [props.open])
 
     useEffect(() => {
-        if (!btnConfigStatus) {
+        if (props.setOpen && !btnConfigStatus) {
             props.setOpen(false);
         }
     }, [btnConfigStatus])
@@ -171,50 +176,55 @@ export default function ProjectManager(props) {
                     <Button key={1} type='primary' onClick={okClickHandler} disabled={okDisable}>Ok</Button>
                 ]}
                 >
-                <Form form={form} className='mt-5' size='small'>
-                    <Form.Item 
-                        name='projectName' 
-                        label="Project Name" 
-                        rules={[
-                            {
-                              required: true,
-                              message: 'The name is required.',
-                            },
-                          ]}
-                        validateFirst={true}
-                        >
-                        <Input 
-                            onChange={onProjectNameChange}
-                            allowClear/>
-                    </Form.Item>
-                    {/* {props.serverType==='local' ? 
-                        <Form.Item label="Project Directory" required>
-                            <Input placeholder=''/>
-                        </Form.Item>
-                        : null
-                    } */}
-                    <Form.Item name='description' label="Description">
-                        <Input.TextArea 
-                            onChange={onDescriptionChange}
-                            allowClear/>
-                    
-                    </Form.Item>
-                </Form>
-                <BtnConfiguration 
-                    status={btnConfigStatus} 
-                    setStatus = {setBtnConfigStatus}
-                    hideCreateBtn
-                    defaultGroupType={props.defaultGroupType}
-                    groupType={props.groupType}
-                    defaultBtnType={props.defualtBtnType}
-                    btnType={props.btnType}
-                    defaultBtnNum={props.defaultBtnNum}
-                    btnNum={props.btnNum}
-                    disableGroupTypeSelect={props.disableGroupTypeSelect}
-                    disableBtnTypeSelect={props.disableBtnTypeSelect}
-                    disableBtnNumInput={props.disableBtnNumInput}
-                    hidePlusBtn={props.hidePlusBtn}
-                    />
+                {props.status === 'edit' && noProject ? null 
+                    : 
+                    <div>
+                        <Form form={form} className='mt-5' size='small'>
+                            <Form.Item 
+                                name='projectName' 
+                                label="Project Name" 
+                                rules={[
+                                    {
+                                    required: true,
+                                    message: 'The name is required.',
+                                    },
+                                ]}
+                                validateFirst={true}
+                                >
+                                <Input 
+                                    onChange={onProjectNameChange}
+                                    allowClear/>
+                            </Form.Item>
+                            {/* {props.serverType==='local' ? 
+                                <Form.Item label="Project Directory" required>
+                                    <Input placeholder=''/>
+                                </Form.Item>
+                                : null
+                            } */}
+                            <Form.Item name='description' label="Description">
+                                <Input.TextArea 
+                                    onChange={onDescriptionChange}
+                                    allowClear/>
+                            
+                            </Form.Item>
+                        </Form>
+                        <BtnConfiguration 
+                            status={btnConfigStatus} 
+                            setStatus = {setBtnConfigStatus}
+                            hideCreateBtn
+                            defaultGroupType={props.defaultGroupType}
+                            groupType={props.groupType}
+                            defaultBtnType={props.defualtBtnType}
+                            btnType={props.btnType}
+                            defaultBtnNum={props.defaultBtnNum}
+                            btnNum={props.btnNum}
+                            disableGroupTypeSelect={props.disableGroupTypeSelect}
+                            disableBtnTypeSelect={props.disableBtnTypeSelect}
+                            disableBtnNumInput={props.disableBtnNumInput}
+                            hidePlusBtn={props.hidePlusBtn}
+                            />
+                    </div>
+                }
                 <p>{info}</p>
             </Modal>
         </>

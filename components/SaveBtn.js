@@ -8,16 +8,13 @@ import { clearUnfinishedAnnotation } from '../utils/utils.js';
 /*
     Props: 
         type: 'annotation' / 'configuration'
+        mode: 'inMenu' / 'sole', 'sole' by default. 'inMenu' is for embedding into DropdownMenu, there will not be btn UI. The developer should follow the DropdownMenu's rule to provide label for the comp, while the onClick event handler is already handled in DropdownMenu.
         
 */
 export default function SaveBtn(props) {
     
-    // const [clicked, setClicked] = useState(false);
 
-    // const frameNum = useStates().frameNum;
-    // const frameUrl = useStates().frameUrl;
-    // const frameAnnotation = useStates().frameAnnotation;
-    // const setFrameAnnotation = useStateSetters().setFrameAnnotation;
+    const frameUrl = useStates().frameUrl;
     const setSaveConfig = useStateSetters().setSaveConfig;
     const setSaveAnnotation = useStateSetters().setSaveAnnotation;
     const projectId = useStates().projectId;
@@ -28,16 +25,20 @@ export default function SaveBtn(props) {
                 setSaveConfig(true);
             }
         } else if (props.type === 'annotation') {
-            // if (Number.isInteger(frameNum) || frameUrl) {
-            if (projectId || frameUrl) { //frameUrl is for image annotation
+            if (projectId || frameUrl) {
                 setSaveAnnotation(true);
             }
         }
     }
-    // {props.type}
     return (
-        <Button className={styles.btn} onClick={clickHandler}>
-            Save 
-        </Button>
+        <>
+            {props.mode !== 'inMenu' ?
+                <Button className={styles.btn} onClick={clickHandler}>
+                    {props.children}
+                </Button>
+                :
+                null
+            }
+        </>
     )
 }

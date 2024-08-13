@@ -82,7 +82,6 @@ export default function ChartController(props) {
             }
         } else {
             if (Number.isInteger(props.defaultHalfRange) && props.defaultHalfRange>=0) {
-                console.log('defaultHalfRange set', props.defaultHalfRange);
                 Object.keys(videoAdditionalFieldsConfig).forEach(name => {
                     if (videoAdditionalFieldsConfig[name]?.loadIn==='chart') {
                         newRange[name] = props.defaultHalfRange;
@@ -91,7 +90,6 @@ export default function ChartController(props) {
                     }
                 })
             } else {
-                console.log('defaultHalfRange not set, use defaultAdditionalDataRange');
                 Object.keys(videoAdditionalFieldsConfig).forEach(name => {
                     if (videoAdditionalFieldsConfig[name]?.loadIn==='chart') {
                         newRange[name] = defaultAdditionalDataRange;
@@ -101,7 +99,6 @@ export default function ChartController(props) {
                 })
             }
         }
-        console.log(newRange);
         setAdditionalDataRange(oldObj => newRange);
 
     }, [videoAdditionalFieldsConfig])

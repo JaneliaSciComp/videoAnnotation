@@ -23,6 +23,8 @@ import ProjectDropdown from '../components/ProjectDropdown.js';
 import ModalJsonUploader from '../components/ModalJsonUploader.js';
 import VideoManager from '../components/VideoManager.js';
 import CanvasAdditionalDataController from '../components/CanvasAdditionalDataController.js';
+import Dropdown from '../components/DropdownMenu.js';
+import ProjectList from '../components/ProjectList.js';
 import {Row, Col} from 'react-bootstrap';
 import { Button } from 'antd';
 import { drawCircle, drawLine } from '../utils/canvasUtils.js';
@@ -31,13 +33,19 @@ import { drawCircle, drawLine } from '../utils/canvasUtils.js';
 
 // client side components
 import dynamic from 'next/dynamic';
+
 const Chart = dynamic(() => import('../components/ChartCombo.js'), { ssr: false });
 // const Workspace = dynamic(() => import('../components/Workspace.js'), { ssr: false });
 const WindowMonitor = dynamic(() => import('../components/WindowMonitor.js'), { ssr: false });
 
 
 export default function Home() {
-  const [open, setOpen] = useState(false);
+  const [newManagerOpen, setNewManagerOpen] = useState(false);
+  const [editManagerOpen, setEditManagerOpen] = useState(false);
+  const [configUploaderOpen, setConfigUploaderOpen] = useState(false);
+  const [annoUploaderOpen, setAnnoUploaderOpen] = useState(false);
+  const [projectListOpen, setProjectListOpen] = useState(false);
+  const [info, setInfo] = useState('');
   
   const groupData = {
     groupIndex:'123',
@@ -142,9 +150,6 @@ export default function Home() {
         }
 
 
-  function openModal() {
-    setOpen(true);
-  }
 
   function drawDataAsCircle(params) {
     /**
@@ -172,6 +177,96 @@ export default function Home() {
     for (let l of params.data) {
       // console.log(l);
       drawLine(params.target, l, 'white');
+    }
+  }
+
+  const dropdownItems = [
+    {
+      label: 'Exisiting Projects',
+      compName: 'ProjectList',
+      component: <ProjectList 
+                  open={projectListOpen}
+                  setOpen={setProjectListOpen}
+                />,
+      // preventDefault: true,
+    },
+    {
+      label: 'New Project',
+      compName: 'ProjectManager',
+      component: <ProjectManager 
+                  status='new' 
+                  open={newManagerOpen} 
+                  setOpen={setNewManagerOpen}
+                  defaultGroupType='category'
+                  defaultBtnType='category'
+                  disableGroupTypeSelect
+                  disableBtnTypeSelect
+                  hidePlusBtn
+                />,
+      // preventDefault: true,
+    },
+    {
+      label: 'Upload Project',
+      compName: 'ModalJsonUploader',
+      component: <ModalJsonUploader 
+                  type='configuration' 
+                  open={configUploaderOpen} 
+                  setOpen={setConfigUploaderOpen}
+                />, 
+      // preventDefault: true,
+    },
+    {
+      label: 'Save Annotation',
+      // preventDefault: true,
+    },
+    {
+      label: 'Edit Project',
+      compName: 'ProjectManager',
+      component: <ProjectManager 
+                  status='edit' 
+                  open={editManagerOpen} 
+                  setOpen={setEditManagerOpen}
+                  defaultGroupType='category'
+                  defaultBtnType='category'
+                  disableGroupTypeSelect
+                  disableBtnTypeSelect
+                  hidePlusBtn
+                />, 
+      // preventDefault: true,
+    },
+    {
+      label: 'Save Configuration',
+      compName: 'SaveBtn',
+      component: <SaveBtn 
+                  type='configuration' 
+                  mode='inMenu'
+                />,
+      // preventDefault: true,
+    },
+];
+  
+  function dropdownClickHandler(e) {
+    // console.log(e);
+    const label = dropdownItems[e.key].label;
+    switch (label) {
+      case 'Exisiting Projects':
+          setInfo('Exisiting Projects');
+          break;
+      case 'New Project':
+          setInfo('New Project');
+          break;
+      case 'Upload Project':
+          setInfo('Upload Project');
+          break;
+      case 'Save Annotation':
+          setInfo('Save Annotation');
+          break;
+      case 'Edit Project':
+          setInfo('Edit Project');
+          break;
+      case 'Save Configuration':
+          setInfo('Save Configuration');
+          break;
     }
   }
 
@@ -209,13 +304,15 @@ export default function Home() {
               {name: 'chart2', label: 'chart2', required: true, loadIn: 'chart'}
           ]}
         />
-        <ProjectDropdown 
+        <p>{info}</p>
+        {/* <ProjectDropdown 
             defaultGroupType='category'
             defaultBtnType='category'
             disableGroupTypeSelect
             disableBtnTypeSelect
             hidePlusBtn
-          />
+          /> */}
+        <Dropdown name='Project' menu={dropdownItems} onClick={dropdownClickHandler}/>
         <Row >
           <Col>
             {/* <Category label='chase'/>
@@ -229,7 +326,7 @@ export default function Home() {
           <Col>
             {/* <ActiveAnnotation /> */}
             {/* <SaveBtn type='configuration'/> */}
-            <SaveBtn type='annotation' />
+            <SaveBtn type='annotation'>Save Annotation</SaveBtn>
           </Col>
         </Row>
         <Row >
