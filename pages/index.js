@@ -26,15 +26,15 @@ const WindowMonitor = dynamic(() => import('../components/WindowMonitor.js'), { 
 
 
 export default function Home() {
+  // The following ..open/set..Open states are to allow the child components to control the visibility of modal windows inside.
   const [newProjectManagerOpen, setNewProjectManagerOpen] = useState(false);
   const [editProjectManagerOpen, setEditProjectManagerOpen] = useState(false);
   const [configUploaderOpen, setConfigUploaderOpen] = useState(false);
   const [projectListOpen, setProjectListOpen] = useState(false);
-  const [info, setInfo] = useState('');
   const [videoManagerOpen, setVideoManagerOpen] = useState(false);
   const [annotationUploaderOpen, setAnnotationUploaderOpen] = useState(false);
   const [canvasAdditionalDataControllerOpen, setCanvasAdditionalDataControllerOpen] = useState(false);
-  
+  const [info, setInfo] = useState(''); // To display some info
 
   const projectDropdownItems = [
     {
@@ -45,7 +45,7 @@ export default function Home() {
                   open={projectListOpen}
                   setOpen={setProjectListOpen}
                 />,
-      // preventDefault: true,
+      // preventDefault: true, // when use some built-in components as the children of DropdownMenu, there may be some pre-defined behaviors, such as open a modal window. To prevent the default behavior, set this to true.
     },
     {
       label: 'New Project',
@@ -61,7 +61,6 @@ export default function Home() {
                   disableBtnTypeSelect
                   hidePlusBtn
                 />,
-      // preventDefault: true,
     },
     {
       label: 'Upload Project',
@@ -72,7 +71,6 @@ export default function Home() {
                   open={configUploaderOpen} 
                   setOpen={setConfigUploaderOpen}
                 />, 
-      // preventDefault: true,
     },
     {
       label: 'Edit Project',
@@ -88,7 +86,6 @@ export default function Home() {
                   disableBtnTypeSelect
                   hidePlusBtn
                 />, 
-      // preventDefault: true,
     },
     {
       label: 'Save Configuration',
@@ -98,13 +95,14 @@ export default function Home() {
                   type='configuration' 
                   mode='inMenu'
                 />,
-      // preventDefault: true,
     },
 ];
   
   function projectDropdownClickHandler(e) {
     // console.log(e);
     // const label = projectDropdownItems[e.key].label;
+    // TODO: customize click handler
+
     // switch (label) {
     //   case 'Exisiting Projects':
     //       setInfo('Exisiting Projects');
@@ -175,10 +173,12 @@ export default function Home() {
 
   function drawDataAsCircle(params) {
     /**
+     * Customzied onLoad event handler for the additional data of canvas1.
+     * 
      * params: {
      *      target: fabric obj needed for the drawing. Just pass it to the imported func from canvasUtils.js
-*           data: [additional data in needed range]
-*         }
+     *      data: [additional data in needed range]
+     * }
      */
     for (let c of params.data) {
       c.push(3); // add radius
@@ -193,7 +193,7 @@ export default function Home() {
   }
 
   function videoDropdownClickHandler(e) {
-    
+    // TODO: customize click handler
   }
 
   const videoDropdown = <DropdownMenu name='Video' menu={videoDropdownItems} onClick={videoDropdownClickHandler}/>
@@ -221,7 +221,7 @@ export default function Home() {
   ];
 
   function annotationDropdownClickHandler(e) {
-    
+    // TODO: customize click handler
   }
 
   const annotationDropdown = <DropdownMenu name='Annotation' menu={annotationDropdownItems} onClick={annotationDropdownClickHandler}/>
@@ -257,20 +257,20 @@ export default function Home() {
         <p style={{color: 'red'}}>{info}</p>
         <Row >
           <Col lg='auto'>
-            <canvas width={300} height={250} style={{border: 'solid'}}/>
-            <AnnotationTable width={300} height={250} scrollY={230} ellipsis />
+            <canvas width={350} height={250} style={{border: 'solid'}}/>
+            <AnnotationTable width={350} height={250} scrollY={230} ellipsis />
             <BtnContainer />
           </Col>
           <Col>
               <Canvas width={650} height={450}/>
               <VideoUploader hideSubmit />
-            <div className='my-3' style={{height: '150px', width: '670px'}} >
-              <Chart 
-                // hideRange
-                // halfRange={5}
-                defaultHalfRange={2}
-                />
-            </div>
+              <div className='my-3' style={{height: '150px', width: '670px'}} >
+                <Chart 
+                  // hideRange
+                  // halfRange={5}
+                  defaultHalfRange={2}
+                  />
+              </div>
           </Col>
         </Row>
       </Workspace>
