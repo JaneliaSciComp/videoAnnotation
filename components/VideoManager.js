@@ -7,8 +7,8 @@ import { defaultAdditionalDataRange, allowedCanvasShapes } from '../utils/utils'
 
 /**
  *  props:
- *      open: boolean. Whether to open the modal window
- *      setOpen: setter of open. In order to give controll to VideoManager's internal buttons.
+//  *      open: boolean. Whether to open the modal window
+//  *      setOpen: setter of open. In order to give controll to VideoManager's internal buttons.
  *      // serverType: 'local' / 'remote'
 //  *      includeTrackDataInput: boolean. False by default. If true, show track data input element to allow user upload track data json files. The developer should also specify trackDataParseFunc to parse the data.
 //  *      trackDataParseFunc: [(data)=>{}, ...], // array of func, order of entries should match. if includeTrackDataInput is true, should provide funcs to process the data in those files. The func should take the object from the json file as parameter and output the data format the chart component needs
@@ -81,7 +81,7 @@ export default function VideoManager(props) {
 
     const [form] = Form.useForm();
 
-    console.log('VideoManager render');
+    console.log('VideoManager render', info);
 
             
           
@@ -363,6 +363,7 @@ export default function VideoManager(props) {
 
     return (
         <>
+            
             {/* <Modal 
                 title='Video Manager'
                 open={props.open} 
@@ -371,78 +372,86 @@ export default function VideoManager(props) {
                 // style={{overflowX: 'auto'}}
         
                 > */}
-                <List
-                    size="small"
-                    bordered
-                    dataSource={videoNames}
-                    renderItem={(name, i) => 
-                        <List.Item style={videoIds[i]==videoId ? {backgroundColor: '#EEEEEE'} : null}>
+                {projectId ? 
+                    <div>
+                        {videoNames.length>0 ? 
+                            <List
+                                size="small"
+                                bordered
+                                dataSource={videoNames}
+                                renderItem={(name, i) => 
+                                    <List.Item style={videoIds[i]==videoId ? {backgroundColor: '#EEEEEE'} : null}>
 
-                            <Button type="link" onClick={()=>{onVideoNameClick(i)}}>{name}</Button>
-                            <div >
-                                <Button type='text' onClick={()=>{onLoadBtnClick(i)}} icon={<PlayCircleOutlined />} />
-                                <Button type='text' onClick={()=>{onDelBtnClick(i)}} icon={<DeleteOutlined />} />
-                            </div>
-                            
-                        </List.Item>
-                    }
-                    />
-                <div className='my-2 px-3 py-2' style={{border: '1px solid rgb(222, 226, 230)', borderRadius: '0.5em'}}>
-                    <p className='my-2'>Video Details</p>
-                    <Form className='my-4 mx-3' form={form} size='small'>
-                        <Form.Item 
-                            name='videoPath' 
-                            label="Video Path" 
-                            rules={[
-                                {
-                                required: true,
-                                message: 'Video path is required',
-                                },
-                            ]}
-                            >
-                            <Input 
-                                onChange={onVideoPathChange}
-                                allowClear/>
-                        </Form.Item>
-
-                        <Form.Item 
-                            name='videoName' 
-                            label="Video Name" 
-                            rules={[
-                                {
-                                message: 'If name is empty, will directly use path as name',
-                                },
-                            ]}
-                            >
-                            <Input 
-                                onChange={onVideoNameChange}
-                                allowClear/>
-                        </Form.Item>
-
-                        {props.additionalFields.length>0 ? 
-                            props.additionalFields.map(
-                                ((params, i) => <Form.Item
-                                    key = {i}
-                                    name={params.name}
-                                    label={params.label}
-                                    rules={params.required ? [{required: true, message: `${params.label} is required.`}] : null}
+                                        <Button type="link" onClick={()=>{onVideoNameClick(i)}}>{name}</Button>
+                                        <div >
+                                            <Button type='text' onClick={()=>{onLoadBtnClick(i)}} icon={<PlayCircleOutlined />} />
+                                            <Button type='text' onClick={()=>{onDelBtnClick(i)}} icon={<DeleteOutlined />} />
+                                        </div>
+                                        
+                                    </List.Item>
+                                }
+                                />
+                            : null}
+                        <div className='my-2 px-3 py-2' style={{border: '1px solid rgb(222, 226, 230)', borderRadius: '0.5em'}}>
+                            <p className='my-2' style={{fontWeight: 'bold'}}>Video Details</p>
+                            <Form className='my-4 mx-3' form={form} size='small'>
+                                <Form.Item 
+                                    name='videoPath' 
+                                    label="Video Path" 
+                                    rules={[
+                                        {
+                                        required: true,
+                                        message: 'Video path is required',
+                                        },
+                                    ]}
                                     >
                                     <Input 
-                                        onChange={(e) => {onAdditionalFieldChange(e, params.name)}}
-                                        allowClear />
-                                </Form.Item>))
-                            : null}
-                        
-                        <div className='d-flex justify-content-center'>
-                            <Space size="small">
-                                <Button onClick={onAddBtnClick} disabled={btnDisable}>Add</Button>
-                                <Button onClick={onAddLoadBtnClick} disabled={btnDisable}>Add and Load</Button>
-                                <Button onClick={onEditBtnClick} disabled={btnDisable}>Edit</Button>
-                            </Space>
+                                        onChange={onVideoPathChange}
+                                        allowClear/>
+                                </Form.Item>
+
+                                <Form.Item 
+                                    name='videoName' 
+                                    label="Video Name" 
+                                    rules={[
+                                        {
+                                        message: 'If name is empty, will directly use path as name',
+                                        },
+                                    ]}
+                                    >
+                                    <Input 
+                                        onChange={onVideoNameChange}
+                                        allowClear/>
+                                </Form.Item>
+
+                                <p className='mt-2 mb-4'  style={{fontWeight: 'bold'}}>Additional Data</p>
+
+                                {props.additionalFields.length>0 ? 
+                                    props.additionalFields.map(
+                                        ((params, i) => <Form.Item
+                                            key = {i}
+                                            name={params.name}
+                                            label={params.label}
+                                            rules={params.required ? [{required: true, message: `${params.label} is required.`}] : null}
+                                            >
+                                            <Input 
+                                                onChange={(e) => {onAdditionalFieldChange(e, params.name)}}
+                                                allowClear />
+                                        </Form.Item>))
+                                    : null}
+                                
+                                <div className='d-flex justify-content-center'>
+                                    <Space size="small">
+                                        <Button onClick={onAddBtnClick} disabled={btnDisable}>Add</Button>
+                                        <Button onClick={onAddLoadBtnClick} disabled={btnDisable}>Add and Load</Button>
+                                        <Button onClick={onEditBtnClick} disabled={btnDisable}>Edit</Button>
+                                    </Space>
+                                </div>
+                            </Form>
                         </div>
-                        <p>{info}</p>
-                    </Form>
-                </div>
+                    </div>
+                :<p>Please initialize/upload a project first.</p>}
+            <p>{info}</p>
             {}
         </>
     )

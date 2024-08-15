@@ -12,15 +12,13 @@ import { getAllProjects, getProject, getProjectBtn, getProjectVideo, deleteProje
  */
 
 export default function ProjectList(props) {
-    const [allProjects, setAllProjects] = useState([]); // Data of all existing projects in the db
-    const [projectNames, setProjectNames] = useState([]); //data source for list: ['project1', 'project2']
-    const [projectIds, setProjectIds] = useState([]); // The ids of entries in projectNames in the same order
+    const [allProjects, setAllProjects] = useState([]);
+    const [projectNames, setProjectNames] = useState([]);
+    const [projectIds, setProjectIds] = useState([]);
     const [info, setInfo] = useState();
     
-    //context
     const projectId = useStates().projectId;
     const setProjectId = useStateSetters().setProjectId;
-    // const projectConfigDataRef = useStates().projectConfigDataRef;
     const setProjectData = useStateSetters().setProjectData;
     const setBtnConfigData = useStateSetters().setBtnConfigData;
     const setVideoData = useStateSetters().setVideoData;
@@ -37,7 +35,7 @@ export default function ProjectList(props) {
                         setInfo(res['error']);
                     } else {
                         setInfo(null);
-                        setAllProjects(res['projects']); //res could be []
+                        setAllProjects(res['projects']);
                     }
                 }
             ); 
@@ -51,13 +49,11 @@ export default function ProjectList(props) {
             ids.push(p['projectId']);
             names.push(p['projectName']);
         }
-        // console.log(names, ids);
         setProjectNames(names);
         setProjectIds(ids);
     }, [allProjects])
 
     function cancelClickHandler() {
-        // console.log('cancel');
         props.setOpen(false);
     }
 
@@ -83,7 +79,6 @@ export default function ProjectList(props) {
                 await loadProject(id);
 
             },
-            // onCancel: cancelClickHandler,
         });
     }
 
@@ -107,25 +102,22 @@ export default function ProjectList(props) {
             setProjectId(projectRes['projectId']);
 
             const btnData = {};
-            btnRes.btnGroups.forEach(group => { //btnRes.btnGroups could be []
+            btnRes.btnGroups.forEach(group => {
                 const groupId = group.btnGroupId;
                 delete(group['btnGroupId']);
                 btnData[groupId] = group;
             });
-            // console.log(btnData);
             setBtnConfigData(btnData); 
 
             const videos = {};
-            videoRes.videos.forEach(v => { //videoRes.videos could be []
+            videoRes.videos.forEach(v => {
                 const videoId = v.videoId;
                 delete(v['videoId']);
                 videos[videoId] = v;
             });
-            // console.log(btnData);
             setVideoData(videos);
             setVideoId(null);
             
-            // props.setManagerStatus('edit');
         }
         
         props.setOpen(false);
@@ -142,12 +134,10 @@ export default function ProjectList(props) {
             title: 'Alert',
             content: 'The project data including configuration and all annotations will be removed!',
             onOk: async ()=>{await deleteWholeProject(id, name)},
-            // onCancel: cancelClickHandler,
         });
     }
 
     async function deleteWholeProject(id, name) {
-        // delete projectConfig/btnConfig/video/annotation from db
         let projectRes, btnRes, videoRes;
         await Promise.all(['project', 'btn', 'video'].map(async (type) => {
             if (type === 'project') {
@@ -164,11 +154,9 @@ export default function ProjectList(props) {
         } else {
             setInfo(`Deleted project ${name}: \n Btn: ${btnRes?.info} \n Video: ${videoRes?.info}`);
             
-            //reset projectList
             const newAllProjects = allProjects.filter( p => p.projectId !== id);
             setAllProjects(newAllProjects);
 
-            // if the project is current project, reset everything. 
             if (id === projectId) {
                 setProjectData({}); 
                 setProjectId(null);
@@ -177,7 +165,6 @@ export default function ProjectList(props) {
                 setVideoId(null);
                 setResetVideoDetails(true);
 
-                //TODO: reset annotation table and chart.
             }
             
         }
@@ -193,18 +180,15 @@ export default function ProjectList(props) {
                 onCancel={cancelClickHandler}
                 style={{overflowX: 'auto'}}
                 footer={[ 
-                    // <Button key={0} onClick={cancelClickHandler}>Cancel</Button>,
                     <Button key={1} type='primary' onClick={okClickHandler} >Ok</Button>
                 ]}
                 >
                 <List
                     size="small"
-                    // header={<h3></h3>}
-                    // footer={<div>Footer</div>}
                     bordered
                     dataSource={projectNames}
                     renderItem={(name, i) => 
-                        <List.Item style={projectIds[i]===projectId ? {backgroundColor: '#EEEEEE'} : null}>
+                        <List.Item key={i} style={projectIds[i]===projectId ? {backgroundColor: '#EEEEEE'} : null}>
 
                             <div>{name}</div>
                             <div >

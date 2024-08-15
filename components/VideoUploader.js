@@ -220,6 +220,7 @@ export default function VideoUploader(props) {
                 setFps(25);
                 setPlayFps(25);
                 setTotalFrameCount(10000);
+                videoMetaRef.current = {fps: 25, totalFrameCount:10000};
             }
             
             setAdditionalData({});

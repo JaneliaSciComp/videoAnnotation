@@ -65,7 +65,6 @@ export default function ChartController(props) {
         const newRange = {};
         if (props.hideRange) {
             if (Number.isInteger(props.halfRange) && props.halfRange>=0) {
-                console.log('halfRange set', props.halfRange);
                 Object.keys(videoAdditionalFieldsConfig).forEach(name => {
                     if (videoAdditionalFieldsConfig[name]?.loadIn==='chart') {
                         newRange[name] = props.halfRange;

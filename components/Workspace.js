@@ -157,9 +157,11 @@ export default function Workspace(props) {
     }, [additionalDataRange])
 
     useEffect(() => {
+        
         if (videoId) {
             setInfo(null);
             setAdditionalData({});
+            console.log('workspace useEffect: postAdditionalDataNameToRetrieve', videoId, additionalDataNameToRetrieve);
             postAdditionalDataNameToRetrieve(videoId, additionalDataNameToRetrieve)
                 .then(res => {
                     if (res['error']) {
@@ -201,8 +203,6 @@ export default function Workspace(props) {
             
         }
     }        
-    
-
 
     useEffect(() => {
         if (uploader?.type && uploader?.file) {
@@ -354,14 +354,14 @@ export default function Workspace(props) {
 
     useEffect(()=> {
         if (saveAnnotation) {
-            saveCurrentAnnotation()
-                .then((res) => {
-                    console.log(res);
-                    if (res?.error) {
+            if (projectId) {
+                saveCurrentAnnotation()
+                    .then((res) => {
                         console.log(res);
-                        setInfo(res);
-                    } else {
-                        if (projectId) {
+                        if (res?.error) {
+                            console.log(res);
+                            setInfo(res);
+                        } else {
                             getProjectAnnotation(projectId)
                                 .then((res)=>{
                                     if (res['error']) {
@@ -377,10 +377,14 @@ export default function Workspace(props) {
                                         URL.revokeObjectURL(a.href);
                                         
                                     }
-                                })
+                                }
+                            )
                         }
-                    }
-                })
+                    })
+            } else {
+                setModalInfo('No current project.');
+                setModalInfoOpen(true);
+            }
             
             setSaveAnnotation(false);
         }

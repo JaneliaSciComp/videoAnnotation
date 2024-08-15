@@ -15,7 +15,7 @@ import { Dropdown, Button, Modal } from 'antd';
  *          disabled: boolean,
  *          //key: str,
  *          compName: str, // only required if use component from this library, e.g. 'ProjectManager' for <ProjectManager>
- *          component: component, 
+ *          component: component, // a react node, e.g. <ProjectList key='0' open={open} setOpen={setOpen} />. If it's a modal comp, the open/close behavior is handled automatically if the open and setOpen attributes are defined.  remember to pass a 'key' attribute
  *          //onClick: (target) => {}, //target: {label:, key:, }
  *          preventDefault: boolean, //there are default behaviors when click on some components of this lib, e.g. clicking on ProjectManager will trigger a modal window. Set this to true to prevent the default behavior when needed.
  * }, 
@@ -35,6 +35,7 @@ export default function DropdownMenu(props) {
             disabled: item.disabled,
         }
     })
+    // console.log(items);
 
     const components = []; 
     props.menu.forEach((item, i) => components[i] = item.component);
@@ -43,7 +44,7 @@ export default function DropdownMenu(props) {
         const index = parseInt(e.key);
         const target = props.menu[index];
         const comp = components[index];
-        console.log(e, target, comp?.props);
+        // console.log(e, target, comp?.props);
         if (target && !target.preventDefault && comp) {
             if (target.compName === 'ProjectManager' && comp.props.status === 'new' && projectId) {
                 confirm(comp);
@@ -54,8 +55,10 @@ export default function DropdownMenu(props) {
                     setSaveAnnotation(true);
                 }
             } else {
-                console.log('open');
-                comp.props.setOpen(true);
+                // console.log('open');
+                if (comp?.props?.setOpen) {
+                    comp.props.setOpen(true);
+                }
             }                
         }
 
