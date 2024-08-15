@@ -167,6 +167,7 @@ export default function Home() {
                     <CanvasAdditionalDataController 
                       // hideRange
                       // halfRange={2}
+                      defaultHalfRange={1}
                     />
                 </Modal>,
     },
@@ -256,8 +257,8 @@ export default function Home() {
         <p style={{color: 'red'}}>{info}</p>
         <Row >
           <Col lg='auto'>
-            <canvas width={350} height={300} style={{border: 'solid'}}/>
-            <AnnotationTable width={350} height={250} scrollY={160} ellipsis />
+            <canvas width={300} height={250} style={{border: 'solid'}}/>
+            <AnnotationTable width={300} height={250} scrollY={230} ellipsis />
             <BtnContainer />
           </Col>
           <Col>
@@ -267,7 +268,7 @@ export default function Home() {
               <Chart 
                 // hideRange
                 // halfRange={5}
-                // defaultHalfRange={2}
+                defaultHalfRange={2}
                 />
             </div>
           </Col>
