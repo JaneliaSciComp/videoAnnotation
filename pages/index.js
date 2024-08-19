@@ -12,13 +12,13 @@ import VideoManager from '../components/VideoManager.js';
 import CanvasAdditionalDataController from '../components/CanvasAdditionalDataController.js';
 import DropdownMenu from '../components/DropdownMenu.js';
 import ProjectList from '../components/ProjectList.js';
-import {Row, Col} from 'react-bootstrap';
-import { Menu, Modal } from 'antd';
-import { drawCircle, drawLine } from '../utils/canvasUtils.js';
+import {Row, Col} from 'react-bootstrap'; // Third party components. Refer to the tutorial on https://react-bootstrap.netlify.app/docs/layout/grid
+import { Menu, Modal } from 'antd'; // Third party components. Refer to the tutorial on https://ant.design/components/menu, and https://ant.design/components/modal
+import { drawCircle, drawLine } from '../utils/canvasUtils.js'; // canvasUtils.js is a wrapper of fabric.js. It provides functions to operate on canvas easily. Currently, only these two functions are provided.
 
 
 
-// client side components
+// Client side components. They cannot be rendered on the server side, thus need to be explicitly marked as client side comp.
 import dynamic from 'next/dynamic';
 
 const Chart = dynamic(() => import('../components/ChartCombo.js'), { ssr: false });
@@ -26,7 +26,7 @@ const WindowMonitor = dynamic(() => import('../components/WindowMonitor.js'), { 
 
 
 export default function Home() {
-  // The following ..open/set..Open states are to allow the child components to control the visibility of modal windows inside.
+  // The ..open/set..Open states are to allow the child modal components to control the visibility of themselves inside.
   const [newProjectManagerOpen, setNewProjectManagerOpen] = useState(false);
   const [editProjectManagerOpen, setEditProjectManagerOpen] = useState(false);
   const [configUploaderOpen, setConfigUploaderOpen] = useState(false);
@@ -34,25 +34,25 @@ export default function Home() {
   const [videoManagerOpen, setVideoManagerOpen] = useState(false);
   const [annotationUploaderOpen, setAnnotationUploaderOpen] = useState(false);
   const [canvasAdditionalDataControllerOpen, setCanvasAdditionalDataControllerOpen] = useState(false);
-  const [info, setInfo] = useState(''); // To display some info
+  const [info, setInfo] = useState(''); // To display some feedback info
 
   const projectDropdownItems = [
     {
       label: 'Exisiting Projects',
-      compName: 'ProjectList',
+      compName: 'ProjectList', // When pass a component, it is required to have a compName prop whose value should be equivalent to the name of the component, e.g. <ProjectList>'s compName is 'ProjectList'.
       component: <ProjectList 
-                  key='0'
+                  key='0' // When pass a component to a child, it is required to have a unique key prop.
                   open={projectListOpen}
                   setOpen={setProjectListOpen}
                 />,
-      // preventDefault: true, // when use some built-in components as the children of DropdownMenu, there may be some pre-defined behaviors, such as open a modal window. To prevent the default behavior, set this to true.
+      // preventDefault: true, // when use some built-in components as the children of DropdownMenu, there may be some pre-defined behaviors, such as opening a modal window. To prevent the default behavior, set this to true.
     },
     {
       label: 'New Project',
       compName: 'ProjectManager',
       component: <ProjectManager 
                   key='1'
-                  status='new' 
+                  status='new' // ProjectManager has two status: 'new' and 'edit'. 'new' mode is for creating a new project, and 'edit' mode is for editing an existing project.
                   open={newProjectManagerOpen} 
                   setOpen={setNewProjectManagerOpen}
                   defaultGroupType='category'
@@ -67,7 +67,7 @@ export default function Home() {
       compName: 'ModalJsonUploader',
       component: <ModalJsonUploader 
                   key='2'
-                  type='configuration' 
+                  type='configuration' // ModalJsonUploader has two types: 'configuration' and 'annotation'. 'configuration' is for uploading a configuration file, and 'annotation' is for uploading an annotation file.
                   open={configUploaderOpen} 
                   setOpen={setConfigUploaderOpen}
                 />, 
@@ -92,13 +92,17 @@ export default function Home() {
       compName: 'SaveBtn',
       component: <SaveBtn 
                   key='4'
-                  type='configuration' 
-                  mode='inMenu'
+                  type='configuration'  // SaveBtn has two types: 'configuration' and 'annotation'. 'configuration' is for saving the configuration data, and 'annotation' is for saving the annotation data.
+                  mode='inMenu' // SaveBtn has two modes: 'inMenu' and 'solely'. 'inMenu' is used when the SaveBtn is used in a dropdown menu, and 'solely' is used when the SaveBtn is used as a standalone button. This prop affects the UI of the SaveBtn.
                 />,
     },
 ];
   
   function projectDropdownClickHandler(e) {
+    /**
+     * Click event handler for DropdownMenu. Will be called after the default behavior of each child.
+     * e is the event object which has a key property corresponding to the index(integer) of each child in the 'menu' prop. This may be different with the 'key' prop of the component passed to each child.
+     * */ 
     // console.log(e);
     // const label = projectDropdownItems[e.key].label;
     // TODO: customize click handler
@@ -141,6 +145,13 @@ export default function Home() {
                   footer={null}
                 >
                   <VideoManager 
+                    /**
+                     * name: str, // required and unique, used as var name, no white space allowed.
+                     * label: str, // required, label shown to the user, allow white space
+                     * required: boolean, // false by default
+                     * loadIn: 'canvas'/'chart'/null, // whether to draw the data on canvas/chart with each frame. If yes, will fetch the data from backend and ask canvas/chart to draw it
+                     * onLoad: event handler. Can be used to draw shapes on canvas and so on. required when loadin='canvas' 
+                     */
                     additionalFields={[
                       {name: 'canvas1', label: 'canvas1', required: true, loadIn: 'canvas', onLoad: drawDataAsCircle}, 
                       {name: 'canvas2', label: 'canvas2', required: true, loadIn: 'canvas', onLoad: drawDataAsLine},
@@ -163,9 +174,9 @@ export default function Home() {
                   footer={null}
                 >
                     <CanvasAdditionalDataController 
-                      // hideRange
-                      // halfRange={2}
-                      defaultHalfRange={1}
+                      // hideRange  //Hide the range input.
+                      // halfRange={2} //Allow developer to set half range value when hideRange is true. Required and only useful when hideRange is true.
+                      defaultHalfRange={1} // Default value for half range input. Should only be used when hideRange is false.
                     />
                 </Modal>,
     },
@@ -173,7 +184,7 @@ export default function Home() {
 
   function drawDataAsCircle(params) {
     /**
-     * Customzied onLoad event handler for the additional data of canvas1.
+     * OnLoad event handler for the additional data for canvas.
      * 
      * params: {
      *      target: fabric obj needed for the drawing. Just pass it to the imported func from canvasUtils.js
@@ -266,9 +277,9 @@ export default function Home() {
               <VideoUploader hideSubmit />
               <div className='my-3' style={{height: '150px', width: '670px'}} >
                 <Chart 
-                  // hideRange
-                  // halfRange={5}
-                  defaultHalfRange={2}
+                  // hideRange  //Hide the range input.
+                  // halfRange={5}  //Allow developer to set half range value when hideRange is true. Required and only useful when hideRange is true.
+                  defaultHalfRange={2}  // Default value for half range input. Should only be used when hideRange is false.
                   />
               </div>
           </Col>

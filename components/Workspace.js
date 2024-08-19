@@ -199,6 +199,7 @@ export default function Workspace(props) {
                     }
                 }
             }))
+            console.log(retrievedAdditionalData);
                 setAdditionalData(retrievedAdditionalData);
             
         }

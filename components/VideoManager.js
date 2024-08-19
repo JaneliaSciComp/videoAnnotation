@@ -19,11 +19,14 @@ import { defaultAdditionalDataRange, allowedCanvasShapes } from '../utils/utils'
  *            name: str, // required and unique, used as var name, no white space allowed.
  *            label: str, // required, label shown to the user, allow white space
  *            required: boolean, // whether required for user, false by default
- *            loadIn: 'canvas'/'chart'/null, default to null, // whether to draw the data on canvas/chart with each frame. If yes, will fetch the data from backend and ask canvas/chart to draw it, thus the 'shape' field should be defined too.
+ *            loadIn: 'canvas'/'chart'/null, default to null, // whether to draw the data on canvas/chart with each frame. If yes, will fetch the data from backend and ask canvas/chart to draw it
  *            onLoad: func to draw shape on canvas and do other things. required when loadin='canvas' 
  *                  Passed a parameter e: 
  *                  {
- *                      canvas: fabricjs canvas obj, 
+ *                      target: {
+ *                          canvas: fabricjs canvas obj,
+ *                          img: fabricjs img obj,
+ *                      },
  *                      data: {
  *                          range: [startIndex, endIndex], 
  *                          data: [additional data]

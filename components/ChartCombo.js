@@ -39,7 +39,7 @@ import { DownOutlined } from '@ant-design/icons';
     dynamicVerticalLineColor:  'rgb()', '#xxxxxx', 'red'. The color of the dynamic vertical Line
     zoomSpeed: number. Speed for zooming on y axis. 0.01 by default.
  *  hideRange: boolean. Hide the range input.
- *  halfRange: int. Allow developer to set half range value when hideRange is true. Required and only available when hideRange is true.
+ *  halfRange: int. Allow developer to set half range value when hideRange is true. Required and only useful when hideRange is true.
  *  defaultHalfRange: int. Default value for half range input. Should only be used when hideRange is false.
 
 */

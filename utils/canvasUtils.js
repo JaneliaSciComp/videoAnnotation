@@ -39,9 +39,9 @@ export function drawCircle(target, circleData, color) {
 
 /**
  * 
- * @param {*} target - Contains the fabric.js canvas and img obj.
- * @param {*} lineData - [[x1, y1], [x2, y2]], Coordinates of the two endpoints
- * @param {*} color - 'red', '#000000', 'rgb(0,0,0)'
+ * @param {Object} target - Contains the fabric.js canvas and img obj.
+ * @param {Array} lineData - [[x1, y1], [x2, y2]], Coordinates of the two endpoints
+ * @param {String} color - 'red', '#000000', 'rgb(0,0,0)'
  */
 export function drawLine(target, lineData, color) {
     const canvas = target.canvas;
@@ -72,7 +72,7 @@ export function drawLine(target, lineData, color) {
 /**
  * 
  * @param {Array} coord - Coord data for each shape, corresponding to the 2nd param for the func above
- * @param {*} imgObj 
+ * @param {Object} imgObj 
  * @param {String} type - enum, 'circle', 'line', 
  */
 function convertCoordImgToCanvas(coord, imgObj, type) {
@@ -95,8 +95,8 @@ function convertCoordImgToCanvas(coord, imgObj, type) {
 
 /**
  * 
- * @param {*} pointCoord - [x, y]
- * @param {*} imgObj 
+ * @param {Array} pointCoord - [x, y]
+ * @param {Object} imgObj 
  */
 function convertPointCoordImgToCanvas(pointCoord, imgObj) {
     const scale = imgObj.scaleX;
