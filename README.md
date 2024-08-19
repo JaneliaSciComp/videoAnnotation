@@ -349,7 +349,7 @@ export default function Home() {
 ```
 
 > [!NOTE]
-> In order to process the video, you need to set up a backend server. We will cover this in another [repo](https://github.com/JaneliaSciComp/videoAnnotation_backend/tree/local_usage).
+> In order to process the video, you need to set up a backend server. We will cover this in another [repo](https://github.com/JaneliaSciComp/videoAnnotation_backend/tree/main).
 
 Here we used react-bootstrap for the layout. Check out the [tutorial](https://react-bootstrap.netlify.app/docs/layout/grid), and also [Ant Design](https://ant.design/components)'s components.
 
