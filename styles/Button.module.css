@@ -65,6 +65,18 @@
     justify-content: center;
 }
 
+.categoryEraserBtn {
+    width: 32px !important;
+    height: 32px;
+    /* margin: auto auto; */
+    padding: auto auto;
+    border: 1px solid rgb(100, 100, 100);
+    border-radius: 15px;
+    /* display: flex;
+    align-items: center;
+    justify-content: center; */
+}
+
 .undoBtn:active {
     color: white !important;
     background: black !important;

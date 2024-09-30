@@ -35,10 +35,14 @@ export default function AnnotationTable(props) {
     const setAnnoIdToShow = useStateSetters().setAnnoIdToShow;
     const annoIdToDraw = useStates().annoIdToDraw;
     const uploader = useStates().uploader;
-
-
+    const setRemoveSingleCategory = useStateSetters().setRemoveSingleCategory;
+    const singleCategoriesRef = useStates().singleCategoriesRef;
 
     useEffect(() => {
+        if (!frameAnnotation) {
+            setTableData([]);
+            return
+        };
         let data;
         if (frameUrl !== frameUrlRef.current || uploader !== prevUploaderRef.current) {
             data = Object.entries(frameAnnotation).map(
@@ -207,21 +211,29 @@ export default function AnnotationTable(props) {
          * Use another state annoIdToDelete instead of letting Canvas use useEffect (frameAnnotation) to delete the fabric obj,
          * because the delete func in useEffect may be triggered by other actions,
          * so just use annoIdToDelete to trigger deleting on Canvas 
+         * 
+         * setRemoveSingleCategory to tell annotationChart to remove the category from the annotationForChart
          */
         if (id !== annoIdToDraw) {
             console.log('onDelete called');
             const res = await deleteAnnotation(id);
             if (res['error']) {
                 setInfo(res['error']);
-            } else if (res['success']) {
+            } else if (res['success'] || res['info']==='annotation not found') {
                 const frameAnnoCopy = {...frameAnnotation};
+                const deletedCategory = {...frameAnnoCopy[id]};
                 delete(frameAnnoCopy[id]);
                 setFrameAnnotation(frameAnnoCopy);
                 if (frameAnnotation[id].type !== 'category') {
                     setAnnoIdToDelete(id);
+                } else {
+                    setRemoveSingleCategory(deletedCategory);
+                    if (singleCategoriesRef.current[deletedCategory.frameNum]) {
+                        delete(singleCategoriesRef.current[deletedCategory.frameNum][id]);
+                        console.log('annoTable delete singleCategory', singleCategoriesRef.current);
+                    }
                 }
             }
-            
         }
     
 }

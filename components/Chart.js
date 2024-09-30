@@ -161,11 +161,13 @@ export default function MyChart(props) {
     const totalFrameCount = useStates().videoMetaRef.current.totalFrameCount;
     const additionalDataRange = useStates().additionalDataRange;
     const additionalData = useStates().additionalData;
+    const intervalAnno = useStates().intervalAnno;
+    const intervalErasing = useStates().intervalErasing;
 
 
 
     useEffect(() => {
-        let data = {labels: [], datasets: [{}]};
+        let data = {labels: [1,2,3,4,5,6,7,8,9,10], datasets: [{}]};
         let scaleLimits = [], startNeeded=0, endNeeded=0, start=0, end=0;
         if (props.metrics?.length>0 && Object.keys(props.data).length>0) {
             const frameNums = [];
@@ -249,8 +251,8 @@ export default function MyChart(props) {
                 dynamicVerticalLine: {
                     metricsNumber: props.metrics.length,
                     color: props.dynamicVerticalLineColor ? props.dynamicVerticalLineColor : dynamicVerticalLineColor,
-                    clickHandler: setFrameNumSignal,
-                    startIndex: start
+                    clickHandler: (intervalAnno.on || Object.values(intervalErasing).some(value=>value.on)) ? null : setFrameNumSignal,
+                    startIndex: startNeeded
                 },
                 zoom: {
                     pan: {

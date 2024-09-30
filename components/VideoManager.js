@@ -7,9 +7,9 @@ import { defaultAdditionalDataRange, allowedCanvasShapes } from '../utils/utils'
 
 /**
  *  props:
-//  *      open: boolean. Whether to open the modal window
-//  *      setOpen: setter of open. In order to give controll to VideoManager's internal buttons.
- *      // serverType: 'local' / 'remote'
+//  *      setModalOpen: When this comp is put in a modal, the modal could pass the setter of its open state to this comp, so that this comp can close the parent modal, e.g. when the user clicks the 'load' or 'add and load' button.
+ *          
+        // serverType: 'local' / 'remote'
 //  *      includeTrackDataInput: boolean. False by default. If true, show track data input element to allow user upload track data json files. The developer should also specify trackDataParseFunc to parse the data.
 //  *      trackDataParseFunc: [(data)=>{}, ...], // array of func, order of entries should match. if includeTrackDataInput is true, should provide funcs to process the data in those files. The func should take the object from the json file as parameter and output the data format the chart component needs
  *      
@@ -249,12 +249,16 @@ export default function VideoManager(props) {
         const res = await postVideo(videoDataCopy);
         if (res['error']) {
             setInfo(res['error']);
+            return;
         } else {
             setInfo(null);
         }
 
         if (videoDataCopy) {
             setLoadVideo(videoDataCopy);
+            if (props.setModalOpen) {
+                props.setModalOpen(false);
+            }
         }
     }
 
@@ -318,11 +322,19 @@ export default function VideoManager(props) {
 
 
     function onLoadBtnClick(i) {
+        setInfo(null);
         const id = videoIds[i];
+        if (id === videoId) {
+            setInfo('This video is already loaded.');
+            return
+        }
         const videoObj = {...videoData[id]};
         videoObj.videoId = id;
 
         setLoadVideo(videoObj);
+        if (props.setModalOpen) {
+            props.setModalOpen(false);
+        }
     }
 
 
@@ -337,14 +349,14 @@ export default function VideoManager(props) {
     }
 
     async function deleteThisVideo(videoIdToDel) {
+        setInfo(null);
         const res = await deleteVideo(videoIdToDel);
         if (res['error']) {
             setInfo('Deleting video data in database failed!');
             return
         } 
-
-
-        setInfo(null);
+        setInfo(res.info);
+        
         if (videoIdToDel === detailsVideoId) {
             form.resetFields();
             setBtnDisable(true);
@@ -427,9 +439,11 @@ export default function VideoManager(props) {
                                         allowClear/>
                                 </Form.Item>
 
-                                <p className='mt-2 mb-4'  style={{fontWeight: 'bold'}}>Additional Data</p>
+                                {props?.additionalFields?.length>0 ? 
+                                    <p className='mt-2 mb-4'  style={{fontWeight: 'bold'}}>Additional Data</p>
+                                    : null}
 
-                                {props.additionalFields.length>0 ? 
+                                {props?.additionalFields?.length>0 ? 
                                     props.additionalFields.map(
                                         ((params, i) => <Form.Item
                                             key = {i}

@@ -9,7 +9,12 @@ import {Row, Col, Button} from 'react-bootstrap';
 import BtnGroup from './BtnGroup';
 import BrushTool from './BrushTool';
 import { StatesProvider } from './AppContext';
-import { clearUnfinishedAnnotation, additionalDataBufferFold, additionalDataExtraBufferRange } from '../utils/utils';
+import { 
+    clearUnfinishedAnnotation,
+    additionalDataBufferFold, 
+    additionalDataExtraBufferRange,
+    createId,
+} from '../utils/utils';
 import { Modal } from 'antd';
 import { editProject, postFrameAnnotation, getFrameAnnotation, postProjectAnnotation, getProjectAnnotation, postProjectBtn, postProjectVideo, getAdditionalData, postAdditionalDataNameToRetrieve } from '../utils/requests';
 
@@ -57,6 +62,18 @@ export default function Workspace(props) {
     const [additionalData, setAdditionalData] = useState({});
     const [additionalDataNameToRetrieve, setAdditionalDataNameToRetrieve] = useState([]);
     const videoMetaRef = useRef({});
+    const [intervalAnno, setIntervalAnno] = useState({on: false, startFrame: null, videoId:null, label: null, color: null, annotatedFrames: new Set()});
+    const [annotationChartRange, setAnnotationChartRange] = useState();
+    const [categoryColors, setCategoryColors] = useState({});
+    const [cancelIntervalAnno, setCancelIntervalAnno] = useState(false);
+    const [addSingleCategory, setAddSingleCategory] = useState(null);
+    const [removeSingleCategory, setRemoveSingleCategory] = useState(null);
+    const singleCategoriesRef = useRef({});
+    const [resetAnnotationChart, setResetAnnotationChart] = useState(false);
+    const lastFrameNumForIntervalAnnoRef = useRef();
+    const [intervalErasing, setIntervalErasing] = useState({});
+    const [cancelIntervalErasing, setCancelIntervalErasing] = useState(false);
+    const lastFrameNumForIntervalErasingRef = useRef();
 
 
     console.log('workspace render');
@@ -96,6 +113,18 @@ export default function Workspace(props) {
         additionalDataNameToRetrieve: additionalDataNameToRetrieve,
         videoMetaRef: videoMetaRef,
         resetChart: resetChart,
+        annotationChartRange: annotationChartRange,
+        intervalAnno: intervalAnno,
+        categoryColors: categoryColors,
+        cancelIntervalAnno: cancelIntervalAnno,
+        addSingleCategory: addSingleCategory,
+        removeSingleCategory: removeSingleCategory,
+        singleCategoriesRef: singleCategoriesRef,
+        resetAnnotationChart: resetAnnotationChart,
+        lastFrameNumForIntervalAnnoRef: lastFrameNumForIntervalAnnoRef,
+        intervalErasing: intervalErasing,
+        cancelIntervalErasing: cancelIntervalErasing,
+        lastFrameNumForIntervalErasingRef: lastFrameNumForIntervalErasingRef,
     }
 
     const stateSetters = {
@@ -133,6 +162,14 @@ export default function Workspace(props) {
         setAdditionalDataNameToRetrieve: setAdditionalDataNameToRetrieve,
         setAdditionalData: setAdditionalData,
         setResetChart: setResetChart,
+        setAnnotationChartRange: setAnnotationChartRange,
+        setIntervalAnno: setIntervalAnno,
+        setCancelIntervalAnno: setCancelIntervalAnno,
+        setAddSingleCategory: setAddSingleCategory,
+        setRemoveSingleCategory: setRemoveSingleCategory,
+        setResetAnnotationChart: setResetAnnotationChart,
+        setIntervalErasing: setIntervalErasing,
+        setCancelIntervalErasing: setCancelIntervalErasing,
     }
 
 
@@ -207,7 +244,7 @@ export default function Workspace(props) {
 
     useEffect(() => {
         if (uploader?.type && uploader?.file) {
-            saveAnnotationAndUpdateStates(); 
+            saveAnnotationAndUpdateStates(true); 
             const reader = new FileReader();
             reader.onload = (e) => onReaderLoad(e, uploader.type);
             reader.readAsText(uploader.file.originFileObj);
@@ -263,7 +300,6 @@ export default function Workspace(props) {
                     onOk: ()=>{confirmUploadConfiguration(obj)},
                 });
             }
-            
         }
     }
 
@@ -280,6 +316,9 @@ export default function Workspace(props) {
             setModalInfoOpen(true);
             return
         } 
+        setProjectId(obj.projectId);
+        setProjectData({projectId: obj.projectId, projectName: obj.projectName, description: obj.description});
+
         
         const btns = Object.keys(obj.btnConfigData).map((id)=>{
             const btnGroupObj = {...obj.btnConfigData[id]};
@@ -312,12 +351,10 @@ export default function Workspace(props) {
             setModalInfoOpen(true);
             return
         }
-
-        setProjectId(obj.projectId);
-        setProjectData({projectId: obj.projectId, projectName: obj.projectName, description: obj.description});
+        
         setBtnConfigData(obj.btnConfigData ? {...obj.btnConfigData} : {});
         setVideoData(obj.videos ? {...obj.videos} : {});
-
+    
     }
 
     async function confirmSaveUploadedAnnotationToDB(data) {
@@ -329,6 +366,7 @@ export default function Workspace(props) {
             if ((data.videos.filter(v => v===videoId).length>0) && Number.isInteger(frameNum)) {
                 getFrameAnnotationFromDBAndSetState();
             } 
+            setResetAnnotationChart(true);
         }
     }
 
@@ -356,7 +394,7 @@ export default function Workspace(props) {
     useEffect(()=> {
         if (saveAnnotation) {
             if (projectId) {
-                saveCurrentAnnotation()
+                saveCurrentAnnotation(true)
                     .then((res) => {
                         console.log(res);
                         if (res?.error) {
@@ -401,44 +439,95 @@ export default function Workspace(props) {
 
 
     useEffect(() => {
-        saveAnnotationAndUpdateStates();
-        setFrameNum(null);
+        console.log('videoid useEffect called')
+        saveAnnotationAndUpdateStates(true).then(() => {
+            console.log('saveAnnotationAndUpdateStates(true) done');
+            setFrameNum(null);
+        });
+        
+
+        
+            
       }, [videoId]
     )
 
    
 
     useEffect(() => {
-        /* when videouploader switch to a new frame, save the annotation for the current frame
+        /* when switch to a new frame, save the annotation for the current frame
            then retrieve the annotation for the new frame
          */
         saveAnnotationAndUpdateStates();
+
         if (Number.isInteger(frameNum) && videoId 
+            && (!intervalAnno.on)
         ) {
             getFrameAnnotationFromDBAndSetState();
         } else {
-            setFrameAnnotation({});
+            setFrameAnnotation(oldValue => {});
         }
+
+        if (intervalAnno.on && Number.isInteger(frameNum)) {
+            console.log('frameNum useEffect set lastFrameNumForIntervalAnnoRef', frameNum);
+            lastFrameNumForIntervalAnnoRef.current = frameNum;
+        }
+
+        if (Object.values(intervalErasing).some(value=>value.on) && Number.isInteger(frameNum)) {
+            console.log('frameNum useEffect set lastFrameNumForIntervalErasingRef', frameNum);
+            lastFrameNumForIntervalErasingRef.current = frameNum;
+        }
+
         
+
+            
       }, [frameNum]
     )
     
 
-    function saveAnnotationAndUpdateStates() {
-        saveCurrentAnnotation();
+    async function saveAnnotationAndUpdateStates(cancelInterval=false) {
+        console.log('save anno', );
+        
         setActiveAnnoObj(null);
         setDrawType(null);
         setSkeletonLandmark(null);
         setUndo(0);
         setUseEraser(null);
         setAnnoIdToDelete(null);
+        await saveCurrentAnnotation(cancelInterval=cancelInterval);
     }
 
-    async function saveCurrentAnnotation() {
-            if ( Object.keys(frameAnnotation).length > 0) {
-                const newFrameAnno = clearUnfinishedAnnotation({...frameAnnotation});
+    async function saveCurrentAnnotation(cancelInterval=false) {
+            console.log('saveCurrentAnnotation called', frameNum, frameAnnotation, intervalAnno);
+            const newFrameAnno = clearUnfinishedAnnotation({...frameAnnotation});
+            if (intervalAnno.on) {
+                const id = createId();
+                const annoObj = {
+                    id: id,
+                    videoId: intervalAnno.videoId,
+                    frameNum: frameNum ?? lastFrameNumForIntervalAnnoRef.current,
+                    label: intervalAnno.label,
+                    color: intervalAnno.color,
+                    type: 'category',         
+                };
+                newFrameAnno[id] = annoObj;
+
+                if (cancelInterval) {
+                    setCancelIntervalAnno(true);
+                    console.log('saveCurrentAnnotation cancelIntervalAnno', frameNum);
+                }
+            }
+
+            if ( Object.keys(newFrameAnno).length > 0) {
                 if (Object.keys(newFrameAnno).length > 0) {
                     const res = await saveFrameAnnotationToDB(newFrameAnno);
+                    if (res?.error) {
+                        setInfo(res['error']);
+                    } else {
+                        if (intervalAnno.on) {
+                            intervalAnno.annotatedFrames.add(frameNum);
+                            console.log('workspace insert interval anno', frameNum);
+                        }
+                    }
                     return res;
                 } 
             } 
@@ -455,16 +544,32 @@ export default function Workspace(props) {
 
     useEffect(() => {
         const btnConfigCopy = {...btnConfigData};
-        Object.values(btnConfigCopy).forEach(groupData => {
+        const colors = {};
+        const intervalErasingData = {};
+        Object.entries(btnConfigCopy).forEach(([id, groupData]) => {
             if (groupData?.edgeData && groupData.edgeData.edges.length) {
                 const edgesArr = groupData.edgeData.edges.map(neighborSet => neighborSet?[...neighborSet]:null);
                 groupData.edgeData.edges = edgesArr;
             }
-        })
 
+            
+            if (groupData.groupType === 'category') {
+                groupData.childData.forEach(child => {
+                    if (!Object.keys(colors).some(label => label === child.label)) {
+                        colors[child.label] = child.color;
+                    }
+                })
+
+                intervalErasingData[id] = {on: false, startFrame:null, videoId:null, labels: groupData.childData.map(child => child.label)};
+            }
+        })
+        console.log('workspace categoryColors', colors);
+        console.log('workspace intervalErasingData', intervalErasingData);
+        setCategoryColors(colors);
+        setIntervalErasing(oldValue => intervalErasingData);
     }, [btnConfigData])
 
-
+    
 
     useEffect(() => {
         if (btnConfigData) {
@@ -529,15 +634,13 @@ export default function Workspace(props) {
     }
 
     async function getFrameAnnotationFromDBAndSetState() {
+        const frameAnno = {};
+
         const res = await getFrameAnnotation(frameNum, videoId);
         if (res?.annotations?.length > 0) {
-            const frameAnno = {};
             res.annotations.forEach((anno) => frameAnno[anno.id] = anno);
-            setFrameAnnotation(frameAnno);
-        } else {
-            console.log(res);
-            setFrameAnnotation({});
-        }
+        } 
+        setFrameAnnotation(frameAnno);
     }
 
     async function saveFrameAnnotationToDB(cleanFrameAnnotation) {

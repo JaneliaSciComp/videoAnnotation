@@ -11,7 +11,8 @@ const VIDEO_META_URL = "http://localhost:8000/api/videometa";
 const SINGLE_ANNOTATION_URL = "http://localhost:8000/api/annotation";
 const FRAME_ANNOTATION_URL = "http://localhost:8000/api/frameannotation";
 const PROJECT_ANNOTATION_URL = "http://localhost:8000/api/projectannotation";
-
+const ANNOTATION_FOR_CHART_URL = "http://localhost:8000/api/annotationforchart";
+const CATEGORY_ANNOTATION_URL = "http://localhost:8000/api/categoryannotation";
 
 
 export async function postProject(projectInfoObj) {
@@ -275,8 +276,30 @@ export async function getFrame(frameNum) {
     const res = await fetch(`${FRAME_URL_ROOT}?num=${frameNum}`, {
         method: 'GET',
     })
+    // .then(res => {
+    //     if (res.ok) {
+    //         console.log('res.ok');
+    //         return res.blob();
+    //     } else {
+    //         console.log('res.ok false');
+    //         // console.log(res);
+    //         setFrameError('Frame request failed');
+    //     }
+    // }).then((res)=>{
+    //     if (res){
+    //         if (res['error']) {
+    //             setFrameError(res['error']);
+    //         } else {
+    //             const url = URL.createObjectURL(res);
+    //             // props.setFrameUrl(url);
+    //             // props.setFrameNum(frameNum);
+    //             setFrameUrl(url);
+    //             setFrameNum(frameNum);
+    //         } 
+    //     } 
+    // })
     if (res.ok) {
-        const blob = await res.blob();
+        const blob = await res.blob(); // .blob() is also async, it's reading data from the stream
         const url = URL.createObjectURL(blob);
         return url;
     } else {
@@ -284,8 +307,8 @@ export async function getFrame(frameNum) {
     }
 }
 
-export async function getAdditionalData(frameNum, fieldName, range) {
-    const res = await fetch(`${ADDITIONAL_URL_ROOT}/${fieldName}/?frameNum=${frameNum}&range=${range}`, {
+export async function getAdditionalData(frameNum, fieldName, range) { //TODO: need videoId?
+    const res = await fetch(`${ADDITIONAL_URL_ROOT}/${fieldName}/?frameNum=${frameNum}&range=${range}`, { //videoId=${videoId}&
         method: 'GET',
     })
     
@@ -297,6 +320,7 @@ export async function getAdditionalData(frameNum, fieldName, range) {
 }
 
 export async function postAdditionalDataNameToRetrieve(videoId, additionalDataNameToRetrieve) {
+    // additionalDataNameToRetrieve could be [], backend should clear data in memory
     const body = {
         videoId: videoId,
         names: additionalDataNameToRetrieve
@@ -307,7 +331,7 @@ export async function postAdditionalDataNameToRetrieve(videoId, additionalDataNa
             'Accept': 'application/json',
             'Content-Type': 'application/json'
           },
-        body: JSON.stringify(body),
+        body: JSON.stringify(body), //new FormData(e.target), 
     })
 
     if (res.ok) {
@@ -318,7 +342,8 @@ export async function postAdditionalDataNameToRetrieve(videoId, additionalDataNa
 }
 
 
-export async function postFrameAnnotation(annotationObjs) {
+export async function postFrameAnnotation(annotationObjs) { //{annotations: [anno1, anno2, ...]}
+    console.log('postFrameAnnotation', annotationObjs.annotations[0].frameNum);
     const res = await fetch(FRAME_ANNOTATION_URL, {
             method: 'POST',
             headers: {
@@ -347,7 +372,7 @@ export async function getFrameAnnotation(frameNum, videoId) {
     }
 }
 
-export async function postProjectAnnotation(data) {
+export async function postProjectAnnotation(data) { //{annotations: [anno1, anno2, ...]}
     /**
      * data: {
             annotations: [anno1, anno2, ...],
@@ -383,6 +408,23 @@ export async function getProjectAnnotation(projectId) {
     }
 }
 
+export async function postAnnotation(annotationObj) { 
+    const res = await fetch(SINGLE_ANNOTATION_URL, {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+              },
+            body: JSON.stringify(annotationObj), 
+        })
+
+    if (res.ok) {
+        return await res.json()
+    } else {
+        return {error: 'POST single annotation request failed'}
+    }
+}
+
 export async function deleteAnnotation(id) {
     const res = await fetch(`${SINGLE_ANNOTATION_URL}?id=${id}`, {
             method: 'DELETE',
@@ -395,6 +437,18 @@ export async function deleteAnnotation(id) {
     }
 }
 
+export async function getAnnotationForChart(videoId, frameNum, labelList, range) {
+    const res = await fetch(`${ANNOTATION_FOR_CHART_URL}?videoId=${videoId}&frameNum=${frameNum}&labels=${labelList.join('@@')}&range=${range}`, {
+            method: 'GET',
+    })
+    
+    if (res.ok) {
+        return await res.json()
+    } else {
+        return {error: 'GET annotationForChart request failed'}
+    }
+}
+
 export async function deleteProjectAnnotation(projectId) {
     const res = await fetch(`${PROJECT_ANNOTATION_URL}?projectId=${projectId}`, {
             method: 'DELETE',
@@ -404,5 +458,22 @@ export async function deleteProjectAnnotation(projectId) {
         return await res.json()
     } else {
         return {error: 'DELETE project annotation request failed'}
+    }
+}
+
+
+export async function deleteCategoryAnnotationInterval(videoId, labels, range) {
+    /**
+     *  labels: [label1, label2, ...]
+     *  range: [startFrame, endFrame]
+     */
+    const res = await fetch(`${CATEGORY_ANNOTATION_URL}?videoId=${videoId}&labels=${labels.join('@@')}&startFrame=${range[0]}&endFrame=${range[1]}`, {
+            method: 'DELETE',
+        })
+
+    if (res.ok) {
+        return await res.json()
+    } else {
+        return {error: 'DELETE categoryAnnotationInterval request failed'}
     }
 }

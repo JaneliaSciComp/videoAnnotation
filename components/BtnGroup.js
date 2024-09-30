@@ -5,6 +5,8 @@ import BrushBtn from './BrushBtn';
 import BrushTool from './BrushTool';
 import { useState, useEffect } from 'react';
 import {Row} from 'react-bootstrap';
+import CategoryEraser from './CategoryEraser';
+
 
 export default function BtnGroup(props) {
     /*
@@ -53,10 +55,12 @@ export default function BtnGroup(props) {
                     btns = childData.map((item, i) =>
                                 <Category 
                                     key={i}
+                                    btnGroupId={props.data.groupIndex}
                                     label={item.label}
                                     color={item.color}
                                     />
                             );
+                    btns.push(<CategoryEraser key={childData.length} btnGroupId={props.data.groupIndex} />);
                     break;
                 case 'shape':
                     btns = childData.map((item, i) => 
@@ -103,6 +107,7 @@ export default function BtnGroup(props) {
         
         return btns;
     }
+
 
     return (
         <div className='my-1' >

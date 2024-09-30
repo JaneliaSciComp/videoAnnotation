@@ -158,3 +158,91 @@ export function clearUnfinishedAnnotation(frameAnnotationCopy) {
     return frameAnnotationCopy; //annoCopy
 }
 
+
+export function createId() {
+    const sufix = Math.random().toString().substring(2, 9);
+    const id = Date.now().toString() + sufix;
+    return id;
+}
+
+
+
+// chart plugins
+export const staticVerticalLine = {
+    id: 'staticVerticalLine',
+    afterDraw: function(chart, args, options) {
+        // console.log('staticVLine', chart, argv, options, options.position);
+        if ( (options.position>=0)
+          && chart?.getDatasetMeta() 
+          && chart.getDatasetMeta(0)?.data?.length
+          && (chart.getDatasetMeta(0)?.data?.length > options.position)) {
+            // get first dataset, to get X coord of a point
+            const data = chart.getDatasetMeta(0).data; 
+            // console.log(data);
+            let singleElemWidth = data[options.position].width;
+            singleElemWidth = singleElemWidth ? singleElemWidth : 0;
+            const width = singleElemWidth * options.metricsNumber;
+            const x = data[options.position].x - singleElemWidth/2 + width/2;
+            const topY = chart.scales.y.top;
+            const bottomY = chart.scales.y.bottom;
+            const ctx = chart.ctx;
+            ctxDrawLine(ctx, x, topY, bottomY, options.color, width); 
+        }
+    }
+};
+
+export const dynamicVerticalLine = {
+    id: 'dynamicVerticalLine',
+    afterDraw: function(chart, args, options) {
+        // console.log('dynamicVLine', chart, args, args.event);
+        if (chart.tooltip._active?.length) {
+            const activePoint = chart.tooltip._active[0];
+            // console.log(activePoint);
+            const ctx = chart.ctx;
+            let singleElemWidth = activePoint.element.width;
+            singleElemWidth = singleElemWidth ? singleElemWidth : 0;
+            const  width = singleElemWidth * options.metricsNumber;
+            const x = activePoint.element.x - singleElemWidth/2 * (activePoint.datasetIndex*2+1) + width/2;
+            const topY = chart.scales.y.top;
+            const bottomY = chart.scales.y.bottom;
+            ctxDrawLine(ctx, x, topY, bottomY, options.color, width); //'rgb(220,220,220, 0.5)'
+        }
+    },
+
+    //Click on the vertical line to reset frameNum
+    afterEvent: function(chart, args, options) {
+        if (args?.event?.type === 'click' && chart.tooltip._active?.length && options.clickHandler) {
+            const activePoint = chart.tooltip._active[0];
+            // console.log('dynamicLine', chart, activePoint, options);
+            const focusFrame = activePoint.index + options.startIndex + 1;
+            options.clickHandler(focusFrame);
+        }
+    }
+};
+
+function ctxDrawLine(ctx, x, topY, bottomY, color, width) {
+    ctx.save();
+    ctx.beginPath();
+    ctx.moveTo(x, topY);
+    ctx.lineTo(x, bottomY);
+    ctx.lineWidth = width ? width : 2;
+    ctx.strokeStyle = color; //'rgb(220,220,220, 0.5)';
+    ctx.stroke();
+    ctx.restore();
+}
+
+// export const chartAreaBorder = {
+//     id: 'chartAreaBorder',
+//     beforeDraw(chart, args, options) {
+        
+//       const {ctx, chartArea: {left, top, width, height}} = chart;
+//       console.log(left, top, width, height);
+//       ctx.save();
+//       ctx.strokeStyle = options.borderColor;
+//       ctx.lineWidth = options.borderWidth;
+//       ctx.setLineDash(options.borderDash || []);
+//       ctx.lineDashOffset = options.borderDashOffset;
+//       ctx.strokeRect(left, top, width, height);
+//       ctx.restore();
+//     }
+//   };

@@ -38,6 +38,9 @@ export default function VideoUploader(props) {
     const additionalDataNameToRetrieve = useStates().additionalDataNameToRetrieve;
     const setAdditionalData = useStateSetters().setAdditionalData;
     const videoMetaRef = useStates().videoMetaRef;
+    const intervalAnno = useStates().intervalAnno;
+    const intervalErasing = useStates().intervalErasing;
+
 
     console.log('VideoUploader render');
 
@@ -170,6 +173,7 @@ export default function VideoUploader(props) {
 
 
     async function setFrame(newValue, videoInfoObj=null) {
+        console.log('setFrame called', newValue, videoId);
         if (newValue) {
             setSliderValue(newValue);
             if (newValue >= 1) {
@@ -185,7 +189,6 @@ export default function VideoUploader(props) {
             }
         } else {
             setFrameUrl(null);
-            setFrameNum(null);
         }
         
     }
@@ -255,6 +258,7 @@ export default function VideoUploader(props) {
                         defaultValue={0}
                         value={sliderValue}
                         onChange={inputNumerChangeHandler}
+                        disabled = {(intervalAnno.on || Object.values(intervalErasing).some(value=>value.on))}
                         />
                 </Col>
                 <Col sm={9} className='px-0'>
@@ -270,6 +274,7 @@ export default function VideoUploader(props) {
                                 max={totalFrameCount}
                                 onChange={sliderChangeHandler}
                                 value={sliderValue}
+                                disabled={(intervalAnno.on || Object.values(intervalErasing).some(value=>value.on))}
                                 />
                             <span className={styles.sliderMark}>{totalFrameCount}</span>
                         </div>

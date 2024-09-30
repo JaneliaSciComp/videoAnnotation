@@ -371,14 +371,12 @@ export default function Canvas(props) {
         }
 
         return ()=>{
-            console.log('frameAnno return func')
         }
         
     }, [frameAnnotation])
 
 
     useEffect(() => {
-        console.log('canvas drawtype useEffect', drawType);
         const canvas = canvasObjRef.current;
 
         if (!drawType) {

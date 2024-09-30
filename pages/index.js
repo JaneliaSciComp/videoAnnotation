@@ -23,7 +23,7 @@ import dynamic from 'next/dynamic';
 
 const Chart = dynamic(() => import('../components/ChartCombo.js'), { ssr: false });
 const WindowMonitor = dynamic(() => import('../components/WindowMonitor.js'), { ssr: false });
-
+const AnnotationChart = dynamic(() => import('../components/AnnotationChart.js'), { ssr: false });
 
 export default function Home() {
   // The ..open/set..Open states are to allow the child modal components to control the visibility of themselves inside.
@@ -145,6 +145,7 @@ export default function Home() {
                   footer={null}
                 >
                   <VideoManager 
+                    setModalOpen={setVideoManagerOpen} // To allow the child to contorl the visibility of the modal window, e.g. when the user clicks the 'load' or 'add and load' button.
                     /**
                      * name: str, // required and unique, used as var name, no white space allowed.
                      * label: str, // required, label shown to the user, allow white space
@@ -152,12 +153,12 @@ export default function Home() {
                      * loadIn: 'canvas'/'chart'/null, // whether to draw the data on canvas/chart with each frame. If yes, will fetch the data from backend and ask canvas/chart to draw it
                      * onLoad: event handler. Can be used to draw shapes on canvas and so on. required when loadin='canvas' 
                      */
-                    additionalFields={[
-                      {name: 'canvas1', label: 'canvas1', required: true, loadIn: 'canvas', onLoad: drawDataAsCircle}, 
-                      {name: 'canvas2', label: 'canvas2', required: true, loadIn: 'canvas', onLoad: drawDataAsLine},
-                      {name: 'chart1', label: 'chart1', required: true, loadIn: 'chart'}, 
-                      {name: 'chart2', label: 'chart2', required: true, loadIn: 'chart'}
-                    ]}
+                    // additionalFields={[
+                    //   {name: 'canvas1', label: 'canvas1', required: true, loadIn: 'canvas', onLoad: drawDataAsCircle}, 
+                    //   {name: 'canvas2', label: 'canvas2', required: true, loadIn: 'canvas', onLoad: drawDataAsLine},
+                    //   {name: 'chart1', label: 'chart1', required: true, loadIn: 'chart'}, 
+                    //   {name: 'chart2', label: 'chart2', required: true, loadIn: 'chart'}
+                    // ]}
                   />
                 </Modal>,
     },
@@ -201,6 +202,8 @@ export default function Home() {
     for (let l of params.data) {
       drawLine(params.target, l, 'white');
     }
+    // modify the data
+    // saveToBackend(data);
   }
 
   function videoDropdownClickHandler(e) {
@@ -268,18 +271,28 @@ export default function Home() {
         <p style={{color: 'red'}}>{info}</p>
         <Row >
           <Col lg='auto'>
-            <canvas width={350} height={250} style={{border: 'solid'}}/>
+            {/* <canvas width={350} height={250} style={{border: 'solid'}}/> */}
             <AnnotationTable width={350} height={250} scrollY={230} ellipsis />
             <BtnContainer />
           </Col>
           <Col>
-              <Canvas width={650} height={450}/>
-              <VideoUploader hideSubmit />
-              <div className='my-3' style={{height: '150px', width: '670px'}} >
+              <Canvas width={550} height={350}/>
+              <VideoUploader 
+                hideSubmit 
+                />
+              <div className='py-2' style={{height: '100px', width: '670px', border: 'solid 1px black'}} >
+                {/* <div style={{height: '100%', width: '650px'}}> */}
+                <AnnotationChart 
+                  labels = {['chase', 'no-chase']}
+                  // omitXLables
+                />
+                {/* </div> */}
+              </div>
+              <div className='py-2' style={{height: '150px', width: '670px', border: 'solid 1px black'}} >
                 <Chart 
                   // hideRange  //Hide the range input.
                   // halfRange={5}  //Allow developer to set half range value when hideRange is true. Required and only useful when hideRange is true.
-                  defaultHalfRange={2}  // Default value for half range input. Should only be used when hideRange is false.
+                  defaultHalfRange={50}  // Default value for half range input. Should only be used when hideRange is false.
                   />
               </div>
           </Col>

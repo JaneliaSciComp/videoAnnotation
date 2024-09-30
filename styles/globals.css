@@ -33,6 +33,10 @@ a {
   text-overflow: ellipsis;
 }
 
+/* #annotationChart {
+  width: 600px !important;
+} */
+
 /* @media (prefers-color-scheme: dark) {
   html {
     color-scheme: dark;

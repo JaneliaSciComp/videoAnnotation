@@ -2,7 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import { useStateSetters, useStates } from './AppContext'; 
 import { Modal, List, Button, Form, Input, Space } from 'antd';
 import { PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
-import { getAllProjects, getProject, getProjectBtn, getProjectVideo, deleteProject, deleteProjectBtn, deleteProjectVideo } from '../utils/requests';
+import { getAllProjects, getProject, getProjectBtn, getProjectVideo, deleteProject, deleteProjectBtn, deleteProjectVideo, deleteProjectAnnotation } from '../utils/requests';
 
 /**
  *  To list all existing projects in the db.
@@ -138,21 +138,23 @@ export default function ProjectList(props) {
     }
 
     async function deleteWholeProject(id, name) {
-        let projectRes, btnRes, videoRes;
-        await Promise.all(['project', 'btn', 'video'].map(async (type) => {
+        let projectRes, btnRes, videoRes, annotationRes;
+        await Promise.all(['project', 'btn', 'video', 'annotation'].map(async (type) => {
             if (type === 'project') {
                 projectRes = await deleteProject(id);
             } else if (type === 'btn') {
                 btnRes = await deleteProjectBtn(id);
             } else if (type === 'video') {
                 videoRes = await deleteProjectVideo(id);
+            } else if (type === 'annotation') {
+                annotationRes = await deleteProjectAnnotation(id);
             }
           }));
         
         if (projectRes['error']) {
             setInfo(`Delete project configuration failed: ${projectRes?.error}`)
         } else {
-            setInfo(`Deleted project ${name}: \n Btn: ${btnRes?.info} \n Video: ${videoRes?.info}`);
+            setInfo(`Deleted project ${name}: \n Btn: ${btnRes?.info} \n Video: ${videoRes?.info} \n Annotation: ${annotationRes?.info}`);
             
             const newAllProjects = allProjects.filter( p => p.projectId !== id);
             setAllProjects(newAllProjects);
