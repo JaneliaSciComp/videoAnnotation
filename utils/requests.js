@@ -276,30 +276,8 @@ export async function getFrame(frameNum) {
     const res = await fetch(`${FRAME_URL_ROOT}?num=${frameNum}`, {
         method: 'GET',
     })
-    // .then(res => {
-    //     if (res.ok) {
-    //         console.log('res.ok');
-    //         return res.blob();
-    //     } else {
-    //         console.log('res.ok false');
-    //         // console.log(res);
-    //         setFrameError('Frame request failed');
-    //     }
-    // }).then((res)=>{
-    //     if (res){
-    //         if (res['error']) {
-    //             setFrameError(res['error']);
-    //         } else {
-    //             const url = URL.createObjectURL(res);
-    //             // props.setFrameUrl(url);
-    //             // props.setFrameNum(frameNum);
-    //             setFrameUrl(url);
-    //             setFrameNum(frameNum);
-    //         } 
-    //     } 
-    // })
     if (res.ok) {
-        const blob = await res.blob(); // .blob() is also async, it's reading data from the stream
+        const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         return url;
     } else {
@@ -307,8 +285,8 @@ export async function getFrame(frameNum) {
     }
 }
 
-export async function getAdditionalData(frameNum, fieldName, range) { //TODO: need videoId?
-    const res = await fetch(`${ADDITIONAL_URL_ROOT}/${fieldName}/?frameNum=${frameNum}&range=${range}`, { //videoId=${videoId}&
+export async function getAdditionalData(frameNum, fieldName, range) {
+    const res = await fetch(`${ADDITIONAL_URL_ROOT}/${fieldName}/?frameNum=${frameNum}&range=${range}`, {
         method: 'GET',
     })
     
@@ -320,7 +298,6 @@ export async function getAdditionalData(frameNum, fieldName, range) { //TODO: ne
 }
 
 export async function postAdditionalDataNameToRetrieve(videoId, additionalDataNameToRetrieve) {
-    // additionalDataNameToRetrieve could be [], backend should clear data in memory
     const body = {
         videoId: videoId,
         names: additionalDataNameToRetrieve
@@ -331,7 +308,7 @@ export async function postAdditionalDataNameToRetrieve(videoId, additionalDataNa
             'Accept': 'application/json',
             'Content-Type': 'application/json'
           },
-        body: JSON.stringify(body), //new FormData(e.target), 
+        body: JSON.stringify(body),
     })
 
     if (res.ok) {
@@ -342,7 +319,7 @@ export async function postAdditionalDataNameToRetrieve(videoId, additionalDataNa
 }
 
 
-export async function postFrameAnnotation(annotationObjs) { //{annotations: [anno1, anno2, ...]}
+export async function postFrameAnnotation(annotationObjs) {
     console.log('postFrameAnnotation', annotationObjs.annotations[0].frameNum);
     const res = await fetch(FRAME_ANNOTATION_URL, {
             method: 'POST',
@@ -372,7 +349,7 @@ export async function getFrameAnnotation(frameNum, videoId) {
     }
 }
 
-export async function postProjectAnnotation(data) { //{annotations: [anno1, anno2, ...]}
+export async function postProjectAnnotation(data) {
     /**
      * data: {
             annotations: [anno1, anno2, ...],
