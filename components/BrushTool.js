@@ -17,7 +17,6 @@ const MAX_THICKNESS = 100;
 */
 export default function BrushTool(props) {
 
-    // get context
     const drawType = useStates().drawType;
     const brushThickness = useStates().brushThickness;
     const setBrushThickness = useStateSetters().setBrushThickness;
@@ -25,29 +24,21 @@ export default function BrushTool(props) {
     const setUseEraser = useStateSetters().setUseEraser;
     const undo = useStates().undo;
     const setUndo = useStateSetters().setUndo;
-    // const annoIdToDraw = useStates().annoIdToDraw;
-    // const frameAnnotation = useStates().frameAnnotation;
 
     function undoClickHandler() {
         if (drawType==='brush') {
-            setUndo(undo+1); //TODO: overflow?
+            setUndo(undo+1);
         } 
     }
 
     function onEraserBtnClick() {
-        // if (drawType==='brush') {
-            setUseEraser(!useEraser); // !useEraser is true when useEraser is false, null, undefined
-        // }
+            setUseEraser(!useEraser);
     }
 
     function sliderChangeHandler(newValue) {
-        // if (drawType==='brush') {
             setBrushThickness(newValue);
-        // }
     }
 
-    //disabled={frameAnnotation[annoIdToDraw]?.type==='brush'?false:true}
-// disabled={drawType==='brush'}
     return (
         <div className={styles.brushToolContainer}>
             <Col xs={1} className={styles.iconBtnContainer}> 
@@ -55,7 +46,6 @@ export default function BrushTool(props) {
                     size='sm'
                     variant="light"
                     onClick={undoClickHandler}
-                    // disabled={drawType==='brush'}
                     >
                         <RollbackOutlined />
                 </Button>
@@ -76,7 +66,6 @@ export default function BrushTool(props) {
                 <Slider 
                     min={props.minThickness?props.minThickness:MIN_THICKNESS}
                     max={props.maxThickness?props.maxThickness:MAX_THICKNESS}
-                    // marks={{0:'0', []:`${totalFrameCount}`}}
                     onChange={sliderChangeHandler}
                     value={brushThickness}
                     />

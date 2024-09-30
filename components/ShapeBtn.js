@@ -25,7 +25,6 @@ export default function ShapeBtn(props) {
     const frameNum = useStates().frameNum;
     const frameUrl = useStates().frameUrl;
     const setDrawType = useStateSetters().setDrawType;
-    // const addAnnotationObj = useStateSetters().addAnnotationObj;
     const frameAnnotation = useStates().frameAnnotation;
     const setFrameAnnotation = useStateSetters().setFrameAnnotation;
     const annoIdToDraw = useStates().annoIdToDraw;
@@ -35,13 +34,7 @@ export default function ShapeBtn(props) {
     const setUseEraser = useStateSetters().setUseEraser;
     const videoId = useStates().videoId; 
 
-    // console.log(drawType, frameNum,frameUrl,setDrawType);
 
-    // useEffect(() => {
-    //     if (!props.drawType) {
-    //         setClicked(false);
-    //     }
-    // }, [props.drawType])
 
     useEffect(() => {
         if (!drawType || drawType !== props.type || frameAnnotation[annoIdToDraw].label !== props.label) {
@@ -50,28 +43,11 @@ export default function ShapeBtn(props) {
     }, [drawType])
 
     
-    // function clickHandler() {
-    //     if (Number.isInteger(props.frameNum) || props.frameUrl) {
-    //         const id = Date.now().toString();
-    //         props.setDrawType(props.type);
-    //         props.addAnnotationObj({
-    //             id: id,
-    //             frameNum: props.frameNum,
-    //             label: props.label,
-    //             color: props.color,
-    //             type: props.type,         
-    //         });
-    //         // console.log('shape called', props);
-    //         setClicked(true);
-    //     }
        
-    // }
 
     function clickHandler() {
         if (Number.isInteger(frameNum) || frameUrl) {
-            // clear unfinished polygon and skeleton annoObj before setting new annoIdToDraw
             const annoCopy = clearUnfinishedAnnotation({...frameAnnotation});
-            // setFrameAnnotation(annoCopy);
 
             const id = Date.now().toString();
             setDrawType(props.type);
@@ -85,8 +61,6 @@ export default function ShapeBtn(props) {
             };
             annoCopy[id] = annoObj;
             setFrameAnnotation(annoCopy);
-            // setFrameAnnotation({...frameAnnotation, [id]: annoObj});
-            // console.log('shape called', props);
             setClicked(true);
             setAnnoIdToDraw(id);
             setSkeletonLandmark(null);

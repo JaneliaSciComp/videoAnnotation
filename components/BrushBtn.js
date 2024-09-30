@@ -8,7 +8,6 @@ import BrushTool from './BrushTool';
 import {defaultColor} from '../utils/utils.js';
 import { clearUnfinishedAnnotation } from '../utils/utils.js';
 
-// const defaultColor = '#1677FF';
 
 /**
  * Note: for developer, creating multiple BrushBtn of a same label will result in error, 
@@ -40,24 +39,16 @@ import { clearUnfinishedAnnotation } from '../utils/utils.js';
 export default function BrushBtn(props) {
     
     const [radioValue, setRadioValue] = useState(0);
-    // const [thickness, setThickness] = useState(5);
-    const annotationIdRef = useRef(); // to remember the annotation id for this brush btn, to retrieve anno data so that can add crowded info, to reset annoIdtoDraw for parent 
+    const annotationIdRef = useRef();
     const prevFrameUrlRef = useRef();
 
-    // get context
     const drawType = useStates().drawType;
     const frameNum = useStates().frameNum;
     const frameUrl = useStates().frameUrl;
     const setDrawType = useStateSetters().setDrawType;
-    // const addAnnotationObj = useStateSetters().addAnnotationObj;
     const frameAnnotation = useStates().frameAnnotation;
     const setFrameAnnotation = useStateSetters().setFrameAnnotation;
-    // const useEraser = useStates().useEraser;
     const setUseEraser = useStateSetters().setUseEraser;
-    // const brushThickness = useStates().brushThickness;
-    // const setBrushThickness = useStateSetters().setBrushThickness;
-    // const undo = useStates().undo;
-    // const setUndo = useStateSetters().setUndo;
     const annoIdToDraw = useStates().annoIdToDraw;
     const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
     const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
@@ -69,10 +60,6 @@ export default function BrushBtn(props) {
             throw Error('Label cannot be empty');
         }
 
-        // // initialize brushThickness
-        // if (!brushThickness) {
-        //     setBrushThickness(5);
-        // }
     }, [])
 
 
@@ -80,7 +67,6 @@ export default function BrushBtn(props) {
         /** when switch to a new frame or img, this btn should be ready to create another annoObj, so change annoIdRef to null;
          *  when switch to a previous frame, it should first see if there is created annoObj. If yes, use that annoId; if not, set annoIdRef to null 
          */ 
-        // console.log('brushbtn1', annotationIdRef.current); 
         if (frameUrl !== prevFrameUrlRef.current) {
             annotationIdRef.current = null;
             if (frameAnnotation) {
@@ -91,47 +77,30 @@ export default function BrushBtn(props) {
             }
             prevFrameUrlRef.current = frameUrl;
         }
-        // console.log('brushbtn frameAnno useEffect', annotationIdRef.current); 
        
     }, [frameAnnotation])
 
-    // useEffect(() => {
-    //     /** when switch to a new frame or img, this btn should be ready to create another annoObj, so change annoIdRef to null;
-    //      *  when switch to a previous frame, it should first see if there is created annoObj. If yes, use that annoId; if not, set annoIdRef to null 
-    //      */ 
-    //     // console.log('brushbtn1', annotationIdRef.current); 
-    //     prevFrameUrlRef.current = 
-    //     // console.log('brushbtn frameUrl useEffect', annotationIdRef.current); 
-    //     // if (frameAnnotation) {
-    //     //     const annoObj = Object.values(frameAnnotation).filter(obj=> obj.type==='brush' && obj.label===props.label)[0];
-    //     //     if (annoObj) {
-    //     //         annotationIdRef.current = annoObj.id;
-    //     //     }
-    //     // }
-    //     // console.log('brushbtn3', annotationIdRef.current); 
        
-    // }, [frameUrl])
 
     
 
 
     function clickHandler() {
-        // draw brush, finish draw brush, can only be decided by clicking the btn, not by canvas
         if (Number.isInteger(frameNum) || frameUrl) {
             let annoCopy = clearUnfinishedAnnotation({...frameAnnotation});
 
-            if (drawType === null || drawType !== 'brush') { // no btn is activated or non-brush btn is activated               
-                if (!annotationIdRef.current) { // brushBtn reuse the same annoObj, so only initialize annoObj when first time click
+            if (drawType === null || drawType !== 'brush') {
+                if (!annotationIdRef.current) {
                     annoCopy = createNewAnnoObj(annoCopy);
                 }
                 setAnnoIdToDraw(annotationIdRef.current)
-                setDrawType('brush'); // drawType changed, useEffect will add default radio value
+                setDrawType('brush');
     
             } else if (drawType==='brush') { 
-                if (annoIdToDraw === annotationIdRef.current) { // this btn is the activated brush btn, should deactivate it
+                if (annoIdToDraw === annotationIdRef.current) {
                     setDrawType(null);
-                    setAnnoIdToDraw(null); // should be set canvas, since canvas needs annoId to generate rle 
-                } else { // this is an inactivated btn, should activate it
+                    setAnnoIdToDraw(null);
+                } else {
                     if (!annotationIdRef.current) {
                         annoCopy = createNewAnnoObj(annoCopy);
                         console.log(annoCopy);
@@ -149,8 +118,7 @@ export default function BrushBtn(props) {
     }
 
     function createNewAnnoObj(annoCopy) {
-        // create anno obj, add to frameAnno, activate draw mode
-        const id =Date.now().toString(); //'123'; // 
+        const id =Date.now().toString();
         annotationIdRef.current = id;
         const annoObj = {
             id: id,
@@ -160,17 +128,14 @@ export default function BrushBtn(props) {
             label: props.label,
             color: props.color ? props.color : defaultColor,
             data: [],
-            // first: null,
             isCrowd: 0,
-            // hasPath: false // indicate if at least one path obj is created for this annoObj
         };
         annoCopy[id] = annoObj;
         return annoCopy;
     }
 
     function onRadioChange(e) {        
-        // update radio value to annotation
-        if (drawType==='brush' && annoIdToDraw===annotationIdRef.current) { // only if draw mode is activated, and this btn is activated 
+        if (drawType==='brush' && annoIdToDraw===annotationIdRef.current) {
             setRadioValue(e.target.value);
             const annotation = {...frameAnnotation[annotationIdRef.current]};
             annotation.isCrowd=e.target.value;
@@ -179,13 +144,11 @@ export default function BrushBtn(props) {
     };
 
 
-    //direction="vertical"
 
     return (
-        // <Row >
         <div className={styles.brushBtnContainer}
             style={{margin: ((props.enableBrushTool || !props.omitCrowdRadio) ? '0.2em' : '0') + ' 0'}}>
-            {/* <Col md={4} className={styles.brushBtn}> */}
+            {}
             <div className={styles.brushBtn}>
                 <Button className={styles.btn}
                     style={{color: (drawType==='brush'&&annoIdToDraw===annotationIdRef.current)?'white':(props.color?props.color:defaultColor), 
@@ -200,34 +163,32 @@ export default function BrushBtn(props) {
             <Col md={6}> */}
             {(props.enableBrushTool || !props.omitCrowdRadio) ?
                 <div className='ms-2'>
-                    {/* <Row > */}
+                    {}
                     {props.enableBrushTool ? 
                         <BrushTool minThinkness={props.minThinkness} maxThickness={props.maxThickness}/> 
                         : null}
                     
                     {!props.omitCrowdRadio ?
-                        // <Row>
                         <div>
                             <Radio.Group 
                                 value={radioValue} 
                                 onChange={onRadioChange} 
                                 disabled={!(drawType==='brush'&&annoIdToDraw===annotationIdRef.current)}
                                 >
-                                {/* <Space > */}
+                                {}
                                     <Radio value={0}>single</Radio>
                                     <Radio value={1}>crowd</Radio>
-                                {/* </Space> */}
+                                {}
                             </Radio.Group>
-                        {/* </Row>  */}
+                        {}
                         </div>
                         : null 
                     }
                 </div> 
                 :null
             }   
-            {/* </Col> */}
+            {}
             
         </div>
-        // </Row>
     )
 }
