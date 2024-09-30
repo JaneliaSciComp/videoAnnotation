@@ -12,10 +12,6 @@ import { Modal } from 'antd';
  *      setOpen: setter of open. In order to give controll to ProjectManager's internal buttons.
  */
 export default function ModalJsonUploader(props) {
-    
-
-
-
 
     function cancelClickHandler() {
         props.setOpen(false);
