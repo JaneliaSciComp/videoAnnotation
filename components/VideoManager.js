@@ -3,7 +3,6 @@ import { useStateSetters, useStates } from './AppContext';
 import { Modal, List, Button, Form, Input, Space } from 'antd';
 import { PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { postVideo, editVideo, deleteVideo } from '../utils/requests';
-import { defaultAdditionalDataRange, allowedCanvasShapes } from '../utils/utils';
 
 /**
  *  props:
@@ -143,12 +142,7 @@ export default function VideoManager(props) {
     }, [props.additionalFields])
     
 
-        
-
-
-
-
-
+   
     function onVideoNameClick(i) {
         const videoId = videoIds[i];
         const videoObj = videoData[videoId];

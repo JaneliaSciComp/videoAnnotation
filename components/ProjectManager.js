@@ -2,7 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import { useStateSetters, useStates } from './AppContext'; 
 import BtnConfiguration from './BtnConfiguration';
 import { Modal, Form, Input, Button } from 'antd';
-import { postProject, editProject, deleteProject } from '../utils/requests';
+import { postProject, editProject } from '../utils/requests';
 
 
 /**

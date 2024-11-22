@@ -4,7 +4,7 @@ import { InputNumber, Slider, Space } from 'antd';
 import { CaretRightOutlined, PauseOutlined } from '@ant-design/icons';
 import {Row, Col, Form, Button} from 'react-bootstrap';
 import { useStates, useStateSetters } from './AppContext';
-import { postVideo, getVideoMeta, getFrame, postAdditionalDataNameToRetrieve } from '../utils/requests';
+import { postVideo, getVideoMeta, getFrame, getAdditionalData, getVideoAnnotation } from '../utils/requests';
 
 
 
@@ -32,7 +32,6 @@ export default function VideoUploader(props) {
     const setResetVideoPlay = useStateSetters().setResetVideoPlay;
     const videoData = useStates().videoData;
     const setVideoData = useStateSetters().setVideoData;
-    const videoAdditionalFieldsConfig = useStates().videoAdditionalFieldsConfig;
     const videoId = useStates().videoId;
     const projectId = useStates().projectId;
     const additionalDataNameToRetrieve = useStates().additionalDataNameToRetrieve;
@@ -40,6 +39,9 @@ export default function VideoUploader(props) {
     const videoMetaRef = useStates().videoMetaRef;
     const intervalAnno = useStates().intervalAnno;
     const intervalErasing = useStates().intervalErasing;
+    const setGlobalInfo = useStateSetters().setGlobalInfo;
+    const annotationRef = useStates().annotationRef;
+    const additionalDataRef = useStates().additionalDataRef;
 
 
     console.log('VideoUploader render');
@@ -207,7 +209,7 @@ export default function VideoUploader(props) {
         setVideoId(null);
     }
 
-    async function initializePlay(videoInfoObj) {
+    async function initializePlay(videoInfoObj) { 
         videoMetaRef.current = {};
         const meta = await getVideoMeta(videoInfoObj.videoId);
         console.log(meta);
@@ -227,11 +229,42 @@ export default function VideoUploader(props) {
             }
             
             setAdditionalData({});
-            const res = await postAdditionalDataNameToRetrieve(videoInfoObj.videoId, additionalDataNameToRetrieve);
-            if (res['error']) {
-                setSubmitError(res['error']);
-            } 
+            if (additionalDataNameToRetrieve?.length>0) {
+                const res = await getAdditionalData(videoInfoObj.videoId, additionalDataNameToRetrieve);
+                if (res['error']) {
+                    setSubmitError(res['error']);
+                } else {
+                    additionalDataNameToRetrieve.forEach(name => {
+                        additionalDataRef.current[name] = res[name];
+                    })
+                }
+            }
+                await retrieveVideoAnnotations(videoInfoObj.videoId);
+            
                 await setFrame(1);
+        }
+    }
+
+    async function retrieveVideoAnnotations(videoId) {
+        setGlobalInfo('Retrieving video annotation from database ...');
+        const res = await getVideoAnnotation(videoId);
+        console.log('get video annotation', res);
+        setGlobalInfo(null);
+        if (res['error']) {
+            setGlobalInfo(res);
+        } else {
+            const annotations = res.annotations;
+            const newRef = {};
+            annotations.forEach(anno => {
+                const frameNum = anno.frameNum;
+                const id = anno.id;
+                if (newRef[frameNum]) {
+                    newRef[frameNum][id] = anno;
+                } else {
+                    newRef[frameNum] = {[id]: anno};
+                }
+            })
+            annotationRef.current = newRef;
         }
     }
 

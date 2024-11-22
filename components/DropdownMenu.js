@@ -1,6 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
 import { useStateSetters, useStates } from './AppContext'; 
 import { Dropdown, Button, Modal } from 'antd';
+import {postVideoAnnotation} from '../utils/requests.js';
 
 /**
  * This component is meant to take a list of modal components, such as ProjectManager, ProjectList.
@@ -24,8 +25,13 @@ import { Dropdown, Button, Modal } from 'antd';
  */
 export default function DropdownMenu(props) {
     const projectId = useStates().projectId;
-    const setSaveConfig = useStateSetters().setSaveConfig;
-    const setSaveAnnotation = useStateSetters().setSaveAnnotation;
+    const videoId = useStates().videoId;
+    const setDownloadConfig = useStateSetters().setDownloadConfig;
+    const setDownloadAnnotation = useStateSetters().setDownloadAnnotation;
+    const videoData = useStates().videoData;
+    const annotationRef = useStates().annotationRef;
+    const setGlobalInfo = useStateSetters().setGlobalInfo;
+    const frameUrl = useStates().frameUrl;
 
     const items = props.menu.map((item, i) => {
         return {
@@ -35,27 +41,42 @@ export default function DropdownMenu(props) {
             disabled: item.disabled,
         }
     })
-    // console.log(items);
 
     const components = []; 
     props.menu.forEach((item, i) => components[i] = item.component);
 
-    const onClick = (e) => {
+    const onClick = async (e) => {
         const index = parseInt(e.key);
         const target = props.menu[index];
         const comp = components[index];
-        // console.log(e, target, comp?.props);
         if (target && !target.preventDefault && comp) {
             if (target.compName === 'ProjectManager' && comp.props.status === 'new' && projectId) {
                 confirm(comp);
-            } else if (target.compName === 'SaveBtn') {
+            } else if (target.compName === 'DownloadBtn') {
                 if ( comp.props.type==='configuration') {
-                    setSaveConfig(true);
+                    setDownloadConfig(true);
                 } else if (comp.props.type==='annotation') {
-                    setSaveAnnotation(true);
+                    setDownloadAnnotation(true);
                 }
-            } else {
-                // console.log('open');
+            } else if (target.compName === 'SaveAnnotationBtn') {
+                if (videoId || frameUrl) {
+                    const annotations = Object.values(annotationRef.current).map(frameAnno => Object.values(frameAnno))
+                    const data = {
+                        annotations: annotations.flat(),
+                        videoId: videoId,
+                    }
+                    const res = await postVideoAnnotation(data);
+                    console.log('save annotation to db', res);
+                    if (res.success) {
+                        setGlobalInfo('Annotation successfully saved to database.');
+                    } else {
+                        setGlobalInfo('Failed to save annotation to database.');
+                    }
+                } else {
+                    setGlobalInfo('No video to save.');
+                }
+            }
+            else {
                 if (comp?.props?.setOpen) {
                     comp.props.setOpen(true);
                 }

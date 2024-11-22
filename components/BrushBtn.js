@@ -6,7 +6,7 @@ import styles from '../styles/Button.module.css';
 import { useStateSetters, useStates } from './AppContext';
 import BrushTool from './BrushTool';
 import {defaultColor} from '../utils/utils.js';
-import { clearUnfinishedAnnotation } from '../utils/utils.js';
+import { clearUnfinishedAnnotation, createId } from '../utils/utils.js';
 
 
 /**
@@ -118,7 +118,7 @@ export default function BrushBtn(props) {
     }
 
     function createNewAnnoObj(annoCopy) {
-        const id =Date.now().toString();
+        const id = createId(); 
         annotationIdRef.current = id;
         const annoObj = {
             id: id,

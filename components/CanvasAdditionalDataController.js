@@ -119,8 +119,7 @@ export default function CanvasAdditionalDataController(props) {
             metrics.forEach(m => {
                 newRange[m] = newValue;
             })
-            console.log(newRange);
-            setAdditionalDataRange(oldObj => newRange);
+            setAdditionalDataRange(newRange);
         }
     }
 

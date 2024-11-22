@@ -3,7 +3,7 @@ import {Button} from 'react-bootstrap';
 import { Radio, Space } from 'antd';
 import styles from '../styles/Button.module.css';
 import { useStateSetters, useStates } from './AppContext';
-import { clearUnfinishedAnnotation } from '../utils/utils.js';
+import { clearUnfinishedAnnotation, createId } from '../utils/utils.js';
 
 
 /** 
@@ -92,7 +92,7 @@ export default function SkeletonBtn(props) {
         if (Number.isInteger(frameNum) || frameUrl) {
             const annoCopy = clearUnfinishedAnnotation({...frameAnnotation});
             
-            const id = Date.now().toString();
+            const id = createId();
             annotationIdRef.current = id;
             setDrawType('skeleton');
             setSkeletonLandmark(0);

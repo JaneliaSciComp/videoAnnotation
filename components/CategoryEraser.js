@@ -4,7 +4,6 @@ import { ClearOutlined } from '@ant-design/icons';
 import styles from '../styles/Button.module.css';
 import { useStateSetters, useStates } from './AppContext';
 import {defaultColor} from '../utils/utils.js';
-import { deleteCategoryAnnotationInterval } from '../utils/requests.js';
 
 
 /*
@@ -15,18 +14,21 @@ import { deleteCategoryAnnotationInterval } from '../utils/requests.js';
             
 */
 export default function CategoryEraser(props) {
-    const [Info, setInfo] = useState(null);
 
     const intervalErasing = useStates().intervalErasing;
     const setIntervalErasing = useStateSetters().setIntervalErasing;
     const frameNum = useStates().frameNum;
     const frameUrl = useStates().frameUrl;
     const intervalAnno = useStates().intervalAnno;
+    const setIntervalAnno = useStateSetters().setIntervalAnno;
     const videoId = useStates().videoId;
     const cancelIntervalErasing = useStates().cancelIntervalErasing;
     const setCancelIntervalErasing = useStateSetters().setCancelIntervalErasing;
     const lastFrameNumForIntervalErasingRef = useStates().lastFrameNumForIntervalErasingRef;
-    const singleCategoriesRef = useStates().singleCategoriesRef;
+    const setGlobalInfo = useStateSetters().setGlobalInfo;
+    const annotationRef = useStates().annotationRef;
+    const frameAnnotation = useStates().frameAnnotation;
+    const setFrameAnnotation = useStateSetters().setFrameAnnotation;
 
 
     useEffect(()=> {
@@ -35,17 +37,17 @@ export default function CategoryEraser(props) {
             endIntervalErasing().then(()=>{
                 const erasingCopy = {...intervalErasing};
                 erasingCopy[props.btnGroupId] = {...intervalErasing[props.btnGroupId], on: false, videoId: null, startFrame: null};
-                setInterval({on:false, videoId:null, startFrame: null, label: null, color: null, annotatedFrames: new Set()});
+                setIntervalAnno({on:false, videoId:null, startFrame: null, label: null, color: null, annotatedFrames: new Set()});
                 setCancelIntervalErasing(false);
             });
         }
     }, [cancelIntervalErasing])
 
 
-    async function clickHandler() {
+    function clickHandler() {
         if (Number.isInteger(frameNum) || frameUrl) {
             if (intervalAnno.on) {
-                setInfo('Please end interval annotation first.'); 
+                setGlobalInfo('Please end interval annotation first.'); 
                 return;
             };
 
@@ -53,7 +55,9 @@ export default function CategoryEraser(props) {
             const erasingOn = intervalErasing[props.btnGroupId].on;
             console.log('erasingOn', erasingOn);
             if (erasingOn) {
-                await endIntervalErasing();
+                endIntervalErasing();
+            } else {
+                eraseFromCurrentFrame();
             }
 
             const erasingCopy = {...intervalErasing};
@@ -66,37 +70,44 @@ export default function CategoryEraser(props) {
         }
     }
 
-    async function endIntervalErasing() {
+    function endIntervalErasing() {
        console.log('endIntervalErasing', intervalErasing, frameNum, lastFrameNumForIntervalErasingRef.current);
        const erasingObj = intervalErasing[props.btnGroupId];
        if (erasingObj && Number.isInteger(erasingObj?.startFrame)
         ) {
             const lastFrameNum = frameNum ? frameNum : lastFrameNumForIntervalErasingRef.current;
-            const res = await deleteCategoryAnnotationInterval(erasingObj.videoId, erasingObj.labels, [erasingObj.startFrame, lastFrameNum]);
-            if (res.error) {
-                console.log('endIntervalErasing error', res.error);
-                setInfo('Failed to erase category annotation.');
-            } else {
-                console.log('endIntervalErasing success', res);
-            }
-            
-            const singleCategoriesCopy = {...singleCategoriesRef.current};
             for (let i = erasingObj.startFrame; i <= lastFrameNum; i++) {
-                if (singleCategoriesCopy[i]) {
-                    const annos = singleCategoriesCopy[i];
+                if (annotationRef.current[i]) {
+                    const annos = annotationRef.current[i];
                     Object.keys(annos).forEach(id => {
                         if (erasingObj.labels.includes(annos[id].label)) {
                             delete annos[id];
                         }
                     });
                     if (Object.keys(annos).length === 0) {
-                        delete singleCategoriesCopy[i];
-                    } 
+                        delete annotationRef.current[i];
+                    }
                 }
             }
-            console.log('endIntervalErasing singleCategoriesRef', singleCategoriesRef.current, singleCategoriesCopy);
-            singleCategoriesRef.current = singleCategoriesCopy;
+            console.log('endIntervalErasing annotationRef', annotationRef.current);
+            eraseFromCurrentFrame();
+        }
+    }
 
+    function eraseFromCurrentFrame() {
+        if (Number.isInteger(frameNum) 
+            && frameAnnotation 
+            && Object.keys(frameAnnotation).length>0
+            && Object.values(frameAnnotation).some(anno => anno.frameNum === frameNum)) {
+            const frameAnnoCopy = {...frameAnnotation};
+            const erasingObj = intervalErasing[props.btnGroupId];
+            Object.keys(frameAnnoCopy).forEach(id => {
+                if (frameAnnoCopy[id].type === 'category' && erasingObj.labels.includes(frameAnnoCopy[id].label)) {
+                    delete frameAnnoCopy[id];
+                }
+            });
+            console.log(frameAnnoCopy);
+            setFrameAnnotation(frameAnnoCopy);
         }
     }
 
@@ -115,7 +126,6 @@ export default function CategoryEraser(props) {
                 >
                     <ClearOutlined />
             </Button>
-            {Info && <p>{Info}</p>}
         </>
     )
 }

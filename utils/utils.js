@@ -91,7 +91,8 @@ export function clearUnfinishedAnnotation(frameAnnotationCopy) {
                 } else {
                     return false;
                 }
-            } else if (annoObj.type === 'brush' && (!annoObj.pathes || annoObj.pathes.length===0)) {
+            } 
+            else if (annoObj.type === 'brush' && (!annoObj.pathes || annoObj.pathes.length===0)) {
                 return true;                    
             } 
             else {
@@ -108,6 +109,18 @@ export function createId() {
     const sufix = Math.random().toString().substring(2, 9);
     const id = Date.now().toString() + sufix;
     return id;
+}
+
+export function addCategoryAnnoToFrameAnnotation(annoObj, frameAnnoCopy,  mutualExclusiveCategory) {
+    
+    const mutualExclusiveLabels = mutualExclusiveCategory.filter(arr => arr.includes(annoObj.label))[0];
+    Object.values(frameAnnoCopy).forEach(anno => {
+        if (mutualExclusiveLabels.includes(anno.label)) {
+            delete frameAnnoCopy[anno.id];
+        }
+    })
+    frameAnnoCopy[annoObj.id] = annoObj;
+    return frameAnnoCopy;
 }
 
 

@@ -1,6 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import styles from '../styles/Chart.module.css';
-import { predefinedColors, staticVerticalLineColor, dynamicVerticalLineColor } from '../utils/utils';
+import { predefinedColors, staticVerticalLineColor, dynamicVerticalLineColor, staticVerticalLine, dynamicVerticalLine } from '../utils/utils';
 import { useStateSetters, useStates } from './AppContext'; 
 import Zoom from 'chartjs-plugin-zoom';
 import { 
@@ -28,69 +27,15 @@ ChartJS.register(
     Tooltip,
     Legend,
     Zoom,
+    staticVerticalLine,
+    dynamicVerticalLine,
 );
 
-const staticVerticalLine = {
-    id: 'staticVerticalLine',
-    afterDraw: function(chart, args, options) {
-        if ( (options.position>=0)
-          && chart?.getDatasetMeta() 
-          && chart.getDatasetMeta(0)?.data?.length
-          && (chart.getDatasetMeta(0)?.data?.length > options.position)) {
-            const data = chart.getDatasetMeta(0).data; 
-            let singleElemWidth = data[options.position].width;
-            singleElemWidth = singleElemWidth ? singleElemWidth : 0;
-            const width = singleElemWidth * options.metricsNumber;
-            const x = data[options.position].x - singleElemWidth/2 + width/2;
-            const topY = chart.scales.y.top;
-            const bottomY = chart.scales.y.bottom;
-            const ctx = chart.ctx;
-            ctxDrawLine(ctx, x, topY, bottomY, options.color, width); 
-        }
-    }
-};
-
-const dynamicVerticalLine = {
-    id: 'dynamicVerticalLine',
-    afterDraw: function(chart, args, options) {
-        if (chart.tooltip._active?.length) {
-            const activePoint = chart.tooltip._active[0];
-            const ctx = chart.ctx;
-            let singleElemWidth = activePoint.element.width;
-            singleElemWidth = singleElemWidth ? singleElemWidth : 0;
-            const  width = singleElemWidth * options.metricsNumber;
-            const x = activePoint.element.x - singleElemWidth/2 * (activePoint.datasetIndex*2+1) + width/2;
-            const topY = chart.scales.y.top;
-            const bottomY = chart.scales.y.bottom;
-            ctxDrawLine(ctx, x, topY, bottomY, options.color, width);
-        }
-    },
-
-    afterEvent: function(chart, args, options) {
-        if (args?.event?.type === 'click' && chart.tooltip._active?.length) {
-            const activePoint = chart.tooltip._active[0];
-            const focusFrame = activePoint.index + options.startIndex + 1;
-            options.clickHandler(focusFrame);
-        }
-    }
-};
 
 
-function ctxDrawLine(ctx, x, topY, bottomY, color, width) {
-    ctx.save();
-    ctx.beginPath();
-    ctx.moveTo(x, topY);
-    ctx.lineTo(x, bottomY);
-    ctx.lineWidth = width ? width : 2;
-    ctx.strokeStyle = color;
-    ctx.stroke();
-    ctx.restore();
-}
 
-ChartJS.register(
-    staticVerticalLine,
-    dynamicVerticalLine
-)
+
+
 
 const MIN_OFFSET = 5;
 const MAX_OFFSET = 5;

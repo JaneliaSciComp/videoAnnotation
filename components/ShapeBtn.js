@@ -2,7 +2,7 @@ import React, {useState, useEffect} from 'react';
 import {Button} from 'react-bootstrap';
 import styles from '../styles/Button.module.css';
 import { useStates, useStateSetters } from './AppContext';
-import { clearUnfinishedAnnotation } from '../utils/utils.js';
+import { clearUnfinishedAnnotation, createId } from '../utils/utils.js';
 
 
 
@@ -49,7 +49,7 @@ export default function ShapeBtn(props) {
         if (Number.isInteger(frameNum) || frameUrl) {
             const annoCopy = clearUnfinishedAnnotation({...frameAnnotation});
 
-            const id = Date.now().toString();
+            const id = createId();
             setDrawType(props.type);
             const annoObj = {
                 id: id,

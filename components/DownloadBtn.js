@@ -1,8 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {Button} from 'react-bootstrap';
 import styles from '../styles/Button.module.css';
-import { useStates, useStateSetters } from './AppContext';
-import { clearUnfinishedAnnotation } from '../utils/utils.js';
+import { useStates, useStateSetters } from './AppContext.js';
 
 
 /*
@@ -11,22 +10,23 @@ import { clearUnfinishedAnnotation } from '../utils/utils.js';
         mode: 'inMenu' / 'sole', 'sole' by default. 'inMenu' is for embedding into DropdownMenu, there will not be btn UI. The developer should follow the DropdownMenu's rule to provide label for the comp, while the onClick event handler is already handled in DropdownMenu.
         
 */
-export default function SaveBtn(props) {
+export default function DownloadBtn(props) {
     
 
     const frameUrl = useStates().frameUrl;
-    const setSaveConfig = useStateSetters().setSaveConfig;
-    const setSaveAnnotation = useStateSetters().setSaveAnnotation;
+    const setDownloadConfig = useStateSetters().setDownloadConfig;
+    const setDownloadAnnotation = useStateSetters().setDownloadAnnotation;
     const projectId = useStates().projectId;
 
     function clickHandler() {
+        console.log('download btn clicked', props.type);
         if (props.type === 'configuration') {
             if (projectId || frameUrl) {
-                setSaveConfig(true);
+                setDownloadConfig(true);
             }
         } else if (props.type === 'annotation') {
             if (projectId || frameUrl) {
-                setSaveAnnotation(true);
+                setDownloadAnnotation(true);
             }
         }
     }
@@ -36,8 +36,7 @@ export default function SaveBtn(props) {
                 <Button className={styles.btn} onClick={clickHandler}>
                     {props.children}
                 </Button>
-                :
-                null
+                : null
             }
         </>
     )

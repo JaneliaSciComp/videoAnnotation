@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from 'react';
 import { Table, Button } from 'antd';
 import { DeleteOutlined} from '@ant-design/icons';
 import { useStates, useStateSetters } from './AppContext';
-import { deleteAnnotation } from '../utils/requests';
 
 
 /**
@@ -26,7 +25,6 @@ export default function AnnotationTable(props) {
 
     const frameUrlRef = useRef();
     const prevUploaderRef = useRef();
-    const [info, setInfo] = useState();
 
     const frameAnnotation = useStates().frameAnnotation;
     const setFrameAnnotation = useStateSetters().setFrameAnnotation;
@@ -35,8 +33,8 @@ export default function AnnotationTable(props) {
     const setAnnoIdToShow = useStateSetters().setAnnoIdToShow;
     const annoIdToDraw = useStates().annoIdToDraw;
     const uploader = useStates().uploader;
-    const setRemoveSingleCategory = useStateSetters().setRemoveSingleCategory;
-    const singleCategoriesRef = useStates().singleCategoriesRef;
+    const annotationRef = useStates().annotationRef;
+    const setUpdateAnnotationChart = useStateSetters().setUpdateAnnotationChart;
 
     useEffect(() => {
         if (!frameAnnotation) {
@@ -175,7 +173,6 @@ export default function AnnotationTable(props) {
             rowExpandable: (record) => record.data,
         });
 
-        setInfo(null);
     }, [frameAnnotation, annoIdToDraw])
 
 
@@ -207,32 +204,17 @@ export default function AnnotationTable(props) {
     }
 
     async function onDelete(id) {
-        /**
-         * Use another state annoIdToDelete instead of letting Canvas use useEffect (frameAnnotation) to delete the fabric obj,
-         * because the delete func in useEffect may be triggered by other actions,
-         * so just use annoIdToDelete to trigger deleting on Canvas 
-         * 
-         * setRemoveSingleCategory to tell annotationChart to remove the category from the annotationForChart
-         */
         if (id !== annoIdToDraw) {
             console.log('onDelete called');
-            const res = await deleteAnnotation(id);
-            if (res['error']) {
-                setInfo(res['error']);
-            } else if (res['success'] || res['info']==='annotation not found') {
-                const frameAnnoCopy = {...frameAnnotation};
-                const deletedCategory = {...frameAnnoCopy[id]};
-                delete(frameAnnoCopy[id]);
-                setFrameAnnotation(frameAnnoCopy);
-                if (frameAnnotation[id].type !== 'category') {
-                    setAnnoIdToDelete(id);
-                } else {
-                    setRemoveSingleCategory(deletedCategory);
-                    if (singleCategoriesRef.current[deletedCategory.frameNum]) {
-                        delete(singleCategoriesRef.current[deletedCategory.frameNum][id]);
-                        console.log('annoTable delete singleCategory', singleCategoriesRef.current);
-                    }
-                }
+            const annoToDelete = frameAnnotation[id];
+            delete(annotationRef.current[annoToDelete.frameNum][id]);
+            const frameAnnoCopy = {...frameAnnotation};
+            delete(frameAnnoCopy[id]);
+            setFrameAnnotation(frameAnnoCopy);
+            if (annoToDelete.type !== 'category') {
+                setAnnoIdToDelete(id);
+            } else {
+                setUpdateAnnotationChart(true);
             }
         }
     
@@ -250,7 +232,7 @@ export default function AnnotationTable(props) {
                 scroll={{y: props.scrollY, scrollToFirstRowOnChange: true}}
                 expandable={expandableConfig}
                 />
-            <p>{info}</p>
+            {}
         </div>
         
     )

@@ -11,12 +11,11 @@ import BrushTool from './BrushTool';
 import { StatesProvider } from './AppContext';
 import { 
     clearUnfinishedAnnotation,
-    additionalDataBufferFold, 
-    additionalDataExtraBufferRange,
     createId,
+    addCategoryAnnoToFrameAnnotation,
 } from '../utils/utils';
 import { Modal } from 'antd';
-import { editProject, postFrameAnnotation, getFrameAnnotation, postProjectAnnotation, getProjectAnnotation, postProjectBtn, postProjectVideo, getAdditionalData, postAdditionalDataNameToRetrieve } from '../utils/requests';
+import { editProject, postProjectAnnotation, getProjectAnnotation, postVideoAnnotation, postProjectBtn, postProjectVideo, getAdditionalData } from '../utils/requests';
 
 
 /**
@@ -29,6 +28,7 @@ export default function Workspace(props) {
     const [videoId, setVideoId] = useState();
     const [frameUrl, setFrameUrl] = useState();
     const [frameNum, setFrameNum] = useState();
+    const annotationRef = useRef({});
     const [frameAnnotation, setFrameAnnotation] = useState({}); 
     const [activeAnnoObj, setActiveAnnoObj] = useState();
     const [drawType, setDrawType] = useState();
@@ -44,11 +44,11 @@ export default function Workspace(props) {
     const [frameNumSignal, setFrameNumSignal] = useState();
     const [uploader, setUploader] = useState();
     const [confirmConfig, setConfirmConfig] = useState();
-    const [saveConfig, setSaveConfig] = useState(false);
-    const [saveAnnotation, setSaveAnnotation] = useState(false);
+    const [downloadConfig, setDownloadConfig] = useState(false);
+    const [downloadAnnotation, setDownloadAnnotation] = useState(false);
     const [modalInfoOpen, setModalInfoOpen] = useState(false);
     const [modalInfo, setModalInfo] = useState();
-    const [info, setInfo] = useState();
+    const [globalInfo, setGlobalInfo] = useState();
     const [videoData, setVideoData] = useState({});
     const [loadVideo, setLoadVideo] = useState();
     const [resetVideoPlay, setResetVideoPlay] = useState();
@@ -66,14 +66,14 @@ export default function Workspace(props) {
     const [annotationChartRange, setAnnotationChartRange] = useState();
     const [categoryColors, setCategoryColors] = useState({});
     const [cancelIntervalAnno, setCancelIntervalAnno] = useState(false);
-    const [addSingleCategory, setAddSingleCategory] = useState(null);
-    const [removeSingleCategory, setRemoveSingleCategory] = useState(null);
-    const singleCategoriesRef = useRef({});
+    const [updateAnnotationChart, setUpdateAnnotationChart] = useState(false);
     const [resetAnnotationChart, setResetAnnotationChart] = useState(false);
     const lastFrameNumForIntervalAnnoRef = useRef();
     const [intervalErasing, setIntervalErasing] = useState({});
     const [cancelIntervalErasing, setCancelIntervalErasing] = useState(false);
     const lastFrameNumForIntervalErasingRef = useRef();
+    const [mutualExclusiveCategory, setMutualExclusiveCategory] = useState([]);
+    const additionalDataRef = useRef({});
 
 
     console.log('workspace render');
@@ -94,13 +94,15 @@ export default function Workspace(props) {
         annoIdToShow: annoIdToShow,
         btnConfigData: btnConfigData,
         btnGroups: btnGroups,
+        annotationRef: annotationRef,
         frameNumSignal: frameNumSignal,
         uploader: uploader,
         confirmConfig: confirmConfig,
-        saveConfig: saveConfig,
-        saveAnnotation: saveAnnotation,
-        info: modalInfo,
-        infoOpen: modalInfoOpen,
+        downloadConfig: downloadConfig,
+        downloadAnnotation: downloadAnnotation,
+        globalInfo: globalInfo,
+        modalInfo: modalInfo,
+        modalInfoOpen: modalInfoOpen,
         videoData: videoData,
         loadVideo: loadVideo,
         resetVideoPlay: resetVideoPlay,
@@ -117,14 +119,13 @@ export default function Workspace(props) {
         intervalAnno: intervalAnno,
         categoryColors: categoryColors,
         cancelIntervalAnno: cancelIntervalAnno,
-        addSingleCategory: addSingleCategory,
-        removeSingleCategory: removeSingleCategory,
-        singleCategoriesRef: singleCategoriesRef,
+        updateAnnotationChart: updateAnnotationChart,
         resetAnnotationChart: resetAnnotationChart,
         lastFrameNumForIntervalAnnoRef: lastFrameNumForIntervalAnnoRef,
         intervalErasing: intervalErasing,
         cancelIntervalErasing: cancelIntervalErasing,
         lastFrameNumForIntervalErasingRef: lastFrameNumForIntervalErasingRef,
+        mutualExclusiveCategory: mutualExclusiveCategory,
     }
 
     const stateSetters = {
@@ -146,10 +147,11 @@ export default function Workspace(props) {
         setFrameNumSignal: setFrameNumSignal,
         setUploader: setUploader,
         setConfirmConfig: setConfirmConfig,
-        setSaveConfig: setSaveConfig,
-        setSaveAnnotation: setSaveAnnotation,
-        setInfo: setModalInfo,
-        setInfoOpen: setModalInfoOpen,
+        setDownloadConfig: setDownloadConfig,
+        setDownloadAnnotation: setDownloadAnnotation,
+        setGlobalInfo: setGlobalInfo,
+        setModalInfo: setModalInfo,
+        setModalInfoOpen: setModalInfoOpen,
         setVideoData: setVideoData,
         setLoadVideo: setLoadVideo,
         setResetVideoPlay: setResetVideoPlay,
@@ -165,8 +167,7 @@ export default function Workspace(props) {
         setAnnotationChartRange: setAnnotationChartRange,
         setIntervalAnno: setIntervalAnno,
         setCancelIntervalAnno: setCancelIntervalAnno,
-        setAddSingleCategory: setAddSingleCategory,
-        setRemoveSingleCategory: setRemoveSingleCategory,
+        setUpdateAnnotationChart: setUpdateAnnotationChart,
         setResetAnnotationChart: setResetAnnotationChart,
         setIntervalErasing: setIntervalErasing,
         setCancelIntervalErasing: setCancelIntervalErasing,
@@ -179,66 +180,69 @@ export default function Workspace(props) {
         setResetVideoDetails(true);
         setResetChart(true);
         setAdditionalDataNameToRetrieve([]);
+        annotationRef.current = {};
+        additionalDataRef.current = {};
     }, [projectId])
 
 
     useEffect(() => {
         if (getAdditionalDataSignal) {
-            getAdditionalFieldsData();
+            getAdditionalDataFromRef();
             setGetAdditionalDataSignal(false);
         }
     }, [getAdditionalDataSignal])
 
     useEffect(() => {
-        getAdditionalFieldsData();
+        getAdditionalDataFromRef();
     }, [additionalDataRange])
 
     useEffect(() => {
-        
         if (videoId) {
-            setInfo(null);
+            setGlobalInfo(null);
             setAdditionalData({});
-            console.log('workspace useEffect: postAdditionalDataNameToRetrieve', videoId, additionalDataNameToRetrieve);
-            postAdditionalDataNameToRetrieve(videoId, additionalDataNameToRetrieve)
+            console.log('workspace useEffect additionalDataNameToRetrieve:', videoId, additionalDataNameToRetrieve);
+            additionalDataRef.current = {};
+            if (additionalDataNameToRetrieve?.length>0) {
+                getAdditionalData(videoId, additionalDataNameToRetrieve)
                 .then(res => {
-                    if (res['error']) {
-                        setInfo(res['error']);
+                    if (res.error) {
+                        setGlobalInfo(res.error);
                     } else {
-                        if (additionalDataNameToRetrieve.length > 0) {
-                            getAdditionalFieldsData({});
-                        }
+                        additionalDataNameToRetrieve.forEach(name => {
+                            additionalDataRef.current[name] = res[name]??[];
+                        })
                     }
+                    getAdditionalDataFromRef();
                 })
+            } else {
+                getAdditionalDataFromRef();
+            }
+            
+            
         }
     }, [additionalDataNameToRetrieve])
 
-    async function getAdditionalFieldsData(initialData=null) { 
+    function getAdditionalDataFromRef() {
         console.log('getAdditioanlData called', additionalDataNameToRetrieve, additionalData);
-        setInfo(null);
-        if (additionalDataNameToRetrieve.length>0 && Number.isInteger(frameNum)) { 
-            const retrievedAdditionalData = initialData??{...additionalData};
-            await Promise.all(additionalDataNameToRetrieve.map(async name => {
-                const rangeNeeded = additionalDataRange[name];
-                if (rangeNeeded >= 0) {
-                    const rangeStartNeeded = ((frameNum-rangeNeeded)<0) ? 0 : (frameNum-rangeNeeded);
-                    const rangeEndNeeded = ((frameNum+rangeNeeded)>(videoMetaRef.current.totalFrameCount-1)) ? (videoMetaRef.current.totalFrameCount-1) : (frameNum+rangeNeeded);
-                    const rangeInBuffer = retrievedAdditionalData[name] ? retrievedAdditionalData[name].range : null;
-                    if (!rangeInBuffer || rangeStartNeeded < rangeInBuffer[0] || rangeEndNeeded > rangeInBuffer[1]) {
-                        const extraRange = videoMetaRef.current.fps ? (videoMetaRef.current.fps*additionalDataBufferFold) : additionalDataExtraBufferRange;
-                        console.log(rangeInBuffer, videoMetaRef.current, rangeStartNeeded, rangeEndNeeded, extraRange);
-                        const res = await getAdditionalData(frameNum, name, rangeNeeded+extraRange);
-                        if (res['error']) {
-                            setInfo(res['error']);
-                            retrievedAdditionalData[name] = 'error';
-                        } else {
-                            retrievedAdditionalData[name] = res;
-                        }
+        setGlobalInfo(null);
+        if (Number.isInteger(frameNum)) { 
+            let additionalDataForChart={};
+            if (additionalDataNameToRetrieve?.length>0) {
+                additionalDataNameToRetrieve.map(name => {
+                    const rangeNeeded = additionalDataRange[name];
+                    if (rangeNeeded >= 0) {
+                        const rangeStartNeeded = ((frameNum-rangeNeeded)<0) ? 0 : (frameNum-rangeNeeded);
+                        const rangeEndNeeded = ((frameNum+rangeNeeded)>(videoMetaRef.current.totalFrameCount-1)) ? (videoMetaRef.current.totalFrameCount-1) : (frameNum+rangeNeeded);
+                        const dataNeeded = additionalDataRef.current[name].slice(rangeStartNeeded, rangeEndNeeded+1);
+                        additionalDataForChart[name] = {
+                            range: [rangeStartNeeded, rangeEndNeeded], 
+                            data: dataNeeded
+                        };
                     }
-                }
-            }))
-            console.log(retrievedAdditionalData);
-                setAdditionalData(retrievedAdditionalData);
-            
+                })
+            }
+            console.log('additionalDataForChart', additionalDataForChart);
+            setAdditionalData(additionalDataForChart);
         }
     }        
 
@@ -259,8 +263,8 @@ export default function Workspace(props) {
             /**
              * {
              *      projectId: str,
-             *      videos: [],
-             *      annotations: []
+             *      videos: [str, str, ],
+             *      annotations: [{}, {}, ...]
              * }
              */
             
@@ -304,7 +308,6 @@ export default function Workspace(props) {
     }
 
     async function confirmUploadConfiguration(obj) {
-
         const projectObj = {
             projectId: obj.projectId, 
             projectName: obj.projectName,
@@ -312,8 +315,7 @@ export default function Workspace(props) {
         }
         const projectRes = await editProject(projectObj);
         if (projectRes['error']) {
-            setModalInfo('Saving project configuration data to DB failed.');
-            setModalInfoOpen(true);
+            setGlobalInfo('Saving project configuration data to DB failed.');
             return
         } 
         setProjectId(obj.projectId);
@@ -331,8 +333,7 @@ export default function Workspace(props) {
         }
         let btnRes = await postProjectBtn(btnDataForDB);
         if (btnRes['error']) {
-            setModalInfo('Saving btn configuration data to DB failed.');
-            setModalInfoOpen(true);
+            setGlobalInfo('Saving btn configuration data to DB failed.');
             return
         } 
 
@@ -347,8 +348,7 @@ export default function Workspace(props) {
         }
         let videoRes = await postProjectVideo(videoDataForDB);
         if (videoRes['error']) {
-            setModalInfo('Saving video data to DB failed.');
-            setModalInfoOpen(true);
+            setGlobalInfo('Saving video data to DB failed.');
             return
         }
         
@@ -360,11 +360,19 @@ export default function Workspace(props) {
     async function confirmSaveUploadedAnnotationToDB(data) {
         const res = await postProjectAnnotation({...data});
         if (res['error']) {
-            setModalInfo('Saving annotation data to DB failed.');
-            setModalInfoOpen(true);
+            setGlobalInfo('Saving annotation data to DB failed.');
         } else {
             if ((data.videos.filter(v => v===videoId).length>0) && Number.isInteger(frameNum)) {
-                getFrameAnnotationFromDBAndSetState();
+                const videoAnnotations = data.annotations.filter(anno => anno.videoId === videoId);
+                const forAnnoRef = {};
+                videoAnnotations.forEach(anno => {
+                    if (!forAnnoRef[anno.frameNum]) {
+                        forAnnoRef[anno.frameNum] = {};
+                    }
+                    forAnnoRef[anno.frameNum][anno.id] = anno;
+                })
+                annotationRef.current = forAnnoRef;
+                getFrameAnnotationFromRefAndSetState();
             } 
             setResetAnnotationChart(true);
         }
@@ -372,10 +380,9 @@ export default function Workspace(props) {
 
 
     useEffect(()=> {
-        if (saveConfig) {
+        if (downloadConfig) {
             if (!projectId) {
-                setModalInfo('No current project.');
-                setModalInfoOpen(true);
+                setGlobalInfo('No project.');
             } 
             else {
                 const projectConfigData = {...projectData, btnConfigData: {...btnConfigData}, videos: {...videoData}};
@@ -383,52 +390,60 @@ export default function Workspace(props) {
                 const blobProjectConfig = new Blob([jsonProjectConfig], {type: 'text/plain'});
                 const a = document.createElement("a");
                 a.href = URL.createObjectURL(blobProjectConfig);
-                a.download = 'configuration.json';
+                a.download = projectData.projectName + '_configuration.json';
                 a.click();
                 URL.revokeObjectURL(a.href);
             }
-            setSaveConfig(false);
+            setDownloadConfig(false);
         }
-    }, [saveConfig])
+    }, [downloadConfig])
 
     useEffect(()=> {
-        if (saveAnnotation) {
+        if (downloadAnnotation) {
             if (projectId) {
-                saveCurrentAnnotation(true)
-                    .then((res) => {
-                        console.log(res);
-                        if (res?.error) {
-                            console.log(res);
-                            setInfo(res);
+                if (videoId || frameUrl) {
+                    savePrevAnnotation(true);
+                    const annotations = Object.values(annotationRef.current).map(frameAnno => Object.values(frameAnno))
+                    const data = {
+                        annotations: annotations.flat(),
+                        videoId: videoId,
+                    }
+                    setGlobalInfo('Saving annotation to database...');
+                    postVideoAnnotation(data).then((res) => {
+                        console.log(res, res.success);
+                        if (res.success) {
+                            setGlobalInfo('Successfully saved annotation to database.');  
+                            downloadProjectAnnotation(projectId);
                         } else {
-                            getProjectAnnotation(projectId)
-                                .then((res)=>{
-                                    if (res['error']) {
-                                        console.log(res);
-                                        setInfo(res);
-                                    } else {
-                                        const jsonAnno = JSON.stringify(res);
-                                        const blobAnno = new Blob([jsonAnno], {type: 'text/plain'});
-                                        const a = document.createElement("a");
-                                        a.href = URL.createObjectURL(blobAnno);
-                                        a.download = projectData.projectName + '_annotation.json';
-                                        a.click();
-                                        URL.revokeObjectURL(a.href);
-                                        
-                                    }
-                                }
-                            )
+                            setGlobalInfo('Failed to save annotation to database.');
                         }
                     })
+                } else {
+                    downloadProjectAnnotation(projectId);
+                }
             } else {
-                setModalInfo('No current project.');
-                setModalInfoOpen(true);
+                setGlobalInfo('No current project.');
             }
-            
-            setSaveAnnotation(false);
+            setDownloadAnnotation(false);
         }
         
-    }, [saveAnnotation])
+    }, [downloadAnnotation])
+
+    async function downloadProjectAnnotation(projectId) {
+        const res = await getProjectAnnotation(projectId)
+        if (res['error']) {
+            console.log(res);
+            setGlobalInfo(res);
+        } else {
+            const jsonAnno = JSON.stringify(res);
+            const blobAnno = new Blob([jsonAnno], {type: 'text/plain'});
+            const a = document.createElement("a");
+            a.href = URL.createObjectURL(blobAnno);
+            a.download = projectData.projectName + '_annotation.json';
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+    }
 
 
     useEffect(()=> {
@@ -440,13 +455,13 @@ export default function Workspace(props) {
 
     useEffect(() => {
         console.log('videoid useEffect called')
-        saveAnnotationAndUpdateStates(true).then(() => {
-            console.log('saveAnnotationAndUpdateStates(true) done');
-            setFrameNum(null);
-        });
+        saveAnnotationAndUpdateStates(true);
+        setFrameNum(null);
         
 
         
+        additionalDataRef.current = {};
+
             
       }, [videoId]
     )
@@ -462,7 +477,7 @@ export default function Workspace(props) {
         if (Number.isInteger(frameNum) && videoId 
             && (!intervalAnno.on)
         ) {
-            getFrameAnnotationFromDBAndSetState();
+            getFrameAnnotationFromRefAndSetState();
         } else {
             setFrameAnnotation(oldValue => {});
         }
@@ -484,7 +499,7 @@ export default function Workspace(props) {
     )
     
 
-    async function saveAnnotationAndUpdateStates(cancelInterval=false) {
+    function saveAnnotationAndUpdateStates(cancelInterval=false) {
         console.log('save anno', );
         
         setActiveAnnoObj(null);
@@ -493,44 +508,43 @@ export default function Workspace(props) {
         setUndo(0);
         setUseEraser(null);
         setAnnoIdToDelete(null);
-        await saveCurrentAnnotation(cancelInterval=cancelInterval);
+        savePrevAnnotation(cancelInterval=cancelInterval);
     }
 
-    async function saveCurrentAnnotation(cancelInterval=false) {
-            console.log('saveCurrentAnnotation called', frameNum, frameAnnotation, intervalAnno);
+    function savePrevAnnotation(cancelInterval=false) {
+            console.log('savePrevAnnotation called', frameNum, lastFrameNumForIntervalAnnoRef.current, frameAnnotation, intervalAnno);
+            if (!Number.isInteger(frameNum) || frameNum === 0) return;
+
             const newFrameAnno = clearUnfinishedAnnotation({...frameAnnotation});
             if (intervalAnno.on) {
                 const id = createId();
                 const annoObj = {
                     id: id,
                     videoId: intervalAnno.videoId,
-                    frameNum: frameNum ?? lastFrameNumForIntervalAnnoRef.current,
+                    frameNum: (frameNum-1) ?? lastFrameNumForIntervalAnnoRef.current,
                     label: intervalAnno.label,
                     color: intervalAnno.color,
                     type: 'category',         
                 };
-                newFrameAnno[id] = annoObj;
+                addCategoryAnnoToFrameAnnotation(annoObj, newFrameAnno,  mutualExclusiveCategory);
 
                 if (cancelInterval) {
                     setCancelIntervalAnno(true);
-                    console.log('saveCurrentAnnotation cancelIntervalAnno', frameNum);
+                    console.log('savePrevAnnotation cancelIntervalAnno', frameNum-1);
                 }
             }
 
-            if ( Object.keys(newFrameAnno).length > 0) {
-                if (Object.keys(newFrameAnno).length > 0) {
-                    const res = await saveFrameAnnotationToDB(newFrameAnno);
-                    if (res?.error) {
-                        setInfo(res['error']);
-                    } else {
-                        if (intervalAnno.on) {
-                            intervalAnno.annotatedFrames.add(frameNum);
-                            console.log('workspace insert interval anno', frameNum);
-                        }
-                    }
-                    return res;
-                } 
+            if (Object.keys(newFrameAnno).length > 0) {
+                const firstAnno = Object.values(newFrameAnno)[0];
+                if (firstAnno.frameNum === frameNum-1) {
+                    annotationRef.current[frameNum-1] = newFrameAnno; 
+                }
+                if (intervalAnno.on) { 
+                    intervalAnno.annotatedFrames.add(frameNum-1);
+                    console.log('workspace insert interval anno', frameNum-1);
+                }
             } 
+          
     }
 
 
@@ -546,27 +560,31 @@ export default function Workspace(props) {
         const btnConfigCopy = {...btnConfigData};
         const colors = {};
         const intervalErasingData = {};
+        const mutualExclusiveCategoryArr = [];
         Object.entries(btnConfigCopy).forEach(([id, groupData]) => {
             if (groupData?.edgeData && groupData.edgeData.edges.length) {
                 const edgesArr = groupData.edgeData.edges.map(neighborSet => neighborSet?[...neighborSet]:null);
                 groupData.edgeData.edges = edgesArr;
             }
-
             
             if (groupData.groupType === 'category') {
+                const mutualExclusive = [];
                 groupData.childData.forEach(child => {
                     if (!Object.keys(colors).some(label => label === child.label)) {
                         colors[child.label] = child.color;
                     }
+
+                    mutualExclusive.push(child.label);
                 })
+                mutualExclusiveCategoryArr.push(mutualExclusive);
 
                 intervalErasingData[id] = {on: false, startFrame:null, videoId:null, labels: groupData.childData.map(child => child.label)};
             }
         })
-        console.log('workspace categoryColors', colors);
-        console.log('workspace intervalErasingData', intervalErasingData);
         setCategoryColors(colors);
         setIntervalErasing(oldValue => intervalErasingData);
+        console.log('workspace mutualExclusiveCategory', mutualExclusiveCategoryArr);
+        setMutualExclusiveCategory(mutualExclusiveCategoryArr);
     }, [btnConfigData])
 
     
@@ -633,28 +651,17 @@ export default function Workspace(props) {
         setModalInfoOpen(false);
     }
 
-    async function getFrameAnnotationFromDBAndSetState() {
-        const frameAnno = {};
-
-        const res = await getFrameAnnotation(frameNum, videoId);
-        if (res?.annotations?.length > 0) {
-            res.annotations.forEach((anno) => frameAnno[anno.id] = anno);
-        } 
-        setFrameAnnotation(frameAnno);
+    function getFrameAnnotationFromRefAndSetState() {
+        const frameAnno = annotationRef.current[frameNum]??{};
+        setFrameAnnotation({...frameAnno});
     }
 
-    async function saveFrameAnnotationToDB(cleanFrameAnnotation) {
-        const frameAnnoObjs = {};
-        frameAnnoObjs.annotations = Object.keys(cleanFrameAnnotation).map(id => cleanFrameAnnotation[id]);
-        const res = await postFrameAnnotation(frameAnnoObjs);
-        return res;
-    }
 
     return (
         <div className={styles.container}>
             <main className={styles.main}>
                 <StatesProvider states={states} stateSetters={stateSetters}>
-                    {info ? <p>{info}</p> : null}
+                    {}
                     {props.children}
                     {}
                 </StatesProvider>

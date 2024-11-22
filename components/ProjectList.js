@@ -154,7 +154,7 @@ export default function ProjectList(props) {
         if (projectRes['error']) {
             setInfo(`Delete project configuration failed: ${projectRes?.error}`)
         } else {
-            setInfo(`Deleted project ${name}: \n Btn: ${btnRes?.info} \n Video: ${videoRes?.info} \n Annotation: ${annotationRes?.info}`);
+            setInfo(`Successfully deleted project ${name}.`);
             
             const newAllProjects = allProjects.filter( p => p.projectId !== id);
             setAllProjects(newAllProjects);

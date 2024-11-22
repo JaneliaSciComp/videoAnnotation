@@ -6,6 +6,7 @@ import { PlusOutlined } from '@ant-design/icons';
 import SkeletonEdgeController from './SkeletonEdgeController';
 import { useStateSetters, useStates } from './AppContext';
 import { deleteBtnGroup } from '../utils/requests';
+import { createId } from '../utils/utils';
 
 const BTNGROUPNUM_MAX=50
 
@@ -87,8 +88,6 @@ export default function BtnConfiguration(props) {
       }, [props.status]
     )
 
-    
-        
 
     useEffect(() => {
         console.log('confirmConfig changed', confirmConfig)
@@ -97,12 +96,10 @@ export default function BtnConfiguration(props) {
             setConfirmConfig(false);
         }
     }, [confirmConfig])
+  
     
-
-
-
     function addGroup(useCase) {
-        const index = Date.now().toString();
+        const index = createId();
         if (useCase === 'new') {
             setGetData({[index]:false});
         } else if (useCase === 'add') {

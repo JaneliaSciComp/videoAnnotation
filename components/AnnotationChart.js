@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import { staticVerticalLineColor, dynamicVerticalLineColor } from '../utils/utils';
+import { staticVerticalLineColor, dynamicVerticalLineColor, staticVerticalLine, dynamicVerticalLine } from '../utils/utils';
 import { useStateSetters, useStates } from './AppContext'; 
 import { Bar } from 'react-chartjs-2';
 import {
@@ -12,14 +12,6 @@ import {
     Tooltip,
     Legend,
   } from 'chart.js';
-
-import { 
-    staticVerticalLine, 
-    dynamicVerticalLine, 
-    additionalDataBufferFold, 
-    additionalDataExtraBufferRange } from '../utils/utils.js';
-import { getAnnotationForChart } from '../utils/requests';
-
   
 ChartJS.register(
     CategoryScale,
@@ -36,14 +28,14 @@ ChartJS.register(
 
 
 /**
- *  The current design for the chart is to only display one group of non-coexisting category labels, such as 'chase' and 'no-chase'.
+ *  The current design for the chart is to only display one group of mutuallyExclusive category labels, such as 'chase' and 'no-chase'.
  *  If need to display multiple groups of labels, such as 'chase'/'no-chase' and 'grooming'/'no-grooming', then need to use another instance of this comp.
  *  Assuming these labels are defined in one btnGroup, and each label is globally unique among all category btns.
  *  Otherwise, it won't function correctly.
  *  This comp should only be used for video annotation 
  * 
  *  props:
- *      labels: ['chase', 'no-chase'], an arr of non-coexisting labels to display on chart.
+ *      labels: ['chase', 'no-chase'], an arr of mutuallyExclusive labels to display on chart.
         width: str. '100%'/'200px'/'50vw'..., default is 100%. Set the width of the chart.
         height: str. '100%'/'200px'/'50vh'..., default is 100%. Set the height of the chart
         // legendPosition: 'top'/'left'/'bottom'/'right'/'chartArea'. 'bottom' by default. Position of legend.
@@ -74,9 +66,6 @@ export default function AnnotationChart(props) {
         }
     });
     const [annotationForChart, setAnnotationForChart] = useState({framNum:null, range: null, data: null});
-    const [info, setInfo] = useState(null);
-    const trackCheckedFrameRef = useRef(null);
-    const framesInsertedChartDataForRef = useRef(null);
 
     const setFrameNumSignal = useStateSetters().setFrameNumSignal;
     const frameNum = useStates().frameNum;
@@ -87,21 +76,18 @@ export default function AnnotationChart(props) {
     const categoryColors = useStates().categoryColors;
     const videoMetaRef = useStates().videoMetaRef;
     const setCancelIntervalAnno = useStateSetters().setCancelIntervalAnno;  
-    const addSingleCategory = useStates().addSingleCategory;
-    const setAddSingleCategory = useStateSetters().setAddSingleCategory;
-    const removeSingleCategory = useStates().removeSingleCategory;
-    const setRemoveSingleCategory = useStateSetters().setRemoveSingleCategory;
-    const singleCategoriesRef = useStates().singleCategoriesRef;
+    const updateAnnotationChart = useStates().updateAnnotationChart;
+    const setUpdateAnnotationChart = useStateSetters().setUpdateAnnotationChart;
     const uploader = useStates().uploader;
     const resetAnnotationChart = useStates().resetAnnotationChart;
     const setResetAnnotationChart = useStateSetters().setResetAnnotationChart; 
     const intervalErasing = useStates().intervalErasing;
-
-
+    const annotationRef = useStates().annotationRef;
+    const setGlobalInfo = useStateSetters().setGlobalInfo;
+    
 
     useEffect(() => {
         if (uploader?.type && uploader?.file) {
-            singleCategoriesRef.current = {};
             setAnnotationForChart(oldValue => {return {framNum: null, range: null, data: null}});
         }
 
@@ -109,41 +95,20 @@ export default function AnnotationChart(props) {
 
     useEffect(() => {
         if (resetAnnotationChart) {
-            getAnnotationData({framNum:null, range: null, data: null});
+            getAnnotationData();
             setResetAnnotationChart(false);
         }
     }, [resetAnnotationChart])
 
 
-    useEffect(() => {
-        if (addSingleCategory 
-            && props.labels.some(label => label === addSingleCategory.label)
-            && addSingleCategory.frameNum <= annotationForChart?.range[1]
-            && addSingleCategory.frameNum >= annotationForChart?.range[0]
-        ) {
-            const index = addSingleCategory.frameNum - annotationForChart.range[0];
-            const newData = {...annotationForChart};
-            newData.data[index] = addSingleCategory;
-            setAnnotationForChart(oldValue => newData);
-            setAddSingleCategory(null);
-        }
-    }, [addSingleCategory])
+
 
     useEffect(() => {
-        if (removeSingleCategory
-            && props.labels.some(label => label === removeSingleCategory.label)
-            && removeSingleCategory.frameNum >= annotationForChart?.range[0] 
-            && removeSingleCategory.frameNum <= annotationForChart?.range[1]
-        ) { 
-            const index = removeSingleCategory.frameNum - annotationForChart.range[0];
-            if (annotationForChart.data[index]?.label === removeSingleCategory.label) {
-                const newData = {...annotationForChart};
-                newData.data[index] = null;
-                setAnnotationForChart(oldValue => newData);
-                setRemoveSingleCategory(null);
-            }
+        if (updateAnnotationChart) {
+            getAnnotationData();
+            setUpdateAnnotationChart(false);
         }
-    }, [removeSingleCategory])
+    }, [updateAnnotationChart])
 
 
     useEffect(() => {
@@ -151,11 +116,10 @@ export default function AnnotationChart(props) {
     }, [frameNum, annotationChartRange])
 
     useEffect(() => {
-        getAnnotationData({framNum:null, range: null, data: null});
+        getAnnotationData();
 
         return () => {
             setAnnotationForChart(oldValue => {return {framNum: null, range: null, data: null}});
-            singleCategoriesRef.current = {};
         }
     }, [props.labels, videoId])
 
@@ -178,42 +142,34 @@ export default function AnnotationChart(props) {
             } 
 
             else if (Object.values(intervalErasing).some(value=>value.on)) {
-                getAnnotationData({framNum:null, range: null, data: null});
+                getAnnotationData();
             } else {
-                
-                getAnnotationData({framNum:null, range: null, data: null});
+                getAnnotationData();
             }
         } 
     }, [intervalErasing])
 
-    useEffect(() => {
-
-            getAnnotationData({framNum:null, range: null, data: null});
-        
-    }, [intervalAnno])
 
     
 
     useEffect(() => {
         if (!props.labels?.length>0) return;
 
-        console.log('annotationChart generateDataForChart called', frameNum, annotationForChart, annotationChartRange);
         let initialLables = props.omitXLables ? [] : [1,2,3,4,5,6,7,8,9,10];
         let data = {labels: initialLables, datasets: [{}]};
         let startNeeded=0, endNeeded=0, start=0, end=0;
         if (props.labels?.length>0 && annotationForChart.range ) {
             const frameNums = [];
             startNeeded = (frameNum-annotationChartRange>0) ? (frameNum-annotationChartRange) : 0;
-            endNeeded = (frameNum+annotationChartRange<totalFrameCount) ? (frameNum+annotationChartRange) : (totalFrameCount-1);
+            endNeeded = (frameNum+annotationChartRange<totalFrameCount-1) ? (frameNum+annotationChartRange) : (totalFrameCount-1);
             if (!props.omitXLables) {
                 for (let i = startNeeded+1; i <= endNeeded+1; i++) {
                     frameNums.push(i.toString());
                 }
             }
             
-            const [startBuffered, endBuffered] = annotationForChart.range;
-            start = startNeeded - startBuffered;
-            end = start + (endNeeded - startNeeded);
+            start = 0;
+            end = endNeeded - startNeeded;
             const splittedData = {};
             props.labels.forEach(label => splittedData[label]={
                 label: label,
@@ -242,17 +198,6 @@ export default function AnnotationChart(props) {
                         splittedData[intervalAnno.label].data[index] = 1;
                 }
             }
-            for (let fNum in singleCategoriesRef.current) {
-                if (fNum >= startNeeded && fNum <= endNeeded) {
-                    const index = fNum - startNeeded;
-                    for (let id in singleCategoriesRef.current[fNum]) {
-                        const anno = singleCategoriesRef.current[fNum][id];
-                        if (props.labels.some(label => label === anno.label)) {
-                            splittedData[anno.label].data[index] = 1;
-                        }
-                    }
-                }
-            }
             const groupId = Object.keys(intervalErasing).filter(groupId => intervalErasing[groupId].labels.some(label=>label===props.labels[0]))[0];
             const groupErasingData = intervalErasing[groupId];
             if (groupId && groupErasingData.on) {
@@ -267,7 +212,6 @@ export default function AnnotationChart(props) {
                 datasets: props.labels.map((m) => splittedData[m]),
             };
         }
-        console.log('annotationChart generateDataForChart called', frameNum, data);
         setDataToDisplay(data);
 
         setOptions({
@@ -331,66 +275,61 @@ export default function AnnotationChart(props) {
     }, [props, annotationForChart])
 
 
-    async function getAnnotationData(initialData=null) { 
+    async function getAnnotationData() {
         console.log('getAnnotationData called', frameNum, annotationForChart);
-        setInfo(null);
+        setGlobalInfo(null);
         if (props.labels?.length>0 && Number.isInteger(frameNum)) { 
-            let retrievedAnnotationData = initialData??{...annotationForChart};
+            let annoDataForChart;
             const rangeNeeded = annotationChartRange;
             if (rangeNeeded >= 0) {
                 const rangeStartNeeded = ((frameNum-rangeNeeded)<0) ? 0 : (frameNum-rangeNeeded);
                 const rangeEndNeeded = ((frameNum+rangeNeeded)>(totalFrameCount-1)) ? (totalFrameCount-1) : (frameNum+rangeNeeded);
-                const rangeInBuffer = retrievedAnnotationData ? retrievedAnnotationData.range : null;
-                if (!rangeInBuffer || rangeStartNeeded < rangeInBuffer[0] || rangeEndNeeded > rangeInBuffer[1]) {
-                    const extraRange = 0;
-                    console.log('getAnnotationData called', frameNum, rangeInBuffer, videoMetaRef.current, rangeStartNeeded, rangeEndNeeded, extraRange);
-                    const res = await getAnnotationForChart(videoId, frameNum, props.labels, rangeNeeded+extraRange); 
-                    console.log(res);
-                    if (res['error']) { 
-                        setInfo(res['error']); 
-                        retrievedAnnotationData = null;
-                    } else {
-                        const rangeStartRetrieved = (frameNum-(rangeNeeded+extraRange)<0) ? 0 : (frameNum-(rangeNeeded+extraRange))
-                        const rangeEndRetrieved = ((frameNum+rangeNeeded+extraRange)>(totalFrameCount-1)) ? (totalFrameCount-1) : (frameNum+rangeNeeded+extraRange);
-                        let trackRes = 0;
-                        const annoArr = [];
-                        for (let i = rangeStartRetrieved; i <= rangeEndRetrieved; i++) {
-                            if (res[trackRes]?.frameNum === i) {
-                                annoArr.push(res[trackRes]);
-                                trackRes++;
-                            } else if (res[trackRes]?.frameNum > i) {
-                                annoArr.push(null);
-                            } else if (res[trackRes]?.frameNum < i) {
-                                trackRes++;
-                                i--;
-                            }
-                        }
+                const annoData = filterAnnotation(rangeStartNeeded, rangeEndNeeded, props.labels);
+                const res = supplementData(rangeStartNeeded, rangeEndNeeded, annoData);
 
-                            
-
-                        retrievedAnnotationData = {
-                            framNum: frameNum,
-                            range: [rangeStartRetrieved, rangeEndRetrieved],
-                            data: annoArr
-                        };
-                        console.log('insert anno to chart data retrieve:', frameNum, retrievedAnnotationData)
-                    
-                        for (let key in singleCategoriesRef.current) {
-                            if (singleCategoriesRef.current[key].frameNum < rangeStartRetrieved || singleCategoriesRef.current[key].frameNum > rangeEndRetrieved) {
-                                delete singleCategoriesRef.current[key];
-                            }
-                        }
-                        console.log('remove anno out annoForChart.range from singleCategoriesRef', singleCategoriesRef.current);
-                    }
-                }
+                annoDataForChart = {
+                    framNum: frameNum,
+                    range: [rangeStartNeeded, rangeEndNeeded],
+                    data: res
+                };
             }
             
-            
-            
-
-            setAnnotationForChart(oldValue => retrievedAnnotationData);
+            setAnnotationForChart(oldValue => annoDataForChart);
         }
-    }        
+    }   
+    
+
+    function filterAnnotation(startFrame, endFrame, labels) {
+        const res = [];
+        for (let i = startFrame; i <= endFrame; i++) {
+            const frameAnno = annotationRef.current[i]??{};
+            Object.values(frameAnno).forEach(anno => {
+                if (labels.some(label => label === anno.label)) {
+                    res.push(anno);
+                }
+            })
+        }
+        return res;
+    }
+
+    function supplementData(startFrame, endFrame, retrivedData) {
+        let trackRes = 0;
+        const annoArr = [];
+        for (let i = startFrame; i <= endFrame; i++) {
+            if (!retrivedData || retrivedData.length===0) {
+                annoArr.push(null);
+            } else if (retrivedData[trackRes]?.frameNum === i) {
+                annoArr.push(retrivedData[trackRes]);
+                trackRes++;
+            } else if (retrivedData[trackRes]?.frameNum > i) {
+                annoArr.push(null);
+            } else if (retrivedData[trackRes]?.frameNum < i) {
+                trackRes++;
+                i--;
+            }
+        }
+        return annoArr;
+    }
 
 
     function generateChart() {
@@ -405,10 +344,10 @@ export default function AnnotationChart(props) {
 
     return (
         <>
-            <div id='annotationChart' style={{position: 'relative', width: props.width ?? '100%', height: props.height ?? (info? '80%' : '100%')}}> 
+            <div id='annotationChart' style={{position: 'relative', width: props.width ?? '100%', height: props.height ?? '100%'}}> 
                 {generateChart()}
             </div>
-            <p>{info}</p>
+            {}
         </>
     )
 }

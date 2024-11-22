@@ -3,7 +3,6 @@ import styles from '../styles/Canvas.module.css';
 import {fabric} from 'fabric-with-erasing';
 import { useStates, useStateSetters } from './AppContext';
 import { defaultAlpha, hexArr, hexMap } from '../utils/utils';
-import { deleteAnnotation, getFrameAnnotation } from '../utils/requests';
 
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 500;
@@ -30,12 +29,9 @@ export default function Canvas(props) {
     const imageObjRef = useRef();
     const canvasRef = useRef();
     const canvasObjRef = useRef();
-    const testCanvasRef1 = useRef();
-    const testCanvasRef2 = useRef();
     const fabricObjListRef = useRef({});
     const prevDrawTypeRef = useRef({});
     const prevUploaderRef = useRef();
-    const [info, setInfo] = useState();
     const additionalFabricObjListRef = useRef({});
 
 
@@ -58,6 +54,7 @@ export default function Canvas(props) {
     const annoIdToDelete = useStates().annoIdToDelete;
     const setAnnoIdToDelete = useStateSetters().setAnnoIdToDelete;
     const annoIdToShow = useStates().annoIdToShow;
+    const annotationRef = useStates().annotationRef;
     const uploader = useStates().uploader;
     const setGetAdditionalDataSignal = useStateSetters().setGetAdditionalDataSignal;
     const additionalData = useStates().additionalData;
@@ -65,6 +62,7 @@ export default function Canvas(props) {
     const additionalDataRange = useStates().additionalDataRange;
     const additionalDataNameToRetrieve = useStates().additionalDataNameToRetrieve;
     const videoMetaRef = useStates().videoMetaRef;
+    const setGlobalInfo = useStateSetters().setGlobalInfo;
 
 
     console.log('canvas render');
@@ -105,19 +103,19 @@ export default function Canvas(props) {
         if (imgRef.current) {
             imgRef.current.addEventListener("load", imageLoadHandler);
         }
-            canvasObjRef.current.on('mouse:wheel', wheelHandler);
-            canvasObjRef.current.on('mouse:down', mouseDownHandler);
-            canvasObjRef.current.on('mouse:dblclick', mouseDblclickHandler);
-            canvasObjRef.current.on('mouse:move', mouseMoveHandler);
-            canvasObjRef.current.on('mouse:up', mouseUpHandler);
-            canvasObjRef.current.on("path:created", pathCreateHandler);
+        canvasObjRef.current.on('mouse:wheel', wheelHandler);
+        canvasObjRef.current.on('mouse:down', mouseDownHandler);
+        canvasObjRef.current.on('mouse:dblclick', mouseDblclickHandler);
+        canvasObjRef.current.on('mouse:move', mouseMoveHandler);
+        canvasObjRef.current.on('mouse:up', mouseUpHandler);
+        canvasObjRef.current.on("path:created", pathCreateHandler);
                 
         document.addEventListener("keydown", deleteKeyHandler);
 
 
         return () => {
-                const eventListeners = canvasObjRef.current.__eventListeners;
-                    Object.keys(eventListeners).forEach(key => eventListeners[key]=[]);
+            const eventListeners = canvasObjRef.current.__eventListeners;
+            Object.keys(eventListeners).forEach(key => eventListeners[key]=[]);
             document.removeEventListener("keydown", deleteKeyHandler);
             if (imgRef.current) {
                 imgRef.current.removeEventListener("load", imageLoadHandler);
@@ -140,22 +138,10 @@ export default function Canvas(props) {
     }, [additionalData])
 
     function drawAdditionalDataObj() {
-        setInfo(null);
-        const eligibleDataName =  additionalDataNameToRetrieve.filter(name => videoAdditionalFieldsConfig[name].loadIn === 'canvas' && additionalData[name])[0];
-        if (eligibleDataName) {
-            const rangeNeeded = additionalDataRange[eligibleDataName];
-            if (rangeNeeded >= 0) {
-                const rangeStartNeeded = ((frameNum-rangeNeeded)<0) ? 0 : (frameNum-rangeNeeded);
-                const rangeEndNeeded = ((frameNum+rangeNeeded)>(videoMetaRef.current.totalFrameCount-1)) ? (videoMetaRef.current.totalFrameCount-1) : (frameNum+rangeNeeded);
-                const rangeInBuffer = additionalData[eligibleDataName].range;
-                if (rangeInBuffer && rangeStartNeeded>=rangeInBuffer[0] && rangeEndNeeded<=rangeInBuffer[1]) {
-                    const dataFailedRetrive = []
+        setGlobalInfo(null);
                     Object.keys(additionalData).forEach((name) => {
                         if (videoAdditionalFieldsConfig[name].loadIn === 'canvas') {
-                            if (additionalData[name] !== 'error') {
-                                const start = rangeStartNeeded - rangeInBuffer[0];
-                                const end = start + (rangeEndNeeded - rangeStartNeeded);
-                                const dataCopy = JSON.parse(JSON.stringify(additionalData[name].data.slice(start, end+1)));
+                                const dataCopy = JSON.parse(JSON.stringify(additionalData[name].data));
                                 const params = {
                                     target: {
                                         additionalDataName: name,
@@ -167,18 +153,9 @@ export default function Canvas(props) {
                                 }
                                 const onLoadFunc = videoAdditionalFieldsConfig[name].onLoad;
                                 onLoadFunc(params);
-                            } else {
-                                dataFailedRetrive.push(name);
-                            }
                         }
                     })
                     
-                    if (dataFailedRetrive.length > 0) {
-                        setInfo(`${dataFailedRetrive} failed in retrieving data`)
-                    }
-                }
-            }
-        }
     }
 
     function removeAllAdditionalDataObj() {
@@ -194,14 +171,7 @@ export default function Canvas(props) {
         })
     }
 
-    function addAdditionalDataObjByName(name) {
-        if (additionalFabricObjListRef.current[name]) {
-            additionalFabricObjListRef.current[name].forEach(obj => {
-                canvasObjRef.current.add(obj);
-            })
-        }
         
-    }
 
 
     useEffect(() => {
@@ -245,53 +215,50 @@ export default function Canvas(props) {
 
 
     useEffect(() => {
+        const canvas = canvasObjRef.current;
+        console.log('canvas frameUrl useEffect return:', frameUrl, frameAnnotation);
+        getBrushData();
+        removeAllObjFromCanvas();
+        fabricObjListRef.current = {};
+
+        canvas.polygonPoints.forEach(p=>canvas.remove(p));
+        canvas.polygonLines.forEach(l=>canvas.remove(l));
+        canvas.bboxLines.forEach(l=>canvas.remove(l));
+        canvas.skeletonPoints.forEach(p=>canvas.remove(p));
+        Object.keys(canvas.skeletonLines).forEach(name=>canvas.remove(canvas.skeletonLines[name]));
+        canvas.polygonPoints = [];
+        canvas.polygonLines = [];
+        canvas.bboxLines = [];
+        canvas.skeletonPoints = [];
+        canvas.skeletonLines = {};
+        
+        canvas.isDragging = null;
+        canvas.lastPosX = null;
+        canvas.lastPosY = null;
+        canvas.bboxStartPosition = null;
+        canvas.bboxEndPosition = null;
+        canvas.bboxIdObjToDraw = null;
+        canvas.isDrawingSkeleton = null;
+        canvas.isDraggingSkeletonPoint = false;
+        canvas.editPolygon = null;
+        canvas.editingPolygonId = null;
+        canvas.isDraggingPolygonPoint = false;
+        canvas.isEditingObj = null;
+        canvas.activeObj = null;
+        prevDrawTypeRef.current = null;
+        resetBrush();
+        
         if (frameUrl) {
-            createPathes().then(
-                () => {
-                    if (frameUrl) {
-                        imgRef.current.src = frameUrl;
-                    } else {
-                        imgRef.current.src = '';
-                    }
-                }
-            )
+            createPathes();
+            if (frameUrl) {
+                imgRef.current.src = frameUrl;
+            } else {
+                imgRef.current.src = '';
+            }
         }
         
         return ()=>{
-            const canvas = canvasObjRef.current;
-            console.log('canvas frameUrl useEffect return:', frameUrl);
-            getBrushData();
-    
-            removeAllObjFromCanvas();
-            fabricObjListRef.current = {};
             
-    
-            canvas.polygonPoints.forEach(p=>canvas.remove(p));
-            canvas.polygonLines.forEach(l=>canvas.remove(l));
-            canvas.bboxLines.forEach(l=>canvas.remove(l));
-            canvas.skeletonPoints.forEach(p=>canvas.remove(p));
-            Object.keys(canvas.skeletonLines).forEach(name=>canvas.remove(canvas.skeletonLines[name]));
-            canvas.polygonPoints = [];
-            canvas.polygonLines = [];
-            canvas.bboxLines = [];
-            canvas.skeletonPoints = [];
-            canvas.skeletonLines = {};
-            
-            canvas.isDragging = null;
-            canvas.lastPosX = null;
-            canvas.lastPosY = null;
-            canvas.bboxStartPosition = null;
-            canvas.bboxEndPosition = null;
-            canvas.bboxIdObjToDraw = null;
-            canvas.isDrawingSkeleton = null;
-            canvas.isDraggingSkeletonPoint = false;
-            canvas.editPolygon = null;
-            canvas.editingPolygonId = null;
-            canvas.isDraggingPolygonPoint = false;
-            canvas.isEditingObj = null;
-            canvas.activeObj = null;
-            prevDrawTypeRef.current = null;
-            resetBrush();
         }
 
       }, [frameUrl]
@@ -345,7 +312,8 @@ export default function Canvas(props) {
 
 
     useEffect(() => {
-        setInfo(null);
+        console.log('frameAnno useEffect', frameAnnotation);
+        setGlobalInfo(null);
         const canvas = canvasObjRef.current;
         
         canvas.polygonPoints.forEach(p=>canvas.remove(p));
@@ -363,10 +331,8 @@ export default function Canvas(props) {
             console.log('frameAnno useEffect uploader', uploader);
             removeAllObjFromCanvas();
             fabricObjListRef.current = {};
-            createPathes().then(() => {
-                    createFabricObjBasedOnAnnotation();
-                }
-            )
+            createPathes();
+            createFabricObjBasedOnAnnotation();
             prevUploaderRef.current = uploader;
         }
 
@@ -490,9 +456,7 @@ export default function Canvas(props) {
     }
         
 
-
     async function getBrushData() {
-        console.log('get brush data', frameAnnotation);
         const canvas = canvasObjRef.current;
         canvas.discardActiveObject();
         
@@ -521,7 +485,6 @@ export default function Canvas(props) {
                 canvas.renderCanvas(upperCanvasCtx, brushObj.pathes);
                 const upperCanvasData = upperCanvasCtx.getImageData(0,0,img.width*img.scaleX,img.height*img.scaleY);
                 pixelDataCollection[brushObj.id] = upperCanvasData;
-
                 frameAnnotation[brushObj.id].pathes = getPathInfo(brushObj);
             }
             
@@ -536,11 +499,9 @@ export default function Canvas(props) {
 
                 offscreenCtx.drawImage(resizedData, 0, 0);
                 const offscreenData = offscreenCtx.getImageData(0,0,img.width, img.height);
-                console.log('offscreen data', id, offscreenData);
                 offscreenCtx.clearRect(0, 0, img.width, img.height);
 
                 const pixelData = offscreenData.data;
-                const pixelDataFiltered = new Uint8ClampedArray(offscreenData.data);
                 const rle = [];
                 let count = 1;
                 let inSeg = false;
@@ -571,21 +532,16 @@ export default function Canvas(props) {
                             }
                         }
 
-                        pixelDataFiltered[i] = 0;
-                        pixelDataFiltered[i+1] = 0;
-                        pixelDataFiltered[i+2] = 0;
-                        pixelDataFiltered[i+3] = 0;
                     }
                 }
                 rle.push(count);
-                console.log(id, rle);
                 frameAnnotation[id].data = rle;
 
-                console.log(rle.reduce((res, count) => res+count, 0), img.width*img.height);
             }
             offscreen = null;
         } 
     }
+
 
     function getPathInfo(brushObj) {
         return brushObj.pathes.map(obj => {
@@ -628,19 +584,12 @@ export default function Canvas(props) {
         return res;
     }
 
-    function convertColorHexToBit(colorHex) {
-        const charArr = colorHex.split('');
-        const r = hexMap[charArr[1]] * 16 + hexMap[charArr[2]];
-        const g = hexMap[charArr[3]] * 16 + hexMap[charArr[4]];
-        const b = hexMap[charArr[5]] * 16 + hexMap[charArr[6]];
-        return [r, g, b];
-    }
 
 
     async function createFabricObjBasedOnAnnotation() {
         
         const canvas = canvasObjRef.current;
-        const nextFrameAnno = await getFrameAnnotationFromDB();
+        const nextFrameAnno = annotationRef.current[frameNum]??{};
         if (nextFrameAnno && Object.keys(nextFrameAnno).length>0) {
             Object.keys(nextFrameAnno).forEach(id => {
                 const annoObj = nextFrameAnno[id];
@@ -679,20 +628,6 @@ export default function Canvas(props) {
 
         setGetAdditionalDataSignal(true);
 
-    }
-
-    async function getFrameAnnotationFromDB() {
-        if (Number.isInteger(frameNum) && videoId) {
-            const res = await getFrameAnnotation(frameNum, videoId);
-            if (res?.annotations?.length > 0) {
-                const frameAnno = {};
-                res.annotations.forEach((anno) => frameAnno[anno.id] = anno);
-                return frameAnno;
-            } else {
-                return {};
-            }
-        }
-        
     }
 
     
@@ -1012,7 +947,7 @@ export default function Canvas(props) {
         && target && target.type !== 'polygonPoint'
         && target.type !== 'additional'
         ) {
-            setInfo(null);
+            setGlobalInfo(null);
             removeObj();
         }
     }
@@ -1397,9 +1332,8 @@ export default function Canvas(props) {
         
     }
 
-    async function createPathes() {
-        console.log('createPath', frameNum);
-        const nextFrameAnno = await getFrameAnnotationFromDB(frameNum, videoId);
+    function createPathes() {
+        const nextFrameAnno = annotationRef.current[frameNum]??{};        
         const pathStrArr=[];
         if (nextFrameAnno && Object.keys(nextFrameAnno).length>0) {
             Object.keys(nextFrameAnno).forEach(id => {
@@ -1416,13 +1350,10 @@ export default function Canvas(props) {
             canvas.remove(imageObjRef.current);
             let pathStr = pathStrArr.reduce((res, p) => res+p+',', '');
             pathStr = pathStr.slice(0, -1);
-            console.log('path',pathStr);
             const canvasStr = JSON.stringify(canvas);
-            console.log('before add path',canvasStr);
             const prefix = canvasStr.search('objects');
             const newCanvasStr = canvasStr.slice(0, prefix-1) + '"objects":[' 
                                     + pathStr +canvasStr.slice(prefix+10);
-            console.log('after add path',newCanvasStr);
             canvas.loadFromJSON(newCanvasStr,canvas.renderAll.bind(canvas));
             const pathes = canvas.getObjects();
             pathes.forEach(obj=>{
@@ -1431,7 +1362,6 @@ export default function Canvas(props) {
             });
             canvas.add(imageObjRef.current);
         }       
-        console.log('canvas objs after createPath:', canvasObjRef.current.getObjects());
     }
 
 
@@ -1536,30 +1466,20 @@ export default function Canvas(props) {
                 skeletonObj.landmarks.forEach(p => canvas.remove(p));
                 Object.entries(skeletonObj.edges).forEach(([_, line]) => canvas.remove(line));
                 
-                const res = await deleteAnnotation(annoId);
-                if (res['error']) {
-                    setInfo(res['error']);
-                } else if (res['success']) {
-                    setInfo(null);
-                    delete(fabricObjListRef.current[annoId]);
-                    const frameAnnoCopy = {...frameAnnotation};
-                    delete(frameAnnoCopy[annoId]);
-                    setFrameAnnotation(frameAnnoCopy);
-                } 
+                delete(annotationRef.current[frameNum][annoId]);
+                delete(fabricObjListRef.current[annoId]);
+                const frameAnnoCopy = {...frameAnnotation};
+                delete(frameAnnoCopy[annoId]);
+                setFrameAnnotation(frameAnnoCopy);
             }
         } else {
-            const res = await deleteAnnotation(activeObj.id);
-            if (res['error']) {
-                setInfo(res['error']);
-            } else if (res['success']) {
-                setInfo(null);
-                delete(fabricObjListRef.current[activeObj.id]);
-                const frameAnnoCopy = {...frameAnnotation};
-                delete(frameAnnoCopy[activeObj.id]);
-                setFrameAnnotation(frameAnnoCopy);
-                
-                canvas.remove(activeObj);
-            }
+            delete(annotationRef.current[frameNum][activeObj.id]);
+            delete(fabricObjListRef.current[activeObj.id]);
+            const frameAnnoCopy = {...frameAnnotation};
+            delete(frameAnnoCopy[activeObj.id]);
+            setFrameAnnotation(frameAnnoCopy);
+            
+            canvas.remove(activeObj);
         }
 
         canvas.activeObj = null;
@@ -1588,18 +1508,11 @@ export default function Canvas(props) {
         <>
         <div className={styles.canvasContainer}
              style={{width: props.width?props.width:CANVAS_WIDTH, height: props.height?props.height:CANVAS_HEIGHT}}>
-            {}
             <canvas id='canvas' ref={canvasRef} className={styles.canvas}>
                 <img id='image' ref={imgRef} className={styles.image} alt="img"/>
             </canvas>
-            <p>{info}</p>
+            {}
         </div>
-        {/* <div style={{display: 'flex', flexWrap: 'row'}}>
-            <canvas ref={testCanvasRef1} style={{border: 'solid'}}></canvas>
-            <canvas ref={testCanvasRef2} style={{border: 'solid'}}></canvas>
-        </div> */}
-        
-        {}
         </>
       )
 }

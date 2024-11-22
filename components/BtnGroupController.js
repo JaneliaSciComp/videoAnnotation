@@ -5,7 +5,7 @@ import SkeletonEdgeController from './SkeletonEdgeController';
 import { Select, Input, InputNumber, Button, Space } from 'antd';
 import { DownOutlined, DeleteOutlined} from '@ant-design/icons';
 import { useStateSetters, useStates } from './AppContext';
-import { btnGroupTypeOptions, btnTypeOptions } from '../utils/utils';
+import { btnGroupTypeOptions, btnTypeOptions, createId } from '../utils/utils';
 import { postBtnGroup } from '../utils/requests';
 
 const BTNNUM_MAX=50
@@ -107,7 +107,7 @@ export default function BtnGroupController(props) {
     
     useEffect(()=>{
         if (!props.index) {
-            setIndex(Date.now().toString());
+            setIndex(createId());
         }
 
         if (props.defaultGroupType) {
