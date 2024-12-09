@@ -1,6 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import JSZip from "jszip";
 import styles from '../styles/Workspace.module.css';
 import Canvas from './Canvas';
 import ActiveAnnotation from './ActiveAnnotation';
@@ -75,8 +74,6 @@ export default function Workspace(props) {
     const [mutualExclusiveCategory, setMutualExclusiveCategory] = useState([]);
     const additionalDataRef = useRef({});
 
-
-    console.log('workspace render');
 
     const states = {
         videoId: videoId,
@@ -200,7 +197,6 @@ export default function Workspace(props) {
         if (videoId) {
             setGlobalInfo(null);
             setAdditionalData({});
-            console.log('workspace useEffect additionalDataNameToRetrieve:', videoId, additionalDataNameToRetrieve);
             additionalDataRef.current = {};
             if (additionalDataNameToRetrieve?.length>0) {
                 getAdditionalData(videoId, additionalDataNameToRetrieve)
@@ -223,7 +219,6 @@ export default function Workspace(props) {
     }, [additionalDataNameToRetrieve])
 
     function getAdditionalDataFromRef() {
-        console.log('getAdditioanlData called', additionalDataNameToRetrieve, additionalData);
         setGlobalInfo(null);
         if (Number.isInteger(frameNum)) { 
             let additionalDataForChart={};
@@ -241,7 +236,6 @@ export default function Workspace(props) {
                     }
                 })
             }
-            console.log('additionalDataForChart', additionalDataForChart);
             setAdditionalData(additionalDataForChart);
         }
     }        
@@ -315,7 +309,7 @@ export default function Workspace(props) {
         }
         const projectRes = await editProject(projectObj);
         if (projectRes['error']) {
-            setGlobalInfo('Saving project configuration data to DB failed.');
+            setGlobalInfo('Editting project configuration data in DB failed.');
             return
         } 
         setProjectId(obj.projectId);
@@ -410,7 +404,6 @@ export default function Workspace(props) {
                     }
                     setGlobalInfo('Saving annotation to database...');
                     postVideoAnnotation(data).then((res) => {
-                        console.log(res, res.success);
                         if (res.success) {
                             setGlobalInfo('Successfully saved annotation to database.');  
                             downloadProjectAnnotation(projectId);
@@ -432,7 +425,6 @@ export default function Workspace(props) {
     async function downloadProjectAnnotation(projectId) {
         const res = await getProjectAnnotation(projectId)
         if (res['error']) {
-            console.log(res);
             setGlobalInfo(res);
         } else {
             const jsonAnno = JSON.stringify(res);
@@ -454,15 +446,11 @@ export default function Workspace(props) {
 
 
     useEffect(() => {
-        console.log('videoid useEffect called')
         saveAnnotationAndUpdateStates(true);
         setFrameNum(null);
-        
-
-        
+      
         additionalDataRef.current = {};
-
-            
+ 
       }, [videoId]
     )
 
@@ -483,25 +471,19 @@ export default function Workspace(props) {
         }
 
         if (intervalAnno.on && Number.isInteger(frameNum)) {
-            console.log('frameNum useEffect set lastFrameNumForIntervalAnnoRef', frameNum);
             lastFrameNumForIntervalAnnoRef.current = frameNum;
         }
 
         if (Object.values(intervalErasing).some(value=>value.on) && Number.isInteger(frameNum)) {
-            console.log('frameNum useEffect set lastFrameNumForIntervalErasingRef', frameNum);
             lastFrameNumForIntervalErasingRef.current = frameNum;
         }
-
-        
 
             
       }, [frameNum]
     )
     
 
-    function saveAnnotationAndUpdateStates(cancelInterval=false) {
-        console.log('save anno', );
-        
+    function saveAnnotationAndUpdateStates(cancelInterval=false) {        
         setActiveAnnoObj(null);
         setDrawType(null);
         setSkeletonLandmark(null);
@@ -512,36 +494,18 @@ export default function Workspace(props) {
     }
 
     function savePrevAnnotation(cancelInterval=false) {
-            console.log('savePrevAnnotation called', frameNum, lastFrameNumForIntervalAnnoRef.current, frameAnnotation, intervalAnno);
             if (!Number.isInteger(frameNum) || frameNum === 0) return;
 
             const newFrameAnno = clearUnfinishedAnnotation({...frameAnnotation});
-            if (intervalAnno.on) {
-                const id = createId();
-                const annoObj = {
-                    id: id,
-                    videoId: intervalAnno.videoId,
-                    frameNum: (frameNum-1) ?? lastFrameNumForIntervalAnnoRef.current,
-                    label: intervalAnno.label,
-                    color: intervalAnno.color,
-                    type: 'category',         
-                };
-                addCategoryAnnoToFrameAnnotation(annoObj, newFrameAnno,  mutualExclusiveCategory);
+            if (cancelInterval && intervalAnno.on) {
 
-                if (cancelInterval) {
                     setCancelIntervalAnno(true);
-                    console.log('savePrevAnnotation cancelIntervalAnno', frameNum-1);
-                }
             }
 
             if (Object.keys(newFrameAnno).length > 0) {
                 const firstAnno = Object.values(newFrameAnno)[0];
                 if (firstAnno.frameNum === frameNum-1) {
                     annotationRef.current[frameNum-1] = newFrameAnno; 
-                }
-                if (intervalAnno.on) { 
-                    intervalAnno.annotatedFrames.add(frameNum-1);
-                    console.log('workspace insert interval anno', frameNum-1);
                 }
             } 
           
@@ -552,9 +516,6 @@ export default function Workspace(props) {
         setFrameAnnotation({...frameAnnotation, [idObj.id]: idObj});
     }
 
-
-
-    
 
     useEffect(() => {
         const btnConfigCopy = {...btnConfigData};
@@ -583,12 +544,10 @@ export default function Workspace(props) {
         })
         setCategoryColors(colors);
         setIntervalErasing(oldValue => intervalErasingData);
-        console.log('workspace mutualExclusiveCategory', mutualExclusiveCategoryArr);
         setMutualExclusiveCategory(mutualExclusiveCategoryArr);
     }, [btnConfigData])
 
     
-
     useEffect(() => {
         if (btnConfigData) {
             renderBtnGroup();
@@ -661,9 +620,7 @@ export default function Workspace(props) {
         <div className={styles.container}>
             <main className={styles.main}>
                 <StatesProvider states={states} stateSetters={stateSetters}>
-                    {}
                     {props.children}
-                    {}
                 </StatesProvider>
 
                 <Modal
@@ -680,147 +637,6 @@ export default function Workspace(props) {
                     <p className="ant-upload-text ms-4">{modalInfo}</p>
                 </Modal>
             </main>
-
-          {/* <main className={styles.main}>
-          <StatesProvider states={states} stateSetters={stateSetters}>
-            <Row className='mx-1 my-1'>
-                <Design 
-                    data={btnConfigData}
-                    setData={setBtnConfigData}
-                    onAddBtnClick={onAddBtnClick}
-                    onCreateBtnClick={onCreateBtnClick}
-                />
-            </Row>
-    
-            <Row >
-                <Col xs={6}>
-                    {btnGroups}  */}
-                    
-                    {/* <Row className='mx-1 my-1'>
-                        <BtnGroup 
-                            child='shapeBtn'
-                            type='bbox'
-                            numOfBtn={2}
-                            labels={['a','b']}
-                            colors={['red', 'blue']}
-                            frameNum={frameNum}
-                            addAnnotationObj={addAnnotationObj}
-                            setActiveIdObj={setActiveIdObj}
-                            drawType={drawType}
-                            setDrawType={setDrawType}
-                        />
-                    </Row>
-                    <Row className='mx-1 my-1'>
-                        <BtnGroup 
-                            child='category'
-                            // type='bbox'
-                            numOfBtn={2}
-                            labels={['cate1','cate2']}
-                            colors={['red', 'blue']}
-                            frameNum={frameNum}
-                            addAnnotationObj={addAnnotationObj}
-                            setActiveIdObj={setActiveIdObj}
-                            drawType={drawType}
-                            setDrawType={setDrawType}
-                        />
-                    </Row> */}
-                    {/* <Row className='mx-1 my-1'>
-                        <Category
-                            label='chase'
-                            color='black'
-                            frameNum={frameNum}
-                            addAnnotationObj={addAnnotationObj}
-                            setActiveIdObj={setActiveIdObj}
-                            />
-                    </Row>
-                    <Row className='mx-1 my-1'> 
-                        <ShapeBtn
-                            type='keyPoint'
-                            label='head'
-                            color='lightblue'
-                            drawType={drawType}
-                            setDrawType={setDrawType} 
-                            // addKeyPointId={addKeyPointId}
-                            frameNum={frameNum}
-                            addAnnotationObj={addAnnotationObj}
-                            />
-                    </Row>
-                
-                    <Row className='mx-1 my-1'>
-                        <ShapeBtn 
-                            type='bbox'
-                            label='male' 
-                            color='red'
-                            drawType={drawType}
-                            setDrawType={setDrawType} 
-                            // addRectId={addRectId} 
-                            frameNum={frameNum}
-                            addAnnotationObj={addAnnotationObj}
-                            />
-                        <ShapeBtn 
-                            type='bbox'
-                            label='female' 
-                            color='blue'
-                            drawType={drawType}
-                            setDrawType={setDrawType}  
-                            // addRectId={addRectId} 
-                            frameNum={frameNum}
-                            addAnnotationObj={addAnnotationObj}
-                            />
-                    </Row>
-                        
-                    <Row className='mx-1 my-1'>
-                        <ShapeBtn
-                            type='polygon' 
-                            label='fly' 
-                            color='red'
-                            drawType={drawType}
-                            setDrawType={setDrawType}
-                            // addPolygonId={addPolygonId}
-                            frameNum={frameNum}
-                            addAnnotationObj={addAnnotationObj}
-                            />
-                    </Row> */}
-                {/* </Col>
-                <Col xs={6} >
-                    <AnnotationDisplay annoObj={activeAnnoObj}/>
-                </Col>
-                
-            </Row>
-            
-            <Row className='mx-1 my-1'>
-                <Canvas 
-                    videoId={videoId}
-                    frameUrl={frameUrl}
-                    frameNum={frameNum}
-                    drawType={drawType}
-                    setDrawType={setDrawType}
-                    skeletonLandmark={skeletonLandmark}
-                    setSkeletonLandmark={setSkeletonLandmark}
-                    frameAnnotation={frameAnnotation}
-                    setFrameAnnotation={setFrameAnnotation}
-                    btnConfigData={btnConfigData}
-                    // drawKeyPoint={drawKeyPoint}
-                    // setDrawKeyPoint={setDrawKeyPoint}
-                    // keyPointIdList={keyPointIdList}
-                    // setKeyPointIdList={setKeyPointIdList}
-                    // drawRect={drawRect}
-                    // setDrawRect={setDrawRect}
-                    // rectIdList={rectIdList}
-                    // setRectIdList={setRectIdList}
-                    // drawPolygon={drawPolygon}
-                    // setDrawPolygon={setDrawPolygon}
-                    // polygonIdList={polygonIdList}
-                    // setPolygonIdList={setPolygonIdList}
-                    setActiveAnnoObj={setActiveAnnoObj}
-                    />
-            </Row>
-            
-            <Row className='my-3'>
-                <VideoUploader setFrameUrl={setFrameUrl} setFrameNum={setFrameNum} setVideoId={setVideoId} />
-            </Row>
-            </StatesProvider>
-          </main> */}
         </div>
     )
 }

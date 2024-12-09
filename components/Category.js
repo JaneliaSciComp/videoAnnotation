@@ -42,8 +42,7 @@ export default function Category(props) {
 
     useEffect(()=> {
         if (cancelIntervalAnno) {
-            console.log('cancelIntervalAnno useEffect');
-            checkIntervalAnnotation('sameLabel')
+            endIntervalAnnotation('sameLabel');
             setIntervalAnno(oldObj => {return {on:false, videoId:null, startFrame: null, label: null, color: null, annotatedFrames: new Set()}});
             setCancelIntervalAnno(false);
         }
@@ -56,9 +55,7 @@ export default function Category(props) {
     }, [props.color])
 
     let timer;
-    console.log('Category btn rerender', timer);
     function clickHandler() {
-        console.log('clickHandler', timer);
         if (intervalErasing[props.btnGroupId].on) {
             setInfo('Please turn off interval erasing first');
             return;
@@ -66,7 +63,7 @@ export default function Category(props) {
         setInfo(null);
         if (timer) {
             clearTimeout(timer);
-            manageIntervalAnnotation();
+            doubleClickHandler();
         } else {
             timer = setTimeout(createSingleAnnotation, 200);
         }
@@ -74,11 +71,10 @@ export default function Category(props) {
 
 
     function createSingleAnnotation() {
-        console.log('createSingleAnnotation');
         setInfo(null);
         if ((Number.isInteger(frameNum) || frameUrl) && !(intervalAnno.on && intervalAnno.label===props.label)) {
             if (intervalAnno.on && intervalAnno.label!==props.label) {
-                checkIntervalAnnotation('differentLabel');
+                endIntervalAnnotation('differentLabel');
                 setIntervalAnno(oldObj => {return {on:false, startFrame: null, videoId:null, label: null, color: null, annotatedFrames: new Set()}});
             }
 
@@ -94,7 +90,6 @@ export default function Category(props) {
                 type: 'category',        
             };
             addCategoryAnnoToFrameAnnotation(annoObj, annoCopy,  mutualExclusiveCategory)
-            console.log('createSingleAnnotation', annoCopy);
             setFrameAnnotation(oldObj => annoCopy);
             setActiveAnnoObj(annoObj);
             setDrawType(null);
@@ -106,42 +101,34 @@ export default function Category(props) {
         }
     }
 
-    async function manageIntervalAnnotation() {
-        console.log('intervalAnno');
+    async function doubleClickHandler() {
         if ((Number.isInteger(frameNum) || frameUrl)) {
             if (intervalAnno.on) {
                 if (intervalAnno.label === props.label) {
                     console.log('same label');
-                    checkIntervalAnnotation('sameLabel');
+                    endIntervalAnnotation('sameLabel');
                     setIntervalAnno(oldObj => {return {on:false, startFrame: null, videoId:null, label: null, color: null, annotatedFrames: new Set()}});
                 } else {
                     console.log('different label');
-                    checkIntervalAnnotation('differentLabel');
+                    endIntervalAnnotation('differentLabel');
                     createSingleAnnotation();
                     setIntervalAnno(oldObj => {return {on:true, startFrame: frameNum, vdieoId: videoId, label: props.label, color: color, annotatedFrames: new Set([frameNum])}});
                 }
             } else {
                 createSingleAnnotation();
                 setIntervalAnno(oldObj => {return {on:true, startFrame: frameNum, videoId: videoId, label: props.label, color: color, annotatedFrames: new Set([frameNum])}});
+                lastFrameNumForIntervalAnnoRef.current = frameNum;
             }
         }
     }
 
-    function checkIntervalAnnotation(type) {
-       console.log('checkIntervalAnnotation', intervalAnno, frameNum, lastFrameNumForIntervalAnnoRef.current);
-       if (Number.isInteger(intervalAnno.startFrame)
-        ) {
+
+    function endIntervalAnnotation(type) {
+        if (Number.isInteger(intervalAnno.startFrame)
+         ) {
             const lastFrameNum = frameNum ? frameNum : lastFrameNumForIntervalAnnoRef.current;
-            const frameMissedArr = [];
             const end = type==='sameLabel'?lastFrameNum:(lastFrameNum-1);
             for (let i = intervalAnno.startFrame; i <= end; i++) {
-                if (!intervalAnno.annotatedFrames.has(i)) {
-                    frameMissedArr.push(i);
-                }
-            }
-            console.log('frameMissedArr', frameMissedArr);
-
-            frameMissedArr.forEach(async i => {
                 const id = createId();
                 const annoObj = {
                     id: id,
@@ -149,28 +136,29 @@ export default function Category(props) {
                     frameNum: i,
                     label: intervalAnno.label,
                     color: intervalAnno.color,
-                    type: 'category',         
+                    type: 'category',             
                 };
-
-                if  (i === frameNum) {
-                    const frameAnnoCopy = {...frameAnnotation};
-                    frameAnnoCopy[id] = annoObj;
-                    setFrameAnnotation(frameAnnoCopy);
-                } 
                 if (annotationRef.current[i]) {
-                    annotationRef.current[i][id] = annoObj;
+                    const annos = annotationRef.current[i];
+                    addCategoryAnnoToFrameAnnotation(annoObj, annos,  mutualExclusiveCategory);
+                    annotationRef.current[i] = annos;
                 } else {
                     annotationRef.current[i] = {[id]: annoObj};
                 }
-            });
-
+                if  (i === frameNum) {
+                    const frameAnnoCopy = {...frameAnnotation};
+                    addCategoryAnnoToFrameAnnotation(annoObj, frameAnnoCopy,  mutualExclusiveCategory);
+                    setFrameAnnotation(frameAnnoCopy);
+                } 
+            }
+            
             setUpdateAnnotationChart(true);
 
             if (!frameNum) {
                 lastFrameNumForIntervalAnnoRef.current = null;
             }
-       }
-    }
+        }
+     }
 
 
     return (

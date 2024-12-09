@@ -8,8 +8,6 @@ const VIDEOS_URL = ROOT_URL + "/videos";
 const FRAME_URL_ROOT = ROOT_URL + '/frame';
 const ADDITIONAL_URL_ROOT = ROOT_URL + '/additionaldata';
 const VIDEO_META_URL = ROOT_URL + "/videometa";
-const SINGLE_ANNOTATION_URL = ROOT_URL + "/annotation";
-const FRAME_ANNOTATION_URL = ROOT_URL + "/frameannotation";
 const PROJECT_ANNOTATION_URL = ROOT_URL + "/projectannotation";
 const VIDEO_ANNOTATION_URL = ROOT_URL + "/videoannotation";
 const ANNOTATION_FOR_CHART_URL = ROOT_URL + "/annotationforchart";
@@ -298,38 +296,6 @@ export async function getAdditionalData(videoId, additionalDataNameToRetrieve) {
     }
 }
 
-
-
-
-export async function postFrameAnnotation(annotationObjs) {
-    const res = await fetch(FRAME_ANNOTATION_URL, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-              },
-            body: JSON.stringify(annotationObjs), 
-        })
-
-    if (res.ok) {
-        return await res.json()
-    } else {
-        return {error: 'POST frame annotation request failed'}
-    }
-}
-
-export async function getFrameAnnotation(frameNum, videoId) {
-    const res = await fetch(`${FRAME_ANNOTATION_URL}?frameNum=${frameNum}&videoId=${videoId}`, {
-            method: 'GET',
-    })
-
-    if (res.ok) {
-        return await res.json()
-    } else {
-        return {error: 'GET frame annotation request failed'}
-    }
-}
-
 export async function postProjectAnnotation(data) { 
     /**
      * data: {
@@ -398,35 +364,6 @@ export async function getVideoAnnotation(videoId) {
         return await res.json()
     } else {
         return {error: 'GET video annotation request failed'}
-    }
-}
-
-export async function postAnnotation(annotationObj) { 
-    const res = await fetch(SINGLE_ANNOTATION_URL, {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-              },
-            body: JSON.stringify(annotationObj), 
-        })
-
-    if (res.ok) {
-        return await res.json()
-    } else {
-        return {error: 'POST single annotation request failed'}
-    }
-}
-
-export async function deleteAnnotation(id) {
-    const res = await fetch(`${SINGLE_ANNOTATION_URL}?id=${id}`, {
-            method: 'DELETE',
-        })
-
-    if (res.ok) {
-        return await res.json()
-    } else {
-        return {error: 'DELETE single annnotation request failed'}
     }
 }
 

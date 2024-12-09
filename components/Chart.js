@@ -32,11 +32,6 @@ ChartJS.register(
 );
 
 
-
-
-
-
-
 const MIN_OFFSET = 5;
 const MAX_OFFSET = 5;
 
@@ -196,7 +191,7 @@ export default function MyChart(props) {
                 dynamicVerticalLine: {
                     metricsNumber: props.metrics.length,
                     color: props.dynamicVerticalLineColor ? props.dynamicVerticalLineColor : dynamicVerticalLineColor,
-                    clickHandler: (intervalAnno.on || Object.values(intervalErasing).some(value=>value.on)) ? null : setFrameNumSignal,
+                    clickHandler: setFrameNumSignal,
                     startIndex: startNeeded
                 },
                 zoom: {

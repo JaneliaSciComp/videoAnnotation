@@ -98,7 +98,7 @@ export default function ProjectDropdown(props) {
     function confirm() {
         Modal.confirm({
             title: 'Alert',
-            content: 'The current project configuration data including annotation buttons will be removed!',
+            content: 'The current project data including annotation buttons and unsaved annotations will be removed!',
             onOk: confirmOkClickHandler,
             onCancel: cancelClickHandler,
         });

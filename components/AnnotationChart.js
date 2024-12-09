@@ -30,12 +30,12 @@ ChartJS.register(
 /**
  *  The current design for the chart is to only display one group of mutuallyExclusive category labels, such as 'chase' and 'no-chase'.
  *  If need to display multiple groups of labels, such as 'chase'/'no-chase' and 'grooming'/'no-grooming', then need to use another instance of this comp.
- *  Assuming these labels are defined in one btnGroup, and each label is globally unique among all category btns.
+ *  Assume these labels are defined in one btnGroup, and each label is globally unique among all category btns.
  *  Otherwise, it won't function correctly.
  *  This comp should only be used for video annotation 
  * 
  *  props:
- *      labels: ['chase', 'no-chase'], an arr of mutuallyExclusive labels to display on chart.
+ *      labels: ['chase', 'no-chase'], an arr of mutuallyExclusive labels to display on chart. Consistent with labels of annotation buttons. TODO: should be replaced by another ChartController component
         width: str. '100%'/'200px'/'50vw'..., default is 100%. Set the width of the chart.
         height: str. '100%'/'200px'/'50vh'..., default is 100%. Set the height of the chart
         // legendPosition: 'top'/'left'/'bottom'/'right'/'chartArea'. 'bottom' by default. Position of legend.
@@ -84,7 +84,7 @@ export default function AnnotationChart(props) {
     const intervalErasing = useStates().intervalErasing;
     const annotationRef = useStates().annotationRef;
     const setGlobalInfo = useStateSetters().setGlobalInfo;
-    
+
 
     useEffect(() => {
         if (uploader?.type && uploader?.file) {
@@ -266,7 +266,7 @@ export default function AnnotationChart(props) {
                 dynamicVerticalLine: {
                     metricsNumber: 1,
                     color: props.dynamicVerticalLineColor ? props.dynamicVerticalLineColor : dynamicVerticalLineColor,
-                    clickHandler: (intervalAnno.on || Object.values(intervalErasing).some(value=>value.on)) ? null : setFrameNumSignal,
+                    clickHandler: setFrameNumSignal,
                     startIndex: startNeeded,
                 },
             },
@@ -276,7 +276,6 @@ export default function AnnotationChart(props) {
 
 
     async function getAnnotationData() {
-        console.log('getAnnotationData called', frameNum, annotationForChart);
         setGlobalInfo(null);
         if (props.labels?.length>0 && Number.isInteger(frameNum)) { 
             let annoDataForChart;

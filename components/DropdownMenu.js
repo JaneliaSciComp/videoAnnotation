@@ -66,7 +66,6 @@ export default function DropdownMenu(props) {
                         videoId: videoId,
                     }
                     const res = await postVideoAnnotation(data);
-                    console.log('save annotation to db', res);
                     if (res.success) {
                         setGlobalInfo('Annotation successfully saved to database.');
                     } else {
@@ -100,7 +99,7 @@ export default function DropdownMenu(props) {
     function confirm(comp) {
         Modal.confirm({
             title: 'Alert',
-            content: 'The current project configuration data including annotation buttons will be removed!',
+            content: 'The current project data including annotation buttons and unsaved annotations will be removed!',
             onOk: () => confirmOkClickHandler(comp),
             onCancel: () => cancelClickHandler(comp),
         });

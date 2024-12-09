@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useRef} from 'react';
 import { useStateSetters, useStates } from './AppContext'; 
-import { Modal, List, Button, Form, Input, Space } from 'antd';
+import { Modal, List, Button } from 'antd';
 import { PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { getAllProjects, getProject, getProjectBtn, getProjectVideo, deleteProject, deleteProjectBtn, deleteProjectVideo, deleteProjectAnnotation } from '../utils/requests';
 
@@ -58,7 +58,6 @@ export default function ProjectList(props) {
     }
 
     function okClickHandler() {
-        console.log('I am called');
         props.setOpen(false);
     }
 
@@ -74,7 +73,7 @@ export default function ProjectList(props) {
     function loadProjectConfirm(id) {
         Modal.confirm({
             title: 'Alert',
-            content: 'The current project configuration data including annotation buttons will be removed!',
+            content: 'The current project data including annotation buttons and unsaved annotations will be removed!',
             onOk: async ()=>{
                 await loadProject(id);
 

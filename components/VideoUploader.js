@@ -21,6 +21,8 @@ export default function VideoUploader(props) {
     const [submitError, setSubmitError] = useState();
     const [frameError, setFrameError] = useState();
     const playInterval = useRef(null);
+    const [playControl, setPlayControl] = useState();
+
 
     const setFrameUrl = useStateSetters().setFrameUrl;
     const setFrameNum = useStateSetters().setFrameNum;
@@ -32,19 +34,15 @@ export default function VideoUploader(props) {
     const setResetVideoPlay = useStateSetters().setResetVideoPlay;
     const videoData = useStates().videoData;
     const setVideoData = useStateSetters().setVideoData;
-    const videoId = useStates().videoId;
     const projectId = useStates().projectId;
     const additionalDataNameToRetrieve = useStates().additionalDataNameToRetrieve;
     const setAdditionalData = useStateSetters().setAdditionalData;
     const videoMetaRef = useStates().videoMetaRef;
-    const intervalAnno = useStates().intervalAnno;
-    const intervalErasing = useStates().intervalErasing;
     const setGlobalInfo = useStateSetters().setGlobalInfo;
     const annotationRef = useStates().annotationRef;
     const additionalDataRef = useStates().additionalDataRef;
 
 
-    console.log('VideoUploader render');
 
     useEffect(() => {
         if (resetVideoPlay) {
@@ -52,7 +50,6 @@ export default function VideoUploader(props) {
             setResetVideoPlay(false);
         }
     }, [resetVideoPlay])
-
 
 
     useEffect(() => {
@@ -81,15 +78,31 @@ export default function VideoUploader(props) {
     }, [playFps])
 
 
+    useEffect(() => {
+        if (playInterval.current) {
+            clearInterval(playInterval.current);
+            playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
+        }
+    }, [sliderValue])
+
+
     function sliderChangeHandler(newValue) {
         if (newValue >= 1) {
-            setFrame(newValue);
+            if (playControl !== 'play') {
+                setFrame(newValue);
+            }  else if (playInterval.current) {
+                setSliderValue(newValue);
+            }
         }
     }
 
     function inputNumerChangeHandler(newValue) {
         if (typeof newValue === 'number' && Number.isInteger(newValue) && newValue>=1 ) {
-            setFrame(newValue);
+            if (playControl !== 'play') {
+                setFrame(newValue);
+            }  else if (playInterval.current) {
+                setSliderValue(newValue);
+            }
         }
     }
 
@@ -103,26 +116,32 @@ export default function VideoUploader(props) {
             if (playInterval.current) {
                 clearInterval(playInterval.current);
                 playInterval.current = null;
+                setPlayControl(null);
+                setSliderValue(0);
             }
         }
     }
 
     function playClickHandler() {
-        if (!playInterval.current 
+        if ((!playInterval.current
             && totalFrameCount > 0 
-            && sliderValue < totalFrameCount 
-            && playFps>0) {
+            && playFps>0)
+            && ((playControl !== 'play' && sliderValue < totalFrameCount)
+                || (!playControl && sliderValue === totalFrameCount))
+        ) {
             playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
+            setPlayControl('play');
         }
-        
-    }
 
-    function pauseClickHandler() {
-        if (playInterval.current) {
+        if (playControl === 'play' 
+            && playInterval.current) {
+            setPlayControl('pause');
             clearInterval(playInterval.current);
             playInterval.current = null;
         }
+
     }
+
 
     function playFpsInputChangeHandler(newValue) {
         if (typeof newValue === 'number' 
@@ -131,7 +150,6 @@ export default function VideoUploader(props) {
             setPlayFps(newValue);
         }
     }
-
 
     
     async function videoPathSubmitHandler(e) {
@@ -175,7 +193,6 @@ export default function VideoUploader(props) {
 
 
     async function setFrame(newValue, videoInfoObj=null) {
-        console.log('setFrame called', newValue, videoId);
         if (newValue) {
             setSliderValue(newValue);
             if (newValue >= 1) {
@@ -196,9 +213,7 @@ export default function VideoUploader(props) {
     }
 
 
-
     function resetVideoStatus() {
-        console.log('resetVideoStatus');
         setFps(0);
         setTotalFrameCount(0);
         setSliderValue(0);
@@ -207,12 +222,12 @@ export default function VideoUploader(props) {
         setSubmitError(null);
         setFrame(null);
         setVideoId(null);
+        setPlayControl(null);
     }
 
     async function initializePlay(videoInfoObj) { 
         videoMetaRef.current = {};
         const meta = await getVideoMeta(videoInfoObj.videoId);
-        console.log(meta);
         if (meta['error']) {
             setSubmitError(meta['error']);
         } else {
@@ -248,7 +263,6 @@ export default function VideoUploader(props) {
     async function retrieveVideoAnnotations(videoId) {
         setGlobalInfo('Retrieving video annotation from database ...');
         const res = await getVideoAnnotation(videoId);
-        console.log('get video annotation', res);
         setGlobalInfo(null);
         if (res['error']) {
             setGlobalInfo(res);
@@ -267,10 +281,6 @@ export default function VideoUploader(props) {
             annotationRef.current = newRef;
         }
     }
-
-            
-
-
 
 
     return (
@@ -291,14 +301,16 @@ export default function VideoUploader(props) {
                         defaultValue={0}
                         value={sliderValue}
                         onChange={inputNumerChangeHandler}
-                        disabled = {(intervalAnno.on || Object.values(intervalErasing).some(value=>value.on))}
                         />
                 </Col>
                 <Col sm={9} className='px-0'>
                     <div className={styles.videoBtnSliderContainer}>
-                        <div className={styles.videoBtnContainer}>
-                            <CaretRightOutlined className=' ms-1' onClick={playClickHandler}/>
-                            <PauseOutlined className=' ms-1' onClick={pauseClickHandler} />
+                        <div className={styles.videoBtnContainer} onClick={playClickHandler}>
+                            {playControl !== 'play' ?
+                                <CaretRightOutlined className=' ms-1'/>
+                                :
+                                <PauseOutlined className=' ms-1'/>
+                            }
                         </div>
                         <div className={styles.videoSliderContainer}>
                             <span className={styles.sliderMark}>0</span>
@@ -307,14 +319,13 @@ export default function VideoUploader(props) {
                                 max={totalFrameCount}
                                 onChange={sliderChangeHandler}
                                 value={sliderValue}
-                                disabled={(intervalAnno.on || Object.values(intervalErasing).some(value=>value.on))}
                                 />
                             <span className={styles.sliderMark}>{totalFrameCount}</span>
                         </div>
                     </div>
                 </Col>
             </Row>
-            {submitError ?
+            {frameError ?
                 <p >{frameError}</p>
                 : null}
             <Row>

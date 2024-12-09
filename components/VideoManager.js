@@ -76,17 +76,10 @@ export default function VideoManager(props) {
     const videoAdditionalFieldsConfig = useStates().videoAdditionalFieldsConfig;
     const setVideoAdditionalFieldsConfig = useStateSetters().setVideoAdditionalFieldsConfig;
     const projectId = useStates().projectId;
-    const setAdditionalDataNameToRetrieve = useStateSetters().setAdditionalDataNameToRetrieve;
-    const additionalDataRange = useStates().additionalDataRange;
     const setAdditionalDataRange = useStateSetters().setAdditionalDataRange;
-
 
     const [form] = Form.useForm();
 
-    console.log('VideoManager render', info);
-
-            
-          
 
     useEffect(()=> {
         if (resetVideoDetails) {
@@ -111,7 +104,6 @@ export default function VideoManager(props) {
     }, [videoData])
 
     useEffect(() => {
-        console.log('addtionalConfig useEffect');
         if (props.additionalFields?.length > 0) {
             const names = new Set();
             const fields = {};
@@ -142,7 +134,6 @@ export default function VideoManager(props) {
     }, [props.additionalFields])
     
 
-   
     function onVideoNameClick(i) {
         const videoId = videoIds[i];
         const videoObj = videoData[videoId];
@@ -226,7 +217,6 @@ export default function VideoManager(props) {
     async function onAddBtnClick() {
         const id = new Date().getTime().toString();
         const videoInfoObj = modifyVideoData(id);
-        console.log(videoInfoObj);
         
         const res = await postVideo(videoInfoObj);
         if (res['error']) {
@@ -274,7 +264,6 @@ export default function VideoManager(props) {
 
     function modifyVideoData(id) {
         let formFields = form.getFieldsValue();
-        console.log(formFields);
         let videoName = formFields.videoName;
         const videoPath = formFields.videoPath;
         if (!videoName?.length>0) {
@@ -360,7 +349,6 @@ export default function VideoManager(props) {
         delete(videoDataCopy[videoIdToDel]);
         setVideoData(videoDataCopy);
 
-
         if (videoIdToDel == videoId) {
             setVideoId(null);
             setResetVideoPlay(true);
@@ -368,11 +356,9 @@ export default function VideoManager(props) {
         }
     }
 
-    
 
     return (
         <>
-            
             {/* <Modal 
                 title='Video Manager'
                 open={props.open} 

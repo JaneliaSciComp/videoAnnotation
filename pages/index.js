@@ -295,7 +295,7 @@ export default function Home() {
               <div className='py-2' style={{height: '100px', width: '670px', border: 'solid 1px black'}} >
                 {/* <div style={{height: '100%', width: '650px'}}> */}
                 <AnnotationChart 
-                  labels = {['chase', 'no-chase']}
+                  labels = {['chase', 'no-chase']} //TODO: should be replaced by another ChartController component
                   // omitXLables
                 />
                 {/* </div> */}

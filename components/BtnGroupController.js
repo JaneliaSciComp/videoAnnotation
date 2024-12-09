@@ -103,6 +103,7 @@ export default function BtnGroupController(props) {
     const btnConfigData = useStates().btnConfigData;
     const setBtnConfigData = useStateSetters().setBtnConfigData;
     const projectId = useStates().projectId;
+    const setGlobalInfo = useStateSetters().setGlobalInfo;
 
     
     useEffect(()=>{
@@ -152,7 +153,6 @@ export default function BtnGroupController(props) {
 
     useEffect(()=>{
         const myIndex = getSelfIndex();
-        console.log(myIndex, btnConfigData, props.getData);
         if (myIndex && props.getData && props.getData[myIndex]) { 
             addDataToBtnConfigData();
             props.setGetData(collection => {
@@ -163,8 +163,6 @@ export default function BtnGroupController(props) {
         }
       }, [props.getData]
     )
-
-
 
 
     useEffect(() => {
@@ -252,11 +250,9 @@ export default function BtnGroupController(props) {
     function onDownBtnClick() {
         const index = getSelfIndex();
         const childrenData = getData();
-        console.log(childrenData);
         let data = [];
         if (groupType && btnType) {
             if (btnType !== prevBtnTypeRef.current) {
-                console.log(btnType, prevBtnTypeRef.current);
                 data = createChildrenData(0, btnNum);
             } else {
                 if (btnNum > prevBtnNumRef.current) {
@@ -296,7 +292,6 @@ export default function BtnGroupController(props) {
     }
 
     function getSelfIndex() {
-        console.log()
         return props.index ? props.index : index; 
     }
 
@@ -464,7 +459,6 @@ export default function BtnGroupController(props) {
     async function addDataToBtnConfigData() {
         const index = getSelfIndex();
         const labelsValid = checkLabels(); 
-        console.log(index, 'pass data');
         
         if (labelsValid && groupData?.length) {
             const newData = {
@@ -483,21 +477,19 @@ export default function BtnGroupController(props) {
 
             const btnGroupObj = {...newData};
             btnGroupObj.btnGroupId = index;
-            console.log(newData, btnGroupObj);
             const res = await postBtnGroup(btnGroupObj)
-            console.log(res)
             if (res['error']) {
-                setError(res['error']);
+                setGlobalInfo(res['error']);
                 return
             }
-            setError(null);
+            setGlobalInfo(null);
             setBtnConfigData(data => {
                 const dataCopy = {...data}
                 dataCopy[index] = newData
                 return dataCopy
             } );
         } else {
-            setError('Labels cannot be empty!');
+            setError('Labels should not be empty!');
         }
     }
 
