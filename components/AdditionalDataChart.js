@@ -34,16 +34,16 @@ import { DownOutlined } from '@ant-design/icons';
 //             }
 //         }
     // *  horizontal: boolean. Arrange components horizontally or vertically. If horizontally, then children of Controller will be aligned vertically.
-    *  controllerAlign: 'start'/'end'/'center'/'between'/'around'/'evenly'. 'left' by default. How to horizontally align controller components, if horizontal is false.
+    *  controllerAlign: 'start'/'end'/'center'/'between'/'around'/'evenly'. 'start' by default. How to horizontally align controller components, if horizontal is false.
     *  staticVerticalLineColor: 'rgb()', '#xxxxxx', 'red'. The color of the static vertical Line
     dynamicVerticalLineColor:  'rgb()', '#xxxxxx', 'red'. The color of the dynamic vertical Line
     zoomSpeed: number. Speed for zooming on y axis. 0.01 by default.
  *  hideRange: boolean. Hide the range input.
  *  halfRange: int. Allow developer to set half range value when hideRange is true. Required and only useful when hideRange is true.
  *  defaultHalfRange: int. Default value for half range input. Should only be used when hideRange is false.
-
+    omitXLabels: boolean. Omit x labels.
 */
-export default function ChartCombo(props) {
+export default function AdditionalDataChart(props) {
     
     const [chartMetrics, setChartMetrics] = useState([]);
     const [chartType, setChartType] = useState('Line');
@@ -60,6 +60,7 @@ export default function ChartCombo(props) {
                     additionalDataForChart[name] = {...additionalData[name]};                    
                 }
             })
+            console.log(additionalData, additionalDataForChart);
             setData(additionalDataForChart);
     }, [additionalData])
     
@@ -105,6 +106,7 @@ export default function ChartCombo(props) {
                     staticVerticalLineColor={props.staticVerticalLineColor}
                     dynamicVerticalLineColor={props.dynamicVerticalLineColor}
                     zoomSpeed={props.zoomSpeed}
+                    omitXLabels={props.omitXLabels}
                     />
             </Col>
         </Row>

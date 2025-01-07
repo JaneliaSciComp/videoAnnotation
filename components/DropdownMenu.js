@@ -17,21 +17,19 @@ import {postVideoAnnotation} from '../utils/requests.js';
  *          //key: str,
  *          compName: str, // only required if use component from this library, e.g. 'ProjectManager' for <ProjectManager>
  *          component: component, // a react node, e.g. <ProjectList key='0' open={open} setOpen={setOpen} />. If it's a modal comp, the open/close behavior is handled automatically if the open and setOpen attributes are defined.  remember to pass a 'key' attribute
- *          //onClick: (target) => {}, //target: {label:, key:, }
  *          preventDefault: boolean, //there are default behaviors when click on some components of this lib, e.g. clicking on ProjectManager will trigger a modal window. Set this to true to prevent the default behavior when needed.
  * }, 
  *      ...]
- *    onClick: (e) => {}
+ *    onClick: (e) => {}. It will be called after the default behavior of each child if preventDefault is not set. Otherwise, it will be called directly. e is the event object, which contains a key property corresponding to the index (integer) of each child in the menu prop. Note: This key property may differ from the key prop of the component passed to each child."
  */
 export default function DropdownMenu(props) {
     const projectId = useStates().projectId;
     const videoId = useStates().videoId;
     const setDownloadConfig = useStateSetters().setDownloadConfig;
     const setDownloadAnnotation = useStateSetters().setDownloadAnnotation;
-    const videoData = useStates().videoData;
-    const annotationRef = useStates().annotationRef;
     const setGlobalInfo = useStateSetters().setGlobalInfo;
     const frameUrl = useStates().frameUrl;
+    const setSaveAnnotation = useStateSetters().setSaveAnnotation;
 
     const items = props.menu.map((item, i) => {
         return {
@@ -60,17 +58,7 @@ export default function DropdownMenu(props) {
                 }
             } else if (target.compName === 'SaveAnnotationBtn') {
                 if (videoId || frameUrl) {
-                    const annotations = Object.values(annotationRef.current).map(frameAnno => Object.values(frameAnno))
-                    const data = {
-                        annotations: annotations.flat(),
-                        videoId: videoId,
-                    }
-                    const res = await postVideoAnnotation(data);
-                    if (res.success) {
-                        setGlobalInfo('Annotation successfully saved to database.');
-                    } else {
-                        setGlobalInfo('Failed to save annotation to database.');
-                    }
+                    setSaveAnnotation(true);
                 } else {
                     setGlobalInfo('No video to save.');
                 }

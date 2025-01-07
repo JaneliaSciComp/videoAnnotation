@@ -80,7 +80,7 @@ import { drawCircle, drawLine } from '../utils/canvasUtils.js'; // canvasUtils.j
 // Client side components. They cannot be rendered on the server side, thus need to be explicitly marked as client side comp.
 import dynamic from 'next/dynamic';
 
-const Chart = dynamic(() => import('../components/ChartCombo.js'), { ssr: false });
+const AdditionalDataChart = dynamic(() => import('../components/AdditionalDataChart.js'), { ssr: false });
 const AnnotationChart = dynamic(() => import('../components/AnnotationChart.js'), { ssr: false });
 
 export default function Home() {
@@ -162,9 +162,9 @@ export default function Home() {
      * e is the event object which has a key property corresponding to the index(integer) of each child in the 'menu' prop. This may be different with the 'key' prop of the component passed to each child.
      * */ 
     // console.log(e);
-    // const label = projectDropdownItems[e.key].label;
     // TODO: customize click handler
-
+    
+    // const label = projectDropdownItems[e.key].label;
     // switch (label) {
     //   case 'Exisiting Projects':
     //       setInfo('Exisiting Projects');
@@ -354,7 +354,7 @@ export default function Home() {
                 />
               </div>
               <div className='py-2' style={{height: '150px', width: '670px', border: 'solid 1px black'}} >
-                <Chart 
+                <AdditionalDataChart
                   // hideRange  //Hide the range input.
                   // halfRange={5}  //Allow developer to set half range value when hideRange is true. Required and only useful when hideRange is true.
                   defaultHalfRange={50}  // Default value for half range input. Should only be used when hideRange is false.

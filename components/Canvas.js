@@ -2,7 +2,7 @@ import React, {useEffect, useState, useRef} from 'react';
 import styles from '../styles/Canvas.module.css';
 import {fabric} from 'fabric-with-erasing';
 import { useStates, useStateSetters } from './AppContext';
-import { defaultAlpha, hexArr } from '../utils/utils';
+import { defaultAlpha, hexArr, hexMap } from '../utils/utils';
 
 const CANVAS_WIDTH = 600;
 const CANVAS_HEIGHT = 500;
@@ -33,6 +33,7 @@ export default function Canvas(props) {
     const prevDrawTypeRef = useRef({});
     const prevUploaderRef = useRef();
     const additionalFabricObjListRef = useRef({});
+    const frameLoadedTimeRef = useRef();
 
 
     const videoId = useStates().videoId;
@@ -126,6 +127,7 @@ export default function Canvas(props) {
 
 
     useEffect(() => {
+        console.log('canvas additionalData');
         if (Object.keys(additionalData).length > 0) {
             drawAdditionalDataObj();
         }
@@ -158,6 +160,7 @@ export default function Canvas(props) {
     }
 
     function removeAllAdditionalDataObj() {
+        console.log('removeAdditionalDataObj called', additionalFabricObjListRef.current);
         Object.keys(additionalFabricObjListRef.current).forEach(name => {
             removeAdditionalDataObjByName(name);
         })
@@ -168,6 +171,8 @@ export default function Canvas(props) {
             canvasObjRef.current.remove(obj);
         })
     }
+
+        
 
 
     useEffect(() => {
@@ -190,6 +195,7 @@ export default function Canvas(props) {
 
     useEffect(()=> {
         canvasObjRef.current.remove(imageObjRef.current);
+        console.log(videoId);
         if (!videoId) {
             canvasObjRef.current.clear();
         } else {
@@ -208,8 +214,10 @@ export default function Canvas(props) {
     )
 
 
+
     useEffect(() => {
         const canvas = canvasObjRef.current;
+        console.log('canvas frameUrl useEffect return:', frameUrl, frameAnnotation);
         getBrushData();
         removeAllObjFromCanvas();
         fabricObjListRef.current = {};
@@ -305,6 +313,7 @@ export default function Canvas(props) {
 
 
     useEffect(() => {
+        console.log('frameAnno useEffect', frameAnnotation);
         setGlobalInfo(null);
         const canvas = canvasObjRef.current;
         
@@ -320,6 +329,7 @@ export default function Canvas(props) {
         
 
         if ((uploader?.type==='annotation') && (uploader !== prevUploaderRef.current)) {
+            console.log('frameAnno useEffect uploader', uploader);
             removeAllObjFromCanvas();
             fabricObjListRef.current = {};
             createPathes();
@@ -402,7 +412,9 @@ export default function Canvas(props) {
                 } else {
                     setPencilBrush();
                 }
+                
             }
+        
     }, [useEraser])
 
     function setEraserBrush() {
@@ -574,6 +586,7 @@ export default function Canvas(props) {
     }
 
 
+
     async function createFabricObjBasedOnAnnotation() {
         
         const canvas = canvasObjRef.current;
@@ -633,6 +646,12 @@ export default function Canvas(props) {
 
 
     async function imageLoadHandler(){
+        const timestamp = Date.now();
+        if (frameLoadedTimeRef.current) {
+            console.log('frameDisplay speed', frameNum, (timestamp-frameLoadedTimeRef.current)/1000);
+        }
+        frameLoadedTimeRef.current = timestamp;
+        
         if (!frameNum) {
             imageObjRef.current.width = imgRef.current.width;
             imageObjRef.current.height = imgRef.current.height;
@@ -698,6 +717,8 @@ export default function Canvas(props) {
         });
         return newData;
     }
+
+    
 
 
     /*  For the next five functions
@@ -844,13 +865,16 @@ export default function Canvas(props) {
 
         if (canvas.getActiveObject() && canvas.getActiveObject().type==='skeletonPoint' && drawType !== 'skeleton') {
             canvas.isDraggingSkeletonPoint = true;
+            console.log(canvas.isDraggingSkeletonPoint);
         }
 
         if (drawType === 'skeleton') {
             canvas.isDrawingSkeleton = true;
             drawSkeleton();
         }
+
     }
+
 
     
     function mouseMoveHandler(opt) {
@@ -1061,6 +1085,7 @@ export default function Canvas(props) {
 
 
     function finishDrawSkeleton() {
+        console.log('finishDrawSkeleton called');
         const canvas = canvasObjRef.current;
         canvas.skeletonPoints.forEach(p => {p.lockMovementX=false; p.lockMovementY=false});
         const idToDraw = getIdToDraw();
@@ -1324,6 +1349,7 @@ export default function Canvas(props) {
                 }
             })
         }
+        console.log(pathStrArr);
 
         if (pathStrArr.length > 0) {
             const canvas = canvasObjRef.current;

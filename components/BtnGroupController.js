@@ -69,12 +69,12 @@ const BTNNUM_MAX=50
                     childData: [...groupData]
                 }};
         
-        // below props be treated differently when placing this comp in a Desgin comp or not
+        // below props are treated differently when placing this comp in BtnConfiguration comp or not
         enableDelete: True when specified. Whether to make the delete btn visible. Should not be specified when using this comp independently
         onDelete: Callback when delete btn clicked. Takes one argument: target {index: int}
         getData: boolean. monitored by useEffect. When change to true, pass interval btn group data to parent's(Design) config data context. Changed by Create btn in Design. Useless when Done btn is enabled.
         setGetData: setter of getData
-        disableDoneBtn: make Done btn invisible when use this comp in Design comp
+        disableDoneBtn: make Done btn invisible when use this comp in BtnConfiguration comp
         onDoneBtnClick: When the Done btn is clicked, it will pass data into parent's configData. Developer can also add extra function by defining this api. 
             It will be called after the prebuilt function.
         // skeletonData: to pass to child SkeletonEdgeController to hold generated edge data if user choose 'skeleton'
@@ -108,7 +108,11 @@ export default function BtnGroupController(props) {
     
     useEffect(()=>{
         if (!props.index) {
-            setIndex(createId());
+            if (props.status === 'new') {
+                setIndex(createId());
+            } else if (props.status === 'edit') {
+                throw Error('Property index is required when status is edit');
+            }
         }
 
         if (props.defaultGroupType) {
@@ -163,6 +167,8 @@ export default function BtnGroupController(props) {
         }
       }, [props.getData]
     )
+
+
 
 
     useEffect(() => {
@@ -250,9 +256,11 @@ export default function BtnGroupController(props) {
     function onDownBtnClick() {
         const index = getSelfIndex();
         const childrenData = getData();
+        console.log(childrenData);
         let data = [];
         if (groupType && btnType) {
             if (btnType !== prevBtnTypeRef.current) {
+                console.log(btnType, prevBtnTypeRef.current);
                 data = createChildrenData(0, btnNum);
             } else {
                 if (btnNum > prevBtnNumRef.current) {
@@ -292,6 +300,7 @@ export default function BtnGroupController(props) {
     }
 
     function getSelfIndex() {
+        console.log()
         return props.index ? props.index : index; 
     }
 
@@ -477,6 +486,7 @@ export default function BtnGroupController(props) {
 
             const btnGroupObj = {...newData};
             btnGroupObj.btnGroupId = index;
+            console.log(newData, btnGroupObj);
             const res = await postBtnGroup(btnGroupObj)
             if (res['error']) {
                 setGlobalInfo(res['error']);

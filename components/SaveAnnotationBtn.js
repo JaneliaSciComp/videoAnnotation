@@ -16,23 +16,12 @@ export default function SaveAnnotationBtn(props) {
 
     const frameUrl = useStates().frameUrl;
     const videoId = useStates().videoId;
-    const annotationRef = useStates().annotationRef;
     const setGlobalInfo = useStateSetters().setGlobalInfo;
+    const setSaveAnnotation = useStateSetters().setSaveAnnotation;
 
     async function clickHandler() {
         if (videoId || frameUrl) {
-            const annotations = Object.values(annotationRef.current).map(frameAnno => Object.values(frameAnno))
-            const data = {
-                annotations: annotations.flat(),
-                videoId: videoId,
-            }
-            const res = await postVideoAnnotation(data);
-            console.log('save annotation to db', res);
-            if (res.success) {
-                setGlobalInfo('Annotation successfully saved to database.');
-            } else {
-                setGlobalInfo('Failed to save annotation to database.');
-            }
+            setSaveAnnotation(true);
         } else {
             setGlobalInfo('No video to save.');
         }

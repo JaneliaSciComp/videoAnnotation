@@ -17,16 +17,16 @@ import InfoBar from '../components/InfoBar.js';
 import {Row, Col} from 'react-bootstrap'; // Third party components. Refer to the tutorial on https://react-bootstrap.netlify.app/docs/layout/grid
 import { Menu, Modal } from 'antd'; // Third party components. Refer to the tutorial on https://ant.design/components/menu, and https://ant.design/components/modal
 import { drawCircle, drawLine } from '../utils/canvasUtils.js'; // canvasUtils.js is a wrapper of fabric.js. It provides functions to operate on canvas easily. Currently, only these two functions are provided.
-
+import BtnGroupController from '../components/BtnGroupController.js';
 
 // Client side components. They cannot be rendered on the server side, thus need to be explicitly marked as client side comp.
 import dynamic from 'next/dynamic';
 
-const Chart = dynamic(() => import('../components/ChartCombo.js'), { ssr: false });
+const AdditionalDataChart = dynamic(() => import('../components/AdditionalDataChart.js'), { ssr: false });
 const AnnotationChart = dynamic(() => import('../components/AnnotationChart.js'), { ssr: false });
 
 export default function Home() {
-  // The ..open/set..Open states are to allow the child modal components to control the visibility of themselves inside.
+  // The ..open/set..Open states are to allow the child modal components to control the visibility of themselves when some interval UI events happen, such as clicking on cancel button.
   const [newProjectManagerOpen, setNewProjectManagerOpen] = useState(false);
   const [editProjectManagerOpen, setEditProjectManagerOpen] = useState(false);
   const [configUploaderOpen, setConfigUploaderOpen] = useState(false);
@@ -55,11 +55,11 @@ export default function Home() {
                   status='new' // ProjectManager has two status: 'new' and 'edit'. 'new' mode is for creating a new project, and 'edit' mode is for editing an existing project.
                   open={newProjectManagerOpen} 
                   setOpen={setNewProjectManagerOpen}
-                  defaultGroupType='category'
-                  defaultBtnType='category'
-                  disableGroupTypeSelect
-                  disableBtnTypeSelect
-                  hidePlusBtn
+                  // defaultGroupType='category'
+                  // defaultBtnType='category'
+                  // disableGroupTypeSelect
+                  // disableBtnTypeSelect
+                  // hidePlusBtn
                 />,
     },
     {
@@ -80,11 +80,11 @@ export default function Home() {
                   status='edit' 
                   open={editProjectManagerOpen} 
                   setOpen={setEditProjectManagerOpen}
-                  defaultGroupType='category'
-                  defaultBtnType='category'
-                  disableGroupTypeSelect
-                  disableBtnTypeSelect
-                  hidePlusBtn
+                  // defaultGroupType='category'
+                  // defaultBtnType='category'
+                  // disableGroupTypeSelect
+                  // disableBtnTypeSelect
+                  // hidePlusBtn
                 />, 
     },
     {
@@ -104,9 +104,9 @@ export default function Home() {
      * e is the event object which has a key property corresponding to the index(integer) of each child in the 'menu' prop. This may be different with the 'key' prop of the component passed to each child.
      * */ 
     // console.log(e);
-    // const label = projectDropdownItems[e.key].label;
     // TODO: customize click handler
 
+    // const label = projectDropdownItems[e.key].label;
     // switch (label) {
     //   case 'Exisiting Projects':
     //       setInfo('Exisiting Projects');
@@ -153,12 +153,12 @@ export default function Home() {
                      * loadIn: 'canvas'/'chart'/null, // whether to draw the data on canvas/chart with each frame. If yes, will fetch the data from backend and ask canvas/chart to draw it
                      * onLoad: event handler. Can be used to draw shapes on canvas and so on. required when loadin='canvas' 
                      */
-                    // additionalFields={[
-                    //   {name: 'canvas1', label: 'canvas1', required: true, loadIn: 'canvas', onLoad: drawDataAsCircle}, 
-                    //   {name: 'canvas2', label: 'canvas2', required: true, loadIn: 'canvas', onLoad: drawDataAsLine},
-                    //   {name: 'chart1', label: 'chart1', required: true, loadIn: 'chart'}, 
-                    //   {name: 'chart2', label: 'chart2', required: true, loadIn: 'chart'}
-                    // ]}
+                    additionalFields={[
+                      {name: 'canvas1', label: 'canvas1', required: true, loadIn: 'canvas', onLoad: drawDataAsCircle}, 
+                      {name: 'canvas2', label: 'canvas2', required: true, loadIn: 'canvas', onLoad: drawDataAsLine},
+                      {name: 'chart1', label: 'chart1', required: true, loadIn: 'chart'}, 
+                      {name: 'chart2', label: 'chart2', required: true, loadIn: 'chart'}
+                    ]}
                   />
                 </Modal>,
     },
@@ -279,6 +279,7 @@ export default function Home() {
         <div className='py-2'>
           {/* If state info is null, InfoBar will only display predefined information for events. Otherwise, will display both predefined and contents of the info state */}
           <InfoBar info={info} /> 
+          {/* <BtnGroupController status='new'/> */}
         </div>
         
         <Row >
@@ -292,19 +293,26 @@ export default function Home() {
               <VideoUploader 
                 hideSubmit 
                 />
-              <div className='py-2' style={{height: '100px', width: '670px', border: 'solid 1px black'}} >
-                {/* <div style={{height: '100%', width: '650px'}}> */}
+              <div className='py-2' style={{height: '250px', width: '670px', border: 'solid 1px black'}} >
+                <div style={{height: '50%', width: '650px'}}>
                 <AnnotationChart 
-                  labels = {['chase', 'no-chase']} //TODO: should be replaced by another ChartController component
-                  // omitXLables
+                  labels = {['chase']} //TODO: should be replaced by another ChartController component
+                  // omitXLabels
                 />
-                {/* </div> */}
+                </div>
+                <div className='my-1' style={{height: '50%', width: '650px'}}>
+                <AnnotationChart 
+                  labels = {['grooming']} //TODO: should be replaced by another ChartController component
+                  // omitXLabels
+                />
+                </div>
               </div>
               <div className='py-2' style={{height: '150px', width: '670px', border: 'solid 1px black'}} >
-                <Chart 
+                <AdditionalDataChart 
                   // hideRange  //Hide the range input.
                   // halfRange={5}  //Allow developer to set half range value when hideRange is true. Required and only useful when hideRange is true.
                   defaultHalfRange={50}  // Default value for half range input. Should only be used when hideRange is false.
+                  // omitXLabels
                   />
               </div>
           </Col>

@@ -43,7 +43,7 @@ ChartJS.register(
         staticVerticalLineColor: 'rgb()', '#xxxxxx', 'red'. The color of the static vertical Line
         dynamicVerticalLineColor:  'rgb()', '#xxxxxx', 'red'. The color of the dynamic vertical Line
         // zoomSpeed: number. Speed for zooming on y axis. 0.01 by default.
-        omitXLables: boolean. Omit x-axis labels. false by default.
+        omitXLabels: boolean. Omit x-axis labels. false by default.
         */
 export default function AnnotationChart(props) {
 
@@ -155,18 +155,16 @@ export default function AnnotationChart(props) {
     useEffect(() => {
         if (!props.labels?.length>0) return;
 
-        let initialLables = props.omitXLables ? [] : [1,2,3,4,5,6,7,8,9,10];
+        let initialLables = [1,2,3,4,5,6,7,8,9,10];
         let data = {labels: initialLables, datasets: [{}]};
         let startNeeded=0, endNeeded=0, start=0, end=0;
         if (props.labels?.length>0 && annotationForChart.range ) {
             const frameNums = [];
             startNeeded = (frameNum-annotationChartRange>0) ? (frameNum-annotationChartRange) : 0;
             endNeeded = (frameNum+annotationChartRange<totalFrameCount-1) ? (frameNum+annotationChartRange) : (totalFrameCount-1);
-            if (!props.omitXLables) {
                 for (let i = startNeeded+1; i <= endNeeded+1; i++) {
                     frameNums.push(i.toString());
                 }
-            }
             
             start = 0;
             end = endNeeded - startNeeded;
@@ -192,7 +190,7 @@ export default function AnnotationChart(props) {
                     props.labels.forEach(label => splittedData[label].data.push(0));
                 }
             }
-            if (intervalAnno.on){
+            if (intervalAnno.on && props.labels.some(l=>l===intervalAnno.label)) {
                 for (let i = Math.max(intervalAnno.startFrame, startNeeded); i <= frameNum; i++) {
                     const index = i - startNeeded;
                         splittedData[intervalAnno.label].data[index] = 1;
@@ -228,6 +226,9 @@ export default function AnnotationChart(props) {
                         drawTicks: false,
                     },
                     stacked: true,
+                    ticks: {
+                        display: props.omitXLabels?false:true,
+                    },
                 },
                 y: {
                     min: 0,
@@ -276,6 +277,7 @@ export default function AnnotationChart(props) {
 
 
     async function getAnnotationData() {
+        console.log('getAnnotationData called', frameNum, annotationForChart);
         setGlobalInfo(null);
         if (props.labels?.length>0 && Number.isInteger(frameNum)) { 
             let annoDataForChart;

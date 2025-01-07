@@ -74,6 +74,7 @@ const MAX_OFFSET = 5;
         staticVerticalLineColor: 'rgb()', '#xxxxxx', 'red'. The color of the static vertical Line
         dynamicVerticalLineColor:  'rgb()', '#xxxxxx', 'red'. The color of the dynamic vertical Line
         zoomSpeed: number. Speed for zooming on y axis. 0.01 by default.
+        omitXLabels: boolean. Omit x-axis labels. false by default.
         */
 export default function MyChart(props) {
 
@@ -107,17 +108,18 @@ export default function MyChart(props) {
 
 
     useEffect(() => {
-        let data = {labels: [1,2,3,4,5,6,7,8,9,10], datasets: [{}]};
+        let initialLables = [1,2,3,4,5,6,7,8,9,10];
+        let data = {labels: initialLables, datasets: [{}]};
         let scaleLimits = [], startNeeded=0, endNeeded=0, start=0, end=0;
         if (props.metrics?.length>0 && Object.keys(props.data).length>0) {
             const frameNums = [];
             const range = additionalDataRange[props.metrics[0]];
             startNeeded = (frameNum-range>0) ? (frameNum-range) : 0;
             endNeeded = (frameNum+range<totalFrameCount) ? (frameNum+range) : (totalFrameCount-1);
-            for (let i = startNeeded+1; i <= endNeeded+1; i++) {
-                frameNums.push(i.toString());
-            }
-
+                for (let i = startNeeded+1; i <= endNeeded+1; i++) {
+                    frameNums.push(i.toString());
+                }
+            console.log('chart', props.data, props.metrics)
             const [startBuffered, endBuffered] = props.data[props.metrics[0]].range;
             start = startNeeded - startBuffered;
             end = start + (endNeeded - startNeeded);
@@ -157,7 +159,10 @@ export default function MyChart(props) {
                     grid: {
                         display: props.xGrid ? props.xGrid : false,
                         drawTicks: false,
-                    }
+                    },
+                    ticks: {
+                        display: props.omitXLabels?false:true,
+                    },
                 },
                 y: {
                     min: min - (props.type==='Line' ? MIN_OFFSET : 0),

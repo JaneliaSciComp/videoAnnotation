@@ -6,6 +6,7 @@ import ModalJsonUploader from './ModalJsonUploader.js';
 import ProjectList from './ProjectList.js';
 
 /**
+ *  This component is deprecated. Use DropdownMenu instead.
  *  props:
  *      //serverType: 'local' / 'remote'
  *      //uploaderOkClickHandler: will be called after natural behavior of uploading and updating projectConfigData.

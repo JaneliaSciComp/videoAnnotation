@@ -9,7 +9,6 @@ import { postProject, editProject } from '../utils/requests';
  *  props:
  *      open: boolean. Whether to open the modal window
  *      setOpen: setter of open. In order to give controll to ProjectManager's internal buttons.
- *      // serverType: 'local' / 'remote'
  *      status: 'new' / 'edit'
  * 
  *      // following props are passed to child BtnConfiguration
@@ -23,15 +22,7 @@ import { postProject, editProject } from '../utils/requests';
         disableBtnNumInput: disable child btnGroupController's btnNumInput
         hidePlusBtn: whether to hide the + btn of adding btn group
  *      
- *      For reference, projectConfigDataRef: 
- *          {
- *              projectId: str,
- *              projectName: str,
- *              // projectDirectory: (no need. user still has to upload/save files mannually) Only for local server. '/user/project1', a str pointing to a local folder where all annotation and config data are stored.
- *              description: str, optional
- *              btnConfigData: {} // might not exist
- *              videos: {videoId: {name: str, path: str}, ...} // might be empty
- *          }
+ *     
  */
 export default function ProjectManager(props) {
     

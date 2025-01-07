@@ -88,6 +88,8 @@ export default function BtnConfiguration(props) {
       }, [props.status]
     )
 
+    
+        
 
     useEffect(() => {
         console.log('confirmConfig changed', confirmConfig)
@@ -96,8 +98,10 @@ export default function BtnConfiguration(props) {
             setConfirmConfig(false);
         }
     }, [confirmConfig])
-  
     
+
+
+
     function addGroup(useCase) {
         const index = createId();
         if (useCase === 'new') {
@@ -108,13 +112,13 @@ export default function BtnConfiguration(props) {
     }
 
 
-    function onAddBtnClick() {
+    function onPlusBtnClick() {
         if (props.status) {
             addGroup('add');
         } 
 
-        if (props.onAddBtnClick) {
-            props.onAddBtnClick();
+        if (props.onPlusBtnClick) {
+            props.onPlusBtnClick();
         }
     }
 
@@ -138,7 +142,6 @@ export default function BtnConfiguration(props) {
                     }
                 }
             }))
-            
             
             const newGetData = {};
             for (let i in getData) {
@@ -169,9 +172,9 @@ export default function BtnConfiguration(props) {
                 >
             <Space className='my-2 d-flex justify-content-left' wrap>
                 <p className='my-2'>Customize Annotation Buttons</p>
-                {(props.hideCreateBtn && !props.hidePlusBtn) ?
+                {(!props.hidePlusBtn) ?
                     <Button 
-                        onClick={onAddBtnClick} 
+                        onClick={onPlusBtnClick} 
                         size='small' 
                         icon={<PlusOutlined />} 
                         >
@@ -200,6 +203,7 @@ export default function BtnConfiguration(props) {
                             disableGroupTypeSelect={props.disableGroupTypeSelect}
                             disableBtnTypeSelect={props.disableBtnTypeSelect}
                             disableBtnNumInput={props.disableBtnNumInput}
+                            enableDelete
                             onDelete={onDelete}
                             getData={getData}
                             setGetData={setGetData}
@@ -216,6 +220,7 @@ export default function BtnConfiguration(props) {
                             disableGroupTypeSelect={props.disableGroupTypeSelect}
                             disableBtnTypeSelect={props.disableBtnTypeSelect}
                             disableBtnNumInput={props.disableBtnNumInput}
+                            enableDelete
                             onDelete={onDelete}
                             getData={getData}
                             setGetData={setGetData}
@@ -239,7 +244,7 @@ export default function BtnConfiguration(props) {
             {(props.hideCreateBtn || props.hidePlusBtn) ? null : 
                 <Space className='my-3 d-flex justify-content-center' wrap>
                     {}
-                    <Button onClick={onAddBtnClick}>Add</Button>
+                    {}
                     <Button type="primary" onClick={onCreateBtnClick}>Create</Button>
                 </Space>
             }

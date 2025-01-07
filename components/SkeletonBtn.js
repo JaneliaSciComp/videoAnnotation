@@ -7,6 +7,8 @@ import { clearUnfinishedAnnotation, createId } from '../utils/utils.js';
 
 
 /** 
+ *  Note: This component should not be directly used to hard-code buttons because it needs btnConfigData for V and E info. Use ProjectManager, BtnConfiguration, or BtnGroupController instead.
+    
     To activate skeleton drawing on canvas. Update btn label for each lankmark, and allow setting visibility of the landmark.
     For reference, skeleton annotation data structure:
         {id: {

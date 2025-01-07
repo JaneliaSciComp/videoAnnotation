@@ -34,15 +34,19 @@ export default function VideoUploader(props) {
     const setResetVideoPlay = useStateSetters().setResetVideoPlay;
     const videoData = useStates().videoData;
     const setVideoData = useStateSetters().setVideoData;
+    const videoId = useStates().videoId;
     const projectId = useStates().projectId;
     const additionalDataNameToRetrieve = useStates().additionalDataNameToRetrieve;
     const setAdditionalData = useStateSetters().setAdditionalData;
     const videoMetaRef = useStates().videoMetaRef;
+    const intervalAnno = useStates().intervalAnno;
+    const intervalErasing = useStates().intervalErasing;
     const setGlobalInfo = useStateSetters().setGlobalInfo;
     const annotationRef = useStates().annotationRef;
     const additionalDataRef = useStates().additionalDataRef;
 
 
+    console.log('VideoUploader render');
 
     useEffect(() => {
         if (resetVideoPlay) {
@@ -50,6 +54,7 @@ export default function VideoUploader(props) {
             setResetVideoPlay(false);
         }
     }, [resetVideoPlay])
+
 
 
     useEffect(() => {
@@ -213,7 +218,9 @@ export default function VideoUploader(props) {
     }
 
 
+
     function resetVideoStatus() {
+        console.log('resetVideoStatus');
         setFps(0);
         setTotalFrameCount(0);
         setSliderValue(0);
@@ -228,6 +235,7 @@ export default function VideoUploader(props) {
     async function initializePlay(videoInfoObj) { 
         videoMetaRef.current = {};
         const meta = await getVideoMeta(videoInfoObj.videoId);
+        console.log(meta);
         if (meta['error']) {
             setSubmitError(meta['error']);
         } else {
@@ -282,6 +290,10 @@ export default function VideoUploader(props) {
         }
     }
 
+            
+
+
+
 
     return (
         <div className={styles.videoUploaderContainer}>
@@ -291,7 +303,6 @@ export default function VideoUploader(props) {
                     <span className='me-1'>FPS</span>
                     <InputNumber className={styles.playFpsInput} 
                         min={totalFrameCount==0 ? 0 : 1}
-                        max={fps===0 ? 0 : 2*fps}
                         value={playFps}
                         onChange={playFpsInputChangeHandler}
                         size="small"/>
