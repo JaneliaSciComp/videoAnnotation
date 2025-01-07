@@ -137,7 +137,9 @@ export default function Category(props) {
          ) {
             const lastFrameNum = frameNum ? frameNum : lastFrameNumForIntervalAnnoRef.current;
             const end = type==='sameLabel'?lastFrameNum:(lastFrameNum-1);
-            for (let i = intervalAnno.startFrame; i <= end; i++) {
+            const intervalStart = Math.min(intervalAnno.startFrame, end);
+            const intervalEnd = Math.max(intervalAnno.startFrame, end);
+            for (let i = intervalStart; i <= intervalEnd; i++) {
                 const id = createId();
                 const annoObj = {
                     id: id,

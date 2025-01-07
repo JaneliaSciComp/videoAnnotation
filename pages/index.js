@@ -293,19 +293,19 @@ export default function Home() {
               <VideoUploader 
                 hideSubmit 
                 />
-              <div className='py-2' style={{height: '250px', width: '670px', border: 'solid 1px black'}} >
-                <div style={{height: '50%', width: '650px'}}>
+              <div className='py-2' style={{height: '150px', width: '670px', border: 'solid 1px black'}} >
+                {/* <div style={{height: '50%', width: '650px'}}> */}
                 <AnnotationChart 
-                  labels = {['chase']} //TODO: should be replaced by another ChartController component
+                  labels = {['chase', 'no-chase']} //TODO: should be replaced by another ChartController component
                   // omitXLabels
                 />
-                </div>
-                <div className='my-1' style={{height: '50%', width: '650px'}}>
+                {/* </div> */}
+                {/* <div className='my-1' style={{height: '50%', width: '650px'}}>
                 <AnnotationChart 
                   labels = {['grooming']} //TODO: should be replaced by another ChartController component
                   // omitXLabels
                 />
-                </div>
+                </div> */}
               </div>
               <div className='py-2' style={{height: '150px', width: '670px', border: 'solid 1px black'}} >
                 <AdditionalDataChart 

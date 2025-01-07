@@ -76,7 +76,9 @@ export default function CategoryEraser(props) {
        if (erasingObj && Number.isInteger(erasingObj?.startFrame)
         ) {
             const lastFrameNum = frameNum ? frameNum : lastFrameNumForIntervalErasingRef.current;
-            for (let i = erasingObj.startFrame; i <= lastFrameNum; i++) {
+            const intervalStart = Math.min(erasingObj.startFrame, lastFrameNum);
+            const intervalEnd = Math.max(erasingObj.startFrame, lastFrameNum);
+            for (let i = intervalStart; i <= intervalEnd; i++) {
                 if (annotationRef.current[i]) {
                     const annos = annotationRef.current[i];
                     Object.keys(annos).forEach(id => {

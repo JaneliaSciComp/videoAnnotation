@@ -191,15 +191,24 @@ export default function AnnotationChart(props) {
                 }
             }
             if (intervalAnno.on && props.labels.some(l=>l===intervalAnno.label)) {
-                for (let i = Math.max(intervalAnno.startFrame, startNeeded); i <= frameNum; i++) {
+                const intervalStart = Math.min(intervalAnno.startFrame, frameNum);
+                const intervalEnd = Math.max(intervalAnno.startFrame, frameNum);
+                for (let i = Math.max(intervalStart, startNeeded); i <= Math.min(intervalEnd, endNeeded); i++) {
                     const index = i - startNeeded;
-                        splittedData[intervalAnno.label].data[index] = 1;
+                    splittedData[intervalAnno.label].data[index] = 1;
+                    props.labels.forEach(label => {
+                        if (label !== intervalAnno.label) {
+                            splittedData[label].data[index] = 0;
+                        }
+                    });
                 }
             }
             const groupId = Object.keys(intervalErasing).filter(groupId => intervalErasing[groupId].labels.some(label=>label===props.labels[0]))[0];
             const groupErasingData = intervalErasing[groupId];
             if (groupId && groupErasingData.on) {
-                for (let i = Math.max(groupErasingData.startFrame, startNeeded); i <= frameNum; i++) {
+                const intervalStart = Math.min(groupErasingData.startFrame, frameNum);
+                const intervalEnd = Math.max(groupErasingData.startFrame, frameNum);
+                for (let i = Math.max(intervalStart, startNeeded); i <= Math.min(intervalEnd, endNeeded); i++) {
                     const index = i - startNeeded;
                     props.labels.forEach(label => splittedData[label].data[index] = 0);
                 }
