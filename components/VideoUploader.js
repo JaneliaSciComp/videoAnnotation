@@ -23,7 +23,6 @@ export default function VideoUploader(props) {
     const playInterval = useRef(null);
     const [playControl, setPlayControl] = useState();
 
-
     const setFrameUrl = useStateSetters().setFrameUrl;
     const setFrameNum = useStateSetters().setFrameNum;
     const setVideoId = useStateSetters().setVideoId;
@@ -44,9 +43,9 @@ export default function VideoUploader(props) {
     const setGlobalInfo = useStateSetters().setGlobalInfo;
     const annotationRef = useStates().annotationRef;
     const additionalDataRef = useStates().additionalDataRef;
+    const realFpsRef = useStates().realFpsRef;
 
 
-    console.log('VideoUploader render');
 
     useEffect(() => {
         if (resetVideoPlay) {
@@ -78,7 +77,8 @@ export default function VideoUploader(props) {
     useEffect(()=>{
         if (playInterval.current) {
             clearInterval(playInterval.current);
-            playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
+                playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
+            
         }
     }, [playFps])
 
@@ -86,7 +86,8 @@ export default function VideoUploader(props) {
     useEffect(() => {
         if (playInterval.current) {
             clearInterval(playInterval.current);
-            playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
+                playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
+            
         }
     }, [sliderValue])
 
@@ -114,10 +115,24 @@ export default function VideoUploader(props) {
     
     let currentSliderValue =sliderValue;
     function incrementFrame() {
-        let newFrameNum = ++currentSliderValue;
+        let fpsMultiple;
+        if (!realFpsRef.current || realFpsRef.current >= playFps ) { 
+            fpsMultiple = 1;
+        } 
+        else {
+            fpsMultiple = Math.floor(playFps/realFpsRef.current);
+        }
+        currentSliderValue = currentSliderValue + fpsMultiple;
+        let newFrameNum = currentSliderValue;
         if (newFrameNum <= totalFrameCount ) {
             setFrame(newFrameNum);
-        } else {
+        } 
+        else if (newFrameNum - totalFrameCount < fpsMultiple) {
+            newFrameNum = totalFrameCount;
+            setFrame(newFrameNum);
+            currentSliderValue = newFrameNum;
+        }
+        else {
             if (playInterval.current) {
                 clearInterval(playInterval.current);
                 playInterval.current = null;
@@ -202,7 +217,10 @@ export default function VideoUploader(props) {
             setSliderValue(newValue);
             if (newValue >= 1) {
                 setFrameError(null);
+                console.log('frameSpeed request', newValue-1);
+                const timestamp = Date.now();
                 const res = await getFrame(newValue-1);
+                console.log('frameSpeed Retrieval', newValue-1, (Date.now()-timestamp)/1000);
                 if (res['error']) {
                     setFrameError(res['error']);
                 } else {
@@ -235,7 +253,6 @@ export default function VideoUploader(props) {
     async function initializePlay(videoInfoObj) { 
         videoMetaRef.current = {};
         const meta = await getVideoMeta(videoInfoObj.videoId);
-        console.log(meta);
         if (meta['error']) {
             setSubmitError(meta['error']);
         } else {

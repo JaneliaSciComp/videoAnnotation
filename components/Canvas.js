@@ -33,8 +33,8 @@ export default function Canvas(props) {
     const prevDrawTypeRef = useRef({});
     const prevUploaderRef = useRef();
     const additionalFabricObjListRef = useRef({});
-    const frameLoadedTimeRef = useRef();
-
+    const frameLoadTimeRef = useRef();
+    const frameRenderTimeRef = useRef();
 
     const videoId = useStates().videoId;
     const frameUrl = useStates().frameUrl;
@@ -64,9 +64,9 @@ export default function Canvas(props) {
     const additionalDataNameToRetrieve = useStates().additionalDataNameToRetrieve;
     const videoMetaRef = useStates().videoMetaRef;
     const setGlobalInfo = useStateSetters().setGlobalInfo;
+    const realFpsRef = useStates().realFpsRef;
 
 
-    console.log('canvas render');
     fabric.Object.prototype.erasable = false;
 
     useEffect(() => {
@@ -127,7 +127,6 @@ export default function Canvas(props) {
 
 
     useEffect(() => {
-        console.log('canvas additionalData');
         if (Object.keys(additionalData).length > 0) {
             drawAdditionalDataObj();
         }
@@ -160,7 +159,6 @@ export default function Canvas(props) {
     }
 
     function removeAllAdditionalDataObj() {
-        console.log('removeAdditionalDataObj called', additionalFabricObjListRef.current);
         Object.keys(additionalFabricObjListRef.current).forEach(name => {
             removeAdditionalDataObjByName(name);
         })
@@ -195,7 +193,6 @@ export default function Canvas(props) {
 
     useEffect(()=> {
         canvasObjRef.current.remove(imageObjRef.current);
-        console.log(videoId);
         if (!videoId) {
             canvasObjRef.current.clear();
         } else {
@@ -217,7 +214,6 @@ export default function Canvas(props) {
 
     useEffect(() => {
         const canvas = canvasObjRef.current;
-        console.log('canvas frameUrl useEffect return:', frameUrl, frameAnnotation);
         getBrushData();
         removeAllObjFromCanvas();
         fabricObjListRef.current = {};
@@ -252,6 +248,7 @@ export default function Canvas(props) {
         if (frameUrl) {
             createPathes();
             if (frameUrl) {
+                frameRenderTimeRef.current = Date.now();
                 imgRef.current.src = frameUrl;
             } else {
                 imgRef.current.src = '';
@@ -313,7 +310,6 @@ export default function Canvas(props) {
 
 
     useEffect(() => {
-        console.log('frameAnno useEffect', frameAnnotation);
         setGlobalInfo(null);
         const canvas = canvasObjRef.current;
         
@@ -329,7 +325,6 @@ export default function Canvas(props) {
         
 
         if ((uploader?.type==='annotation') && (uploader !== prevUploaderRef.current)) {
-            console.log('frameAnno useEffect uploader', uploader);
             removeAllObjFromCanvas();
             fabricObjListRef.current = {};
             createPathes();
@@ -646,11 +641,6 @@ export default function Canvas(props) {
 
 
     async function imageLoadHandler(){
-        const timestamp = Date.now();
-        if (frameLoadedTimeRef.current) {
-            console.log('frameDisplay speed', frameNum, (timestamp-frameLoadedTimeRef.current)/1000);
-        }
-        frameLoadedTimeRef.current = timestamp;
         
         if (!frameNum) {
             imageObjRef.current.width = imgRef.current.width;
@@ -660,6 +650,22 @@ export default function Canvas(props) {
         
         await createFabricObjBasedOnAnnotation();
         canvasObjRef.current.renderAll();
+
+
+        const timestamp = Date.now();
+        const frameRenderT = (timestamp-frameRenderTimeRef.current)/1000;
+        console.log('frameSpeed render', frameNum, frameRenderT);
+
+        if (frameLoadTimeRef.current) {
+            const frameLoadTime = (timestamp-frameLoadTimeRef.current)/1000;
+            console.log('frameSpeed total', frameNum, frameLoadTime);
+            if (frameLoadTime < 1) {
+                const fps = Math.ceil(1/frameLoadTime); 
+                    console.log('frameSpeed fps change', frameNum, fps, realFpsRef.current);
+                    realFpsRef.current = fps;
+            }
+        }
+        frameLoadTimeRef.current = timestamp;
     }
 
 
@@ -785,7 +791,6 @@ export default function Canvas(props) {
 
 
     function mouseDblclickHandler() {
-        console.log('dbclick');
         const canvas = canvasObjRef.current;
         if (canvas.getActiveObject() && canvas.getActiveObject().type === 'polygon') {
             const polygon = canvas.getActiveObject();
@@ -807,7 +812,6 @@ export default function Canvas(props) {
     function mouseDownHandler(opt) {
         const e = opt.e;
         const canvas = canvasObjRef.current;
-        console.log('mouse down');
 
         if (!canvas.getActiveObject()){
             if (e.altKey === true) {
@@ -865,7 +869,6 @@ export default function Canvas(props) {
 
         if (canvas.getActiveObject() && canvas.getActiveObject().type==='skeletonPoint' && drawType !== 'skeleton') {
             canvas.isDraggingSkeletonPoint = true;
-            console.log(canvas.isDraggingSkeletonPoint);
         }
 
         if (drawType === 'skeleton') {
@@ -1085,7 +1088,6 @@ export default function Canvas(props) {
 
 
     function finishDrawSkeleton() {
-        console.log('finishDrawSkeleton called');
         const canvas = canvasObjRef.current;
         canvas.skeletonPoints.forEach(p => {p.lockMovementX=false; p.lockMovementY=false});
         const idToDraw = getIdToDraw();
@@ -1349,7 +1351,6 @@ export default function Canvas(props) {
                 }
             })
         }
-        console.log(pathStrArr);
 
         if (pathStrArr.length > 0) {
             const canvas = canvasObjRef.current;
@@ -1515,7 +1516,7 @@ export default function Canvas(props) {
         <div className={styles.canvasContainer}
              style={{width: props.width?props.width:CANVAS_WIDTH, height: props.height?props.height:CANVAS_HEIGHT}}>
             <canvas id='canvas' ref={canvasRef} className={styles.canvas}>
-                <img id='image' ref={imgRef} className={styles.image} alt="img"/>
+                <img id='image' ref={imgRef} className={styles.image} alt="img" decoding="asynchronous"/>
             </canvas>
             {}
         </div>
