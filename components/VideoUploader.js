@@ -11,7 +11,8 @@ import { postVideo, getVideoMeta, getFrame, getAdditionalData, getVideoAnnotatio
 /**
  * 
  * @param {*} props 
- *      hideSubmit: boolean. Whether to hide video path submit part.
+ *     hideSubmit: boolean. Whether to hide video path submit part.
+ *     onFrameChange: Callback when frame changes. Takes one argument: e {frameNum: int, the current frame number}
  */
 export default function VideoUploader(props) {
     const [fps, setFps] = useState(0);
@@ -213,6 +214,13 @@ export default function VideoUploader(props) {
             }
         } else {
             setFrameUrl(null);
+        }
+
+        if (props.onFrameChange) {
+            const e = {
+                frameNum: newValue>=1? newValue-1 : undefined,
+            }
+            props.onFrameChange(e);
         }
         
     }

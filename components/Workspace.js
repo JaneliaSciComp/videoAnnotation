@@ -544,7 +544,7 @@ export default function Workspace(props) {
     }
 
     function saveFrameAnnotation(cancelInterval=false, savePrevFrame=true) {
-            console.log('savePrevAnnotation called', frameNum, lastFrameNumForIntervalAnnoRef.current, frameAnnotation, intervalAnno);
+            // console.log('savePrevAnnotation called', frameNum, lastFrameNumForIntervalAnnoRef.current, frameAnnotation, intervalAnno);
             if (!Number.isInteger(frameNum) || frameNum === 0) return;
 
             const newFrameAnno = clearUnfinishedAnnotation({...frameAnnotation});

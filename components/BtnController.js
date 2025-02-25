@@ -65,9 +65,10 @@ export default function BtnController(props) {
 
 
     function onColorChange(value) {
+        const newColor = `rgb(${value.metaColor.r}, ${value.metaColor.g}, ${value.metaColor.b}, ${value.metaColor.a})`; //value.metaColor.originalInput.
         const target = {
             index: props.index,
-            value: value.metaColor.originalInput,
+            value: newColor
         };
 
         if (props.onColorChange) {
@@ -131,7 +132,7 @@ export default function BtnController(props) {
                 }
                 
                 <ColorPicker className={styles.colorPicker}
-                    value={props.color ? props.color : '#1677FF'}
+                    defaultValue={props.color ? props.color : '#1677FF'}
                     onChange={onColorChange}
                     disabled = {props.disableColorPicker}
                     size="small"

@@ -153,13 +153,16 @@ export default function SkeletonEdgeController(props) {
     }
 
     function onColorChange(value) {
-        if (value) {
-            setColor(value.metaColor.originalInput);
+        if (!value) {
+            return;
         }
+        
+        const newColor = `rgb(${value.metaColor.r}, ${value.metaColor.g}, ${value.metaColor.b}, ${value.metaColor.a})`; //value.metaColor.originalInput.
+        setColor(newColor);
 
         const target = {
             index: props.index,
-            value: value.metaColor.originalInput,
+            value: newColor,
         };
 
         if (props.onColorChange) {
@@ -213,6 +216,7 @@ export default function SkeletonEdgeController(props) {
             <Row className='d-flex justify-content-center'>
                 <ColorPicker 
                     className='me-3'
+                    defaultValue={props.color ? props.color : '#1677FF'}
                     onChange={onColorChange}
                     value={color}
                     disabled = {props.disableColorPicker}
