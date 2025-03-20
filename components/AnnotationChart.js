@@ -286,7 +286,6 @@ export default function AnnotationChart(props) {
 
 
     async function getAnnotationData() {
-        console.log('getAnnotationData called', frameNum, annotationForChart);
         setGlobalInfo(null);
         if (props.labels?.length>0 && Number.isInteger(frameNum)) { 
             let annoDataForChart;

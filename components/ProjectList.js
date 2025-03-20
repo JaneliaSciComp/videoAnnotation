@@ -9,6 +9,7 @@ import { getAllProjects, getProject, getProjectBtn, getProjectVideo, deleteProje
  *  props:
  *      open: boolean. Whether to open the modal window
  *      setOpen: setter of open. In order to give controll to this component's internal buttons.
+ *      onProjectLoad: function. Callback function when each project load button (the play button) is clicked. The loaded project data will be passed to this function: e {project: projectConfigDataObject, videos: videoConfigDataObject, btns: annotationBtnConfigDataObject}.
  */
 
 export default function ProjectList(props) {
@@ -57,10 +58,6 @@ export default function ProjectList(props) {
         props.setOpen(false);
     }
 
-    function okClickHandler() {
-        props.setOpen(false);
-    }
-
     async function onLoadBtnClick(i) {
         const id = projectIds[i];
         if (projectId) {
@@ -92,6 +89,9 @@ export default function ProjectList(props) {
                 videoRes = await getProjectVideo(id);
             }
           }));
+        
+        const btnData = {};
+        const videos = {};
           
         if (projectRes['error'] || btnRes['error'] || videoRes['error']) {
             setInfo(`Load project failed: \n Project: ${projectRes?.error} \n Btn: ${btnRes?.error} \n Video: ${videoRes?.error}`);
@@ -100,7 +100,6 @@ export default function ProjectList(props) {
             setProjectData(projectRes); 
             setProjectId(projectRes['projectId']);
 
-            const btnData = {};
             btnRes.btnGroups.forEach(group => {
                 const groupId = group.btnGroupId;
                 delete(group['btnGroupId']);
@@ -108,7 +107,6 @@ export default function ProjectList(props) {
             });
             setBtnConfigData(btnData); 
 
-            const videos = {};
             videoRes.videos.forEach(v => {
                 const videoId = v.videoId;
                 delete(v['videoId']);
@@ -120,6 +118,15 @@ export default function ProjectList(props) {
         }
         
         props.setOpen(false);
+        
+        if (props.onProjectLoad) {
+            const e = {
+                project: {...projectRes},
+                videos: {...videos},
+                btns: {...btnData},
+            }
+            props.onProjectLoad(e);
+        }
     }
 
     async function onDelBtnClick(i) {
@@ -177,11 +184,9 @@ export default function ProjectList(props) {
             <Modal 
                 title='Exisiting Projects'
                 open={props.open} 
-                onOk={okClickHandler} 
                 onCancel={cancelClickHandler}
                 style={{overflowX: 'auto'}}
                 footer={[ 
-                    <Button key={1} type='primary' onClick={okClickHandler} >Ok</Button>
                 ]}
                 >
                 <List

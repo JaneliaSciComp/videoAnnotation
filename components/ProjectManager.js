@@ -10,6 +10,9 @@ import { postProject, editProject } from '../utils/requests';
  *      open: boolean. Whether to open the modal window
  *      setOpen: setter of open. In order to give controll to ProjectManager's internal buttons.
  *      status: 'new' / 'edit'
+ *      onSubmit: function. Callback function when user click on Ok button. It receives a single argument: e  {data: {projectId: …, projectName: …, description: …}} 
+ *      onProjectNameChange: function. Callback function when user type in project name input field. It receives a single argument: e {value: 'typed value'}
+ *      onDescriptionChange: function. Callback function when user type in project description input field. It receives a single argument: e {value: 'typed value'}
  * 
  *      // following props are passed to child BtnConfiguration
  *      groupType: set groupType for each child btnGroupController
@@ -110,9 +113,13 @@ export default function ProjectManager(props) {
             setConfirmConfig(true);
         }
         
-        console.log(res);
        
-       
+        if (props.onSubmit) {
+            const e = {
+                data: {...projectObj}
+            }
+            props.onSubmit(e);
+        }
     }
 
 

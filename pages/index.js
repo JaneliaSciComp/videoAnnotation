@@ -44,6 +44,7 @@ export default function Home() {
                   key='0' // When pass a component to a child, it is required to have a unique key prop.
                   open={projectListOpen}
                   setOpen={setProjectListOpen}
+                  onProjectLoad={(e) => {console.log('onProjectLoad', e)}}
                 />,
       // preventDefault: true, // when use some built-in components as the children of DropdownMenu, there may be some pre-defined behaviors, such as opening a modal window. To prevent the default behavior, set this to true.
     },
@@ -60,6 +61,9 @@ export default function Home() {
                   // disableGroupTypeSelect
                   // disableBtnTypeSelect
                   // hidePlusBtn
+                  onSubmit= {(e) => {console.log('onSubmit', e.data)}}
+                  onProjectNameChange={(e) => {console.log('onProjectNameChange', e)}}
+                  onDescriptionChange={(e) => {console.log('onDescriptionChange', e)}}
                 />,
     },
     {
