@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import Head from 'next/head';
 import Workspace from '../components/Workspace.js';
 import Canvas from '../components/Canvas.js';
@@ -14,10 +14,9 @@ import ProjectList from '../components/ProjectList.js';
 import SaveAnnotationBtn from '../components/SaveAnnotationBtn.js';
 import InfoBar from '../components/InfoBar.js';
 import {Row, Col} from 'react-bootstrap'; // Third party components. Refer to the tutorial on https://react-bootstrap.netlify.app/docs/layout/grid
-import { Menu, Modal, Form, Input, Button } from 'antd'; // Third party components. Refer to the tutorial on https://ant.design/components/menu, and https://ant.design/components/modal
-import { drawCircle, drawLine } from '../utils/canvasUtils.js'; // canvasUtils.js is a wrapper of fabric.js. It provides functions to operate on canvas easily. Currently, only these two functions are provided.
+import { Menu, Modal, Form, Input, Button, Table } from 'antd'; // Third party components. Refer to the tutorial on https://ant.design/components/menu, and https://ant.design/components/modal
 import AnnotationUploader from '../components/AnnotationUploader.js';
-
+import AnnotationDownloader from '../components/AnnotationDownloader.js';
 
 // Client side components. They cannot be rendered on the server side, thus need to be explicitly marked as client side comp.
 import dynamic from 'next/dynamic';
@@ -32,15 +31,16 @@ export default function Home() {
   const [configUploaderOpen, setConfigUploaderOpen] = useState(false);
   const [projectListOpen, setProjectListOpen] = useState(false);
   const [videoManagerOpen, setVideoManagerOpen] = useState(false);
-  const [annotationUploaderOpen, setAnnotationUploaderOpen] = useState(false);
   const [canvasAdditionalDataControllerOpen, setCanvasAdditionalDataControllerOpen] = useState(false);
   const [info, setInfo] = useState(''); // To display feedback info
-
+  
   const [form] = Form.useForm();
   const [frameNumber, setFrameNumber] = useState('');
-  const [notes, setNotes] = useState({});  
+  const [notes, setNotes] = useState([]);  // was ({})
   //let annotations = {};  // Still don't completely understand why this version doesn't work
   const [annotationUploadOpen, setAnnotationUploadOpen] = useState(false);
+  const [annotationDownloadOpen, setAnnotationDownloadOpen] = useState(false);
+  const [fileName, setFileName] = useState('annotations');
 
   const projectDropdownItems = [
     {
@@ -65,7 +65,8 @@ export default function Home() {
                   defaultBtnType='skeleton'
                   disableGroupTypeSelect
                   disableBtnTypeSelect
-                  // hidePlusBtn
+                  hidePlusBtn
+                  // Need a way to make there be no buttons whatsoever associated with the project
                 />,
     },
     {
@@ -102,7 +103,7 @@ export default function Home() {
                   mode='inMenu' // DownloadBtn has two modes: 'inMenu' and 'solely'. 'inMenu' is used when the DownloadBtn is used in a dropdown menu, and 'solely' is used when the DownloadBtn is used as a standalone button. This prop affects the UI of the DownloadBtn.
                 />,
     },
-];
+  ];
   
   function projectDropdownClickHandler(e) {
   }
@@ -182,33 +183,76 @@ export default function Home() {
     },
   ]
 
-  function onDownloadBtnClick() { //What if there's no project or video loaded?  I guess default annotations are downloaded?
-    const jsonAnno = JSON.stringify(notes);
-    const blobAnno = new Blob([jsonAnno], {type: 'text/plain'});
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blobAnno);
-    a.download = 'annotation.json';
-    a.click();
-    URL.revokeObjectURL(a.href);
+  function onDownloadBtnClick() { //What if there's no project or video loaded?  
+    setAnnotationDownloadOpen(true);
   } 
 
+  useEffect(()=>{
+    if (annotationDownloadOpen) {  
+      setFileName("videoname");
+    }
+  }, [annotationDownloadOpen]);
+
+ 
+  const ModalAnnotationDownloader = 
+    <Modal 
+      title={'Download notes'}
+      footer={() => null}
+      open={annotationDownloadOpen}
+      setOpen={setAnnotationDownloadOpen}
+      onCancel={() => setAnnotationDownloadOpen(false)}
+      >
+      <div className='my-4 d-flex justify-content-center'>
+      <div style={{width: '100%'}}>
+        Please name your file:
+        <Input defaultValue='videoname' onChange={(e)=>setFileName(e.target.value)} value={fileName} addonAfter='.json' onPressEnter={onSaveBtnClick} />
+        <Button onClick={onSaveBtnClick}>Save</Button>
+      </div>
+      </div>
+    </Modal>
+
+
+  // Changes to make:
+  // 1. Save onEnter --> Done
+  // 2a. Name: User-designated name for document --> Done
+  // 2b. Name: Defaults to anything (precurser to 2c) --> Done
+  // 2c. Name: Defaults to video name --> NOT DONE.  Need open API for fetching video data.
+  // 3. Save only when a video is loaded --> NOT DONE.  Need open API for fetching video data
+  // 4. Save annotations to the database --> not started
+  function onSaveBtnClick(){
+    const finalFileName = fileName;
+    console.log('filename: ', fileName)
+    setAnnotationDownloadOpen(false);
+    const jsonAnno = JSON.stringify(notes);  
+    const blobAnno = new Blob([jsonAnno], {type: 'text/plain'});  
+    const a = document.createElement("a");  
+    a.href = URL.createObjectURL(blobAnno);  
+    console.log("AnnotationName:", fileName);
+    a.download = finalFileName + '.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+  
+  // Input is also used inModalAnnoutationDownloader (line 220)
+  // Would it be better to say "const { downloadInput } = Input;" so these 2 are not confused?
+  // --> apparently not necessary.  See antDesign's example "with clear icon".
   const { TextArea } = Input;
 
 
   function onAddBtnClick() {
     const note = form.getFieldValue("notes");
-    console.log("This is the current TextArea:", note);
     setNotes(prevNotes => ({...prevNotes, [frameNumber]:note})) 
+    // TODO: add a line that also modifies the NotesTable
   }
 
   //frameChangeHandler
-  // on frame change, this will update the text box with the correct annotation
+  // on frame change, this will update the note box with the correct annotation
   function frameChangeHandler(props) {
     const frameNumber = props.frameNum; // This is a safe way to give the developer the frameNum value.
     setFrameNumber(frameNumber);
     const note = notes[frameNumber]; // --> TODO: add annotations as a dictionary
     form.setFieldsValue({
-      notes: notes[frameNumber]? notes[frameNumber]:"Enter notes here:",
+      notes: notes[frameNumber]? notes[frameNumber]:"", //Enter notes here
   });
   }
 
@@ -216,15 +260,10 @@ export default function Home() {
     setAnnotationUploadOpen(true);
   }
 
-  function onCloseUploader(){
-    setAnnotationUploadOpen(false);
-  }
 
   const ModalAnnotationUploader =
     <Modal 
-      title={'Upload stuff'}
-      //{/*open={props.open}*/}
-      //onCancel={cancelClickHandler}
+      title={'Upload notes'}
       footer={() => null}
       open={annotationUploadOpen}
       setOpen={setAnnotationUploadOpen}
@@ -238,6 +277,7 @@ export default function Home() {
       </div>
       </div>
     </Modal>
+
   
   
 
@@ -261,23 +301,28 @@ export default function Home() {
             hideSubmit 
             onFrameChange={frameChangeHandler}
             />
+          <Col style={{width: '80%'}}>
           <Form className='my-2 mx-3' form={form} size='small'>
               <Form.Item
                   name="notes" 
               >
-                  <TextArea placeholder="Enter notes here:" rows={10} style={{width: '100%'}} />
+                  <TextArea placeholder="Enter notes here:" onPressEnter={onAddBtnClick} rows={10} style={{width: '100%'}} />
               </Form.Item>
               <Form.Item>
-                  <Button className='my-2 mx-2' onClick={onAddBtnClick}>Save Note</Button>
+                  {/*<Button className='my-2 mx-2' onClick={onAddBtnClick}>Save Note</Button>*/}
                   <Button className='my-2 mx-2' onClick={onDownloadBtnClick}>Download Notes</Button>
                   <Button className='my-2 mx-2' onClick={onUploadBtnClick}>Upload Notes</Button>
                   {ModalAnnotationUploader}
+                  {ModalAnnotationDownloader}
               </Form.Item>
             </Form>
+            </Col>
+            <Col style={{width: '20%'}}>
+              <Table dataSource={dataSource} columns={columns}>Notes Table</Table>
+            </Col>
         </Row>
       </Workspace>
     </div>
   )
 }
-
 
