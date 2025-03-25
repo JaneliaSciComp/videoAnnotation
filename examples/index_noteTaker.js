@@ -42,6 +42,18 @@ export default function Home() {
   const [annotationDownloadOpen, setAnnotationDownloadOpen] = useState(false);
   const [fileName, setFileName] = useState('annotations');
 
+  //Keyboard shortcuts
+  const handleShiftRight = (event) => {
+    if (event.shiftKey && event.key=="ArrowRight"){
+
+    }
+  }
+  useEffect(()=>{}
+
+  )
+
+
+
   const projectDropdownItems = [
     {
       label: 'Exisiting Projects',
@@ -240,13 +252,14 @@ export default function Home() {
 
 
   function onAddBtnClick() {
+    console.log("Data source format is: ", dataSource);
     const note = form.getFieldValue("notes");
-    setNotes(prevNotes => ({...prevNotes, [frameNumber]:note})) 
-    // TODO: add a line that also modifies the NotesTable
+    setNotes(prevNotes => ({...prevNotes, [frameNumber]:note})); 
+    // TODO: add a line that also modifies the NotesTable --> seems to do this on its own
   }
 
   //frameChangeHandler
-  // on frame change, this will update the note box with the correct annotation
+  // on frame change, this will update the text box with the correct annotation
   function frameChangeHandler(props) {
     const frameNumber = props.frameNum; // This is a safe way to give the developer the frameNum value.
     setFrameNumber(frameNumber);
@@ -278,7 +291,30 @@ export default function Home() {
       </div>
     </Modal>
 
-  
+
+  // Notes table
+  const dataSource = Object.entries(notes).map(([key, note]) => ({
+    key: parseInt(key), 
+    frameNumber: parseInt(key, 10)+1,
+    note
+  }));
+
+  // TODO: <a> is a hyperlink which should allow me to call a function for jumping to that particular frame
+  // TODO: "note" needs to be an abbreviated form of note... like, first 10 characters + "..."
+  const columns = [
+    {
+      title: "Frame",
+      dataIndex: "frameNumber",
+      key: "frameNumber",
+      render: (text) => <a>{text}</a> // need to link this to the given frame
+    },
+    {
+      title: "Note",
+      dataIndex: "note",
+      key: "note",
+      render: (text) => <a>{text}</a>
+    }
+  ]  
   
 
   return (
