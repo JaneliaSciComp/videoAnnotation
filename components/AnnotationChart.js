@@ -101,8 +101,6 @@ export default function AnnotationChart(props) {
     }, [resetAnnotationChart])
 
 
-
-
     useEffect(() => {
         if (updateAnnotationChart) {
             getAnnotationData();
@@ -149,8 +147,6 @@ export default function AnnotationChart(props) {
         } 
     }, [intervalErasing])
 
-
-    
 
     useEffect(() => {
         if (!props.labels?.length>0) return;
@@ -356,7 +352,6 @@ export default function AnnotationChart(props) {
             <div id='annotationChart' style={{position: 'relative', width: props.width ?? '100%', height: props.height ?? '100%'}}> 
                 {generateChart()}
             </div>
-            {}
         </>
     )
 }

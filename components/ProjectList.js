@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useRef} from 'react';
 import { useStateSetters, useStates } from './AppContext'; 
-import { Modal, List, Button } from 'antd';
+import { Modal, List, Button, Form, Input, Space } from 'antd';
 import { PlayCircleOutlined, DeleteOutlined } from '@ant-design/icons';
 import { getAllProjects, getProject, getProjectBtn, getProjectVideo, deleteProject, deleteProjectBtn, deleteProjectVideo, deleteProjectAnnotation } from '../utils/requests';
 
@@ -58,6 +58,7 @@ export default function ProjectList(props) {
         props.setOpen(false);
     }
 
+
     async function onLoadBtnClick(i) {
         const id = projectIds[i];
         if (projectId) {
@@ -92,7 +93,6 @@ export default function ProjectList(props) {
         
         const btnData = {};
         const videos = {};
-          
         if (projectRes['error'] || btnRes['error'] || videoRes['error']) {
             setInfo(`Load project failed: \n Project: ${projectRes?.error} \n Btn: ${btnRes?.error} \n Video: ${videoRes?.error}`);
         } else {
@@ -118,7 +118,7 @@ export default function ProjectList(props) {
         }
         
         props.setOpen(false);
-        
+
         if (props.onProjectLoad) {
             const e = {
                 project: {...projectRes},
@@ -189,22 +189,24 @@ export default function ProjectList(props) {
                 footer={[ 
                 ]}
                 >
-                <List
-                    size="small"
-                    bordered
-                    dataSource={projectNames}
-                    renderItem={(name, i) => 
-                        <List.Item key={i} style={projectIds[i]===projectId ? {backgroundColor: '#EEEEEE'} : null}>
+                <div style={{maxHeight: '60vh',overflowY: 'auto'}}>
+                    <List
+                        size="small"
+                        bordered
+                        dataSource={projectNames}
+                        renderItem={(name, i) => 
+                            <List.Item key={i} style={projectIds[i]===projectId ? {backgroundColor: '#EEEEEE'} : null}>
 
-                            <div>{name}</div>
-                            <div >
-                                <Button type='text' onClick={()=>{onLoadBtnClick(i)}} icon={<PlayCircleOutlined />} />
-                                <Button type='text' onClick={()=>{onDelBtnClick(i)}} icon={<DeleteOutlined />} />
-                            </div>
-                            
-                        </List.Item>
-                    }
-                    />
+                                <div>{name}</div>
+                                <div >
+                                    <Button type='text' onClick={()=>{onLoadBtnClick(i)}} icon={<PlayCircleOutlined />} />
+                                    <Button type='text' onClick={()=>{onDelBtnClick(i)}} icon={<DeleteOutlined />} />
+                                </div>
+                                
+                            </List.Item>
+                        }
+                        />
+                </div>
                 <p>{info}</p>
             </Modal>
         </>

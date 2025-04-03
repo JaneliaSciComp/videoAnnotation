@@ -205,7 +205,6 @@ export default function AnnotationTable(props) {
 
     async function onDelete(id) {
         if (id !== annoIdToDraw) {
-            console.log('onDelete called');
             const annoToDelete = frameAnnotation[id];
             delete(annotationRef.current[annoToDelete.frameNum][id]);
             const frameAnnoCopy = {...frameAnnotation};
@@ -218,7 +217,7 @@ export default function AnnotationTable(props) {
             }
         }
     
-}
+    }
 
     return (
         <div style={{width: `${props.width}px`, height: `${props.height}px`}}>
@@ -232,10 +231,8 @@ export default function AnnotationTable(props) {
                 scroll={{y: props.scrollY, scrollToFirstRowOnChange: true}}
                 expandable={expandableConfig}
                 />
-            {}
         </div>
         
     )
-    
 
 }

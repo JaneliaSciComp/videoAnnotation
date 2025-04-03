@@ -36,8 +36,6 @@ import {predefinedColors, btnTypeOptions, crowdSelectOptions} from '../utils/uti
         disableCrowdSelect: boolean.  False by default, true when specified. Whether to disable crowd select.
 */
 export default function BtnController(props) {
-    
-
 
     function onBtnTypeChange(value, opt) {
         const target = {
@@ -65,7 +63,7 @@ export default function BtnController(props) {
 
 
     function onColorChange(value) {
-        const newColor = `rgb(${value.metaColor.r}, ${value.metaColor.g}, ${value.metaColor.b}, ${value.metaColor.a})`; //value.metaColor.originalInput.
+        const newColor = `rgb(${value.metaColor.r}, ${value.metaColor.g}, ${value.metaColor.b}, ${value.metaColor.a})`;
         const target = {
             index: props.index,
             value: newColor
@@ -78,7 +76,6 @@ export default function BtnController(props) {
 
     
     function onCrowdChange(value, opt) {
-        console.log('crowd', value, opt);
         const target = {
             index: props.index,
             value: value,

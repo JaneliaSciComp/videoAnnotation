@@ -72,11 +72,9 @@ export default function BtnConfiguration(props) {
 
     
     useEffect(() => {
-        console.log('btnConfiguration status changed', props.status);
         setInfo(null);
         if (props.status === 'new') {
             setBtnConfigData({});
-            console.log('new btnConfig');
             addGroup('new');            
         } else if (props.status === 'edit') {
             if (Object.keys(btnConfigData).length > 0) {
@@ -88,19 +86,13 @@ export default function BtnConfiguration(props) {
       }, [props.status]
     )
 
-    
-        
-
     useEffect(() => {
-        console.log('confirmConfig changed', confirmConfig)
         if (confirmConfig) {
             onCreateBtnClick();
             setConfirmConfig(false);
         }
     }, [confirmConfig])
     
-
-
 
     function addGroup(useCase) {
         const index = createId();
@@ -123,48 +115,40 @@ export default function BtnConfiguration(props) {
     }
 
 
-    async function onCreateBtnClick() {
-
-            console.log('createBtn',getData, btnConfigData);
-            
-            await Promise.all(Object.keys(btnConfigData).map(async (btnGroupId) => {
-                if (!getData.hasOwnProperty(btnGroupId)) {
-                    const res = await deleteBtnGroup(btnGroupId);
-                    if (res['error']) {
-                        setInfo(res['error']);
-                    } else {
-                        setInfo(null);
-                        setBtnConfigData(data=>{
-                            const dataCopy = {...data};
-                            delete(dataCopy[btnGroupId]);
-                            return dataCopy;
-                        }); 
-                    }
+    async function onCreateBtnClick() {            
+        await Promise.all(Object.keys(btnConfigData).map(async (btnGroupId) => {
+            if (!getData.hasOwnProperty(btnGroupId)) {
+                const res = await deleteBtnGroup(btnGroupId);
+                if (res['error']) {
+                    setInfo(res['error']);
+                } else {
+                    setInfo(null);
+                    setBtnConfigData(data=>{
+                        const dataCopy = {...data};
+                        delete(dataCopy[btnGroupId]);
+                        return dataCopy;
+                    }); 
                 }
-            }))
-            
-            const newGetData = {};
-            for (let i in getData) {
-                newGetData[i] = true;
             }
-            setGetData(newGetData);
-            props.setStatus(null);
+        }))
+        
+        const newGetData = {};
+        for (let i in getData) {
+            newGetData[i] = true;
+        }
+        setGetData(newGetData);
+        props.setStatus(null);
 
-            if (props.onCreateBtnClick) {
-                props.onCreateBtnClick();
-            }
+        if (props.onCreateBtnClick) {
+            props.onCreateBtnClick();
+        }
     }
 
     function onDelete(target) {
-
         const getDataCopy = {...getData};
         delete(getDataCopy[target.index]);
         setGetData(getDataCopy);
     }
-
-
-
-
 
 
     return (
@@ -183,10 +167,8 @@ export default function BtnConfiguration(props) {
                     :null
                 }
             </Space>
-            {}
             
             <Space direction='vertical'>
-                {}
                 {Object.keys(getData).map(index => 
                     (!btnConfigData.hasOwnProperty(index)) ? 
                         <BtnGroupController
@@ -230,7 +212,6 @@ export default function BtnConfiguration(props) {
                     )
                 }
             </Space>
-            {}
             
             <br />
             {/* <Space>

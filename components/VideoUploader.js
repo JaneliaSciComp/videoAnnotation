@@ -1,18 +1,21 @@
 import React, {useState, useEffect, useRef} from 'react';
 import styles from '../styles/Video.module.css';
-import { InputNumber, Slider, Space } from 'antd';
+import { InputNumber, Slider } from 'antd';
 import { CaretRightOutlined, PauseOutlined } from '@ant-design/icons';
 import {Row, Col, Form, Button} from 'react-bootstrap';
 import { useStates, useStateSetters } from './AppContext';
-import { postVideo, getVideoMeta, getFrame, getAdditionalData, getVideoAnnotation } from '../utils/requests';
+import { getFrame, postVideo, getVideoMeta, getAdditionalData, getVideoAnnotation } from '../utils/requests';
+import { defaultFrameBufferSeconds } from "../utils/utils.js";
 
 
 
 /**
  * 
  * @param {*} props 
- *     hideSubmit: boolean. Whether to hide video path submit part.
- *     onFrameChange: Callback when frame changes. Takes one argument: e {frameNum: int, the current frame number}
+ *      hideSubmit: boolean. Whether to hide video path submit part.
+ *      onFrameChange: function. Callback function when frame changes. Takes one argument: e {frameNum: currentFrameNum}
+ *      frameBufferSeconds: number. It tells the web workder how many seconds of frames to retrieve from the backend.
+//  *      frameFetchThreshold: number. If the remaining seconds of frames after the current frame in the buffer is less than this value (seconds) * fps, it will trigger the web worker to retrieve more frames.
  */
 export default function VideoUploader(props) {
     const [fps, setFps] = useState(0);
@@ -23,7 +26,12 @@ export default function VideoUploader(props) {
     const [frameError, setFrameError] = useState();
     const playInterval = useRef(null);
     const [playControl, setPlayControl] = useState();
-
+    const [worker, setWorker] = useState(null); 
+    const cachedFrameRangeRef = useRef([null,null]);
+    const isContinueFetchingRef = useRef(false);
+    const frameDataStoreRef = useRef({});
+    const needToSetIntervalRef = useRef(false);
+    const loadOneRequestedRef = useRef(false);
 
     const setFrameUrl = useStateSetters().setFrameUrl;
     const setFrameNum = useStateSetters().setFrameNum;
@@ -45,9 +53,78 @@ export default function VideoUploader(props) {
     const setGlobalInfo = useStateSetters().setGlobalInfo;
     const annotationRef = useStates().annotationRef;
     const additionalDataRef = useStates().additionalDataRef;
+    const realFpsRef = useStates().realFpsRef;
+    const isFetchingFrame = useStates().isFetchingFrame;
+    const setIsFetchingFrame = useStateSetters().setIsFetchingFrame;
+
+    const frameBufferSeconds = props.frameBufferSeconds??defaultFrameBufferSeconds;
 
 
-    console.log('VideoUploader render');
+    useEffect(() => {
+        const newWorker = new Worker(new URL('../utils/webWorker.js', import.meta.url));
+        newWorker.onmessage = WorkerMsgHandler;
+        setWorker(newWorker);
+      
+        return () => newWorker.terminate();
+    }, []);
+
+
+    function WorkerMsgHandler(e) {
+        const { type, frameNum, error, startFrame, endFrame, frameData, bufferedFrames, currentTaskType } = e.data;
+        setGlobalInfo(null);
+        
+        switch (type) {
+            case 'fetch':
+                cachedFrameRangeRef.current = [startFrame, endFrame];
+                frameDataStoreRef.current = mergeFrameData(frameData, bufferedFrames);
+                setIsFetchingFrame(false);
+                if (frameDataStoreRef.current[frameNum] === 'error') {
+                    setFrameError(`Error retrieving frame ${frameNum}`);
+                } 
+                else if (!loadOneRequestedRef.current) {
+                    setFrameUrl(frameDataStoreRef.current[frameNum]);
+                    setFrameNum(frameNum);
+                } else if (loadOneRequestedRef.current) {
+                    loadOneRequestedRef.current = false;
+                }
+                break;
+            case 'continueFetch':
+                cachedFrameRangeRef.current = [startFrame, endFrame];
+                frameDataStoreRef.current = mergeFrameData(frameData, bufferedFrames);
+                isContinueFetchingRef.current = false;
+                break;
+            case 'error':
+                setFrameError(error);
+                break;
+            case 'cancel-fetch':
+                if (currentTaskType !== 'fetch') {
+                    setIsFetchingFrame(false);
+                }
+                break;
+            case 'cancel-continueFetch':
+                if (currentTaskType !== 'continueFetch') {
+                    isContinueFetchingRef.current = false;
+                }
+                break;
+        }
+    }
+
+    function mergeFrameData(frameData, bufferedFramesArr) {
+        const newFrameData = {};
+        bufferedFramesArr.forEach(frameNumber => {
+            newFrameData[frameNumber] = frameData[frameNumber]??frameDataStoreRef.current[frameNumber];
+        })
+        return newFrameData;
+    }
+
+    useEffect(() => {
+        if (!isFetchingFrame && needToSetIntervalRef.current) {
+            needToSetIntervalRef.current = false;
+            playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
+            setPlayControl('play');
+        }
+    }, [isFetchingFrame])
+
 
     useEffect(() => {
         if (resetVideoPlay) {
@@ -55,7 +132,6 @@ export default function VideoUploader(props) {
             setResetVideoPlay(false);
         }
     }, [resetVideoPlay])
-
 
 
     useEffect(() => {
@@ -79,46 +155,128 @@ export default function VideoUploader(props) {
     useEffect(()=>{
         if (playInterval.current) {
             clearInterval(playInterval.current);
-            playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
+                playInterval.current = setInterval(incrementFrame,  Math.floor(1000/playFps));
+            
         }
     }, [playFps])
 
 
-    useEffect(() => {
-        if (playInterval.current) {
-            clearInterval(playInterval.current);
-            playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
-        }
-    }, [sliderValue])
-
-
-    function sliderChangeHandler(newValue) {
-        if (newValue >= 1) {
+    async function sliderChangeHandler(newValue) {
+        if (newValue >= 1 && newValue <= videoMetaRef.current['totalFrameCount']-1
+        ) {
+            setSliderValue(newValue);
             if (playControl !== 'play') {
-                setFrame(newValue);
-            }  else if (playInterval.current) {
-                setSliderValue(newValue);
+                await loadOne(newValue-1);
+            }  else {
+                const frameNeeded = newValue-1;
+                await pauseAndLoadOne(frameNeeded);
             }
         }
     }
 
-    function inputNumerChangeHandler(newValue) {
-        if (typeof newValue === 'number' && Number.isInteger(newValue) && newValue>=1 ) {
+    async function sliderChangeCompleteHandler(newValue) {
+        retrieveFollowingFrames(newValue-1);
+    }
+
+    async function inputNumberChangeHandler(newValue) {
+        if (typeof newValue === 'number' && Number.isInteger(newValue) && newValue>=1 && newValue <= videoMetaRef.current['totalFrameCount']-1
+        ) {
+            setSliderValue(newValue);
+            const frameNeeded = newValue-1;
             if (playControl !== 'play') {
-                setFrame(newValue);
-            }  else if (playInterval.current) {
-                setSliderValue(newValue);
+                await loadOne(frameNeeded);
+            }  else {
+                await pauseAndLoadOne(frameNeeded);                
+            }
+            retrieveFollowingFrames(frameNeeded);
+        }
+    }
+
+    async function loadOne(frameNumber) {
+        const totalCount = videoMetaRef.current['totalFrameCount'];
+        if (frameNumber >= 0 && frameNumber <= totalCount-1) {
+            if (isFetchingFrame) {
+                loadOneRequestedRef.current = true;
+            }
+
+            if (Number.isInteger(cachedFrameRangeRef.current[0])
+                && Number.isInteger(cachedFrameRangeRef.current[1]) 
+                && frameNumber >= cachedFrameRangeRef.current[0] 
+                && frameNumber <= cachedFrameRangeRef.current[1]
+                && frameDataStoreRef.current[frameNumber]
+            ) {
+                if (frameDataStoreRef.current[frameNumber] === 'error') {
+                    setFrameError(`Error retrieving frame ${frameNumber}`);
+                } else {
+                    setFrameUrl(frameDataStoreRef.current[frameNumber]);
+                    setFrameNum(frameNumber);
+                }
+            }
+            else {
+                setFrameError(null);
+                const res = await getFrame(frameNumber);
+                if (res['error']) {
+                    setFrameError(res['error']);
+                } else {
+                    setFrameUrl(res);
+                    setFrameNum(frameNumber);
+                }
+            }  
+
+        }
+    }
+
+    async function pauseAndLoadOne(frameNumber) {
+        setPlayControl('pause');
+        clearInterval(playInterval.current);
+        playInterval.current = null;
+        if (isFetchingFrame && needToSetIntervalRef.current) {
+            needToSetIntervalRef.current = false;
+        }
+
+        await loadOne(frameNumber);
+    }
+
+    function retrieveFollowingFrames(frameNumber) {
+        const totalCount = videoMetaRef.current['totalFrameCount'];
+        const nextFrame = frameNumber+1;
+        if (nextFrame<=totalCount-1) {
+            if (worker) {
+                worker.postMessage({
+                    type: 'continueFetch',
+                    currentFrame: nextFrame,
+                    fps: videoMetaRef.current['fps'],
+                    totalFrameNumber: totalCount,
+                    frameBufferSeconds: frameBufferSeconds,
+                });
+                isContinueFetchingRef.current = true;
+                setGlobalInfo('Fetching frames from server ...');
             }
         }
     }
 
     
     let currentSliderValue =sliderValue;
-    function incrementFrame() {
-        let newFrameNum = ++currentSliderValue;
+    async function incrementFrame() {
+        let fpsMultiple;
+        if (!realFpsRef.current || realFpsRef.current >= playFps ) { 
+            fpsMultiple = 1;
+        } 
+        else {
+            fpsMultiple = Math.floor(playFps/realFpsRef.current);
+        }
+        currentSliderValue = currentSliderValue + fpsMultiple;
+
+        let newFrameNum = currentSliderValue;
         if (newFrameNum <= totalFrameCount ) {
             setFrame(newFrameNum);
-        } else {
+        } 
+        else if (newFrameNum - totalFrameCount < fpsMultiple) {
+            newFrameNum = totalFrameCount;
+            setFrame(newFrameNum);
+            currentSliderValue = newFrameNum;
+        }
+        else {
             if (playInterval.current) {
                 clearInterval(playInterval.current);
                 playInterval.current = null;
@@ -134,7 +292,14 @@ export default function VideoUploader(props) {
             && playFps>0)
             && ((playControl !== 'play' && sliderValue < totalFrameCount)
                 || (!playControl && sliderValue === totalFrameCount))
-        ) {
+            && (!isFetchingFrame)
+
+        ) { 
+            if (sliderValue === 0) {
+                setFrame(1);
+                needToSetIntervalRef.current = true;
+                return;
+            }
             playInterval.current = setInterval(incrementFrame, Math.floor(1000/playFps));
             setPlayControl('play');
         }
@@ -144,6 +309,12 @@ export default function VideoUploader(props) {
             setPlayControl('pause');
             clearInterval(playInterval.current);
             playInterval.current = null;
+        } else if (playControl === 'play' 
+            && isFetchingFrame
+            && needToSetIntervalRef.current
+        ) {
+            setPlayControl('pause');
+            needToSetIntervalRef.current = false;
         }
 
     }
@@ -198,19 +369,58 @@ export default function VideoUploader(props) {
     }
 
 
-    async function setFrame(newValue, videoInfoObj=null) {
+    function setFrame(newValue, videoInfoObj=null) {
         if (newValue) {
             setSliderValue(newValue);
             if (newValue >= 1) {
                 setFrameError(null);
-                const res = await getFrame(newValue-1);
-                if (res['error']) {
-                    setFrameError(res['error']);
-                } else {
-                    setFrameUrl(res);
-                    setFrameNum(newValue-1);
+
+                const frameNeeded = newValue-1;
+                if (worker) {
+                    if (Number.isInteger(cachedFrameRangeRef.current[0])
+                        && Number.isInteger(cachedFrameRangeRef.current[1]) 
+                        && frameNeeded >= cachedFrameRangeRef.current[0] 
+                        && frameNeeded <= cachedFrameRangeRef.current[1]
+                        && frameDataStoreRef.current[frameNeeded]
+                    ) {
+                        if (frameDataStoreRef.current[frameNeeded] === 'error') {
+                            setFrameError(`Error retrieving frame ${frameNeeded}`);
+                        } else {
+                            setFrameUrl(frameDataStoreRef.current[frameNeeded]);
+                            setFrameNum(frameNeeded);
+                        }
+
+                        if (!isContinueFetchingRef.current
+                            && cachedFrameRangeRef.current[1] < videoMetaRef.current['totalFrameCount']-1
+                        ) {
+                            worker.postMessage({
+                                type: 'continueFetch',
+                                currentFrame: frameNeeded,
+                                fps: videoMetaRef.current['fps'],
+                                totalFrameNumber: videoMetaRef.current['totalFrameCount'],
+                                frameBufferSeconds: frameBufferSeconds,
+                            });
+                            isContinueFetchingRef.current = true;
+                        }
+                    } else {
+                        if (!isFetchingFrame) {
+                            if (playInterval.current) {
+                                clearInterval(playInterval.current);
+                                playInterval.current = null;
+                                needToSetIntervalRef.current = true;
+                            }
+                            worker.postMessage({
+                                type: 'fetch',
+                                currentFrame: frameNeeded,
+                                fps: videoMetaRef.current['fps'],
+                                totalFrameNumber: videoMetaRef.current['totalFrameCount'],
+                                frameBufferSeconds: frameBufferSeconds,
+                            });
+                            setIsFetchingFrame(true);
+                            setGlobalInfo('Fetching frames from server ...');
+                        }
+                    } 
                 }
-                    
             }
         } else {
             setFrameUrl(null);
@@ -218,17 +428,14 @@ export default function VideoUploader(props) {
 
         if (props.onFrameChange) {
             const e = {
-                frameNum: newValue>=1? newValue-1 : undefined,
+                frameNum: newValue>=1 ? newValue-1 : undefined,
             }
             props.onFrameChange(e);
         }
-        
     }
 
 
-
     function resetVideoStatus() {
-        console.log('resetVideoStatus');
         setFps(0);
         setTotalFrameCount(0);
         setSliderValue(0);
@@ -238,12 +445,17 @@ export default function VideoUploader(props) {
         setFrame(null);
         setVideoId(null);
         setPlayControl(null);
+        cachedFrameRangeRef.current = [];
+        frameDataStoreRef.current = {};
+        worker.postMessage({ 
+            type: 'reset' 
+        });
+
     }
 
     async function initializePlay(videoInfoObj) { 
         videoMetaRef.current = {};
         const meta = await getVideoMeta(videoInfoObj.videoId);
-        console.log(meta);
         if (meta['error']) {
             setSubmitError(meta['error']);
         } else {
@@ -271,10 +483,12 @@ export default function VideoUploader(props) {
                 }
             }
                 await retrieveVideoAnnotations(videoInfoObj.videoId);
-            
-                await setFrame(1);
+                setSliderValue(1);
+                await loadOne(0);
+                retrieveFollowingFrames(0);
         }
     }
+
 
     async function retrieveVideoAnnotations(videoId) {
         setGlobalInfo('Retrieving video annotation from database ...');
@@ -298,14 +512,9 @@ export default function VideoUploader(props) {
         }
     }
 
-            
-
-
-
 
     return (
         <div className={styles.videoUploaderContainer}>
-            {}
             <Row className={styles.videoPlayControlContainer}>
                 <Col sm={3} className='px-0'>
                     <span className='me-1'>FPS</span>
@@ -319,7 +528,7 @@ export default function VideoUploader(props) {
                         max={totalFrameCount}
                         defaultValue={0}
                         value={sliderValue}
-                        onChange={inputNumerChangeHandler}
+                        onChange={inputNumberChangeHandler}
                         />
                 </Col>
                 <Col sm={9} className='px-0'>
@@ -337,6 +546,7 @@ export default function VideoUploader(props) {
                                 min={0}
                                 max={totalFrameCount}
                                 onChange={sliderChangeHandler}
+                                onChangeComplete={sliderChangeCompleteHandler}
                                 value={sliderValue}
                                 />
                             <span className={styles.sliderMark}>{totalFrameCount}</span>

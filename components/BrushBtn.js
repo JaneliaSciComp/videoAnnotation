@@ -103,12 +103,10 @@ export default function BrushBtn(props) {
                 } else {
                     if (!annotationIdRef.current) {
                         annoCopy = createNewAnnoObj(annoCopy);
-                        console.log(annoCopy);
                     }
                     setAnnoIdToDraw(annotationIdRef.current);
                 }
             }
-            console.log(annoCopy);
             setFrameAnnotation(annoCopy);
             setSkeletonLandmark(null);
             setUndo(0);

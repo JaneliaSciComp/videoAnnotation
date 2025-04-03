@@ -256,11 +256,9 @@ export default function BtnGroupController(props) {
     function onDownBtnClick() {
         const index = getSelfIndex();
         const childrenData = getData();
-        console.log(childrenData);
         let data = [];
         if (groupType && btnType) {
             if (btnType !== prevBtnTypeRef.current) {
-                console.log(btnType, prevBtnTypeRef.current);
                 data = createChildrenData(0, btnNum);
             } else {
                 if (btnNum > prevBtnNumRef.current) {
@@ -300,7 +298,6 @@ export default function BtnGroupController(props) {
     }
 
     function getSelfIndex() {
-        console.log()
         return props.index ? props.index : index; 
     }
 
@@ -486,7 +483,6 @@ export default function BtnGroupController(props) {
 
             const btnGroupObj = {...newData};
             btnGroupObj.btnGroupId = index;
-            console.log(newData, btnGroupObj);
             const res = await postBtnGroup(btnGroupObj)
             if (res['error']) {
                 setGlobalInfo(res['error']);
@@ -535,7 +531,6 @@ export default function BtnGroupController(props) {
                         />
                 </Space.Compact>
 
-                {}
                     <Button className={styles.generateBtn} 
                         tabIndex={-1}
                         type='text'

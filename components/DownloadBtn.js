@@ -19,7 +19,6 @@ export default function DownloadBtn(props) {
     const projectId = useStates().projectId;
 
     function clickHandler() {
-        console.log('download btn clicked', props.type);
         if (props.type === 'configuration') {
             if (projectId || frameUrl) {
                 setDownloadConfig(true);

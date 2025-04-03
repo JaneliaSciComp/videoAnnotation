@@ -13,6 +13,7 @@ import { postProject, editProject } from '../utils/requests';
  *      onSubmit: function. Callback function when user click on Ok button. It receives a single argument: e  {data: {projectId: …, projectName: …, description: …}} 
  *      onProjectNameChange: function. Callback function when user type in project name input field. It receives a single argument: e {value: 'typed value'}
  *      onDescriptionChange: function. Callback function when user type in project description input field. It receives a single argument: e {value: 'typed value'}
+
  * 
  *      // following props are passed to child BtnConfiguration
  *      groupType: set groupType for each child btnGroupController
@@ -24,7 +25,6 @@ import { postProject, editProject } from '../utils/requests';
         disableBtnTypeSelect: disable child btnGroupController's btnTypeSelect
         disableBtnNumInput: disable child btnGroupController's btnNumInput
         hidePlusBtn: whether to hide the + btn of adding btn group
- *      
  *     
  */
 export default function ProjectManager(props) {
@@ -193,12 +193,6 @@ export default function ProjectManager(props) {
                                     onChange={onProjectNameChange}
                                     allowClear/>
                             </Form.Item>
-                            {/* {props.serverType==='local' ? 
-                                <Form.Item label="Project Directory" required>
-                                    <Input placeholder=''/>
-                                </Form.Item>
-                                : null
-                            } */}
                             <Form.Item name='description' label="Description">
                                 <Input.TextArea 
                                     onChange={onDescriptionChange}

@@ -296,6 +296,7 @@ export async function getAdditionalData(videoId, additionalDataNameToRetrieve) {
     }
 }
 
+
 export async function postProjectAnnotation(data) { 
     /**
      * data: {
@@ -366,6 +367,7 @@ export async function getVideoAnnotation(videoId) {
         return {error: 'GET video annotation request failed'}
     }
 }
+
 
 export async function getAnnotationForChart(videoId, frameNum, labelList, range) {
     const res = await fetch(`${ANNOTATION_FOR_CHART_URL}?videoId=${videoId}&frameNum=${frameNum}&labels=${labelList.join('@@')}&range=${range}`, {

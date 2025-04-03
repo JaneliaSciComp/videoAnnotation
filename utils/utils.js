@@ -73,6 +73,9 @@ export const additionalDataExtraBufferRange = 25*additionalDataBufferFold;
 
 export const allowedCanvasShapes = new Set(['line', 'circle', 'rectangle']);
 
+export const defaultFrameBufferSeconds = 3;
+export const defaultFrameFetchBatchSize = 15;
+
 
 export function clearUnfinishedAnnotation(frameAnnotationCopy) {
     let unfinished =[];

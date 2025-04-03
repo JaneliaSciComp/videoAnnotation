@@ -60,7 +60,6 @@ export default function AdditionalDataChart(props) {
                     additionalDataForChart[name] = {...additionalData[name]};                    
                 }
             })
-            console.log(additionalData, additionalDataForChart);
             setData(additionalDataForChart);
     }, [additionalData])
     

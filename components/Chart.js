@@ -119,7 +119,6 @@ export default function MyChart(props) {
                 for (let i = startNeeded+1; i <= endNeeded+1; i++) {
                     frameNums.push(i.toString());
                 }
-            console.log('chart', props.data, props.metrics)
             const [startBuffered, endBuffered] = props.data[props.metrics[0]].range;
             start = startNeeded - startBuffered;
             end = start + (endNeeded - startNeeded);

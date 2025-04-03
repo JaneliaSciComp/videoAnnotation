@@ -75,8 +75,9 @@ export default function Workspace(props) {
     const [mutualExclusiveCategory, setMutualExclusiveCategory] = useState([]);
     const additionalDataRef = useRef({});
     const [saveAnnotation, setSaveAnnotation] = useState(false);
+    const realFpsRef = useRef(25);
+    const [isFetchingFrame, setIsFetchingFrame] = useState(false);
 
-    console.log('workspace render');
 
     const states = {
         videoId: videoId,
@@ -126,8 +127,11 @@ export default function Workspace(props) {
         cancelIntervalErasing: cancelIntervalErasing,
         lastFrameNumForIntervalErasingRef: lastFrameNumForIntervalErasingRef,
         mutualExclusiveCategory: mutualExclusiveCategory,
+        realFpsRef: realFpsRef,
+        isFetchingFrame: isFetchingFrame,
     }
 
+    
     const stateSetters = {
         setVideoId: setVideoId,
         setFrameUrl: setFrameUrl,
@@ -172,8 +176,8 @@ export default function Workspace(props) {
         setIntervalErasing: setIntervalErasing,
         setCancelIntervalErasing: setCancelIntervalErasing,
         setSaveAnnotation: setSaveAnnotation,
+        setIsFetchingFrame: setIsFetchingFrame,
     }
-
 
 
     useEffect(() => {
@@ -190,6 +194,7 @@ export default function Workspace(props) {
         if (getAdditionalDataSignal) {
             getAdditionalDataFromRef();
             setGetAdditionalDataSignal(false);
+            setGetAdditionalDataSignal(false); 
         }
     }, [getAdditionalDataSignal])
 
@@ -201,7 +206,6 @@ export default function Workspace(props) {
         if (videoId) {
             setGlobalInfo(null);
             setAdditionalData({});
-            console.log('workspace useEffect additionalDataNameToRetrieve:', videoId, additionalDataNameToRetrieve);
             additionalDataRef.current = {};
             if (additionalDataNameToRetrieve?.length>0) {
                 getAdditionalData(videoId, additionalDataNameToRetrieve)
@@ -224,7 +228,6 @@ export default function Workspace(props) {
     }, [additionalDataNameToRetrieve])
 
     function getAdditionalDataFromRef() {
-        console.log('getAdditioanlData called', additionalDataNameToRetrieve, additionalData);
         setGlobalInfo(null);
         if (Number.isInteger(frameNum)) { 
             let additionalDataForChart={};
@@ -242,7 +245,6 @@ export default function Workspace(props) {
                     }
                 })
             }
-            console.log('additionalDataForChart', additionalDataForChart);
             setAdditionalData(additionalDataForChart);
         }
     }        
@@ -411,7 +413,6 @@ export default function Workspace(props) {
                     }
                     setGlobalInfo('Saving annotation to database...');
                     postVideoAnnotation(data).then((res) => {
-                        console.log(res, res.success);
                         if (res.success) {
                             setGlobalInfo('Successfully saved annotation to database.');  
                             downloadProjectAnnotation(projectId);
@@ -433,7 +434,6 @@ export default function Workspace(props) {
     async function downloadProjectAnnotation(projectId) {
         const res = await getProjectAnnotation(projectId)
         if (res['error']) {
-            console.log(res);
             setGlobalInfo(res);
         } else {
             const jsonAnno = JSON.stringify(res);
@@ -448,7 +448,6 @@ export default function Workspace(props) {
 
 
     useEffect(()=> {
-        console.log(saveAnnotation);
         if (saveAnnotation) {
             if (projectId) {
                 if (videoId || frameUrl) {
@@ -460,7 +459,6 @@ export default function Workspace(props) {
                     }
                     setGlobalInfo('Saving annotation to database...');
                     postVideoAnnotation(data).then((res) => {
-                        console.log(res, res.success);
                         if (res.success) {
                             setGlobalInfo('Successfully saved annotation to database.');  
                         } else {
@@ -486,19 +484,11 @@ export default function Workspace(props) {
 
 
     useEffect(() => {
-        console.log('videoid useEffect called')
         saveAnnotationAndUpdateStates(true);
         setFrameNum(null);
-        
-
-        
-        additionalDataRef.current = {};
-
-            
+        additionalDataRef.current = {};  
       }, [videoId]
     )
-
-   
 
     useEffect(() => {
         /* when switch to a new frame, save the annotation for the current frame
@@ -515,24 +505,18 @@ export default function Workspace(props) {
         }
 
         if (intervalAnno.on && Number.isInteger(frameNum)) {
-            console.log('frameNum useEffect set lastFrameNumForIntervalAnnoRef', frameNum);
             lastFrameNumForIntervalAnnoRef.current = frameNum;
         }
 
         if (Object.values(intervalErasing).some(value=>value.on) && Number.isInteger(frameNum)) {
-            console.log('frameNum useEffect set lastFrameNumForIntervalErasingRef', frameNum);
             lastFrameNumForIntervalErasingRef.current = frameNum;
         }
-
-        
-
             
       }, [frameNum]
     )
     
 
     function saveAnnotationAndUpdateStates(cancelInterval=false) {
-        console.log('save anno', );
         
         setActiveAnnoObj(null);
         setDrawType(null);
@@ -544,7 +528,6 @@ export default function Workspace(props) {
     }
 
     function saveFrameAnnotation(cancelInterval=false, savePrevFrame=true) {
-            // console.log('savePrevAnnotation called', frameNum, lastFrameNumForIntervalAnnoRef.current, frameAnnotation, intervalAnno);
             if (!Number.isInteger(frameNum) || frameNum === 0) return;
 
             const newFrameAnno = clearUnfinishedAnnotation({...frameAnnotation});
@@ -569,9 +552,6 @@ export default function Workspace(props) {
         setFrameAnnotation({...frameAnnotation, [idObj.id]: idObj});
     }
 
-
-
-    
 
     useEffect(() => {
         const btnConfigCopy = {...btnConfigData};
@@ -600,7 +580,6 @@ export default function Workspace(props) {
         })
         setCategoryColors(colors);
         setIntervalErasing(oldValue => intervalErasingData);
-        console.log('workspace mutualExclusiveCategory', mutualExclusiveCategoryArr);
         setMutualExclusiveCategory(mutualExclusiveCategoryArr);
     }, [btnConfigData])
 
@@ -646,18 +625,6 @@ export default function Workspace(props) {
     }
 
 
-    function onAddBtnClick() {
-        console.log('Add btn clicked');
-    }
-
-    function onCreateBtnClick(data) {
-        console.log('create', data);
-    }
-    
-    function clickHandler() {
-        console.log('anno', frameAnnotation);
-    }
-
     function okClickHandler() {
         setModalInfo(null);
         setModalInfoOpen(false);
@@ -678,9 +645,7 @@ export default function Workspace(props) {
         <div className={styles.container}>
             <main className={styles.main}>
                 <StatesProvider states={states} stateSetters={stateSetters}>
-                    {}
                     {props.children}
-                    {}
                 </StatesProvider>
 
                 <Modal

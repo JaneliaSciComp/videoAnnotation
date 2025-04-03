@@ -156,8 +156,8 @@ export default function SkeletonEdgeController(props) {
         if (!value) {
             return;
         }
-        
-        const newColor = `rgb(${value.metaColor.r}, ${value.metaColor.g}, ${value.metaColor.b}, ${value.metaColor.a})`; //value.metaColor.originalInput.
+
+        const newColor = `rgb(${value.metaColor.r}, ${value.metaColor.g}, ${value.metaColor.b}, ${value.metaColor.a})`;
         setColor(newColor);
 
         const target = {
@@ -198,21 +198,6 @@ export default function SkeletonEdgeController(props) {
 
     return (
         <div className='my-2'>
-            {/* <div className='my-2 d-flex align-items-center'>
-                <span className='mx-2'>Add Edge</span> 
-                <ColorPicker 
-                    onChange={onColorChange}
-                    value={color}
-                    disabled = {props.disableColorPicker}
-                    size="small"
-                    presets={[
-                        { label: 'Recommended',
-                        colors: predefinedColors,
-                        },
-                    ]}
-                    />
-            </div> 
-            <br /> */}
             <Row className='d-flex justify-content-center'>
                 <ColorPicker 
                     className='me-3'
@@ -254,7 +239,6 @@ export default function SkeletonEdgeController(props) {
             <div className='d-flex justify-content-center'>
                 <p>{info}</p>
             </div>
-            
             
         </div>
     )

@@ -76,6 +76,8 @@ export default function VideoManager(props) {
     const videoAdditionalFieldsConfig = useStates().videoAdditionalFieldsConfig;
     const setVideoAdditionalFieldsConfig = useStateSetters().setVideoAdditionalFieldsConfig;
     const projectId = useStates().projectId;
+    const setAdditionalDataNameToRetrieve = useStateSetters().setAdditionalDataNameToRetrieve;
+    const additionalDataRange = useStates().additionalDataRange;
     const setAdditionalDataRange = useStateSetters().setAdditionalDataRange;
 
     const [form] = Form.useForm();
@@ -155,7 +157,6 @@ export default function VideoManager(props) {
             setBtnDisable(false);
         }
 
-        
         if (props.onVideoNameClick) {
             props.onVideoNameClick(i);
         }
@@ -349,6 +350,7 @@ export default function VideoManager(props) {
         delete(videoDataCopy[videoIdToDel]);
         setVideoData(videoDataCopy);
 
+
         if (videoIdToDel == videoId) {
             setVideoId(null);
             setResetVideoPlay(true);
@@ -356,9 +358,11 @@ export default function VideoManager(props) {
         }
     }
 
+    
 
     return (
         <>
+            
             {/* <Modal 
                 title='Video Manager'
                 open={props.open} 
@@ -449,7 +453,6 @@ export default function VideoManager(props) {
                     </div>
                 :<p>Please initialize/upload a project first.</p>}
             <p>{info}</p>
-            {}
         </>
     )
 }

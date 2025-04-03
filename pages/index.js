@@ -44,7 +44,7 @@ export default function Home() {
                   key='0' // When pass a component to a child, it is required to have a unique key prop.
                   open={projectListOpen}
                   setOpen={setProjectListOpen}
-                  onProjectLoad={(e) => {console.log('onProjectLoad', e)}}
+                  // onProjectLoad={(e) => {console.log('onProjectLoad', e)}}
                 />,
       // preventDefault: true, // when use some built-in components as the children of DropdownMenu, there may be some pre-defined behaviors, such as opening a modal window. To prevent the default behavior, set this to true.
     },
@@ -61,9 +61,9 @@ export default function Home() {
                   // disableGroupTypeSelect
                   // disableBtnTypeSelect
                   // hidePlusBtn
-                  onSubmit= {(e) => {console.log('onSubmit', e.data)}}
-                  onProjectNameChange={(e) => {console.log('onProjectNameChange', e)}}
-                  onDescriptionChange={(e) => {console.log('onDescriptionChange', e)}}
+                  // onSubmit= {(e) => {console.log('onSubmit', e.data)}}
+                  // onProjectNameChange={(e) => {console.log('onProjectNameChange', e)}}
+                  // onDescriptionChange={(e) => {console.log('onDescriptionChange', e)}}
                 />,
     },
     {
@@ -157,12 +157,12 @@ export default function Home() {
                      * loadIn: 'canvas'/'chart'/null, // whether to draw the data on canvas/chart with each frame. If yes, will fetch the data from backend and ask canvas/chart to draw it
                      * onLoad: event handler. Can be used to draw shapes on canvas and so on. required when loadin='canvas' 
                      */
-                    additionalFields={[
-                      {name: 'canvas1', label: 'canvas1', required: true, loadIn: 'canvas', onLoad: drawDataAsCircle}, 
-                      {name: 'canvas2', label: 'canvas2', required: true, loadIn: 'canvas', onLoad: drawDataAsLine},
-                      {name: 'chart1', label: 'chart1', required: true, loadIn: 'chart'}, 
-                      {name: 'chart2', label: 'chart2', required: true, loadIn: 'chart'}
-                    ]}
+                    // additionalFields={[
+                    //   {name: 'canvas1', label: 'canvas1', required: true, loadIn: 'canvas', onLoad: drawDataAsCircle}, 
+                    //   {name: 'canvas2', label: 'canvas2', required: true, loadIn: 'canvas', onLoad: drawDataAsLine},
+                    //   {name: 'chart1', label: 'chart1', required: true, loadIn: 'chart'}, 
+                    //   {name: 'chart2', label: 'chart2', required: true, loadIn: 'chart'}
+                    // ]}
                   />
                 </Modal>,
     },
@@ -296,6 +296,8 @@ export default function Home() {
               <Canvas width={550} height={350}/>
               <VideoUploader 
                 hideSubmit 
+                // frameBufferSeconds={0.1}
+                // onFrameChange={(e)=>console.log('onFrameChange', e.frameNum)}
                 />
               <div className='py-2' style={{height: '150px', width: '670px', border: 'solid 1px black'}} >
                 {/* <div style={{height: '50%', width: '650px'}}> */}

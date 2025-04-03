@@ -1,18 +1,10 @@
 .canvasContainer {
-    /* position: absolute; */
-    /* margin: 1em 0 1em 0; */
-    /* border: 1px solid blue; */
+    position: relative;
 }
 
 .canvas {
     margin: auto auto;
     border: solid;
-    /* background-color: rgba(138,187,255,255); */
-    /* width: 600px;
-    height: 450px; */
-    /* display: flex;
-    justify-content: center;
-    align-items: center; */
 }
 
 .brushCanvas {
@@ -22,6 +14,32 @@
     border: 1px solid red;
 }
 
-/* .image {
+
+.loadingOverlay {
     position: absolute;
-} */
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.2);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+  }
+  
+  .loadingSpinner {
+    width: 50px;
+    height: 50px;
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }

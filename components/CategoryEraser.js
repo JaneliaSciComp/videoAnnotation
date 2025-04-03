@@ -33,7 +33,6 @@ export default function CategoryEraser(props) {
 
     useEffect(()=> {
         if (cancelIntervalErasing) {
-            console.log('cancelIntervalErasing useEffect');
             endIntervalErasing().then(()=>{
                 const erasingCopy = {...intervalErasing};
                 erasingCopy[props.btnGroupId] = {...intervalErasing[props.btnGroupId], on: false, videoId: null, startFrame: null};
@@ -51,9 +50,7 @@ export default function CategoryEraser(props) {
                 return;
             };
 
-            console.log('CategoryEraser clickHandler', props.btnGroupId, intervalErasing);
             const erasingOn = intervalErasing[props.btnGroupId].on;
-            console.log('erasingOn', erasingOn);
             if (erasingOn) {
                 endIntervalErasing();
             } else {
@@ -64,14 +61,12 @@ export default function CategoryEraser(props) {
             erasingCopy[props.btnGroupId].on = !erasingOn;
             erasingCopy[props.btnGroupId].startFrame = erasingOn ? null : frameNum;
             erasingCopy[props.btnGroupId].videoId = erasingOn ? null : videoId;
-            console.log('reset intervalErasing', erasingCopy);
             setIntervalErasing(oldvalue => erasingCopy);
             lastFrameNumForIntervalErasingRef.current = erasingOn ? null :frameNum;
         }
     }
 
     function endIntervalErasing() {
-       console.log('endIntervalErasing', intervalErasing, frameNum, lastFrameNumForIntervalErasingRef.current);
        const erasingObj = intervalErasing[props.btnGroupId];
        if (erasingObj && Number.isInteger(erasingObj?.startFrame)
         ) {
@@ -91,7 +86,6 @@ export default function CategoryEraser(props) {
                     }
                 }
             }
-            console.log('endIntervalErasing annotationRef', annotationRef.current);
             eraseFromCurrentFrame();
         }
     }
@@ -108,7 +102,6 @@ export default function CategoryEraser(props) {
                     delete frameAnnoCopy[id];
                 }
             });
-            console.log(frameAnnoCopy);
             setFrameAnnotation(frameAnnoCopy);
         }
     }

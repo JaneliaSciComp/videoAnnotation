@@ -42,7 +42,6 @@ export default function Category(props) {
 
     useEffect(()=> {
         if (cancelIntervalAnno) {
-            console.log('cancelIntervalAnno useEffect');
             endIntervalAnnotation('sameLabel');
             setIntervalAnno(oldObj => {return {on:false, videoId:null, startFrame: null, label: null, color: null, annotatedFrames: new Set()}});
             setCancelIntervalAnno(false);
@@ -72,7 +71,6 @@ export default function Category(props) {
 
 
     function createSingleAnnotation() {
-        console.log('createSingleAnnotation');
         setInfo(null);
         if ((Number.isInteger(frameNum) || frameUrl) && !(intervalAnno.on && intervalAnno.label===props.label)) {
             if (intervalAnno.on && intervalAnno.label!==props.label) {
@@ -92,7 +90,6 @@ export default function Category(props) {
                 type: 'category',        
             };
             addCategoryAnnoToFrameAnnotation(annoObj, annoCopy,  mutualExclusiveCategory)
-            console.log('createSingleAnnotation', annoCopy);
             setFrameAnnotation(oldObj => annoCopy);
             setActiveAnnoObj(annoObj);
             setDrawType(null);
@@ -105,15 +102,12 @@ export default function Category(props) {
     }
 
     async function doubleClickHandler() {
-        console.log('intervalAnno');
         if ((Number.isInteger(frameNum) || frameUrl)) {
             if (intervalAnno.on) {
                 if (intervalAnno.label === props.label) {
-                    console.log('same label');
                     endIntervalAnnotation('sameLabel');
                     setIntervalAnno(oldObj => {return {on:false, startFrame: null, videoId:null, label: null, color: null, annotatedFrames: new Set()}});
                 } else {
-                    console.log('different label');
                     endIntervalAnnotation('differentLabel');
                     createSingleAnnotation();
                     setIntervalAnno(oldObj => {return {on:true, startFrame: frameNum, vdieoId: videoId, label: props.label, color: color, annotatedFrames: new Set([frameNum])}});
@@ -127,12 +121,7 @@ export default function Category(props) {
     }
 
 
-
-
-
-
     function endIntervalAnnotation(type) {
-        console.log('endIntervalAnnotation', intervalAnno, frameNum, lastFrameNumForIntervalAnnoRef.current);
         if (Number.isInteger(intervalAnno.startFrame)
          ) {
             const lastFrameNum = frameNum ? frameNum : lastFrameNumForIntervalAnnoRef.current;
@@ -159,7 +148,6 @@ export default function Category(props) {
                 if  (i === frameNum) {
                     const frameAnnoCopy = {...frameAnnotation};
                     addCategoryAnnoToFrameAnnotation(annoObj, frameAnnoCopy,  mutualExclusiveCategory);
-                    console.log('endIntervalAnnotation', frameAnnoCopy);
                     setFrameAnnotation(frameAnnoCopy);
                 } 
             }
