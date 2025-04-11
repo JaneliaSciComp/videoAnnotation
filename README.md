@@ -374,5 +374,5 @@ export default function Home() {
 
 Here we used react-bootstrap for the layout. Check out the [tutorial](https://react-bootstrap.netlify.app/docs/layout/grid), and also [Ant Design](https://ant.design/components)'s components.
 
-For detailed tutorial, please refer to this [file] (https://docs.google.com/document/d/1-OL52YLQ7_3kvcj_p0iOuZRQDns5cgVV/edit?usp=sharing&ouid=105198745859182918044&rtpof=true&sd=true)
+For detailed tutorial, please refer to this [file](https://docs.google.com/document/d/1-OL52YLQ7_3kvcj_p0iOuZRQDns5cgVV/edit?usp=sharing&ouid=105198745859182918044&rtpof=true&sd=true)
 
