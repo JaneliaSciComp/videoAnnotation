@@ -14,6 +14,7 @@ import { defaultFrameBufferSeconds } from "../utils/utils.js";
  * @param {*} props 
  *      hideSubmit: boolean. Whether to hide video path submit part.
  *      onFrameChange: function. Callback function when frame changes. Takes one argument: e {frameNum: currentFrameNum}
+ *      setFrameNum: number. Set the current frame number to this value when video is loaded. Will cause updates on related components, e.g. the canvas, the annotation chart, etc. It's equivalent as clicking on the video player's slider.
  *      frameBufferSeconds: number. It tells the web workder how many seconds of frames to retrieve from the backend.
 //  *      frameFetchThreshold: number. If the remaining seconds of frames after the current frame in the buffer is less than this value (seconds) * fps, it will trigger the web worker to retrieve more frames.
  */
@@ -59,20 +60,34 @@ export default function VideoUploader(props) {
 
     const frameBufferSeconds = props.frameBufferSeconds??defaultFrameBufferSeconds;
 
+    useEffect(() => {
+        if (!props.setFrameNum) return;
+        if (Number.isInteger(props.setFrameNum) 
+            && totalFrameCount
+            && props.setFrameNum >= 0
+            && props.setFrameNum <= totalFrameCount-1
+        ) {
+            setFrame(props.setFrameNum+1);
+        } else {
+            throw new Error(`Invalid frame number: ${props.setFrameNum}, or no video loaded`);
+        }
+    },[props.setFrameNum])
 
     useEffect(() => {
         const newWorker = new Worker(new URL('../utils/webWorker.js', import.meta.url));
-        newWorker.onmessage = WorkerMsgHandler;
+        newWorker.onmessage = workerMsgHandler;
         setWorker(newWorker);
       
         return () => newWorker.terminate();
     }, []);
 
 
-    function WorkerMsgHandler(e) {
+    function workerMsgHandler(e) {
         const { type, frameNum, error, startFrame, endFrame, frameData, bufferedFrames, currentTaskType } = e.data;
+        console.log('worker response: ', currentTaskType, type, frameNum);
         setGlobalInfo(null);
         
+
         switch (type) {
             case 'fetch':
                 cachedFrameRangeRef.current = [startFrame, endFrame];
@@ -134,6 +149,7 @@ export default function VideoUploader(props) {
     }, [resetVideoPlay])
 
 
+
     useEffect(() => {
         if (loadVideo) {
             resetVideoStatus();
@@ -186,7 +202,7 @@ export default function VideoUploader(props) {
             if (playControl !== 'play') {
                 await loadOne(frameNeeded);
             }  else {
-                await pauseAndLoadOne(frameNeeded);                
+                await pauseAndLoadOne(frameNeeded);
             }
             retrieveFollowingFrames(frameNeeded);
         }
@@ -222,7 +238,6 @@ export default function VideoUploader(props) {
                     setFrameNum(frameNumber);
                 }
             }  
-
         }
     }
 
@@ -242,15 +257,15 @@ export default function VideoUploader(props) {
         const nextFrame = frameNumber+1;
         if (nextFrame<=totalCount-1) {
             if (worker) {
-                worker.postMessage({
-                    type: 'continueFetch',
-                    currentFrame: nextFrame,
-                    fps: videoMetaRef.current['fps'],
-                    totalFrameNumber: totalCount,
-                    frameBufferSeconds: frameBufferSeconds,
-                });
-                isContinueFetchingRef.current = true;
-                setGlobalInfo('Fetching frames from server ...');
+                    worker.postMessage({
+                        type: 'continueFetch',
+                        currentFrame: nextFrame,
+                        fps: videoMetaRef.current['fps'],
+                        totalFrameNumber: totalCount,
+                        frameBufferSeconds: frameBufferSeconds,
+                    });
+                    isContinueFetchingRef.current = true;
+                    setGlobalInfo('Fetching frames from server ...');
             }
         }
     }
@@ -316,7 +331,6 @@ export default function VideoUploader(props) {
             setPlayControl('pause');
             needToSetIntervalRef.current = false;
         }
-
     }
 
 
@@ -364,8 +378,7 @@ export default function VideoUploader(props) {
             setVideoId(videoId);
             videoInfo['videoId'] = videoId;
             await initializePlay(videoInfo);
-        }
-        
+        } 
     }
 
 
@@ -420,7 +433,7 @@ export default function VideoUploader(props) {
                             setGlobalInfo('Fetching frames from server ...');
                         }
                     } 
-                }
+                }   
             }
         } else {
             setFrameUrl(null);

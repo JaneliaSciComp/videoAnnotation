@@ -35,6 +35,7 @@ export default function Home() {
   const [annotationUploaderOpen, setAnnotationUploaderOpen] = useState(false);
   const [canvasAdditionalDataControllerOpen, setCanvasAdditionalDataControllerOpen] = useState(false);
   const [info, setInfo] = useState(''); // To display feedback info
+  const [newFrameNum, setNewFrameNum] = useState();
 
   const projectDropdownItems = [
     {
@@ -293,11 +294,13 @@ export default function Home() {
             <BtnContainer />
           </Col>
           <Col>
+              <button onClick={()=>setNewFrameNum(newFrameNum?newFrameNum+10:10)}>FrameNum+10</button>
               <Canvas width={550} height={350}/>
               <VideoUploader 
                 hideSubmit 
                 // frameBufferSeconds={0.1}
                 // onFrameChange={(e)=>console.log('onFrameChange', e.frameNum)}
+                setFrameNum={newFrameNum}
                 />
               <div className='py-2' style={{height: '150px', width: '670px', border: 'solid 1px black'}} >
                 {/* <div style={{height: '50%', width: '650px'}}> */}
