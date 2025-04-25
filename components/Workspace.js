@@ -1,18 +1,11 @@
 import React, {useState, useEffect, useRef} from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import JSZip from "jszip";
 import styles from '../styles/Workspace.module.css';
-import Canvas from './Canvas';
-import ActiveAnnotation from './ActiveAnnotation';
-import VideoUploader from './VideoUploader';
-import {Row, Col, Button} from 'react-bootstrap';
 import BtnGroup from './BtnGroup';
 import BrushTool from './BrushTool';
 import { StatesProvider } from './AppContext';
 import { 
     clearUnfinishedAnnotation,
-    createId,
-    addCategoryAnnoToFrameAnnotation,
 } from '../utils/utils';
 import { Modal } from 'antd';
 import { editProject, postProjectAnnotation, getProjectAnnotation, postVideoAnnotation, postProjectBtn, postProjectVideo, getAdditionalData } from '../utils/requests';
@@ -501,7 +494,7 @@ export default function Workspace(props) {
         ) {
             getFrameAnnotationFromRefAndSetState();
         } else {
-            setFrameAnnotation(oldValue => {});
+            setFrameAnnotation(() => {});
         }
 
         if (intervalAnno.on && Number.isInteger(frameNum)) {
@@ -524,7 +517,7 @@ export default function Workspace(props) {
         setUndo(0);
         setUseEraser(null);
         setAnnoIdToDelete(null);
-        saveFrameAnnotation(cancelInterval=cancelInterval);
+        saveFrameAnnotation(cancelInterval);
     }
 
     function saveFrameAnnotation(cancelInterval=false, savePrevFrame=true) {
@@ -579,7 +572,7 @@ export default function Workspace(props) {
             }
         })
         setCategoryColors(colors);
-        setIntervalErasing(oldValue => intervalErasingData);
+        setIntervalErasing(() => intervalErasingData);
         setMutualExclusiveCategory(mutualExclusiveCategoryArr);
     }, [btnConfigData])
 
@@ -651,9 +644,9 @@ export default function Workspace(props) {
                 <Modal
                     title='Info'
                     open={modalInfoOpen}
-                    onOk={okClickHandler} 
+                    onOk={okClickHandler}
                     onCancel={cancelClickHandler}
-                    footer={(_, { OkBtn, CancelBtn }) => (
+                    footer={(_, { CancelBtn }) => (
                         <>
                           <CancelBtn />
                         </>
@@ -662,147 +655,6 @@ export default function Workspace(props) {
                     <p className="ant-upload-text ms-4">{modalInfo}</p>
                 </Modal>
             </main>
-
-          {/* <main className={styles.main}>
-          <StatesProvider states={states} stateSetters={stateSetters}>
-            <Row className='mx-1 my-1'>
-                <Design 
-                    data={btnConfigData}
-                    setData={setBtnConfigData}
-                    onAddBtnClick={onAddBtnClick}
-                    onCreateBtnClick={onCreateBtnClick}
-                />
-            </Row>
-    
-            <Row >
-                <Col xs={6}>
-                    {btnGroups}  */}
-                    
-                    {/* <Row className='mx-1 my-1'>
-                        <BtnGroup 
-                            child='shapeBtn'
-                            type='bbox'
-                            numOfBtn={2}
-                            labels={['a','b']}
-                            colors={['red', 'blue']}
-                            frameNum={frameNum}
-                            addAnnotationObj={addAnnotationObj}
-                            setActiveIdObj={setActiveIdObj}
-                            drawType={drawType}
-                            setDrawType={setDrawType}
-                        />
-                    </Row>
-                    <Row className='mx-1 my-1'>
-                        <BtnGroup 
-                            child='category'
-                            // type='bbox'
-                            numOfBtn={2}
-                            labels={['cate1','cate2']}
-                            colors={['red', 'blue']}
-                            frameNum={frameNum}
-                            addAnnotationObj={addAnnotationObj}
-                            setActiveIdObj={setActiveIdObj}
-                            drawType={drawType}
-                            setDrawType={setDrawType}
-                        />
-                    </Row> */}
-                    {/* <Row className='mx-1 my-1'>
-                        <Category
-                            label='chase'
-                            color='black'
-                            frameNum={frameNum}
-                            addAnnotationObj={addAnnotationObj}
-                            setActiveIdObj={setActiveIdObj}
-                            />
-                    </Row>
-                    <Row className='mx-1 my-1'> 
-                        <ShapeBtn
-                            type='keyPoint'
-                            label='head'
-                            color='lightblue'
-                            drawType={drawType}
-                            setDrawType={setDrawType} 
-                            // addKeyPointId={addKeyPointId}
-                            frameNum={frameNum}
-                            addAnnotationObj={addAnnotationObj}
-                            />
-                    </Row>
-                
-                    <Row className='mx-1 my-1'>
-                        <ShapeBtn 
-                            type='bbox'
-                            label='male' 
-                            color='red'
-                            drawType={drawType}
-                            setDrawType={setDrawType} 
-                            // addRectId={addRectId} 
-                            frameNum={frameNum}
-                            addAnnotationObj={addAnnotationObj}
-                            />
-                        <ShapeBtn 
-                            type='bbox'
-                            label='female' 
-                            color='blue'
-                            drawType={drawType}
-                            setDrawType={setDrawType}  
-                            // addRectId={addRectId} 
-                            frameNum={frameNum}
-                            addAnnotationObj={addAnnotationObj}
-                            />
-                    </Row>
-                        
-                    <Row className='mx-1 my-1'>
-                        <ShapeBtn
-                            type='polygon' 
-                            label='fly' 
-                            color='red'
-                            drawType={drawType}
-                            setDrawType={setDrawType}
-                            // addPolygonId={addPolygonId}
-                            frameNum={frameNum}
-                            addAnnotationObj={addAnnotationObj}
-                            />
-                    </Row> */}
-                {/* </Col>
-                <Col xs={6} >
-                    <AnnotationDisplay annoObj={activeAnnoObj}/>
-                </Col>
-                
-            </Row>
-            
-            <Row className='mx-1 my-1'>
-                <Canvas 
-                    videoId={videoId}
-                    frameUrl={frameUrl}
-                    frameNum={frameNum}
-                    drawType={drawType}
-                    setDrawType={setDrawType}
-                    skeletonLandmark={skeletonLandmark}
-                    setSkeletonLandmark={setSkeletonLandmark}
-                    frameAnnotation={frameAnnotation}
-                    setFrameAnnotation={setFrameAnnotation}
-                    btnConfigData={btnConfigData}
-                    // drawKeyPoint={drawKeyPoint}
-                    // setDrawKeyPoint={setDrawKeyPoint}
-                    // keyPointIdList={keyPointIdList}
-                    // setKeyPointIdList={setKeyPointIdList}
-                    // drawRect={drawRect}
-                    // setDrawRect={setDrawRect}
-                    // rectIdList={rectIdList}
-                    // setRectIdList={setRectIdList}
-                    // drawPolygon={drawPolygon}
-                    // setDrawPolygon={setDrawPolygon}
-                    // polygonIdList={polygonIdList}
-                    // setPolygonIdList={setPolygonIdList}
-                    setActiveAnnoObj={setActiveAnnoObj}
-                    />
-            </Row>
-            
-            <Row className='my-3'>
-                <VideoUploader setFrameUrl={setFrameUrl} setFrameNum={setFrameNum} setVideoId={setVideoId} />
-            </Row>
-            </StatesProvider>
-          </main> */}
         </div>
     )
 }
