@@ -72,11 +72,13 @@ export default function VideoUploader(props) {
     ) {
       setFrame(props.setFrameNum + 1);
     } else {
+      // TODO: handle this case instead of throwing an error, log it to
+      // an info panel or something similar.
       throw new Error(
         `Invalid frame number: ${props.setFrameNum}, or no video loaded`,
       );
     }
-  }, [props.setFrameNum]);
+  }, [props.setFrameNum, totalFrameCount, setFrame]);
 
   useEffect(() => {
     const newWorker = new Worker(

@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from 'react';
-import styles from '../styles/Controller.module.css';
-import { Checkbox, Tag, ColorPicker, Button, Row, Col, Space } from 'antd';
-import { useStateSetters, useStates } from './AppContext';
-import {predefinedColors} from '../utils/utils.js';
-
+import React, { useState, useEffect, useRef } from "react";
+import styles from "../styles/Controller.module.css";
+import { Checkbox, Tag, ColorPicker, Button, Row, Col } from "antd";
+import { useStates } from "./AppContext";
+import { predefinedColors } from "../utils/utils.js";
 
 /**
     To configure edges for skeleton group.
@@ -46,200 +45,199 @@ import {predefinedColors} from '../utils/utils.js';
         (Here use set inside edgeDataRef for convenience, will be converted to arr when Done btn is clicked and pass to btnConfigData)
         color: dynamically change when user pick new value
 */
-export default function SkeletonEdgeController(props) {
-    
-    const [verticesOptions, setVerticesOptions] = useState();
-    const [currentVertex, setCurrentVertex] = useState(0);
-    const [checkedValues, setCheckedValues] = useState();
-    const edgeDataRef = useRef([]);
-    const [color, setColor] = useState();
-    const [info, setInfo] = useState();
+export default function SkeletonEdgeController({index, vertices, ...props}) {
 
-    const btnConfigData = useStates().btnConfigData;
-    const setBtnConfigData = useStateSetters().setBtnConfigData;
-    
+  if (!index) {
+    throw Error("Property Index is required");
+  }
 
+  const [verticesOptions, setVerticesOptions] = useState();
+  const [currentVertex, setCurrentVertex] = useState(0);
+  const [checkedValues, setCheckedValues] = useState();
+  const edgeDataRef = useRef([]);
+  const [color, setColor] = useState();
+  const [info, setInfo] = useState();
 
-    useEffect(()=>{
-        if (!props.index) {
-            throw Error('Property Index is required');
-        }
-      },[]
-    )
+  const btnConfigData = useStates().btnConfigData;
 
-    useEffect(()=>{
-        if (props.status==='edit') {
-            const groupData = btnConfigData[props.index];
-            if (groupData.edgeData && groupData.edgeData.edges.length) {
-                const edgeData = groupData.edgeData;
-                setColor(edgeData.color);
-                const edgesSet = edgeData.edges.map(neighborArr => neighborArr?new Set(neighborArr):null);
-                edgeDataRef.current = edgesSet;
-            }
-            
-        } else if (props.status==='new') {
-            edgeDataRef.current = [];
-        }
-        setCurrentVertex(0);
-        setInfo(null);
-    }, [props.status])
+  useEffect(() => {
+    if (props.status === "edit") {
+      const groupData = btnConfigData[index];
+      if (groupData.edgeData && groupData.edgeData.edges.length) {
+        const edgeData = groupData.edgeData;
+        setColor(edgeData.color);
+        const edgesSet = edgeData.edges.map((neighborArr) =>
+          neighborArr ? new Set(neighborArr) : null,
+        );
+        edgeDataRef.current = edgesSet;
+      }
+    } else if (props.status === "new") {
+      edgeDataRef.current = [];
+    }
+    setCurrentVertex(0);
+    setInfo(null);
+  }, [props.status]);
 
+  useEffect(() => {
+    if (vertices) {
+      const options = vertices.map((item, i) => {
+        return {
+          label: `${i + 1}-${item}`,
+          value: i,
+        };
+      });
+      setVerticesOptions(options);
+    }
+  }, [vertices]);
 
-    useEffect(() => {
-        if (props.vertices) {
-            const options = props.vertices.map((item, i) => {
-                return {
-                        label: `${i+1}-${item}`,
-                        value: i
-                    }
-            })
-            setVerticesOptions(options);
-        }
-        
-      }, [props.vertices] 
-    )
+  useEffect(() => {
+    if (props.color) {
+      setColor(props.color);
+    } else {
+      setColor("#1677FF");
+    }
+  }, [props.color]);
 
-    useEffect(() => {
-        if (props.color) {
-            setColor(props.color);
-        } else {
-            setColor('#1677FF');
-        }
-      }, [props.color]
-    )
+  useEffect(() => {
+    if (edgeDataRef.current[currentVertex]) {
+      setCheckedValues(Array.from(edgeDataRef.current[currentVertex]));
+    } else {
+      setCheckedValues(null);
+    }
+  }, [currentVertex]);
 
-    useEffect(() => {
-        if (edgeDataRef.current[currentVertex]) {
-            setCheckedValues(Array.from(edgeDataRef.current[currentVertex]));
-        } else {
-            setCheckedValues(null);
-        }
-      
-      }, [currentVertex]
-    )
+  function onCheckBoxChange(newCheckedValues) {
+    setCheckedValues(newCheckedValues);
+    const existingEdges = edgeDataRef.current[currentVertex]
+      ? edgeDataRef.current[currentVertex]
+      : new Set();
+    let neighbor, neighborEdges;
+    if (existingEdges.size < newCheckedValues.length) {
+      neighbor = newCheckedValues.filter((v) => !existingEdges.has(v))[0];
+      neighborEdges = new Set(edgeDataRef.current[neighbor]);
+      neighborEdges.add(currentVertex);
+    } else {
+      const newCheckedValuesSet = new Set(newCheckedValues);
+      neighbor = Array.from(existingEdges).filter(
+        (v) => !newCheckedValuesSet.has(v),
+      )[0];
+      neighborEdges = new Set(edgeDataRef.current[neighbor]);
+      neighborEdges.delete(currentVertex);
+    }
 
-    function onCheckBoxChange(newCheckedValues) {
-        setCheckedValues(newCheckedValues);
-        const existingEdges = edgeDataRef.current[currentVertex] ? edgeDataRef.current[currentVertex] : new Set();
-        let neighbor, neighborEdges;
-        if (existingEdges.size < newCheckedValues.length) {
-            neighbor = newCheckedValues.filter(v => !existingEdges.has(v))[0];
-            neighborEdges = new Set(edgeDataRef.current[neighbor]);
-            neighborEdges.add(currentVertex);
-        } else {
-            const newCheckedValuesSet = new Set(newCheckedValues);
-            neighbor = Array.from(existingEdges).filter(v => !newCheckedValuesSet.has(v))[0];
-            neighborEdges = new Set(edgeDataRef.current[neighbor]);
-            neighborEdges.delete(currentVertex);
-        }
+    const newEdgeData = [...edgeDataRef.current];
+    newEdgeData[neighbor] = neighborEdges;
+    newEdgeData[currentVertex] = new Set(newCheckedValues);
 
-        const newEdgeData = [...edgeDataRef.current];
-        newEdgeData[neighbor] = neighborEdges;
-        newEdgeData[currentVertex] = new Set(newCheckedValues);
-       
-        edgeDataRef.current = newEdgeData;
+    edgeDataRef.current = newEdgeData;
+  }
+
+  function onLastBtnClick() {
+    if (currentVertex > 0) {
+      setCurrentVertex(currentVertex - 1);
+    }
+  }
+
+  function onNextBtnClick() {
+    if (currentVertex < verticesOptions.length - 1) {
+      setCurrentVertex(currentVertex + 1);
+    }
+  }
+
+  function onColorChange(value) {
+    if (!value) {
+      return;
+    }
+
+    const newColor = `rgb(${value.metaColor.r}, ${value.metaColor.g}, ${value.metaColor.b}, ${value.metaColor.a})`;
+    setColor(newColor);
+
+    const target = {
+      index,
+      value: newColor,
     };
 
-    function onLastBtnClick() {
-        if (currentVertex > 0) {
-            setCurrentVertex(currentVertex - 1);
-        }
+    if (props.onColorChange) {
+      props.onColorChange(target);
     }
-    
-    function onNextBtnClick() {
-        if (currentVertex < verticesOptions.length - 1) {
-            setCurrentVertex(currentVertex + 1);
-        }
-    }
+  }
 
-    function onColorChange(value) {
-        if (!value) {
-            return;
-        }
-
-        const newColor = `rgb(${value.metaColor.r}, ${value.metaColor.g}, ${value.metaColor.b}, ${value.metaColor.a})`;
-        setColor(newColor);
-
-        const target = {
-            index: props.index,
-            value: newColor,
-        };
-
-        if (props.onColorChange) {
-            props.onColorChange(target);
-        }
+  function onDoneBtnClick() {
+    let newEdgeData;
+    if (edgeDataRef.current?.length) {
+      const edgesArr = edgeDataRef.current.map((neighborSet) =>
+        neighborSet ? [...neighborSet] : null,
+      );
+      newEdgeData = {
+        color: color,
+        edges: edgesArr,
+      };
+      props.setEdgeData(newEdgeData);
+      setInfo(`Edge info ${props.status === "new" ? "added" : "changed"}`);
     }
 
-    function onDoneBtnClick() {
-        let newEdgeData;
-        if (edgeDataRef.current?.length) {
-            const edgesArr = edgeDataRef.current.map(neighborSet => neighborSet?[...neighborSet]:null);
-            newEdgeData = {
-                color: color,
-                edges: edgesArr,
-            }
-            props.setEdgeData(newEdgeData);
-            setInfo(`Edge info ${props.status==='new'?'added':'changed'}`);
-        } 
-        
-
-        const target = {
-            index: props.index,
-            value: {
-                color: color,
-                edges: [...edgeDataRef.current],
-            },
-        };
-        if (props.onDoneBtnClick) {
-            props.onDoneBtnClick(target);
-        }
+    const target = {
+      index,
+      value: {
+        color: color,
+        edges: [...edgeDataRef.current],
+      },
+    };
+    if (props.onDoneBtnClick) {
+      props.onDoneBtnClick(target);
     }
+  }
 
+  return (
+    <div className="my-2">
+      <Row className="d-flex justify-content-center">
+        <ColorPicker
+          className="me-3"
+          defaultValue={props.color ? props.color : "#1677FF"}
+          onChange={onColorChange}
+          value={color}
+          disabled={props.disableColorPicker}
+          size="small"
+          presets={[{ label: "Recommended", colors: predefinedColors }]}
+        />
+        <Button onClick={onLastBtnClick} size="small" className="mx-2">
+          Last
+        </Button>
+        <Button onClick={onNextBtnClick} size="small" className="mx-2">
+          Next
+        </Button>
+      </Row>
+      <br />
+      {verticesOptions ? (
+        <Row>
+          <Col
+            span={12}
+            className="d-flex justify-content-center align-items-center"
+          >
+            <Tag className={styles.edgeTag}>
+              {verticesOptions[currentVertex].label}
+            </Tag>
+          </Col>
+          <Col span={12}>
+            <Checkbox.Group
+              options={verticesOptions.filter((v) => v.value !== currentVertex)}
+              value={checkedValues}
+              onChange={onCheckBoxChange}
+            />
+          </Col>
+        </Row>
+      ) : null}
 
-    return (
-        <div className='my-2'>
-            <Row className='d-flex justify-content-center'>
-                <ColorPicker 
-                    className='me-3'
-                    defaultValue={props.color ? props.color : '#1677FF'}
-                    onChange={onColorChange}
-                    value={color}
-                    disabled = {props.disableColorPicker}
-                    size="small"
-                    presets={[
-                        { label: 'Recommended',
-                        colors: predefinedColors,
-                        },
-                    ]}
-                    />
-                <Button onClick={onLastBtnClick} size='small' className='mx-2'>Last</Button>
-                <Button onClick={onNextBtnClick} size='small' className='mx-2'>Next</Button>
-            </Row>
-            <br />
-            {verticesOptions ?
-                <Row >
-                    <Col span={12} className='d-flex justify-content-center align-items-center'>
-                        <Tag className={styles.edgeTag}>{verticesOptions[currentVertex].label}</Tag>
-                    </Col>
-                    <Col span={12}>
-                        <Checkbox.Group
-                            options={verticesOptions.filter(v => v.value !== currentVertex)} 
-                            value={checkedValues}
-                            onChange={onCheckBoxChange} />
-                    </Col> 
-                </Row>
-                : null
-            }
-            
-            <br />
-            <Row className='my-1 d-flex justify-content-center'>
-                <Button type="primary" onClick={onDoneBtnClick} size='small'>Done</Button>
-            </Row>
-            
-            <div className='d-flex justify-content-center'>
-                <p>{info}</p>
-            </div>
-            
-        </div>
-    )
+      <br />
+      <Row className="my-1 d-flex justify-content-center">
+        <Button type="primary" onClick={onDoneBtnClick} size="small">
+          Done
+        </Button>
+      </Row>
+
+      <div className="d-flex justify-content-center">
+        <p>{info}</p>
+      </div>
+    </div>
+  );
 }

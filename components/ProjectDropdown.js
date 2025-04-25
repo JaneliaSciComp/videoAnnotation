@@ -1,9 +1,9 @@
-import React, {useState, useEffect, useRef} from 'react';
-import { useStateSetters, useStates } from './AppContext'; 
-import { Dropdown, Button, Modal } from 'antd';
-import ProjectManager from './ProjectManager.js';
-import ModalJsonUploader from './ModalJsonUploader.js';
-import ProjectList from './ProjectList.js';
+import React, { useState } from "react";
+import { useStateSetters, useStates } from "./AppContext";
+import { Dropdown, Modal } from "antd";
+import ProjectManager from "./ProjectManager.js";
+import ModalJsonUploader from "./ModalJsonUploader.js";
+import ProjectList from "./ProjectList.js";
 
 /**
  *  This component is deprecated. Use DropdownMenu instead.
@@ -26,132 +26,124 @@ import ProjectList from './ProjectList.js';
         hidePlusBtn: whether to hide the + btn of adding btn group
 */
 export default function ProjectDropdown(props) {
+  const [managerOpen, setManagerOpen] = useState(false);
+  const [managerStatus, setManagerStatus] = useState();
+  const [uploaderOpen, setUploaderOpen] = useState(false);
+  const [projectListOpen, setProjectListOpen] = useState(false);
 
-    const [managerOpen, setManagerOpen] = useState(false);
-    const [managerStatus, setManagerStatus] = useState();
-    const [uploaderOpen, setUploaderOpen] = useState(false);
-    const [projectListOpen, setProjectListOpen] = useState(false);
+  const setSaveConfig = useStateSetters().setSaveConfig;
+  const projectId = useStates().projectId;
 
-    const setBtnConfigData = useStateSetters().setBtnConfigData;
-    const setSaveConfig = useStateSetters().setSaveConfig;
-    const projectId = useStates().projectId;
+  const items = [
+    {
+      label: "New Project",
+      key: "0",
+    },
+    {
+      label: "Upload Project",
+      key: "1",
+    },
+    {
+      label: "Edit Project",
+      key: "2",
+    },
+    {
+      label: "Save Config",
+      key: "3",
+    },
+    {
+      label: "Exisiting Projects",
+      key: "4",
+    },
+  ];
 
-    const items = [
-        {
-          label: 'New Project',
-          key: '0',
-        },
-        {
-          label: 'Upload Project',
-          key: '1',
-        },
-        {
-          label: 'Edit Project',
-          key: '2',
-        },
-        {
-          label: 'Save Config',
-          key: '3',
-        },
-        {
-          label: 'Exisiting Projects',
-          key: '4',
-        },
-    ];
-
-    function onClick(e) {
-        const label = items[e.key].label;
-        switch (label) {
-            case 'New Project':
-                if (projectId) {
-                    confirm();
-                } else {
-                    setManagerStatus('new');
-                    setManagerOpen(true);
-                }
-                break;
-            case 'Exisiting Projects':
-                setProjectListOpen(true);
-                break;
-            case 'Upload Project':
-                setUploaderOpen(true);
-                break;
-            case 'Edit Project':
-                setManagerStatus('edit');
-                setManagerOpen(true);
-                break;
-            case 'Save Config':
-                setSaveConfig(true);
-                break;
+  function onClick(e) {
+    const label = items[e.key].label;
+    switch (label) {
+      case "New Project":
+        if (projectId) {
+          confirm();
+        } else {
+          setManagerStatus("new");
+          setManagerOpen(true);
         }
-    }
-
-    function confirmOkClickHandler() {
-        setManagerStatus('new');
+        break;
+      case "Exisiting Projects":
+        setProjectListOpen(true);
+        break;
+      case "Upload Project":
+        setUploaderOpen(true);
+        break;
+      case "Edit Project":
+        setManagerStatus("edit");
         setManagerOpen(true);
+        break;
+      case "Save Config":
+        setSaveConfig(true);
+        break;
     }
+  }
 
-    function cancelClickHandler() {
-        setManagerOpen(false);
-        setUploaderOpen(false);
-    }
+  function confirmOkClickHandler() {
+    setManagerStatus("new");
+    setManagerOpen(true);
+  }
 
-    function confirm() {
-        Modal.confirm({
-            title: 'Alert',
-            content: 'The current project data including annotation buttons and unsaved annotations will be removed!',
-            onOk: confirmOkClickHandler,
-            onCancel: cancelClickHandler,
-        });
-    }
+  function cancelClickHandler() {
+    setManagerOpen(false);
+    setUploaderOpen(false);
+  }
 
+  function confirm() {
+    Modal.confirm({
+      title: "Alert",
+      content:
+        "The current project data including annotation buttons and unsaved annotations will be removed!",
+      onOk: confirmOkClickHandler,
+      onCancel: cancelClickHandler,
+    });
+  }
 
+  return (
+    <>
+      <Dropdown
+        menu={{
+          items,
+          onClick,
+        }}
+        trigger={["click"]}
+      >
+        <a
+          style={{ width: "6em", textDecoration: "none", cursor: "pointer" }}
+          onClick={(e) => e.preventDefault()}
+        >
+          Project
+        </a>
+      </Dropdown>
 
+      <ProjectManager
+        status={managerStatus}
+        open={managerOpen}
+        setOpen={setManagerOpen}
+        defaultGroupType={props.defaultGroupType}
+        groupType={props.groupType}
+        defaultBtnType={props.defualtBtnType}
+        btnType={props.btnType}
+        defaultBtnNum={props.defaultBtnNum}
+        btnNum={props.btnNum}
+        disableGroupTypeSelect={props.disableGroupTypeSelect}
+        disableBtnTypeSelect={props.disableBtnTypeSelect}
+        disableBtnNumInput={props.disableBtnNumInput}
+        hidePlusBtn={props.hidePlusBtn}
+      />
 
-    return (
-        <>
-            <Dropdown
-                menu={{
-                    items,
-                    onClick,
-                }}
-                trigger={['click']}
-                >
-                <a style={{width: '6em', textDecoration: 'none', cursor: 'pointer'}} onClick={(e) => e.preventDefault()}>
-                    Project
-                </a>
-            </Dropdown>
+      <ProjectList open={projectListOpen} setOpen={setProjectListOpen} />
 
-            <ProjectManager
-                status={managerStatus} 
-                open={managerOpen} 
-                setOpen={setManagerOpen} 
-                
-                defaultGroupType={props.defaultGroupType}
-                groupType={props.groupType}
-                defaultBtnType={props.defualtBtnType}
-                btnType={props.btnType}
-                defaultBtnNum={props.defaultBtnNum}
-                btnNum={props.btnNum}
-                disableGroupTypeSelect={props.disableGroupTypeSelect}
-                disableBtnTypeSelect={props.disableBtnTypeSelect}
-                disableBtnNumInput={props.disableBtnNumInput}
-                hidePlusBtn={props.hidePlusBtn}
-                />
-            
-            <ProjectList 
-                open={projectListOpen}
-                setOpen={setProjectListOpen}
-                />
-            
-            <ModalJsonUploader 
-                type='configuration'
-                open={uploaderOpen}
-                setOpen={setUploaderOpen}
-                />
-
-        </>
-        
-    )
+      <ModalJsonUploader
+        type="configuration"
+        open={uploaderOpen}
+        setOpen={setUploaderOpen}
+      />
+    </>
+  );
 }
-
