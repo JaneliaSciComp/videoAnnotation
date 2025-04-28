@@ -63,10 +63,7 @@ export default function VideoUploader(props) {
     props.frameBufferSeconds ?? defaultFrameBufferSeconds;
 
   useEffect(() => {
-    // if the video is loaded, set the frame number to the one passed in
-    // the props. If the frame number is not valid, set it to 1.
     if (!props.setFrameNum) {
-      setFrame(1);
       return;
     }
 
@@ -535,6 +532,7 @@ export default function VideoUploader(props) {
       setSliderValue(1);
       await loadOne(0);
       retrieveFollowingFrames(0);
+      setFrame(1);
     }
   }
 
