@@ -4,7 +4,7 @@ import Workspace from '../components/Workspace.js';
 import Canvas from '../components/Canvas.js';
 import VideoUploader from '../components/VideoUploader.js';
 import InfoBar from '../components/InfoBar.js';
-import {Row, Col} from 'react-bootstrap'; // Third party components. Refer to the tutorial on https://react-bootstrap.netlify.app/docs/layout/grid
+import {Container, Row, Col} from 'react-bootstrap'; // Third party components. Refer to the tutorial on https://react-bootstrap.netlify.app/docs/layout/grid
 import { Menu, Modal, Form, Input, Button, Table } from 'antd'; // Third party components. Refer to the tutorial on https://ant.design/components/menu, and https://ant.design/components/modal
 import AnnotationUploader from '../components/AnnotationUploader.js';
 import AnnotationDownloader from '../components/AnnotationDownloader.js';
@@ -14,6 +14,10 @@ import dynamic from 'next/dynamic';
 
 import ProjectMenu from '@/components/ProjectMenu.js';
 import VideoMenu from '@/components/VideoMenu.js';
+import { clearUnfinishedAnnotation, createId, addCategoryAnnoToFrameAnnotation } from '../utils/utils.js';
+
+//DELETE this after videoID is open in the API
+import { useStates, useStateSetters } from '../components/AppContext.js';
 
 export default function Home() {
   // The ..open/set..Open states are to allow the child modal components to control the visibility of themselves when some interval UI events happen, such as clicking on cancel button.
@@ -26,6 +30,8 @@ export default function Home() {
   const [annotationUploadOpen, setAnnotationUploadOpen] = useState(false);
   const [annotationDownloadOpen, setAnnotationDownloadOpen] = useState(false);
   const [fileName, setFileName] = useState('annotations');
+  const videoId = 123 || useStates().videoId; // DELETE this after videoID is open in the API safely
+  const frameUrl = 123 || useStates().frameUrl; //DELETE this after frameUrl is open in the API safely
 
   //Keyboard shortcuts
   const handleShiftRight = (event) => {
@@ -45,18 +51,46 @@ export default function Home() {
     }
   ]
 
+  // This needs to be its own thing, along with the necessary states, etc.
+  //------ own thing ------
+  function createSingleAnnotation(note) {
+    console.log('createNoteAnnotation');
+    //setInfo(null);
+    if (Number.isInteger(frameNumber) || frameUrl) {
+        /*if (intervalAnno.on && intervalAnno.label!==props.label) {
+            endIntervalAnnotation('differentLabel');
+            setIntervalAnno(oldObj => {return {on:false, startFrame: null, videoId:null, label: null, color: null, annotatedFrames: new Set()}});
+        }*/ //You may want interval annotation for notes later; for right now, simply do it by frame
+
+        const annoCopy = clearUnfinishedAnnotation({}); //supposed to pass in ...frameAnnotation, but can't bc that's not open in the API
+        console.log('annoCopy', annoCopy);
+
+        const id = createId();
+        const annoObj = {
+            id: id,
+            videoId: videoId, //Still need this
+            frameNum: frameNumber,
+            label: 'note',
+            type: 'note',
+            data: note,        
+        };
+        //addCategoryAnnoToFrameAnnotation(annoObj, annoCopy,  mutualExclusiveCategory)
+        annoCopy[annoObj.id] = annoObj; // this line replaces the previous line
+        console.log('createSingleAnnotation', annoCopy);
+        //setFrameAnnotation(oldObj => annoCopy);
+        //setActiveAnnoObj(annoObj);
+        //annotationRef.current[frameNumber] = annoCopy;
+    }
+  }
+
   // ----- AnnotationDownloader (onDownloadBtnClick and ModalAnnotationDownloader) -----
+  /*
   function onDownloadBtnClick() { //What if there's no project or video loaded?  
     setAnnotationDownloadOpen(true);
   } 
 
-  useEffect(()=>{
-    if (annotationDownloadOpen) {  
-      setFileName("videoname");
-    }
-  }, [annotationDownloadOpen]);
 
- 
+/* 
   const ModalAnnotationDownloader = 
     <Modal 
       title={'Download notes'}
@@ -96,6 +130,7 @@ export default function Home() {
     a.click();
     URL.revokeObjectURL(a.href);
   }
+    */
   
   // Input is also used in ModalAnnoutationDownloader (line 220)
   // Would it be better to say "const { downloadInput } = Input;" so these 2 are not confused?
@@ -107,6 +142,8 @@ export default function Home() {
     console.log("Data source format is: ", dataSource);
     const note = form.getFieldValue("notes");
     setNotes(prevNotes => ({...prevNotes, [frameNumber]:note})); 
+    createSingleAnnotation(note);
+    console.log("Notes: ", notes);
     // TODO: add a line that also modifies the NotesTable --> seems to do this on its own
   }
 
@@ -124,6 +161,11 @@ export default function Home() {
   // ----- AnnotationUploader (onUploadBtnClick and ModalAnnotationUploader) -----
   function onUploadBtnClick(){
     setAnnotationUploadOpen(true);
+  }
+
+  function onDownloadBtnClick(){
+    setAnnotationDownloadOpen(true);
+    console.log("onDownloadBtnClick");
   }
 
   const ModalAnnotationUploader =
@@ -185,6 +227,7 @@ export default function Home() {
           <InfoBar info={info} /> 
         </div>
         
+
         <Row style={{minHeight:'150px'}}>
           <Canvas height={450} width={1500}/>
           {/*<Canvas/>*/}
@@ -197,20 +240,19 @@ export default function Home() {
             />
         </Row>
 
+
         <Row style={{height: '20%'}}>
           <Col style={{width: '80%'}}>
           <Form className='my-2 mx-3' form={form} size='small'>
-              <Form.Item
-                  name="notes" 
-              >
+              <Form.Item name="notes" >
                   <TextArea placeholder="Enter notes here:" onPressEnter={onAddBtnClick} rows={10} style={{width: '100%'}} />
               </Form.Item>
               <Form.Item>
                   {/*<Button className='my-2 mx-2' onClick={onAddBtnClick}>Save Note</Button>*/}
-                  <Button className='my-2 mx-2' onClick={onDownloadBtnClick}>Download Notes</Button>
+                  <Button className='my-2 mx-2' onClick={()=> setAnnotationDownloadOpen(true)}>Download Notes</Button>
+                  {<AnnotationDownloader annotationDownloadOpen={annotationDownloadOpen} setAnnotationDownloadOpen={setAnnotationDownloadOpen}/>}
                   <Button className='my-2 mx-2' onClick={onUploadBtnClick}>Upload Notes</Button>
                   {ModalAnnotationUploader}
-                  {ModalAnnotationDownloader}
               </Form.Item>
             </Form>
             </Col>
