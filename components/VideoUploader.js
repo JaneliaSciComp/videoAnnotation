@@ -63,7 +63,13 @@ export default function VideoUploader(props) {
     props.frameBufferSeconds ?? defaultFrameBufferSeconds;
 
   useEffect(() => {
-    if (!props.setFrameNum) return;
+    // if the video is loaded, set the frame number to the one passed in
+    // the props. If the frame number is not valid, set it to 1.
+    if (!props.setFrameNum) {
+      setFrame(1);
+      return;
+    }
+
     if (
       Number.isInteger(props.setFrameNum) &&
       totalFrameCount &&
