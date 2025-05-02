@@ -409,6 +409,7 @@ export default function VideoUploader(props) {
   }
 
   function setFrame(newValue) {
+    console.log("setFrame entered");
     if (newValue) {
       setSliderValue(newValue);
       if (newValue >= 1) {

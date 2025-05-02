@@ -5,7 +5,7 @@ import { clearUnfinishedAnnotation, createId, addCategoryAnnoToFrameAnnotation }
 //import TextArea from 'antd/es/input/TextArea';
 
 
-export default function NoteTakerBox(){
+export default function NoteTakerBox({notes, setNotes}){
 
     const [info, setInfo] = useState(null);
 
@@ -19,8 +19,8 @@ export default function NoteTakerBox(){
     const setActiveAnnoObj = useStateSetters().setActiveAnnoObj;
     const videoId = useStates().videoId;
     const annotationRef = useStates().annotationRef;
-    const notes = useStates().notes;
-    const setNotes = useStateSetters().setNotes;
+    //const notes = useStates().notes;
+    //const setNotes = useStateSetters().setNotes; // only works if setNotes is defined in Workspace or AppContext (and passed thru Workspace)
 
 
     // When the frameNum changes, the Notes for the new frame are displayed
@@ -36,12 +36,14 @@ export default function NoteTakerBox(){
     }, [frameNum, form, notes])
 
 
-    async function onAddBtnClick() {
+    async function onEnter() {
         const id = new Date().getTime().toString();  // each item in the database has to have a unique ID
         
         const note = form.getFieldValue("notes");
         setNotes(prevNotes => ({...prevNotes, [frameNum]:note})) // Makes shallow copy of notes, appends current note
-
+        setActiveAnnoObj(note);
+        console.log("Current ntoes are: ", notes);
+        console.log("Current NOTE is ", note);
         //notes[frameNum]= note;
         //console.log(note);
         //console.log(notes);
@@ -92,7 +94,7 @@ export default function NoteTakerBox(){
                 //addCategoryAnnoToFrameAnnotation(annoObj, annoCopy,  mutualExclusiveCategory) // checks if frame already labeled with a category, since categories are mutually-exclusive
                 //console.log('createSingleAnnotation', annoCopy);
                 setFrameAnnotation(oldObj => annoCopy);
-                setActiveAnnoObj(annoObj);
+                //setActiveAnnoObj(annoObj);
                 //setDrawType(null);
                 //setSkeletonLandmark(null);
                 //setUndo(0);
@@ -102,7 +104,7 @@ export default function NoteTakerBox(){
             }
     }
 
-    // Copied from VideoManager or VideoUploader... needed in order to modify existing notes
+    // Copied from VideoManager or VideoUploader... needed in order to modify existing notes??
     function modifyNotesData(id) {
         let formFields = form.getFieldsValue();
  
@@ -144,24 +146,7 @@ export default function NoteTakerBox(){
 
     return (
         <>
-        <div className='my-4 px-3 py-2' style={{border: '1px solid rgb(222, 226, 230)', borderRadius: '0.5em'}}>
-            
-            {/*<p className='my-2' style={{fontWeight: 'bold'}}>Notes</p>*/}
-            <Form className='my-2 mx-3' form={form} size='small'>
-                <Form.Item
-                    name="notes" 
-                    label="Notes"
-                >
-                    <TextArea rows={10} />
-                </Form.Item>
-                
-                <Form.Item>
-                    <Button className='my-2' onClick={onAddBtnClick}>Save Frame</Button>
-                </Form.Item>
-            </Form>
-        </div>                
-                    
-
+            <TextArea placeholder="Enter notes here:" onPressEnter={onEnter} rows={10} style={{width: '100%'}} />                        
         </>
     )
 }

@@ -8,6 +8,8 @@ import {Container, Row, Col} from 'react-bootstrap'; // Third party components. 
 import { Menu, Modal, Form, Input, Button, Table } from 'antd'; // Third party components. Refer to the tutorial on https://ant.design/components/menu, and https://ant.design/components/modal
 import AnnotationUploader from '../components/AnnotationUploader.js';
 import AnnotationDownloader from '../components/AnnotationDownloader.js';
+import NoteTakerBox from '../components/NoteTakerBox.js';
+import NotesChart from '../components/NotesChart.js';
 
 // Client side components. They cannot be rendered on the server side, thus need to be explicitly marked as client side comp.
 import dynamic from 'next/dynamic';
@@ -25,7 +27,7 @@ export default function Home() {
   
   const [form] = Form.useForm();
   const [frameNumber, setFrameNumber] = useState('');
-  const [notes, setNotes] = useState([]);  // was ({})
+  const [notes, setNotes] = useState([]);  // was ({})  // Not pulling from annotations because I only want chart to show notes, not others annotations
   //let annotations = {};  // Still don't completely understand why this version doesn't work
   const [annotationUploadOpen, setAnnotationUploadOpen] = useState(false);
   const [annotationDownloadOpen, setAnnotationDownloadOpen] = useState(false);
@@ -138,7 +140,7 @@ export default function Home() {
   const { TextArea } = Input;
 
 
-  function onAddBtnClick() {
+  /*function onEnter() {
     console.log("Data source format is: ", dataSource);
     const note = form.getFieldValue("notes");
     setNotes(prevNotes => ({...prevNotes, [frameNumber]:note})); 
@@ -146,11 +148,14 @@ export default function Home() {
     console.log("Notes: ", notes);
     // TODO: add a line that also modifies the NotesTable --> seems to do this on its own
   }
+    */
 
   //frameChangeHandler
   // on frame change, this will update the text box with the correct annotation
   function frameChangeHandler(props) {
+    //frameNum is broken; get frameNum directly from
     const frameNumber = props.frameNum; // This is a safe way to give the developer the frameNum value. --> But how does it know where to get frameNum?
+    console.log("Frame number is: ", frameNumber);
     setFrameNumber(frameNumber);
     //const note = notes[frameNumber]; // --> TODO: add annotations as a dictionary
     form.setFieldsValue({
@@ -245,7 +250,8 @@ export default function Home() {
           <Col style={{width: '80%'}}>
           <Form className='my-2 mx-3' form={form} size='small'>
               <Form.Item name="notes" >
-                  <TextArea placeholder="Enter notes here:" onPressEnter={onAddBtnClick} rows={10} style={{width: '100%'}} />
+                  {/*<TextArea placeholder="Enter notes here:" onPressEnter={onAddBtnClick} rows={10} style={{width: '100%'}} />*/}
+                  <NoteTakerBox notes={notes} setNotes={setNotes} placeholder="Enter notes here:" rows={10} style={{width: '100%'}} />
               </Form.Item>
               <Form.Item>
                   {/*<Button className='my-2 mx-2' onClick={onAddBtnClick}>Save Note</Button>*/}
@@ -257,7 +263,8 @@ export default function Home() {
             </Form>
             </Col>
             <Col style={{width: '20%'}}>
-              <Table dataSource={dataSource} columns={columns}>Notes Table</Table>
+              {/*<Table dataSource={dataSource} columns={columns}>Notes Table</Table>*/}
+              <NotesChart notes={notes}/>
             </Col>
         </Row>
 
