@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Input, Button } from 'antd';
 
-export default function AnnotationDownloader({annotationDownloadOpen, setAnnotationDownloadOpen}){
-  //const [annotationDownloadOpen, setAnnotationDownloadOpen] = useState(false);
+export default function AnnotationDownloader({notes, annotationDownloadOpen, setAnnotationDownloadOpen}){
   const [fileName, setFileName] = useState('annotations');
 
   function onDownloadBtnClick() { //What if there's no project or video loaded?  
