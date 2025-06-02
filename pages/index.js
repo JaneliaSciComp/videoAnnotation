@@ -12,7 +12,7 @@ import NoteTakerBox from '../components/NoteTakerBox.js';
 import NotesChart from '../components/NotesChart.js';
 import ProjectMenu from '../components/ProjectMenu.js';
 import VideoMenu from '../components/VideoMenu.js';
-
+import { renderBtnGroup } from '../components/Workspace.js';
 
 
 
@@ -34,6 +34,10 @@ export default function Home() {
       key: '1',
     }
   ]  
+
+  function myFunction(){
+    stuff = renderBtnGroup();
+  }
 
   // ----- AnnotationUploader (onUploadBtnClick and ModalAnnotationUploader) -----
   // This should allow local annotations to be uploaded/downloaded to/from a project
@@ -67,42 +71,39 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Workspace > 
-        <Menu items={MenubarItems} mode="horizontal"/>
-        <div className='py-2'>
-          <InfoBar info={info} /> 
-        </div>
-        
+      <Menu items={MenubarItems} mode="horizontal"/>
+      <div className='py-2'>
+        <InfoBar info={info} /> 
+      </div>
+      
 
-        <Row style={{minHeight:'150px'}}>
-          <Canvas height={450} width={1500}/>
+      <Row style={{minHeight:'150px'}}>
+        <Canvas height={450} width={1500}/>
+      </Row>
+      <Row>
+        <VideoUploader 
+          width={500}
+          hideSubmit 
+          />
+      </Row>
+
+
+      <Row style={{height: '20%'}}>
+        <Col style={{width: '80%'}}>
+          <NoteTakerBox notes={notes} setNotes={setNotes} />
+          <Form className='my-2 mx-3' form={form} size='small'>
+            <Form.Item>
+                <Button className='my-2 mx-2' onClick={()=> setAnnotationDownloadOpen(true)}>Download Notes</Button>
+                {<AnnotationDownloader notes={notes} annotationDownloadOpen={annotationDownloadOpen} setAnnotationDownloadOpen={setAnnotationDownloadOpen}/>}
+                <Button className='my-2 mx-2' onClick={onUploadBtnClick}>Upload Notes</Button>
+                {ModalAnnotationUploader}
+            </Form.Item>
+          </Form>
+          </Col>
+          <Col style={{width: '20%'}}>
+            <NotesChart notes={notes}/>
+          </Col>
         </Row>
-        <Row>
-          <VideoUploader 
-            width={500}
-            hideSubmit 
-            />
-        </Row>
-
-
-        <Row style={{height: '20%'}}>
-          <Col style={{width: '80%'}}>
-            <NoteTakerBox notes={notes} setNotes={setNotes} />
-            <Form className='my-2 mx-3' form={form} size='small'>
-              <Form.Item>
-                  <Button className='my-2 mx-2' onClick={()=> setAnnotationDownloadOpen(true)}>Download Notes</Button>
-                  {<AnnotationDownloader notes={notes} annotationDownloadOpen={annotationDownloadOpen} setAnnotationDownloadOpen={setAnnotationDownloadOpen}/>}
-                  <Button className='my-2 mx-2' onClick={onUploadBtnClick}>Upload Notes</Button>
-                  {ModalAnnotationUploader}
-              </Form.Item>
-            </Form>
-            </Col>
-            <Col style={{width: '20%'}}>
-              <NotesChart notes={notes}/>
-            </Col>
-        </Row>
-
-      </Workspace>
     </div>
   )
 }

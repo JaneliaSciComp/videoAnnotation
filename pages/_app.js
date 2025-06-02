@@ -1,5 +1,6 @@
 import '../styles/globals.css';
 import Script from 'next/script';
+import Workspace from '../components/Workspace';
 // import React, {useState, useEffect, useRef} from 'react';
 
 function MyApp({ Component, pageProps }) {
@@ -12,8 +13,10 @@ function MyApp({ Component, pageProps }) {
 
   return (
     <>
+      <Workspace>
       {/* <Script src='./opencv.js' strategy='beforeInteractive'/>  */}
-      <Component {...pageProps} />
+        <Component {...pageProps} />
+      </Workspace>
     </>
   )
   
