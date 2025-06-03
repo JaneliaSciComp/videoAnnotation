@@ -88,6 +88,7 @@ export default function AnnotationChart(props) {
 
     useEffect(() => {
         if (uploader?.type && uploader?.file) {
+            console.log("This one is not called at start");
             setAnnotationForChart(oldValue => {return {framNum: null, range: null, data: null}});
         }
 
@@ -97,6 +98,7 @@ export default function AnnotationChart(props) {
         if (resetAnnotationChart) {
             getAnnotationData();
             setResetAnnotationChart(false);
+            console.log("AnnotationForChart useEffect 101=", annotationForChart);
         }
     }, [resetAnnotationChart])
 
@@ -105,18 +107,21 @@ export default function AnnotationChart(props) {
         if (updateAnnotationChart) {
             getAnnotationData();
             setUpdateAnnotationChart(false);
+            console.log("AnnotationForChart useEffect 110 =", annotationForChart);
         }
     }, [updateAnnotationChart])
 
 
     useEffect(() => {
         getAnnotationData();
+        console.log("AnnotationForChart useEffect 117 =", annotationForChart);
     }, [frameNum, annotationChartRange])
 
     useEffect(() => {
         getAnnotationData();
 
         return () => {
+            console.log("This is called after error is thrown (weird)");
             setAnnotationForChart(oldValue => {return {framNum: null, range: null, data: null}});
         }
     }, [props.labels, videoId])
@@ -126,10 +131,10 @@ export default function AnnotationChart(props) {
             const groupId = Object.keys(intervalErasing).filter(groupId => intervalErasing[groupId].labels.some(label=>label===props.labels[0]))[0];
 
             if (groupId && intervalErasing[groupId].on) {
+                console.log("This not called during start.");
                 const index = frameNum - (annotationForChart.range ? annotationForChart.range[0] : 0);
                 const newData = [...annotationForChart.data];
                 newData[index] = null;
-                
                 setAnnotationForChart(oldValue => {
                     return {
                         frameNum: frameNum,
@@ -144,16 +149,18 @@ export default function AnnotationChart(props) {
             } else {
                 getAnnotationData();
             }
+            console.log("AnnotationForChart in useEffect(intervalErasing) =", annotationForChart);
         } 
     }, [intervalErasing])
 
 
     useEffect(() => {
+        console.log("AnnotationForChart useEffect 158 BEGINNING!! = ", annotationForChart);
         if (!props.labels?.length>0) return;
-
         let initialLables = [1,2,3,4,5,6,7,8,9,10];
         let data = {labels: initialLables, datasets: [{}]};
         let startNeeded=0, endNeeded=0, start=0, end=0;
+        console.log("AnnotationForChart useEffect 163 is UNDEFINED = ", annotationForChart);
         if (props.labels?.length>0 && annotationForChart.range ) {
             const frameNums = [];
             startNeeded = (frameNum-annotationChartRange>0) ? (frameNum-annotationChartRange) : 0;
@@ -173,6 +180,7 @@ export default function AnnotationChart(props) {
                 categoryPercentage: 0.95,
                 barPercentage: 1,
             });
+            console.log("This one is not called");
             for (let i = start; i <= end; i++) {
                 const anno = annotationForChart.data[i];
                 if (anno) {
@@ -215,6 +223,7 @@ export default function AnnotationChart(props) {
                 datasets: props.labels.map((m) => splittedData[m]),
             };
         }
+        console.log("Something...", annotationForChart);
         setDataToDisplay(data);
 
         setOptions({
@@ -277,12 +286,14 @@ export default function AnnotationChart(props) {
                 },
             },
         });
+        console.log("Is this called before above?  YES", annotationForChart);
 
     }, [props, annotationForChart])
 
 
     async function getAnnotationData() {
         setGlobalInfo(null);
+        console.log("Top of async is fine", annotationForChart);
         if (props.labels?.length>0 && Number.isInteger(frameNum)) { 
             let annoDataForChart;
             const rangeNeeded = annotationChartRange;
@@ -298,13 +309,14 @@ export default function AnnotationChart(props) {
                     data: res
                 };
             }
-            
             setAnnotationForChart(oldValue => annoDataForChart);
+            console.log("AnnotationForChart in async getAnnotationData =", annotationForChart);
         }
     }   
     
 
     function filterAnnotation(startFrame, endFrame, labels) {
+        console.log("AnnotationForChart in filterAnnotation =", annotationForChart);
         const res = [];
         for (let i = startFrame; i <= endFrame; i++) {
             const frameAnno = annotationRef.current[i]??{};
@@ -314,10 +326,12 @@ export default function AnnotationChart(props) {
                 }
             })
         }
+        console.log("AnnotationForChart in supplementData =", annotationForChart);
         return res;
     }
 
     function supplementData(startFrame, endFrame, retrivedData) {
+        console.log("AnnotationForChart in supplementData =", annotationForChart);
         let trackRes = 0;
         const annoArr = [];
         for (let i = startFrame; i <= endFrame; i++) {
@@ -333,11 +347,13 @@ export default function AnnotationChart(props) {
                 i--;
             }
         }
+        console.log("AnnotationForChart in supplementData =", annotationForChart);
         return annoArr;
     }
 
 
     function generateChart() {
+        console.log("AnnotationForChart in generateChart =", annotationForChart);
         return <Bar ref={chartRef} 
                 options={options} 
                 data={dataToDisplay}
@@ -350,7 +366,7 @@ export default function AnnotationChart(props) {
     return (
         <>
             <div id='annotationChart' style={{position: 'relative', width: props.width ?? '100%', height: props.height ?? '100%'}}> 
-                {generateChart()}
+                {/*generateChart()*/}
             </div>
         </>
     )
