@@ -5,7 +5,7 @@ import Head from 'next/head';
 import Canvas from '../components/Canvas.js';
 import VideoUploader from '../components/VideoUploader.js';
 import InfoBar from '../components/InfoBar.js';
-import { Row, Col } from 'react-bootstrap'; 
+import { Row, Col } from 'react-bootstrap';
 import { Menu, Modal, Form, Button } from 'antd';
 import AnnotationUploader from '../components/AnnotationUploader.js';
 import AnnotationDownloader from '../components/AnnotationDownloader.js';
@@ -19,7 +19,7 @@ import renderBtnGroup from '../components/Workspace.js';  // was { renderBtnGrou
 export default function Home() {
   const [info, setInfo] = useState(''); // To display feedback info
   const [form] = Form.useForm();
-  const [notes, setNotes] = useState([]);  
+  const [notes, setNotes] = useState([]);
   const [annotationUploadOpen, setAnnotationUploadOpen] = useState(false);
   const [annotationDownloadOpen, setAnnotationDownloadOpen] = useState(false);
 
@@ -33,10 +33,10 @@ export default function Home() {
       label: <VideoMenu />,
       key: '1',
     }
-  ]  
+  ]
 
   function myFunction(){
-    stuff = renderBtnGroup();
+    const stuff = renderBtnGroup();
   }
 
   // ----- AnnotationUploader (onUploadBtnClick and ModalAnnotationUploader) -----
@@ -46,23 +46,22 @@ export default function Home() {
   }
 
   const ModalAnnotationUploader =
-    <Modal 
+    <Modal
       title={'Upload notes'}
       footer={() => null}
       open={annotationUploadOpen}
-      setOpen={setAnnotationUploadOpen}
       onCancel={() => setAnnotationUploadOpen(false)}
       >
       <div className='my-4 d-flex justify-content-center'>
       <div style={{width: '100%'}}>
-      <AnnotationUploader 
+      <AnnotationUploader
         setModalOpen={setAnnotationUploadOpen}
         setNotes={setNotes}/>
       </div>
       </div>
     </Modal>
 
-  
+
 
   return (
     <div className="container min-vh-100 min-vw-100 d-flex flex-column justify-content-between">
@@ -73,17 +72,17 @@ export default function Home() {
 
       <Menu items={MenubarItems} mode="horizontal"/>
       <div className='py-2'>
-        <InfoBar info={info} /> 
+        <InfoBar customInfo={info} />
       </div>
-      
+
 
       <Row style={{minHeight:'150px'}}>
         <Canvas height={450} width={1500}/>
       </Row>
       <Row>
-        <VideoUploader 
+        <VideoUploader
           width={500}
-          hideSubmit 
+          hideSubmit
           />
       </Row>
 
