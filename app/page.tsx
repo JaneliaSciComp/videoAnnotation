@@ -1,6 +1,7 @@
+"use client";
+
 import React, { useState } from 'react';
 import Head from 'next/head';
-import Workspace from '../components/Workspace.js';
 import Canvas from '../components/Canvas.js';
 import VideoUploader from '../components/VideoUploader.js';
 import InfoBar from '../components/InfoBar.js';
@@ -12,8 +13,7 @@ import NoteTakerBox from '../components/NoteTakerBox.js';
 import NotesChart from '../components/NotesChart.js';
 import ProjectMenu from '../components/ProjectMenu.js';
 import VideoMenu from '../components/VideoMenu.js';
-import { renderBtnGroup } from '../components/Workspace.js';
-
+import renderBtnGroup from '../components/Workspace.js';  // was { renderBtnGroup }
 
 
 export default function Home() {

@@ -1,5 +1,5 @@
 {
-  "name": "my-app",
+  "name": "xi_typescript",
   "version": "0.1.0",
   "private": true,
   "scripts": {
@@ -17,16 +17,22 @@
     "fabric-with-erasing": "^1.0.1",
     "file-saver": "^2.0.5",
     "jszip": "^3.10.1",
-    "next": "13.2.4",
-    "react": "18.2.0",
+    "next": "15.3.3",
+    "npm": "^11.4.1",
+    "react": "^19.0.0",
     "react-bootstrap": "^2.7.2",
     "react-chartjs-2": "^5.2.0",
-    "react-dom": "18.2.0"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "eslint": "8.36.0",
-    "eslint-config-next": "13.2.4",
+    "@eslint/eslintrc": "^3",
+    "@types/node": "20.17.58",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "15.3.3",
     "eslint-config-prettier": "^10.1.2",
-    "prettier": "^3.5.3"
+    "prettier": "^3.5.3",
+    "typescript": "^5.8.3"
   }
 }
