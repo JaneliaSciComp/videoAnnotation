@@ -19,16 +19,16 @@
     "jszip": "^3.10.1",
     "next": "15.3.3",
     "npm": "^11.4.1",
-    "react": "^19.0.0",
+    "react": "^19.1.0",
     "react-bootstrap": "^2.7.2",
     "react-chartjs-2": "^5.2.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
     "@types/node": "20.17.58",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
+    "@types/react": "^19.1.7",
+    "@types/react-dom": "^19.1.6",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
     "eslint-config-prettier": "^10.1.2",

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import Head from 'next/head';
 import Canvas from '../components/Canvas.js';
 import VideoUploader from '../components/VideoUploader.js';
-import InfoBar from '../components/InfoBar.js';
+import InfoBar from '../components/InfoBar';
 import { Row, Col } from 'react-bootstrap';
 import { Menu, Modal, Form, Button } from 'antd';
 import AnnotationUploader from '../components/AnnotationUploader.js';

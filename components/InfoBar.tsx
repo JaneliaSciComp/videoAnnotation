@@ -6,7 +6,12 @@ import { useStates } from "./AppContext";
  * props:
  *     customInfo: string. If not null, will be displayed with system info.
  */
-export default function InfoBar({ customInfo }) {
+
+type InfoBarProps = {
+  customInfo?: string
+};
+
+export default function InfoBar({ customInfo }: InfoBarProps) : React.ReactElement {
   const {globalInfo: info} = useStates();
 
   return (
