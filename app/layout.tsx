@@ -1,0 +1,18 @@
+"use client";
+
+import '../styles/globals.css';
+import Workspace from '../components/Workspace';
+
+function App( {children,}: Readonly <{children: React.ReactNode;}>) {
+  return (
+    <html>
+        <body>
+            <Workspace>
+                {children}
+            </Workspace>
+        </body>
+    </html>
+  )
+}
+
+export default App

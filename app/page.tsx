@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState } from "react";
 import Head from "next/head";
 import Workspace from "../components/Workspace.js";
