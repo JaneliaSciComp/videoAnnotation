@@ -1,5 +1,6 @@
 "use client";
 
+import '@ant-design/v5-patch-for-react-19';
 import React, { useState } from "react";
 import Head from "next/head";
 import Workspace from "../components/Workspace.js";
@@ -9,7 +10,7 @@ import BtnContainer from "../components/BtnContainer.js";
 import AnnotationTable from "../components/AnnotationTable.js";
 import DownloadBtn from "../components/DownloadBtn.js";
 import ProjectManager from "../components/ProjectManager.js";
-import ModalJsonUploader from "../components/ModalJsonUploader.js";
+import ModalJsonUploader from "../components/ModalJsonUploader";
 import VideoManager from "../components/VideoManager.js";
 import CanvasAdditionalDataController from "../components/CanvasAdditionalDataController.js";
 import DropdownMenu from "../components/DropdownMenu.js";
@@ -45,7 +46,7 @@ export default function Home() {
     setCanvasAdditionalDataControllerOpen,
   ] = useState(false);
   const [info] = useState(null); // To display feedback info
-  const [newFrameNum, setNewFrameNum] = useState();
+  const [newFrameNum, setNewFrameNum] = useState<number>();
 
   const projectDropdownItems = [
     {
