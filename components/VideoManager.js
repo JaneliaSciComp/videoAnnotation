@@ -241,8 +241,8 @@ export default function VideoManager(props) {
 
     if (videoDataCopy) {
       setLoadVideo(videoDataCopy);
-      if (props.setModalOpen) {
-        props.setModalOpen(false);
+      if (props.setOpen) {
+        props.setOpen(false);
       }
     }
   }
@@ -314,8 +314,8 @@ export default function VideoManager(props) {
     videoObj.videoId = id;
 
     setLoadVideo(videoObj);
-    if (props.setModalOpen) {
-      props.setModalOpen(false);
+    if (props.setOpen) {
+      props.setOpen(false);
     }
   }
 
@@ -357,16 +357,25 @@ export default function VideoManager(props) {
     }
   }
 
+  function cancelClickHandler() {
+    props.setOpen(false);
+  }
+
+  function okClickHandler(){
+    if (!projectId) {
+     props.setOpen(false); 
+    }
+  }
+
   return (
     <>
-      {/* <Modal
-                title='Video Manager'
-                open={props.open}
-                onOk={okClickHandler}
-                onCancel={cancelClickHandler}
-                // style={{overflowX: 'auto'}}
-
-                > */}
+      <Modal
+          title='Video Manager'
+          open={props.open}
+          onOk={okClickHandler}
+          onCancel={cancelClickHandler}
+          // style={{overflowX: 'auto'}}
+      >
       {projectId ? (
         <div>
           {videoNames.length > 0 ? (
@@ -496,9 +505,10 @@ export default function VideoManager(props) {
           </div>
         </div>
       ) : (
-        <p>Please initialize/upload a project first.</p>
+        <p>Please initialize/upload a project first!!</p>
       )}
       <p>{info}</p>
+    </Modal>  
     </>
   );
 }

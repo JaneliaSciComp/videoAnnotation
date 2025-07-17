@@ -1,17 +1,24 @@
 import { Button } from "react-bootstrap";
 import styles from "../styles/Button.module.css";
-import { useStates, useStateSetters } from "./AppContext.js";
+import { useStates, useStateSetters } from "./AppContext";
 
 /*
     Save annotation to backend db when clicked.
     Props:
         mode: 'inMenu' / 'sole', 'sole' by default.
           'inMenu' is for embedding into DropdownMenu, there will not be btn UI.
-          The developer should follow the DropdownMenu's rule to provide label for
+          The developer should follow the gitDropdownMenu's rule to provide label for
           the comp, while the onClick event handler is already handled in DropdownMenu.
 
 */
-export default function SaveAnnotationBtn({ mode, children }) {
+
+interface saveAnnotationBtnTypes {
+  mode: 'inMenu' | 'sole',
+  children?: any
+}
+
+
+export default function SaveAnnotationBtn({ mode, children }: saveAnnotationBtnTypes) {
   const frameUrl = useStates().frameUrl;
   const videoId = useStates().videoId;
   const setGlobalInfo = useStateSetters().setGlobalInfo;

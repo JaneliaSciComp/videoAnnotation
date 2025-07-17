@@ -8,14 +8,14 @@ import Canvas from "../components/Canvas.js";
 import VideoUploader from "../components/VideoUploader.js";
 import BtnContainer from "../components/BtnContainer.js";
 import AnnotationTable from "../components/AnnotationTable.js";
-import DownloadBtn from "../components/DownloadBtn.js";
+import DownloadBtn from "../components/DownloadBtn";
 import ProjectManager from "../components/ProjectManager.js";
 import ModalJsonUploader from "../components/ModalJsonUploader";
 import VideoManager from "../components/VideoManager.js";
 import CanvasAdditionalDataController from "../components/CanvasAdditionalDataController.js";
 import DropdownMenu from "../components/DropdownMenu.js";
 import ProjectList from "../components/ProjectList.js";
-import SaveAnnotationBtn from "../components/SaveAnnotationBtn.js";
+import SaveAnnotationBtn from "../components/SaveAnnotationBtn";
 import InfoBar from "../components/InfoBar.js";
 import { Row, Col } from "react-bootstrap"; // Third party components. Refer to the tutorial on https://react-bootstrap.netlify.app/docs/layout/grid
 import { Menu, Modal } from "antd"; // Third party components. Refer to the tutorial on https://ant.design/components/menu, and https://ant.design/components/modal
@@ -124,7 +124,7 @@ export default function Home() {
     },
   ];
 
-  function projectDropdownClickHandler(e) {
+  function projectDropdownClickHandler(e: any) {
     /**
      * Click event handler for DropdownMenu. Will be called after the default behavior of each child.
      * e is the event object which has a key property corresponding to the index(integer) of each child in the 'menu' prop. This may be different with the 'key' prop of the component passed to each child.
@@ -167,58 +167,46 @@ export default function Home() {
       label: "Video Manager",
       compName: "VideoManager",
       component: (
-        <Modal
+        <VideoManager
           key="0"
-          title="Video Manager"
+          setOpen={setVideoManagerOpen} // To allow the child to contorl the visibility of the modal window, e.g. when the user clicks the 'load' or 'add and load' button.
           open={videoManagerOpen}
-          setOpen={setVideoManagerOpen}
-          onCancel={() => setVideoManagerOpen(false)}
-          style={{ overflowX: "auto" }}
-          footer={null}
-        >
-          <VideoManager
-            setModalOpen={setVideoManagerOpen} // To allow the child to contorl the visibility of the modal window, e.g. when the user clicks the 'load' or 'add and load' button.
-            /**
-             * name: str, // required and unique, used as var name, no white space allowed.
-             * label: str, // required, label shown to the user, allow white space
-             * required: boolean, // false by default
-             * loadIn: 'canvas'/'chart'/null, // whether to draw the data on canvas/chart with each frame. If yes, will fetch the data from backend and ask canvas/chart to draw it
-             * onLoad: event handler. Can be used to draw shapes on canvas and so on. required when loadin='canvas'
-             */
-            // additionalFields={[
-            //   {name: 'canvas1', label: 'canvas1', required: true, loadIn: 'canvas', onLoad: drawDataAsCircle},
-            //   {name: 'canvas2', label: 'canvas2', required: true, loadIn: 'canvas', onLoad: drawDataAsLine},
-            //   {name: 'chart1', label: 'chart1', required: true, loadIn: 'chart'},
-            //   {name: 'chart2', label: 'chart2', required: true, loadIn: 'chart'}
-            // ]}
-          />
-        </Modal>
+        />
+          /**
+           * name: str, // required and unique, used as var name, no white space allowed.
+           * label: str, // required, label shown to the user, allow white space
+           * required: boolean, // false by default
+           * loadIn: 'canvas'/'chart'/null, // whether to draw the data on canvas/chart with each frame. If yes, will fetch the data from backend and ask canvas/chart to draw it
+           * onLoad: event handler. Can be used to draw shapes on canvas and so on. required when loadin='canvas'
+           */
+          // additionalFields={[
+          //   {name: 'canvas1', label: 'canvas1', required: true, loadIn: 'canvas', onLoad: drawDataAsCircle},
+          //   {name: 'canvas2', label: 'canvas2', required: true, loadIn: 'canvas', onLoad: drawDataAsLine},
+          //   {name: 'chart1', label: 'chart1', required: true, loadIn: 'chart'},
+          //   {name: 'chart2', label: 'chart2', required: true, loadIn: 'chart'}
+          // ]}
+        //</Modal>
       ),
     },
     {
       label: "Additional Data For Canvas",
       compName: "CanvasAdditionalDataController",
       component: (
-        <Modal
+        <CanvasAdditionalDataController
           key="1"
-          title="Canvas Additional Data Controller"
           open={canvasAdditionalDataControllerOpen}
           setOpen={setCanvasAdditionalDataControllerOpen}
-          onCancel={() => setCanvasAdditionalDataControllerOpen(false)}
-          style={{ overflowX: "auto" }}
-          footer={null}
-        >
-          <CanvasAdditionalDataController
-            // hideRange  //Hide the range input.
-            // halfRange={2} //Allow developer to set half range value when hideRange is true. Required and only useful when hideRange is true.
-            defaultHalfRange={1} // Default value for half range input. Should only be used when hideRange is false.
-          />
-        </Modal>
+          // hideRange  //Hide the range input.
+          // halfRange={2} //Allow developer to set half range value when hideRange is true. Required and only useful when hideRange is true.
+          defaultHalfRange={1} // Default value for half range input. Should only be used when hideRange is false.
+          //style={{ overflowX: "auto" }} // What does this do?
+          //footer={null}
+        />
       ),
     },
   ];
 
-  function drawDataAsCircle(params) {
+  function drawDataAsCircle(params: any) {
     /**
      * OnLoad event handler for the additional data for canvas.
      *

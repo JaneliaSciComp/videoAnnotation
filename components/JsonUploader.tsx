@@ -3,13 +3,22 @@ import { InboxOutlined } from "@ant-design/icons";
 import { Upload } from "antd";
 import { useStateSetters } from "./AppContext";
 
+
+// Required props
+interface JsonUploaderProps {
+  type: string,
+  setModalOpen: any
+  onLoad?: any
+}
+
+
 /**
  *  props:
  *      type: required, 'annotation' or 'configuration'
  *      onLoad: called after the file is successfully loaded, with the file obj as argument. Will be called after inherent behavior.
  *      setModalOpen: only useful when put inside a modal window. setter of modalOpen.
  */
-export default function JsonUploader({type, onLoad, setModalOpen}) {
+export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderProps) {
   const [info, setInfo] = useState("Click or drag file to this area to upload");
 
   const setUploader = useStateSetters().setUploader;
@@ -27,7 +36,7 @@ export default function JsonUploader({type, onLoad, setModalOpen}) {
     }
   }, [type]);
 
-  function changeHandler(e) {
+  function changeHandler(e: any) {
     if (e.file.status === "done") {
       uploadFile(e.file);
     } else if (e.file.status === "error") {
@@ -35,7 +44,7 @@ export default function JsonUploader({type, onLoad, setModalOpen}) {
     }
   }
 
-  function uploadFile(file) {
+  function uploadFile(file: string) {
     if (setModalOpen) {
       setModalOpen(false);
     }
