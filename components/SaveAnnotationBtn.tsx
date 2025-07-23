@@ -1,6 +1,7 @@
 import { Button } from "react-bootstrap";
 import styles from "../styles/Button.module.css";
 import { useStates, useStateSetters } from "./AppContext";
+import { type ReactNode } from "react";
 
 /*
     Save annotation to backend db when clicked.
@@ -14,7 +15,7 @@ import { useStates, useStateSetters } from "./AppContext";
 
 interface saveAnnotationBtnTypes {
   mode: 'inMenu' | 'sole',
-  children?: any
+  children?: ReactNode
 }
 
 

@@ -3,11 +3,15 @@ import { createContext, useContext } from 'react';
 const StatesContext = createContext(undefined);
 const StateSettersContext = createContext(undefined);
 
+interface AppContextProps {
+  children: React.ReactNode,
+}
+
 export function StatesProvider({
     states,
     stateSetters,
     children
-}) {
+}: AppContextProps) {
   
     return (
       <StatesContext.Provider value={states}>

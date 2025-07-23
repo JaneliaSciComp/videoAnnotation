@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { InboxOutlined } from "@ant-design/icons";
-import { Upload } from "antd";
+import { Upload, UploadFile } from "antd";
 import { useStateSetters } from "./AppContext";
+import { UploadChangeParam } from "antd/es/upload";
 
 
 // Required props
 interface JsonUploaderProps {
   type: string,
-  setModalOpen: any
-  onLoad?: any
+  setModalOpen: ((open: boolean)=>void) | null,
+  onLoad?: (file: UploadFile) => void
 }
 
 
@@ -35,16 +36,18 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
       );
     }
   }, [type]);
+  
 
-  function changeHandler(e: any) {
+  function changeHandler(e: UploadChangeParam) {
     if (e.file.status === "done") {
       uploadFile(e.file);
+      console.log("this is e: ", e);
     } else if (e.file.status === "error") {
       setInfo(`${e.file.name} file upload failed.`);
     }
   }
 
-  function uploadFile(file: string) {
+  function uploadFile(file: UploadFile) {
     if (setModalOpen) {
       setModalOpen(false);
     }
@@ -63,7 +66,7 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
       <Dragger
         id="jsonFile"
         name="jsonFile"
-        type="file"
+        //type="file"
         accept="json"
         showUploadList={false}
         beforeUpload={() => {

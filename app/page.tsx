@@ -124,7 +124,7 @@ export default function Home() {
     },
   ];
 
-  function projectDropdownClickHandler(e: any) {
+  function projectDropdownClickHandler() {
     /**
      * Click event handler for DropdownMenu. Will be called after the default behavior of each child.
      * e is the event object which has a key property corresponding to the index(integer) of each child in the 'menu' prop. This may be different with the 'key' prop of the component passed to each child.
@@ -169,23 +169,9 @@ export default function Home() {
       component: (
         <VideoManager
           key="0"
-          setOpen={setVideoManagerOpen} // To allow the child to contorl the visibility of the modal window, e.g. when the user clicks the 'load' or 'add and load' button.
+          setOpen={setVideoManagerOpen} // To allow the child to control the visibility of the modal window, e.g. when the user clicks the 'load' or 'add and load' button.
           open={videoManagerOpen}
         />
-          /**
-           * name: str, // required and unique, used as var name, no white space allowed.
-           * label: str, // required, label shown to the user, allow white space
-           * required: boolean, // false by default
-           * loadIn: 'canvas'/'chart'/null, // whether to draw the data on canvas/chart with each frame. If yes, will fetch the data from backend and ask canvas/chart to draw it
-           * onLoad: event handler. Can be used to draw shapes on canvas and so on. required when loadin='canvas'
-           */
-          // additionalFields={[
-          //   {name: 'canvas1', label: 'canvas1', required: true, loadIn: 'canvas', onLoad: drawDataAsCircle},
-          //   {name: 'canvas2', label: 'canvas2', required: true, loadIn: 'canvas', onLoad: drawDataAsLine},
-          //   {name: 'chart1', label: 'chart1', required: true, loadIn: 'chart'},
-          //   {name: 'chart2', label: 'chart2', required: true, loadIn: 'chart'}
-          // ]}
-        //</Modal>
       ),
     },
     {
@@ -196,30 +182,16 @@ export default function Home() {
           key="1"
           open={canvasAdditionalDataControllerOpen}
           setOpen={setCanvasAdditionalDataControllerOpen}
-          // hideRange  //Hide the range input.
-          // halfRange={2} //Allow developer to set half range value when hideRange is true. Required and only useful when hideRange is true.
+          hideRange  //Hide the range input.
+          halfRange={2} //Allow developer to set half range value when hideRange is true. Required and only useful when hideRange is true.
           defaultHalfRange={1} // Default value for half range input. Should only be used when hideRange is false.
-          //style={{ overflowX: "auto" }} // What does this do?
-          //footer={null}
+          style={{ overflowX: "auto" }} // What does this do?
+          footer={null}
         />
       ),
     },
   ];
 
-  function drawDataAsCircle(params: any) {
-    /**
-     * OnLoad event handler for the additional data for canvas.
-     *
-     * params: {
-     *      target: fabric obj needed for the drawing. Just pass it to the imported func from canvasUtils.js
-     *      data: [additional data in needed range]
-     * }
-     */
-    for (let c of params.data) {
-      c.push(3); // add radius
-      drawCircle(params.target, c, "red");
-    }
-  }
 
   function videoDropdownClickHandler() {
     // TODO: customize click handler

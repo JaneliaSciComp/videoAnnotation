@@ -6,6 +6,11 @@ import Workspace from '../components/Workspace';
 function App( {children,}: Readonly <{children: React.ReactNode;}>) {
   return (
     <html>
+        <head>
+          <title>
+            VAL Library
+          </title>
+        </head>
         <body>
             <Workspace>
                 {children}

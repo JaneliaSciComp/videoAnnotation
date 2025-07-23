@@ -2,10 +2,10 @@ import JsonUploader from "./JsonUploader";
 import { Modal } from "antd";
 
 interface ModalJsonUploaderProps {
-  setOpen: any,
+  setOpen: (open: boolean)=> void,
   type: string,
   open: boolean,
-  onCancel?: any
+  onCancel?: ()=> void
 }
 /**
  *  props:
@@ -17,11 +17,11 @@ interface ModalJsonUploaderProps {
 export default function ModalJsonUploader( {setOpen, type, open, onCancel}: ModalJsonUploaderProps ) {
   function cancelClickHandler() {
     setOpen(false);
-    /*
+  
     if (onCancel) {
       onCancel();
     }
-      */
+  
   }
 
   return (
