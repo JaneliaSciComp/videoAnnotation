@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import {Dropdown, InputNumber} from 'antd';
+import {Dropdown, InputNumber, Modal} from 'antd';
 import {Row, Col} from 'react-bootstrap';
 import { useStateSetters, useStates } from './AppContext'; 
 import {defaultAdditionalDataRange} from '../utils/utils';
@@ -124,42 +124,52 @@ export default function CanvasAdditionalDataController(props) {
     }
 
 
+    function onCancelClickHandler(){
+        props.setOpen(false);
+    }
+
     return (
-        <Row className={'d-flex ' + (props.vertical?'flex-column':('justify-content-'+(props.align?props.align:'start')))}>
-            {props.hideRange ? null :
+        <Modal
+            title="Additional Data Controller"
+            open={props.open}
+            //onOk={onOkClickHandler}
+            onCancel={onCancelClickHandler}
+        >
+            <Row className={'d-flex ' + (props.vertical?'flex-column':('justify-content-'+(props.align?props.align:'start')))}>
+                {props.hideRange ? null :
+                    <Col xs='auto' className='mb-1'>
+                        <Row className={'d-flex '}> 
+                            <Col xs='auto' className='pe-0'>
+                                <span>Half Range</span>
+                            </Col>
+                            <Col xs='auto'>
+                                <InputNumber  
+                                    min={0}
+                                    max={totalFrameCount ? totalFrameCount : null}
+                                    defaultValue={props.defaultHalfRange ?? defaultAdditionalDataRange}
+                                    onChange={rangeChangeHandler}
+                                    size="small"
+                                    />
+                            </Col>
+                        </Row>
+                    </Col>
+                }
                 <Col xs='auto' className='mb-1'>
-                    <Row className={'d-flex '}> 
+                    <Row className={'d-flex '}>
                         <Col xs='auto' className='pe-0'>
-                            <span>Half Range</span>
+                            <span>Data</span>
                         </Col>
                         <Col xs='auto'>
-                            <InputNumber  
-                                min={0}
-                                max={totalFrameCount ? totalFrameCount : null}
-                                defaultValue={props.defaultHalfRange ?? defaultAdditionalDataRange}
-                                onChange={rangeChangeHandler}
-                                size="small"
-                                />
+                            <Dropdown.Button 
+                                size='small'
+                                menu={menuProps} 
+                                trigger={['click']}>
+                                {selectedMetrics.length==0 ? 'Choose' : selectedMetrics.join(',')}
+                            </Dropdown.Button>
                         </Col>
                     </Row>
                 </Col>
-            }
-            <Col xs='auto' className='mb-1'>
-                <Row className={'d-flex '}>
-                    <Col xs='auto' className='pe-0'>
-                        <span>Data</span>
-                    </Col>
-                    <Col xs='auto'>
-                        <Dropdown.Button 
-                            size='small'
-                            menu={menuProps} 
-                            trigger={['click']}>
-                            {selectedMetrics.length==0 ? 'Choose' : selectedMetrics.join(',')}
-                        </Dropdown.Button>
-                    </Col>
-                </Row>
-            </Col>
-        </Row>
-        
+            </Row>
+        </Modal> 
     )
 }
