@@ -122,7 +122,7 @@ export default function AnnotationChart({labels, omitXLables, legendPosition, le
 
     useEffect(() => {
         if (uploader?.type && uploader?.file) {
- //           singleCategoriesRef.current = {};
+            singleCategoriesRef.current = {};
             setAnnotationForChart(oldValue => {return {frameNum: null, range: null, data: null}});
         }
     }, [uploader])
