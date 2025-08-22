@@ -1,7 +1,8 @@
 import React, {useState, useEffect, useRef} from 'react';
-import { staticVerticalLineColor, dynamicVerticalLineColor, staticVerticalLine, dynamicVerticalLine } from '../utils/utils';
+import { staticVerticalLine, dynamicVerticalLine } from '../utils/utils';
 import { useStateSetters, useStates } from './AppContext'; 
 import { Bar } from 'react-chartjs-2';
+import type { Annotation } from '@/types/annotations';
 import {
     Chart as ChartJS,
     ChartData,
@@ -51,13 +52,59 @@ ChartJS.register(
         omitXLabels: boolean. Omit x-axis labels. false by default.
         */
 
-interface AnnotationData {
+type AnnotationDataForChart = {
     frameNum: number | null,
-    range: number[] | null,
-    data: any
+    range: [number, number] | null,
+    data: (Annotation | null)[],
 }
 
-interface AnnotationChartProps {
+type FrameAnnotations = {
+    [frame:number]: FrameAnnotation | null
+}
+
+type FrameAnnotation = {
+    [key: string]: Annotation
+}
+
+  type AnnotationObject = {
+    id: string;
+    videoId: string;
+    frameNum: number;
+    label: string;
+    color: string;
+    type: 'category' | 'skeleton' | 'polygon' | 'keyPoint' | 'bbox' | 'brush';
+    // Additional properties based on type:
+    data?: any; // For skeleton (landmarks), polygon, keyPoint, bbox coordinates
+    pathes?: any[]; // For brush type
+    skeletonName?: string; // For skeleton type
+    edgeData?: any; // For skeleton type
+    groupIndex?: number; // Reference to button configuration
+  }
+
+  type AnnoDataForChart = {
+    framNum: number;
+    range: [number, number];
+    data: (AnnotationObject | null)[];
+  } | undefined;
+
+/*
+type FrameAnnotationType = {
+    id: string,
+    videoId: string,
+    frameNum: number,
+    type: string,
+    label: string
+}
+    */
+
+
+
+
+
+
+
+
+type AnnotationChartProps = {
     labels: string[],
     width?: string,
     height?: string,
@@ -88,12 +135,17 @@ declare module 'chart.js' {
 //Todo: migrate this to wherever IntervalErasing is declared in Workspace.  TS will infer the type of 'value' from here.
 type IntervalErasingValues = {
     on: boolean,
-    startFrame: number | null,
+    startFrame: number,
     videoID: string | null,
-    labels: string[]
+    labels: string[], 
 }
 
-export default function AnnotationChart({labels, width, height, staticVerticalLineColor, dynamicVerticalLineColor, omitXLabels, legendPosition, legendAlign}: AnnotationChartProps) {
+type IntervalErasingType = {
+    [groupId: string]: IntervalErasingValues
+}
+
+export default function AnnotationChart({labels, width, height, staticVerticalLineColor='rgb(100,100,100, 0.5)',
+    dynamicVerticalLineColor='rgb(220,220,220, 0.5)', omitXLabels, legendPosition, legendAlign}: AnnotationChartProps) {
 
     const chartRef = useRef<ChartJS<"bar"> | null>(null);
     const [dataToDisplay, setDataToDisplay] = useState<ChartData<'bar'>>({
@@ -112,7 +164,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
             },
         }
     });
-    const [annotationForChart, setAnnotationForChart] = useState<AnnotationData>({frameNum:null, range: null, data: null});
+    const [annotationForChart, setAnnotationForChart] = useState<AnnotationDataForChart>({frameNum:null, range: null, data: null});
 
     const setFrameNumSignal = useStateSetters().setFrameNumSignal;
     const frameNum = useStates().frameNum;
@@ -128,13 +180,13 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
     const uploader = useStates().uploader;
     const resetAnnotationChart = useStates().resetAnnotationChart;
     const setResetAnnotationChart = useStateSetters().setResetAnnotationChart; 
-    const intervalErasing = useStates().intervalErasing;
+    const intervalErasing: IntervalErasingType = useStates().intervalErasing;
     const annotationRef = useStates().annotationRef;
     const setGlobalInfo = useStateSetters().setGlobalInfo;
 
     useEffect(() => {
         if (uploader?.type && uploader?.file) {
-            setAnnotationForChart(oldValue => {return {frameNum: null, range: null, data: null}});
+            setAnnotationForChart({frameNum: null, range: null, data: null});
         }
 
     }, [uploader])
@@ -163,7 +215,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
         getAnnotationData();
 
         return () => {
-            setAnnotationForChart(oldValue => {return {frameNum: null, range: null, data: null}});
+            setAnnotationForChart({frameNum: null, range: null, data: null});
         }
     }, [labels, videoId])
 
@@ -173,8 +225,10 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
 
             if (groupId && intervalErasing[groupId].on) {
                 const index = frameNum - (annotationForChart.range ? annotationForChart.range[0] : 0);
-                const newData = [...annotationForChart.data];
-                newData[index] = null;
+                if (annotationForChart.data) {
+                    const newData = [...annotationForChart.data];
+                    newData[index] = null;
+                }
                 
                 setAnnotationForChart(oldValue => {
                     return {
@@ -329,7 +383,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
     async function getAnnotationData() {
         setGlobalInfo(null);
         if (labels?.length>0 && Number.isInteger(frameNum)) { 
-            let annoDataForChart: AnnotationData;
+            let annoDataForChart: AnnotationDataForChart;
             const rangeNeeded = annotationChartRange;
             if (rangeNeeded >= 0) {
                 const rangeStartNeeded = ((frameNum-rangeNeeded)<0) ? 0 : (frameNum-rangeNeeded);
