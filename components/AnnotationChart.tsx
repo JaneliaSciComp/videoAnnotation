@@ -55,54 +55,8 @@ ChartJS.register(
 type AnnotationDataForChart = {
     frameNum: number | null,
     range: [number, number] | null,
-    data: (Annotation | null)[],
+    data: (Annotation | null)[] | null,
 }
-
-type FrameAnnotations = {
-    [frame:number]: FrameAnnotation | null
-}
-
-type FrameAnnotation = {
-    [key: string]: Annotation
-}
-
-  type AnnotationObject = {
-    id: string;
-    videoId: string;
-    frameNum: number;
-    label: string;
-    color: string;
-    type: 'category' | 'skeleton' | 'polygon' | 'keyPoint' | 'bbox' | 'brush';
-    // Additional properties based on type:
-    data?: any; // For skeleton (landmarks), polygon, keyPoint, bbox coordinates
-    pathes?: any[]; // For brush type
-    skeletonName?: string; // For skeleton type
-    edgeData?: any; // For skeleton type
-    groupIndex?: number; // Reference to button configuration
-  }
-
-  type AnnoDataForChart = {
-    framNum: number;
-    range: [number, number];
-    data: (AnnotationObject | null)[];
-  } | undefined;
-
-/*
-type FrameAnnotationType = {
-    id: string,
-    videoId: string,
-    frameNum: number,
-    type: string,
-    label: string
-}
-    */
-
-
-
-
-
-
-
 
 type AnnotationChartProps = {
     labels: string[],
@@ -228,15 +182,16 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
                 if (annotationForChart.data) {
                     const newData = [...annotationForChart.data];
                     newData[index] = null;
-                }
                 
-                setAnnotationForChart(oldValue => {
-                    return {
-                        frameNum: frameNum,
-                        range: oldValue.range??[0, 0],
-                        data: newData
-                    };
-                });
+                
+                    setAnnotationForChart(oldValue => {
+                        return {
+                            frameNum: frameNum,
+                            range: oldValue.range??[0, 0],
+                            data: newData
+                        };
+                    });
+                }
             } 
 
             else if (Object.values(intervalErasing).some(value=>value.on)) {
@@ -274,16 +229,18 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
                 barPercentage: 1,
             });
             for (let i = start; i <= end; i++) {
-                const anno = annotationForChart.data[i];
-                if (anno) {
-                    splittedData[anno.label].data.push(1);
-                    labels.forEach(label => {
-                        if (label !== anno.label) {
-                            splittedData[label].data.push(0)
+                if (annotationForChart.data !== null){
+                    const anno = annotationForChart.data[i];
+                    if (anno) {
+                        if (anno.label){
+                            splittedData[anno.label].data.push(1);
+                            labels.forEach(label => {if (label !== anno.label) {
+                                splittedData[label].data.push(0)
+                            }});
                         }
-                    });
-                } else {
-                    labels.forEach(label => splittedData[label].data.push(0));
+                    } else {
+                        labels.forEach(label => splittedData[label].data.push(0));
+                    }
                 }
             }
             if (intervalAnno.on && labels.some(l=>l===intervalAnno.label)) {
@@ -402,27 +359,15 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
         }
     }   
     
-    //Todo: include in types/annotations.ts?  Similar but different.
-    type Annotation = {
-        color: string,
-        data: string | null,
-        frameNum: number,
-        groupIndex: any, // Todo
-        id: string,
-        isCrowd: boolean | null,
-        label: string,
-        pathes: any, // Todo
-        type: string,
-        videoID: string
-    }
-
     function filterAnnotation(startFrame: number, endFrame: number, labels: string[]) {
         const res: Annotation[] = [];
         for (let i = startFrame; i <= endFrame; i++) {
             const frameAnno: Annotation[] = annotationRef.current[i]??[];
             Object.values(frameAnno).forEach(anno => {
-                if (labels.some((label: string) => label === anno.label)) {
-                    res.push(anno);
+                if (anno){
+                    if (labels.some((label: string) => label === anno.label)) {
+                        res.push(anno);
+                    }
                 }
             })
         }
@@ -431,19 +376,25 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
 
     function supplementData(startFrame: number, endFrame: number, retrievedData: Annotation[]) {
         let trackRes = 0;
-        const annoArr = [];
+        const annoArr: (Annotation | undefined)[] = [];
+
         for (let i = startFrame; i <= endFrame; i++) {
             if (!retrievedData || retrievedData.length===0) {
                 annoArr.push(null);
             } else if (retrievedData[trackRes]?.frameNum === i) {
                 annoArr.push(retrievedData[trackRes]);
                 trackRes++;
-            } else if (retrievedData[trackRes]?.frameNum > i) {
-                annoArr.push(null);
-            } else if (retrievedData[trackRes]?.frameNum < i) {
-                trackRes++;
-                i--;
-            }
+            } else {
+                const item = retrievedData[trackRes];
+                if ((item !== undefined) && item !== null){
+                    if (item.frameNum > i) {
+                        annoArr.push(null);
+                    } else if (item.frameNum < i) {
+                        trackRes++;
+                        i--;
+                    }
+                }
+            }   
         }
         return annoArr;
     }
@@ -462,7 +413,11 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
     return (
         <>
             <div id='annotationChart' style={{position: 'relative', width: width ?? '100%', height: height ?? '100%'}}> 
-                {generateChart()}
+                <Bar ref={chartRef} 
+                options={options} 
+                data={dataToDisplay} 
+                id='annotationChart'
+                />
             </div>
         </>
     )
