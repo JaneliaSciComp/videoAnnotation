@@ -182,8 +182,8 @@ export default function Home() {
           key="1"
           open={canvasAdditionalDataControllerOpen}
           setOpen={setCanvasAdditionalDataControllerOpen}
-          hideRange  //Hide the range input.
-          halfRange={2} //Allow developer to set half range value when hideRange is true. Required and only useful when hideRange is true.
+          // hideRange  //Hide the range input.
+          // halfRange={2} //Allow developer to set half range value when hideRange is true. Required and only useful when hideRange is true.
           defaultHalfRange={1} // Default value for half range input. Should only be used when hideRange is false.
           style={{ overflowX: "auto" }} // What does this do?
           footer={null}

@@ -354,23 +354,30 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
                     data: res
                 };
             }
+
+            else {
+                annoDataForChart = {
+                    frameNum: null,
+                    range: null,
+                    data: null
+            }
             
-            setAnnotationForChart(oldValue => annoDataForChart);
+            setAnnotationForChart(annoDataForChart);
         }
     }   
     
     function filterAnnotation(startFrame: number, endFrame: number, labels: string[]) {
         const res: Annotation[] = [];
         for (let i = startFrame; i <= endFrame; i++) {
-            const frameAnno: Annotation[] = annotationRef.current[i]??[];
-            Object.values(frameAnno).forEach(anno => {
+            const frameAnno: Annotation[] = Array.isArray(annotationRef.current[i])? annotationRef.current[i] : [];
+            frameAnno.forEach(anno => {
                 if (anno){
                     if (labels.some((label: string) => label === anno.label)) {
                         res.push(anno);
                     }
                 }
             })
-        }
+        } 
         return res;
     }
 
@@ -398,17 +405,6 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
         }
         return annoArr;
     }
-
-
-    function generateChart() {
-        return <Bar ref={chartRef} 
-                options={options} 
-                data={dataToDisplay} 
-                id='annotationChart'
-                />
-    }
-
-
 
     return (
         <>
