@@ -29,7 +29,7 @@ const AdditionalDataChart = dynamic(
   { ssr: false },
 );
 const AnnotationChart = dynamic(
-  () => import("../components/AnnotationChart.js"),
+  () => import("../components/AnnotationChart"),
   { ssr: false },
 );
 
