@@ -360,7 +360,8 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
                     frameNum: null,
                     range: null,
                     data: null
-            }
+                }
+            };
             
             setAnnotationForChart(annoDataForChart);
         }
