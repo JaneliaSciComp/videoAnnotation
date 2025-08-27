@@ -362,13 +362,15 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
     }   
     
 
-    function filterAnnotation(startFrame, endFrame, labels) {
-        const res = [];
+    function filterAnnotation(startFrame: number, endFrame: number, labels: string[]) {
+        const res: Annotation[] = [];
         for (let i = startFrame; i <= endFrame; i++) {
-            const frameAnno = annotationRef.current[i]??{};
-            Object.values(frameAnno).forEach(anno => {
-                if (labels.some(label => label === anno.label)) {
-                    res.push(anno);
+            const frameAnno = annotationRef.current[i]??{};  
+            Object.values(frameAnno).forEach(anno => { 
+                if (anno){
+                    if (labels.some((label: string) => label === anno.label)) {
+                        res.push(anno);
+                    }
                 }
             })
         }
