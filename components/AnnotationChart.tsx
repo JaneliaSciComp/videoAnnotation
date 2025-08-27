@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import { staticVerticalLine, dynamicVerticalLine } from '../utils/utils';
+import { staticVerticalLineColor, dynamicVerticalLineColor, staticVerticalLine, dynamicVerticalLine } from '../utils/utils';
 import { useStateSetters, useStates } from './AppContext'; 
 import { Bar } from 'react-chartjs-2';
 import type { Annotation } from '@/types/annotations';
@@ -31,7 +31,49 @@ ChartJS.register(
     dynamicVerticalLine,
 );
 
+declare module 'chart.js' {
+   interface PluginOptionsByType<TType extends ChartType = ChartType> {
+        staticVerticalLine?: {
+            position: number,
+            metricsNumber: number,
+            color: string
+        },
+        dynamicVerticalLine?: {
+            metricsNumber: number,
+            color: string,
+            clickHandler: ()=> void, // return to this later
+            startIndex: number
+        }
+    }
+}
 
+type AnnotationChartProps = {
+    labels: string[],
+    width?: string,
+    height?: string,
+    staticVerticalLineColor?: string, //'rgb()', '#xxxxxx', 'red'
+    dynamicVerticalLineColor?: string, //'rgb()', '#xxxxxx', 'red'
+    omitXLabels?: boolean,
+    legendPosition?: "bottom" | "left" | "top" | "right" | "center" | "chartArea" | undefined, // should include _DeepPartialObject<{ [scaleId:string]: number; }> ?
+    legendAlign?: "center" | "end" | "start" | undefined,
+}
+
+type AnnotationDataForChart = {
+    frameNum: number | null,
+    range: [number, number] | null,
+    data: (Annotation | null)[] | null,
+}
+
+type IntervalErasingValues = {
+    on: boolean,
+    startFrame: number,
+    videoID: string | null,
+    labels: string[], 
+}
+
+type IntervalErasingType = {
+    [groupId: string]: IntervalErasingValues
+}
 
 /**
  *  The current design for the chart is to only display one group of mutuallyExclusive category labels, such as 'chase' and 'no-chase'.
@@ -52,62 +94,17 @@ ChartJS.register(
         omitXLabels: boolean. Omit x-axis labels. false by default.
         */
 
-type AnnotationDataForChart = {
-    frameNum: number | null,
-    range: [number, number] | null,
-    data: (Annotation | null)[] | null,
-}
 
-type AnnotationChartProps = {
-    labels: string[],
-    width?: string,
-    height?: string,
-    staticVerticalLineColor?: string, //'rgb()', '#xxxxxx', 'red'
-    dynamicVerticalLineColor?: string, //'rgb()', '#xxxxxx', 'red'
-    omitXLabels?: boolean,
-    legendPosition?: "bottom" | "left" | "top" | "right" | "center" | "chartArea" | undefined, // should include _DeepPartialObject<{ [scaleId: string]: number; }> ?
-    legendAlign?: "center" | "end" | "start" | undefined,
-}
+export default function AnnotationChart({labels, width, height, staticVerticalLineColor='rgb(100,100,100, 0.5)', dynamicVerticalLineColor='rgb(220,220,220, 0.5)', omitXLabels, legendPosition, legendAlign}: AnnotationChartProps) {
 
-
-
-declare module 'chart.js' {
-   interface PluginOptionsByType<TType extends ChartType = ChartType> {
-        staticVerticalLine?: {
-            position: number,
-            metricsNumber: number,
-            color: string
-        },
-        dynamicVerticalLine?: {
-            metricsNumber: number,
-            color: string,
-            clickHandler: ()=> void, // return to this later
-            startIndex: number
+    const chartRef = useRef();
+    const [dataToDisplay, setDataToDisplay] = useState(
+        {
+            labels: [],  
+            datasets: [{}]
         }
-    } 
-}
-//Todo: migrate this to wherever IntervalErasing is declared in Workspace.  TS will infer the type of 'value' from here.
-type IntervalErasingValues = {
-    on: boolean,
-    startFrame: number,
-    videoID: string | null,
-    labels: string[], 
-}
-
-type IntervalErasingType = {
-    [groupId: string]: IntervalErasingValues
-}
-
-export default function AnnotationChart({labels, width, height, staticVerticalLineColor='rgb(100,100,100, 0.5)',
-    dynamicVerticalLineColor='rgb(220,220,220, 0.5)', omitXLabels, legendPosition, legendAlign}: AnnotationChartProps) {
-
-    const chartRef = useRef<ChartJS<"bar"> | null>(null);
-    const [dataToDisplay, setDataToDisplay] = useState<ChartData<'bar'>>({
-            labels: [],
-            datasets: []
-    });
-
-    const [options, setOptions] = useState<ChartOptions<'bar'>>({
+    );
+    const [options, setOptions] = useState({
         plugins: {
             zoom: {
                 pan: {
@@ -115,10 +112,10 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
                     mode: 'y',
                     modifierKey: 'alt',
                 }
-            },
+            }
         }
     });
-    const [annotationForChart, setAnnotationForChart] = useState<AnnotationDataForChart>({frameNum:null, range: null, data: null});
+    const [annotationForChart, setAnnotationForChart] = useState({framNum:null, range: null, data: null});
 
     const setFrameNumSignal = useStateSetters().setFrameNumSignal;
     const frameNum = useStates().frameNum;
@@ -134,13 +131,14 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
     const uploader = useStates().uploader;
     const resetAnnotationChart = useStates().resetAnnotationChart;
     const setResetAnnotationChart = useStateSetters().setResetAnnotationChart; 
-    const intervalErasing: IntervalErasingType = useStates().intervalErasing;
+    const intervalErasing = useStates().intervalErasing;
     const annotationRef = useStates().annotationRef;
     const setGlobalInfo = useStateSetters().setGlobalInfo;
 
+
     useEffect(() => {
         if (uploader?.type && uploader?.file) {
-            setAnnotationForChart({frameNum: null, range: null, data: null});
+            setAnnotationForChart(oldValue => {return {framNum: null, range: null, data: null}});
         }
 
     }, [uploader])
@@ -167,33 +165,33 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
 
     useEffect(() => {
         getAnnotationData();
-        // "Whenever you unmount this component, set these values to null"
+
         return () => {
-            setAnnotationForChart({frameNum: null, range: null, data: null});
+            setAnnotationForChart(oldValue => {return {framNum: null, range: null, data: null}});
         }
     }, [labels, videoId])
 
     useEffect(() => {
         if (labels?.length>0) {
-            const groupId = Object.keys(intervalErasing).filter(groupId => intervalErasing[groupId].labels.some((label: string)=>label===labels[0]))[0];
+            const groupId = Object.keys(intervalErasing).filter(groupId => intervalErasing[groupId].labels.some(label=>label===labels[0]))[0];
 
             if (groupId && intervalErasing[groupId].on) {
                 const index = frameNum - (annotationForChart.range ? annotationForChart.range[0] : 0);
-                if (annotationForChart.data) {
-                    const newData = [...annotationForChart.data];
-                    newData[index] = null;
+                const newData = [...annotationForChart.data];
+                newData[index] = null;
                 
-                
-                    setAnnotationForChart(oldValue => {
-                        return {
-                            frameNum: frameNum,
-                            range: oldValue.range??[0, 0],
-                            data: newData
-                        };
-                    });
-                }
+                setAnnotationForChart(oldValue => {
+                    return {
+                        frameNum: frameNum,
+                        range: oldValue.range??[0, 0],
+                        data: newData
+                    };
+                });
             } 
-            else {
+
+            else if (Object.values(intervalErasing).some(value=>value.on)) {
+                getAnnotationData();
+            } else {
                 getAnnotationData();
             }
         } 
@@ -201,22 +199,22 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
 
 
     useEffect(() => {
-        if (!labels?.length) return;
+        if (!labels?.length>0) return;
 
         let initialLables = [1,2,3,4,5,6,7,8,9,10];
-        let data: ChartData<'bar'> = {labels: initialLables, datasets: []};
+        let data = {labels: initialLables, datasets: [{}]};
         let startNeeded=0, endNeeded=0, start=0, end=0;
         if (labels?.length>0 && annotationForChart.range ) {
             const frameNums = [];
             startNeeded = (frameNum-annotationChartRange>0) ? (frameNum-annotationChartRange) : 0;
             endNeeded = (frameNum+annotationChartRange<totalFrameCount-1) ? (frameNum+annotationChartRange) : (totalFrameCount-1);
                 for (let i = startNeeded+1; i <= endNeeded+1; i++) {
-                    frameNums.push(i);
+                    frameNums.push(i.toString());
                 }
             
             start = 0;
             end = endNeeded - startNeeded;
-            const splittedData: { [key: string]: ChartDataset<'bar'> } = {};
+            const splittedData = {};
             labels.forEach(label => splittedData[label]={
                 label: label,
                 data: [],
@@ -226,18 +224,16 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
                 barPercentage: 1,
             });
             for (let i = start; i <= end; i++) {
-                if (annotationForChart.data !== null){
-                    const anno = annotationForChart.data[i];
-                    if (anno) {
-                        if (anno.label){
-                            splittedData[anno.label].data.push(1);
-                            labels.forEach(label => {if (label !== anno.label) {
-                                splittedData[label].data.push(0)
-                            }});
+                const anno = annotationForChart.data[i];
+                if (anno) {
+                    splittedData[anno.label].data.push(1);
+                    labels.forEach(label => {
+                        if (label !== anno.label) {
+                            splittedData[label].data.push(0)
                         }
-                    } else {
-                        labels.forEach(label => splittedData[label].data.push(0));
-                    }
+                    });
+                } else {
+                    labels.forEach(label => splittedData[label].data.push(0));
                 }
             }
             if (intervalAnno.on && labels.some(l=>l===intervalAnno.label)) {
@@ -253,7 +249,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
                     });
                 }
             }
-            const groupId = Object.keys(intervalErasing).filter(groupId => intervalErasing[groupId].labels.some((label: string)=>label===labels[0]))[0];
+            const groupId = Object.keys(intervalErasing).filter(groupId => intervalErasing[groupId].labels.some(label=>label===labels[0]))[0];
             const groupErasingData = intervalErasing[groupId];
             if (groupId && groupErasingData.on) {
                 const intervalStart = Math.min(groupErasingData.startFrame, frameNum);
@@ -266,7 +262,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
 
             data = {
                 labels: frameNums,
-                datasets: labels.map((m) => splittedData[m]),  
+                datasets: labels.map((m) => splittedData[m]),
             };
         }
         setDataToDisplay(data);
@@ -299,7 +295,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
                         display: false,
                         drawTicks: false,
                     },
-                    afterFit(scale: Scale) {
+                    afterFit(scale) {
                         scale.paddingLeft = 50;
                     },
                     ticks: {
@@ -312,7 +308,8 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
                 legend: {
                     display: false,
                     position: legendPosition ? legendPosition : 'bottom',
-                    align: legendAlign ? legendAlign : 'end',   
+                    align: legendAlign ? legendAlign : 'end',
+                   
                 },
                 tooltip: {
                     intersect: false
@@ -337,7 +334,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
     async function getAnnotationData() {
         setGlobalInfo(null);
         if (labels?.length>0 && Number.isInteger(frameNum)) { 
-            let annoDataForChart: AnnotationDataForChart;
+            let annoDataForChart;
             const rangeNeeded = annotationChartRange;
             if (rangeNeeded >= 0) {
                 const rangeStartNeeded = ((frameNum-rangeNeeded)<0) ? 0 : (frameNum-rangeNeeded);
@@ -346,70 +343,57 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
                 const res = supplementData(rangeStartNeeded, rangeEndNeeded, annoData);
 
                 annoDataForChart = {
-                    frameNum: frameNum,
+                    framNum: frameNum,
                     range: [rangeStartNeeded, rangeEndNeeded],
                     data: res
                 };
             }
-
-            else {
-                annoDataForChart = {
-                    frameNum: null,
-                    range: null,
-                    data: null
-                }
-            };
             
-            setAnnotationForChart(annoDataForChart);
+            setAnnotationForChart(oldValue => annoDataForChart);
         }
     }   
     
-    function filterAnnotation(startFrame: number, endFrame: number, labels: string[]) {
-        const res: Annotation[] = [];
+
+    function filterAnnotation(startFrame, endFrame, labels) {
+        const res = [];
         for (let i = startFrame; i <= endFrame; i++) {
-            const frameAnno: Annotation[] = Array.isArray(annotationRef.current[i])? annotationRef.current[i] : [];
-            frameAnno.forEach(anno => {
-                if (anno){
-                    if (labels.some((label: string) => label === anno.label)) {
-                        res.push(anno);
-                    }
+            const frameAnno = annotationRef.current[i]??{};
+            Object.values(frameAnno).forEach(anno => {
+                if (labels.some(label => label === anno.label)) {
+                    res.push(anno);
                 }
             })
-        } 
+        }
         return res;
     }
 
-    function supplementData(startFrame: number, endFrame: number, retrievedData: Annotation[]) {
+    function supplementData(startFrame, endFrame, retrivedData) {
         let trackRes = 0;
-        const annoArr: (Annotation | undefined)[] = [];
-
+        const annoArr = [];
         for (let i = startFrame; i <= endFrame; i++) {
-            if (!retrievedData || retrievedData.length===0) {
+            if (!retrivedData || retrivedData.length===0) {
                 annoArr.push(null);
-            } else if (retrievedData[trackRes]?.frameNum === i) {
-                annoArr.push(retrievedData[trackRes]);
+            } else if (retrivedData[trackRes]?.frameNum === i) {
+                annoArr.push(retrivedData[trackRes]);
                 trackRes++;
-            } else {
-                const item = retrievedData[trackRes];
-                if ((item !== undefined) && item !== null){
-                    if (item.frameNum > i) {
-                        annoArr.push(null);
-                    } else if (item.frameNum < i) {
-                        trackRes++;
-                        i--;
-                    }
-                }
-            }   
+            } else if (retrivedData[trackRes]?.frameNum > i) {
+                annoArr.push(null);
+            } else if (retrivedData[trackRes]?.frameNum < i) {
+                trackRes++;
+                i--;
+            }
         }
         return annoArr;
     }
+
+
 
     return (
         <>
             <div id='annotationChart' style={{position: 'relative', width: width ?? '100%', height: height ?? '100%'}}> 
                 <Bar ref={chartRef} 
                 options={options} 
-                data={dataToDisplay} 
+                data={dataToDisplay}
                 id='annotationChart'
                 />
             </div>
