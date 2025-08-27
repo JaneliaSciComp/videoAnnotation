@@ -167,7 +167,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
         getAnnotationData();
 
         return () => {
-            setAnnotationForChart(oldValue => {return {framNum: null, range: null, data: null}});
+            setAnnotationForChart(()=> {return {framNum: null, range: null, data: null}});
         }
     }, [labels, videoId])
 
@@ -348,8 +348,16 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
                     data: res
                 };
             }
+
+            else {
+                annoDataForChart = {
+                frameNum: null,
+                range: null,
+                data: null
+                }
+            };
             
-            setAnnotationForChart(oldValue => annoDataForChart);
+            setAnnotationForChart(annoDataForChart);
         }
     }   
     
