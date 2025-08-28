@@ -365,8 +365,12 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
     function filterAnnotation(startFrame: number, endFrame: number, labels: string[]) {
         const res: Annotation[] = [];
         for (let i = startFrame; i <= endFrame; i++) {
-            const frameAnno = annotationRef.current[i]??{};  
-            Object.values(frameAnno).forEach(anno => { 
+            const frameAnno = annotationRef.current[i]??[];  // Edits made to this line break AnnoChart. 
+            // Specifically, checking to see if frameAnnotation is an array.
+            //if annotationRef is an array of objects, return an object, not an array
+            Object.values(frameAnno).forEach(anno => { // Edits made to this line also break AnnoChart.
+                //Specifically, getting rid of Object.values.
+                // if the above is actually an array of objects, then you can't forEach over an object.
                 if (anno){
                     if (labels.some((label: string) => label === anno.label)) {
                         res.push(anno);
@@ -377,21 +381,26 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
         return res;
     }
 
-    function supplementData(startFrame, endFrame, retrivedData) {
+    function supplementData(startFrame: number, endFrame: number, retrievedData: Annotation[]) {
         let trackRes = 0;
         const annoArr = [];
         for (let i = startFrame; i <= endFrame; i++) {
-            if (!retrivedData || retrivedData.length===0) {
+            if (!retrievedData || retrievedData.length===0) {
                 annoArr.push(null);
-            } else if (retrivedData[trackRes]?.frameNum === i) {
-                annoArr.push(retrivedData[trackRes]);
+            } else if (retrievedData[trackRes]?.frameNum === i) {
+                annoArr.push(retrievedData[trackRes]);
                 trackRes++;
-            } else if (retrivedData[trackRes]?.frameNum > i) {
-                annoArr.push(null);
-            } else if (retrivedData[trackRes]?.frameNum < i) {
-                trackRes++;
-                i--;
-            }
+            } else {
+                const trackResNum = retrievedData[trackRes];
+                if (trackResNum!== undefined && trackResNum !== null){
+                    if (trackResNum.frameNum > i) {
+                        annoArr.push(null);
+                    } else if (trackResNum.frameNum < i) {
+                        trackRes++;
+                        i--;
+                    }
+                }
+            } 
         }
         return annoArr;
     }
