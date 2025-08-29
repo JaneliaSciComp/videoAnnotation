@@ -97,14 +97,14 @@ type IntervalErasingType = {
 
 export default function AnnotationChart({labels, width, height, staticVerticalLineColor='rgb(100,100,100, 0.5)', dynamicVerticalLineColor='rgb(220,220,220, 0.5)', omitXLabels, legendPosition, legendAlign}: AnnotationChartProps) {
 
-    const chartRef = useRef();
-    const [dataToDisplay, setDataToDisplay] = useState(
+    const chartRef = useRef<ChartJS<"bar"> | null>(null);
+    const [dataToDisplay, setDataToDisplay] = useState<ChartData<"bar">>(
         {
             labels: [],  
-            datasets: [{}]
+            datasets: []
         }
     );
-    const [options, setOptions] = useState({
+    const [options, setOptions] = useState<ChartOptions<"bar">>({
         plugins: {
             zoom: {
                 pan: {
@@ -173,25 +173,24 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
 
     useEffect(() => {
         if (labels?.length>0) {
-            const groupId = Object.keys(intervalErasing).filter(groupId => intervalErasing[groupId].labels.some(label=>label===labels[0]))[0];
+            const groupId = Object.keys(intervalErasing).filter(groupId => intervalErasing[groupId].labels.some((label: string) =>label===labels[0]))[0];
 
             if (groupId && intervalErasing[groupId].on) {
                 const index = frameNum - (annotationForChart.range ? annotationForChart.range[0] : 0);
-                const newData = [...annotationForChart.data];
-                newData[index] = null;
-                
-                setAnnotationForChart(oldValue => {
-                    return {
-                        frameNum: frameNum,
-                        range: oldValue.range??[0, 0],
-                        data: newData
-                    };
-                });
+                if (annotationForChart.data != null){
+                    const newData = [...annotationForChart.data];
+                    newData[index] = null;
+                    
+                    setAnnotationForChart(oldValue => {
+                        return {
+                            frameNum: frameNum,
+                            range: oldValue.range??[0, 0],
+                            data: newData
+                        };
+                    });
+                }
             } 
-
-            else if (Object.values(intervalErasing).some(value=>value.on)) {
-                getAnnotationData();
-            } else {
+            else {
                 getAnnotationData();
             }
         } 
@@ -199,10 +198,10 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
 
 
     useEffect(() => {
-        if (!labels?.length>0) return;
+        if (!labels?.length) return;
 
         let initialLables = [1,2,3,4,5,6,7,8,9,10];
-        let data = {labels: initialLables, datasets: [{}]};
+        let data: ChartData<"bar"> = {labels: initialLables, datasets: []};
         let startNeeded=0, endNeeded=0, start=0, end=0;
         if (labels?.length>0 && annotationForChart.range ) {
             const frameNums = [];
@@ -214,7 +213,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
             
             start = 0;
             end = endNeeded - startNeeded;
-            const splittedData = {};
+            const splittedData: {[key: string]: ChartDataset<"bar">} = {};
             labels.forEach(label => splittedData[label]={
                 label: label,
                 data: [],
@@ -224,16 +223,18 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
                 barPercentage: 1,
             });
             for (let i = start; i <= end; i++) {
+                if (annotationForChart.data) {
                 const anno = annotationForChart.data[i];
-                if (anno) {
-                    splittedData[anno.label].data.push(1);
-                    labels.forEach(label => {
-                        if (label !== anno.label) {
-                            splittedData[label].data.push(0)
-                        }
-                    });
-                } else {
-                    labels.forEach(label => splittedData[label].data.push(0));
+                    if (anno && anno.label) {
+                        splittedData[anno.label].data.push(1);
+                        labels.forEach(label => {
+                            if (label !== anno.label) {
+                                splittedData[label].data.push(0)
+                            }
+                        });
+                    } else {
+                        labels.forEach(label => splittedData[label].data.push(0));
+                    }
                 }
             }
             if (intervalAnno.on && labels.some(l=>l===intervalAnno.label)) {
@@ -249,7 +250,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
                     });
                 }
             }
-            const groupId = Object.keys(intervalErasing).filter(groupId => intervalErasing[groupId].labels.some(label=>label===labels[0]))[0];
+            const groupId = Object.keys(intervalErasing).filter(groupId => intervalErasing[groupId].labels.some((label: string)=>label===labels[0]))[0];
             const groupErasingData = intervalErasing[groupId];
             if (groupId && groupErasingData.on) {
                 const intervalStart = Math.min(groupErasingData.startFrame, frameNum);
@@ -262,7 +263,8 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
 
             data = {
                 labels: frameNums,
-                datasets: labels.map((m) => splittedData[m]),
+                datasets: labels.map((m) => splittedData[m]), 
+                //if labels has a string that is NOT a key in splittedData, you'll get an error here
             };
         }
         setDataToDisplay(data);
