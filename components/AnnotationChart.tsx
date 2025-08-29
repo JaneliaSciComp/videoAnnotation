@@ -115,7 +115,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
             }
         }
     });
-    const [annotationForChart, setAnnotationForChart] = useState({framNum:null, range: null, data: null});
+    const [annotationForChart, setAnnotationForChart] = useState<AnnotationDataForChart>({frameNum:null, range: null, data: null});
 
     const setFrameNumSignal = useStateSetters().setFrameNumSignal;
     const frameNum = useStates().frameNum;
@@ -138,7 +138,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
 
     useEffect(() => {
         if (uploader?.type && uploader?.file) {
-            setAnnotationForChart(oldValue => {return {framNum: null, range: null, data: null}});
+            setAnnotationForChart(oldValue => {return {frameNum: null, range: null, data: null}});
         }
 
     }, [uploader])
@@ -167,7 +167,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
         getAnnotationData();
 
         return () => {
-            setAnnotationForChart(()=> {return {framNum: null, range: null, data: null}});
+            setAnnotationForChart(()=> {return {frameNum: null, range: null, data: null}});
         }
     }, [labels, videoId])
 
@@ -209,7 +209,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
             startNeeded = (frameNum-annotationChartRange>0) ? (frameNum-annotationChartRange) : 0;
             endNeeded = (frameNum+annotationChartRange<totalFrameCount-1) ? (frameNum+annotationChartRange) : (totalFrameCount-1);
                 for (let i = startNeeded+1; i <= endNeeded+1; i++) {
-                    frameNums.push(i.toString());
+                    frameNums.push(i);
                 }
             
             start = 0;
@@ -334,7 +334,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
     async function getAnnotationData() {
         setGlobalInfo(null);
         if (labels?.length>0 && Number.isInteger(frameNum)) { 
-            let annoDataForChart;
+            let annoDataForChart: AnnotationDataForChart;
             const rangeNeeded = annotationChartRange;
             if (rangeNeeded >= 0) {
                 const rangeStartNeeded = ((frameNum-rangeNeeded)<0) ? 0 : (frameNum-rangeNeeded);
@@ -343,7 +343,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
                 const res = supplementData(rangeStartNeeded, rangeEndNeeded, annoData);
 
                 annoDataForChart = {
-                    framNum: frameNum,
+                    frameNum: frameNum,
                     range: [rangeStartNeeded, rangeEndNeeded],
                     data: res
                 };
