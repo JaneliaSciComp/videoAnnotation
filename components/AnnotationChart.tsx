@@ -363,24 +363,20 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
         }
     }   
     
-
+    
     function filterAnnotation(startFrame: number, endFrame: number, labels: string[]) {
-        const res: Annotation[] = [];
+        const filteredAnnotations: Annotation[] = [];  
         for (let i = startFrame; i <= endFrame; i++) {
-            const frameAnno = annotationRef.current[i]??[];  // Edits made to this line break AnnoChart. 
-            // Specifically, checking to see if frameAnnotation is an array.
-            //if annotationRef is an array of objects, return an object, not an array
-            Object.values(frameAnno).forEach(anno => { // Edits made to this line also break AnnoChart.
-                //Specifically, getting rid of Object.values.
-                // if the above is actually an array of objects, then you can't forEach over an object.
+            const frameAnno: Annotation[] = annotationRef.current[i]??[];  
+            Object.values(frameAnno).forEach(anno => { 
                 if (anno){
                     if (labels.some((label: string) => label === anno.label)) {
-                        res.push(anno);
+                        filteredAnnotations.push(anno);
                     }
                 }
             })
         }
-        return res;
+        return filteredAnnotations;
     }
 
     function supplementData(startFrame: number, endFrame: number, retrievedData: Annotation[]) {
