@@ -140,28 +140,18 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
         if (uploader?.type && uploader?.file) {
             setAnnotationForChart(oldValue => {return {frameNum: null, range: null, data: null}});
         }
-
     }, [uploader])
 
     useEffect(() => {
-        if (resetAnnotationChart) {
-            getAnnotationData();
+        getAnnotationData();
+        if (resetAnnotationChart) { 
             setResetAnnotationChart(false);
         }
-    }, [resetAnnotationChart])
-
-
-    useEffect(() => {
         if (updateAnnotationChart) {
-            getAnnotationData();
             setUpdateAnnotationChart(false);
         }
-    }, [updateAnnotationChart])
+    }, [resetAnnotationChart, updateAnnotationChart, frameNum, annotationChartRange])
 
-
-    useEffect(() => {
-        getAnnotationData();
-    }, [frameNum, annotationChartRange])
 
     useEffect(() => {
         getAnnotationData();
