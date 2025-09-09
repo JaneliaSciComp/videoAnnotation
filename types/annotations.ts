@@ -18,7 +18,7 @@ export type Annotation = {
     color: string,
     data: Record <string, unknown> | null,
     frameNum: number,
-    groupIndex: null,
+    groupIndex: number | null,
     id: string,
     isCrowd: boolean | null,
     label: string | null,
