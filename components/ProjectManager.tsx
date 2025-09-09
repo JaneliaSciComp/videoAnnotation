@@ -1,4 +1,4 @@
-import React, {useState, useEffect, SetStateAction} from 'react';
+import React, {ChangeEvent, useState, useEffect, SetStateAction} from 'react';
 import { useStateSetters, useStates } from './AppContext';
 import BtnConfiguration from './BtnConfiguration';
 import { Modal, Form, Input, Button } from 'antd';
@@ -34,7 +34,9 @@ type projectManagerProps = {
     open: boolean,
     setOpen: React.Dispatch<React.SetStateAction<boolean>>,
     status: "new" | "edit",
-    onSubmit?: (e: {data: any}) => void,  // Todo: fix all 3 of these later
+    onSubmit?: (e: {data: any}) => void,  
+    onProjectNameChange?: (e: {value: string}) => void,
+    onDescriptChange?: (e: {value: string}) => void,
     // Props passed to BtnConfiguration
     groupType?: string,
     defaultGroupType?: string,
@@ -51,12 +53,12 @@ type projectManagerProps = {
 }
 
 
-export default function ProjectManager({props, open, setOpen, status, onSubmit, groupType, defaultGroupType, 
+export default function ProjectManager({props, open, setOpen, status, onSubmit, onProjectNameChange, onDescriptChange, groupType, defaultGroupType, 
     disableGroupTypeSelect, btnType, defaultBtnType, btnNum, defaultBtnNum, disableBtnTypeSelect, disableBtnNumInput, hidePlusBtn}: projectManagerProps) {
 
     const [okDisable, setOkDisable] = useState<boolean>(true);
-    const [btnConfigStatus, setBtnConfigStatus] = useState<string | null>();
-    const [info, setInfo] = useState<SetStateAction<string> | null>();
+    const [btnConfigStatus, setBtnConfigStatus] = useState<string | null>(null);
+    const [info, setInfo] = useState<string | null>();
     const [noProject, setNoProject] = useState<boolean>(true);
 
     const setConfirmConfig = useStateSetters().setConfirmConfig;
@@ -127,10 +129,10 @@ export default function ProjectManager({props, open, setOpen, status, onSubmit, 
                 form.resetFields();
             } else if (status === 'edit') {
                 setInfo('Editing project in database failed!');
-                form.setFieldValue({
+                form.setFieldsValue({
                     projectName: projectData.projectName,
                     description: projectData.description
-                })
+            })
             }
         } else {
             setInfo(null);
@@ -155,7 +157,7 @@ export default function ProjectManager({props, open, setOpen, status, onSubmit, 
         }
     }
 
-    function onProjectNameChange(e) {
+    function handleProjectNameChange(e: ChangeEvent<HTMLInputElement>) {
         if (e.target.value?.length > 0) {
             form.setFieldsValue({ projectName: e.target.value });
             setOkDisable(false);
@@ -167,12 +169,12 @@ export default function ProjectManager({props, open, setOpen, status, onSubmit, 
             value: e.target.value,
         };
 
-        if (onProjectNameChange) {
+        if (onProjectNameChange) {  // This is a callback function and is NOT the function above.  eg, this is NOT recursive!!!!
             onProjectNameChange(target);
         }
     }
 
-    function onDescriptionChange(e) {
+    function onDescriptionChange(e: ChangeEvent<HTMLTextAreaElement>) {
         if (e.target.value?.length > 0) {
             form.setFieldsValue({ description: e.target.value });
         }
@@ -181,8 +183,8 @@ export default function ProjectManager({props, open, setOpen, status, onSubmit, 
             value: e.target.value,
         };
 
-        if (onDescriptionChange) {
-            onDescriptionChange(target);
+        if (onDescriptChange) {
+            onDescriptChange(target);
         }
     }
 
@@ -215,7 +217,7 @@ export default function ProjectManager({props, open, setOpen, status, onSubmit, 
                                 validateFirst={true}
                                 >
                                 <Input
-                                    onChange={onProjectNameChange}
+                                    onChange={handleProjectNameChange}
                                     allowClear/>
                             </Form.Item>
                             <Form.Item name='description' label="Description">

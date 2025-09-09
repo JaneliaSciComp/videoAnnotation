@@ -9,7 +9,7 @@ import VideoUploader from "../components/VideoUploader.js";
 import BtnContainer from "../components/BtnContainer.js";
 import AnnotationTable from "../components/AnnotationTable.js";
 import DownloadBtn from "../components/DownloadBtn";
-import ProjectManager from "../components/ProjectManager.js";
+import ProjectManager from "../components/ProjectManager";
 import ModalJsonUploader from "../components/ModalJsonUploader";
 import VideoManager from "../components/VideoManager.js";
 import CanvasAdditionalDataController from "../components/CanvasAdditionalDataController.js";
@@ -48,6 +48,8 @@ export default function Home() {
   const [info] = useState(null); // To display feedback info
   const [newFrameNum, setNewFrameNum] = useState<number>();
 
+  const projManagerOptionalProps = null;
+
   const projectDropdownItems = [
     {
       label: "Exisiting Projects",
@@ -71,6 +73,7 @@ export default function Home() {
           status="new" // ProjectManager has two status: 'new' and 'edit'. 'new' mode is for creating a new project, and 'edit' mode is for editing an existing project.
           open={newProjectManagerOpen}
           setOpen={setNewProjectManagerOpen}
+          props={projManagerOptionalProps}
           // defaultGroupType='category'
           // defaultBtnType='category'
           // disableGroupTypeSelect
@@ -103,6 +106,7 @@ export default function Home() {
           status="edit"
           open={editProjectManagerOpen}
           setOpen={setEditProjectManagerOpen}
+          props={projManagerOptionalProps}
           // defaultGroupType='category'
           // defaultBtnType='category'
           // disableGroupTypeSelect
