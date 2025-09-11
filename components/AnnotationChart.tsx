@@ -1,5 +1,5 @@
 import React, {useState, useEffect, useRef} from 'react';
-import { staticVerticalLineColor, dynamicVerticalLineColor, staticVerticalLine, dynamicVerticalLine } from '../utils/utils';
+import { staticVerticalLine, dynamicVerticalLine } from '../utils/utils';
 import { useStateSetters, useStates } from './AppContext'; 
 import { Bar } from 'react-chartjs-2';
 import type { Annotation } from '@/types/annotations';
@@ -386,12 +386,12 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
 
 
     return (
-            <div id='annotationChart' style={{position: 'relative', width: width ?? '100%', height: height ?? '100%'}}> 
-                <Bar ref={chartRef} 
-                options={options} 
-                data={dataToDisplay}
-                id='annotationChart'
-                />
-            </div>
+        <div id='annotationChart' style={{position: 'relative', width: width ?? '100%', height: height ?? '100%'}}> 
+            <Bar ref={chartRef} 
+            options={options} 
+            data={dataToDisplay}
+            id='annotationChart'
+            />
+        </div>
     )
 }
