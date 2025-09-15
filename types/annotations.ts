@@ -43,7 +43,7 @@ export type Annotation = {
     }
         */
 
-
+    /*
   type AnnotationFromClaude = {
     id: string;
     videoId: string;
@@ -58,7 +58,7 @@ export type Annotation = {
     edgeData?: any; // For skeleton type
     groupIndex?: number; // Reference to button configuration
   }
-
+*/
 
 export type AnnotationObject = {
     [key: string]: Annotation;
