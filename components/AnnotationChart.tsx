@@ -64,16 +64,6 @@ type AnnotationDataForChart = {
     data: (Annotation | null)[] | null,
 }
 
-type IntervalErasingValues = {
-    on: boolean,
-    startFrame: number,
-    videoID: string | null,
-    labels: string[], 
-}
-
-type IntervalErasingType = {
-    [groupId: string]: IntervalErasingValues
-}
 
 /**
  *  The current design for the chart is to only display one group of mutuallyExclusive category labels, such as 'chase' and 'no-chase'.
@@ -396,14 +386,12 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
 
 
     return (
-        <>
-            <div id='annotationChart' style={{position: 'relative', width: width ?? '100%', height: height ?? '100%'}}> 
-                <Bar ref={chartRef} 
-                options={options} 
-                data={dataToDisplay}
-                id='annotationChart'
-                />
-            </div>
-        </>
+        <div id='annotationChart' style={{position: 'relative', width: width ?? '100%', height: height ?? '100%'}}> 
+            <Bar ref={chartRef} 
+            options={options} 
+            data={dataToDisplay}
+            id='annotationChart'
+            />
+        </div>
     )
 }
