@@ -247,7 +247,7 @@ export default function Canvas(props) {
         resetBrush();
         
         if (frameUrl) {
-            createPathes();
+            createPaths();
             if (frameUrl) {
                 frameRenderTimeRef.current = Date.now();
                 imgRef.current.src = frameUrl;
@@ -283,7 +283,7 @@ export default function Canvas(props) {
                 });
                 Object.entries(obj.edges).forEach(([_, line])=>canvas.remove(line));
             } else if (obj.type==='brush') {
-                obj.pathes.forEach( p => canvas.remove(p));
+                obj.paths.forEach( p => canvas.remove(p));
             } else {
                 canvas.remove(obj);
             }
@@ -302,7 +302,7 @@ export default function Canvas(props) {
                     };
                 });
             } else if (obj.type==='brush') {
-                obj.pathes.forEach( p => canvas.add(p));
+                obj.paths.forEach( p => canvas.add(p));
             } else {
                 canvas.add(obj);
             }
@@ -328,7 +328,7 @@ export default function Canvas(props) {
         if ((uploader?.type==='annotation') && (uploader !== prevUploaderRef.current)) {
             removeAllObjFromCanvas();
             fabricObjListRef.current = {};
-            createPathes();
+            createPaths();
             createFabricObjBasedOnAnnotation();
             prevUploaderRef.current = uploader;
         }
@@ -429,10 +429,10 @@ export default function Canvas(props) {
             
             addPathObjToRef(e.path);
             if (e.path.globalCompositeOperation!=="destination-out") {
-                if (!frameAnnotation[annoIdToDraw].pathes) {
-                    frameAnnotation[annoIdToDraw].pathes = [];
+                if (!frameAnnotation[annoIdToDraw].paths) {
+                    frameAnnotation[annoIdToDraw].paths = [];
                 }
-                frameAnnotation[annoIdToDraw].pathes.push(JSON.stringify(e.path.toJSON(["id"])));
+                frameAnnotation[annoIdToDraw].paths.push(JSON.stringify(e.path.toJSON(["id"])));
             }
         }
     }
@@ -444,11 +444,11 @@ export default function Canvas(props) {
                 const brushObj = {
                     id: pathObj.id,
                     type: 'brush',
-                    pathes: [],
+                    paths: [],
                 }
                 fabricObjListRef.current[pathObj.id] = brushObj;
             }
-            fabricObjListRef.current[pathObj.id].pathes.push(pathObj);
+            fabricObjListRef.current[pathObj.id].paths.push(pathObj);
         }
     }
         
@@ -479,10 +479,10 @@ export default function Canvas(props) {
             
             for (let brushObj of brushObjArr) {
                 canvas.clearContext(upperCanvasCtx);
-                canvas.renderCanvas(upperCanvasCtx, brushObj.pathes);
+                canvas.renderCanvas(upperCanvasCtx, brushObj.paths);
                 const upperCanvasData = upperCanvasCtx.getImageData(0,0,img.width*img.scaleX,img.height*img.scaleY);
                 pixelDataCollection[brushObj.id] = upperCanvasData;
-                frameAnnotation[brushObj.id].pathes = getPathInfo(brushObj);
+                frameAnnotation[brushObj.id].paths = getPathInfo(brushObj);
             }
             
             canvas.clearContext(upperCanvasCtx);
@@ -541,7 +541,7 @@ export default function Canvas(props) {
 
 
     function getPathInfo(brushObj) {
-        return brushObj.pathes.map(obj => {
+        return brushObj.paths.map(obj => {
             return JSON.stringify(obj.toJSON(["id"]));
           }
         )
@@ -559,14 +559,14 @@ export default function Canvas(props) {
         if (drawType==='brush' && undo>0) {
             const brushObj = fabricObjListRef.current[annoIdToDraw];
             if (brushObj) {
-                frameAnnotation[annoIdToDraw].pathes.pop();
-                const path = brushObj.pathes.pop();
+                frameAnnotation[annoIdToDraw].paths.pop();
+                const path = brushObj.paths.pop();
                 if (path) {
                     canvasObjRef.current.remove(path);
                 }
-                if (brushObj.pathes.length === 0) {
+                if (brushObj.paths.length === 0) {
                     delete(fabricObjListRef.current[annoIdToDraw]);
-                    frameAnnotation[annoIdToDraw].pathes = null;
+                    frameAnnotation[annoIdToDraw].paths = null;
                 }
             }
         }
@@ -1339,14 +1339,14 @@ export default function Canvas(props) {
         
     }
 
-    function createPathes() {
+    function createPaths() {
         const nextFrameAnno = annotationRef.current[frameNum]??{};        
         const pathStrArr=[];
         if (nextFrameAnno && Object.keys(nextFrameAnno).length>0) {
             Object.keys(nextFrameAnno).forEach(id => {
                 const annoObj = nextFrameAnno[id];
-                if (annoObj.frameNum === frameNum && annoObj.type === 'brush' && annoObj.pathes?.length > 0) {
-                    annoObj.pathes.forEach(str => pathStrArr.push(str));
+                if (annoObj.frameNum === frameNum && annoObj.type === 'brush' && annoObj.paths?.length > 0) {
+                    annoObj.paths.forEach(str => pathStrArr.push(str));
                 }
             })
         }
@@ -1361,8 +1361,8 @@ export default function Canvas(props) {
             const newCanvasStr = canvasStr.slice(0, prefix-1) + '"objects":[' 
                                     + pathStr +canvasStr.slice(prefix+10);
             canvas.loadFromJSON(newCanvasStr,canvas.renderAll.bind(canvas));
-            const pathes = canvas.getObjects();
-            pathes.forEach(obj=>{
+            const paths = canvas.getObjects();
+            paths.forEach(obj=>{
                 obj.selectable = false;
                 addPathObjToRef(obj);
             });

@@ -95,7 +95,7 @@ export function clearUnfinishedAnnotation(frameAnnotationCopy) {
                     return false;
                 }
             } 
-            else if (annoObj.type === 'brush' && (!annoObj.pathes || annoObj.pathes.length===0)) {
+            else if (annoObj.type === 'brush' && (!annoObj.paths || annoObj.paths.length===0)) {
                 return true;                    
             } 
             else {
