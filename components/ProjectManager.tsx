@@ -30,7 +30,6 @@ import { postProject, editProject } from '../utils/requests';
  */
 
 type projectManagerProps = {
-    props: any, // Todo: see line 220 where stuff is passed to Btn Controller
     open: boolean,
     setOpen: Dispatch<SetStateAction<boolean>>,
     status: "new" | "edit",
@@ -51,7 +50,7 @@ type projectManagerProps = {
 }
 
 
-export default function ProjectManager({props, open, setOpen, status, onSubmit, onProjectNameChange, onDescriptChange, groupType, defaultGroupType, 
+export default function ProjectManager({open, setOpen, status, onSubmit, onProjectNameChange, onDescriptChange, groupType, defaultGroupType, 
     disableGroupTypeSelect, btnType, defaultBtnType, btnNum, defaultBtnNum, disableBtnTypeSelect, disableBtnNumInput, hidePlusBtn}: projectManagerProps) {
 
     const [okDisable, setOkDisable] = useState<boolean>(true);
