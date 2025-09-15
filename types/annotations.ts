@@ -16,13 +16,13 @@ export type Annotation = {
 
 export type Annotation = {
     color: string,
-    data: Record <string, unknown> | null,
+    data?: Record <string, unknown>,
     frameNum: number,
-    groupIndex: null,
+    groupIndex?: string,
     id: string,
-    isCrowd: boolean | null,
-    label: string | null,
-    paths: string | null,
+    isCrowd?: boolean,
+    label?: string,
+    paths?: string,
     type: string,
     videoId: string
 } | null | undefined;
