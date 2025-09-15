@@ -22,7 +22,7 @@ export type Annotation = {
     id: string,
     isCrowd: boolean | null,
     label: string | null,
-    pathes: string | null,
+    paths: string | null,
     type: string,
     videoId: string
 } | null | undefined;
@@ -37,7 +37,7 @@ export type Annotation = {
         id: string,
         isCrowd: boolean | null,
         label: string,
-        pathes: any, // Todo
+        paths: any, // Todo
         type: string,
         videoID: string
     }
@@ -53,7 +53,7 @@ export type Annotation = {
     type: 'category' | 'skeleton' | 'polygon' | 'keyPoint' | 'bbox' | 'brush';
     // Additional properties based on type:
     data?: any[]; // For skeleton (landmarks), polygon, keyPoint, bbox coordinates
-    pathes?: any[]; // For brush type
+    paths?: any[]; // For brush type
     skeletonName?: string; // For skeleton type
     edgeData?: any; // For skeleton type
     groupIndex?: number; // Reference to button configuration

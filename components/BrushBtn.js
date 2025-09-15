@@ -25,7 +25,7 @@ import { clearUnfinishedAnnotation, createId } from '../utils/utils.js';
             iscrowd: 0 or 1. Indicates the segmentation covers single or multiple target objects.
             first: 0 or 1. Indicates the first number in data(rle) is inside (1) segmentation or not (0)
             data: [128, 29, ...]. RLE format
-            pathes: [pathStr1, pathStr2, ...]. The stringified fabric path objs for this brush btn.
+            paths: [pathStr1, pathStr2, ...]. The stringified fabric path objs for this brush btn.
         }}
     * 
     * Props: 
