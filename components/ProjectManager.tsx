@@ -1,4 +1,4 @@
-import React, {ChangeEvent, useState, useEffect, SetStateAction} from 'react';
+import { ChangeEvent, useState, useEffect, SetStateAction, Dispatch } from 'react';
 import { useStateSetters, useStates } from './AppContext';
 import BtnConfiguration from './BtnConfiguration';
 import { Modal, Form, Input, Button } from 'antd';
@@ -32,7 +32,7 @@ import { postProject, editProject } from '../utils/requests';
 type projectManagerProps = {
     props: any, // Todo: see line 220 where stuff is passed to Btn Controller
     open: boolean,
-    setOpen: React.Dispatch<React.SetStateAction<boolean>>,
+    setOpen: Dispatch<SetStateAction<boolean>>,
     status: "new" | "edit",
     onSubmit?: (e: {data: any}) => void,  
     onProjectNameChange?: (e: {value: string}) => void,
@@ -47,9 +47,7 @@ type projectManagerProps = {
     defaultBtnNum?: string,
     disableBtnTypeSelect?: boolean,
     disableBtnNumInput?: boolean,
-    hidePlusBtn?: boolean,
-    
-    
+    hidePlusBtn?: boolean,    
 }
 
 
@@ -189,63 +187,61 @@ export default function ProjectManager({props, open, setOpen, status, onSubmit, 
     }
 
     return (
-        <>
-            <Modal
-                title={status?.charAt(0).toUpperCase() + status?.slice(1) + " Project"}
-                open={open}
-                onOk={okClickHandler}
-                onCancel={cancelClickHandler}
-                style={{overflowX: 'auto'}}
-                footer={[
-                    <Button key={0} onClick={cancelClickHandler}>Cancel</Button>,
-                    <Button key={1} type='primary' onClick={okClickHandler} disabled={okDisable}>Ok</Button>
-                ]}
-                >
-                {status === 'edit' && noProject ? null
-                    :
-                    <div>
-                        <Form form={form} className='mt-5' size='small'>
-                            <Form.Item
-                                name='projectName'
-                                label="Project Name"
-                                rules={[
-                                    {
-                                    required: true,
-                                    message: 'The name is required.',
-                                    },
-                                ]}
-                                validateFirst={true}
-                                >
-                                <Input
-                                    onChange={handleProjectNameChange}
-                                    allowClear/>
-                            </Form.Item>
-                            <Form.Item name='description' label="Description">
-                                <Input.TextArea
-                                    onChange={onDescriptionChange}
-                                    allowClear/>
+        <Modal
+            title={status?.charAt(0).toUpperCase() + status?.slice(1) + " Project"}
+            open={open}
+            onOk={okClickHandler}
+            onCancel={cancelClickHandler}
+            style={{overflowX: 'auto'}}
+            footer={[
+                <Button key={0} onClick={cancelClickHandler}>Cancel</Button>,
+                <Button key={1} type='primary' onClick={okClickHandler} disabled={okDisable}>Ok</Button>
+            ]}
+            >
+            {status === 'edit' && noProject ? null
+                :
+                <div>
+                    <Form form={form} className='mt-5' size='small'>
+                        <Form.Item
+                            name='projectName'
+                            label="Project Name"
+                            rules={[
+                                {
+                                required: true,
+                                message: 'The name is required.',
+                                },
+                            ]}
+                            validateFirst={true}
+                            >
+                            <Input
+                                onChange={handleProjectNameChange}
+                                allowClear/>
+                        </Form.Item>
+                        <Form.Item name='description' label="Description">
+                            <Input.TextArea
+                                onChange={onDescriptionChange}
+                                allowClear/>
 
-                            </Form.Item>
-                        </Form>
-                        <BtnConfiguration
-                            status={btnConfigStatus}
-                            setStatus = {setBtnConfigStatus}
-                            hideCreateBtn
-                            defaultGroupType={defaultGroupType?defaultGroupType : null}
-                            groupType={groupType}
-                            defaultBtnType={defaultBtnType}
-                            btnType={btnType}
-                            defaultBtnNum={defaultBtnNum}
-                            btnNum={btnNum}
-                            disableGroupTypeSelect={disableGroupTypeSelect}
-                            disableBtnTypeSelect={disableBtnTypeSelect}
-                            disableBtnNumInput={disableBtnNumInput}
-                            hidePlusBtn={hidePlusBtn}
-                        />
-                    </div>
-                }
-                <p>{info}</p>
-            </Modal>
-        </>
+                        </Form.Item>
+                    </Form>
+                    <BtnConfiguration
+                        status={btnConfigStatus}
+                        setStatus = {setBtnConfigStatus}
+                        hideCreateBtn
+                        defaultGroupType={defaultGroupType?defaultGroupType : null}
+                        groupType={groupType}
+                        defaultBtnType={defaultBtnType}
+                        btnType={btnType}
+                        defaultBtnNum={defaultBtnNum}
+                        btnNum={btnNum}
+                        disableGroupTypeSelect={disableGroupTypeSelect}
+                        disableBtnTypeSelect={disableBtnTypeSelect}
+                        disableBtnNumInput={disableBtnNumInput}
+                        hidePlusBtn={hidePlusBtn}
+                    />
+                </div>
+            }
+            <p>{info}</p>
+        </Modal>
     )
 }
