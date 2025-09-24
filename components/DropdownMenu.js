@@ -1,4 +1,4 @@
-import { useStateSetters, useStates } from "./AppContext";
+import { useStateSetters, useStates } from "./AppContext.tsx";
 import { Dropdown, Modal } from "antd";
 
 /**

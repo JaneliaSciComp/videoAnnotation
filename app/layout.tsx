@@ -1,7 +1,8 @@
 "use client";
 
 import '../styles/globals.css';
-import Workspace from '../components/Workspace';
+//import Workspace from '../components/Workspace';
+import StatesProvider from '@/components/AppContext';
 
 function App( {children,}: Readonly <{children: React.ReactNode;}>) {
   return (
@@ -12,9 +13,9 @@ function App( {children,}: Readonly <{children: React.ReactNode;}>) {
           </title>
         </head>
         <body>
-            <Workspace>
+            <StatesProvider>
                 {children}
-            </Workspace>
+            </StatesProvider>
         </body>
     </html>
   )

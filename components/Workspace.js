@@ -3,7 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import styles from '../styles/Workspace.module.css';
 import BtnGroup from './BtnGroup';
 import BrushTool from './BrushTool';
-import { StatesProvider } from './AppContext';
+import { StatesProvider } from './AppContext.tsx';
 import { 
     clearUnfinishedAnnotation,
 } from '../utils/utils';

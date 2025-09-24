@@ -1,5 +1,5 @@
 import { ChangeEvent, useState, useEffect, SetStateAction, Dispatch } from 'react';
-import { useStateSetters, useStates } from './AppContext';
+import { useStateSetters, useStates } from './AppContext.tsx';
 import BtnConfiguration from './BtnConfiguration';
 import { Modal, Form, Input, Button } from 'antd';
 import { postProject, editProject } from '../utils/requests';

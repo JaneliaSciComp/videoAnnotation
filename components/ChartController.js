@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Dropdown, InputNumber } from "antd";
 import { Row, Col } from "react-bootstrap";
-import { useStateSetters, useStates } from "./AppContext";
+import { useStateSetters, useStates } from "./AppContext.tsx";
 import { defaultAdditionalDataRange } from "../utils/utils";
 
 /**

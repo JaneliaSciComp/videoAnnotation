@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { InboxOutlined } from "@ant-design/icons";
 import { Upload, UploadFile } from "antd";
-import { useStateSetters } from "./AppContext";
+import { useStateSetters } from "./AppContext.tsx";
 import { UploadChangeParam } from "antd/es/upload";
 
 

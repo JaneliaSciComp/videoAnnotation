@@ -3,7 +3,7 @@ import { Button, Row, Col} from 'react-bootstrap';
 import { Space, Radio, Slider } from 'antd';
 import { ClearOutlined, RollbackOutlined } from '@ant-design/icons';
 import styles from '../styles/Button.module.css';
-import { useStateSetters, useStates } from './AppContext';
+import { useStateSetters, useStates } from './AppContext.tsx';
 import {defaultColor} from '../utils/utils.js';
 
 const MIN_THICKNESS = 1;

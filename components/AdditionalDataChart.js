@@ -3,7 +3,7 @@ import styles from '../styles/Chart.module.css';
 import Chart from './Chart';
 import ChartController from './ChartController';
 import {Row, Col} from 'react-bootstrap';
-import { useStates } from './AppContext'; 
+import { useStates } from './AppContext.tsx'; 
 import { DownOutlined } from '@ant-design/icons';
 
 

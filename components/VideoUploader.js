@@ -3,7 +3,7 @@ import styles from "../styles/Video.module.css";
 import { InputNumber, Slider } from "antd";
 import { CaretRightOutlined, PauseOutlined } from "@ant-design/icons";
 import { Row, Col, Form, Button } from "react-bootstrap";
-import { useStates, useStateSetters } from "./AppContext";
+import { useStates, useStateSetters } from "./AppContext.tsx";
 import {
   getFrame,
   postVideo,
