@@ -1,16 +1,12 @@
+import { createContext, useContext, useState, useRef, useEffect } from 'react';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import styles from '../styles/Workspace.module.css';
 import { getAdditionalData, editProject, postProjectBtn, postProjectVideo, postProjectAnnotation, postVideoAnnotation, getProjectAnnotation } from '@/utils/requests';
 import { clearUnfinishedAnnotation } from '@/utils/utils';
-import { Modal } from 'antd';
-import result from 'antd/es/result';
-import { error } from 'console';
-import { on } from 'events';
-import { forEach, file, filter } from 'jszip';
-import { type } from 'os';
-import { parse } from 'path';
-import { title } from 'process';
-import { stringify } from 'querystring';
 import BtnGroup from './BtnGroup';
-import { createContext, useContext, useState, useRef, createElement, useEffect } from 'react';
+import BrushTool from './BrushTool';
+import { Modal } from 'antd';
+
 
 const StatesContext = createContext({});
 const StateSettersContext = createContext({});
@@ -23,7 +19,7 @@ export default function StatesProvider({children}: AppContextProps) {
 
   const [videoId, setVideoId] = useState();
   const [frameUrl, setFrameUrl] = useState();
-  const [frameNum, setFrameNum] = useState();
+  const [frameNum, setFrameNum] = useState<number | undefined>();
   const annotationRef = useRef({});
   const [frameAnnotation, setFrameAnnotation] = useState({}); 
   const [activeAnnoObj, setActiveAnnoObj] = useState();
@@ -43,8 +39,8 @@ export default function StatesProvider({children}: AppContextProps) {
   const [downloadConfig, setDownloadConfig] = useState(false);
   const [downloadAnnotation, setDownloadAnnotation] = useState(false);
   const [modalInfoOpen, setModalInfoOpen] = useState(false);
-  const [modalInfo, setModalInfo] = useState();
-  const [globalInfo, setGlobalInfo] = useState();
+  const [modalInfo, setModalInfo] = useState<string | null>();
+  const [globalInfo, setGlobalInfo] = useState<string | null>();
   const [videoData, setVideoData] = useState({});
   const [loadVideo, setLoadVideo] = useState();
   const [resetVideoPlay, setResetVideoPlay] = useState(false);
@@ -376,22 +372,22 @@ export default function StatesProvider({children}: AppContextProps) {
 
 
     useEffect(()=> {
-        if (downloadConfig) {
-            if (!projectId) {
-                setGlobalInfo('No project.');
-            } 
-            else {
-                const projectConfigData = {...projectData, btnConfigData: {...btnConfigData}, videos: {...videoData}};
-                const jsonProjectConfig = JSON.stringify(projectConfigData);
-                const blobProjectConfig = new Blob([jsonProjectConfig], {type: 'text/plain'});
-                const a = document.createElement("a");
-                a.href = URL.createObjectURL(blobProjectConfig);
-                a.download = projectData.projectName + '_configuration.json';
-                a.click();
-                URL.revokeObjectURL(a.href);
-            }
-            setDownloadConfig(false);
+      if (downloadConfig) {
+        if (!projectId) {
+            setGlobalInfo('No project.');
+        } 
+        else {
+          const projectConfigData = {...projectData, btnConfigData: {...btnConfigData}, videos: {...videoData}};
+          const jsonProjectConfig = JSON.stringify(projectConfigData);
+          const blobProjectConfig = new Blob([jsonProjectConfig], {type: 'text/plain'});
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blobProjectConfig);
+          a.download = projectData.projectName + '_configuration.json';
+          a.click();
+          URL.revokeObjectURL(a.href);
         }
+        setDownloadConfig(false);
+      }
     }, [downloadConfig])
 
     useEffect(()=> {
@@ -632,11 +628,28 @@ export default function StatesProvider({children}: AppContextProps) {
     }
   
     return (
-      <StatesContext.Provider value={states}>
-        <StateSettersContext.Provider value={stateSetters}>
-          {children}
-        </StateSettersContext.Provider>
-      </StatesContext.Provider>
+      <div className={styles.container}>
+        <main className={styles.main}>
+          <StatesContext.Provider value={states}>
+            <StateSettersContext.Provider value={stateSetters}>
+              {children}
+            </StateSettersContext.Provider>
+          </StatesContext.Provider>
+          <Modal
+            title='Info'
+            open={modalInfoOpen}
+            onOk={okClickHandler}
+            onCancel={cancelClickHandler}
+            footer={(_, { CancelBtn }) => (
+              <>
+                <CancelBtn />
+              </>
+            )}
+          >
+            <p className="ant-upload-text ms-4">{modalInfo}</p>
+          </Modal>
+        </main>
+      </div>
     );
 }
 
