@@ -17,53 +17,53 @@ interface AppContextProps {
 
 export default function StatesProvider({children}: AppContextProps) {
 
-  const [videoId, setVideoId] = useState();
+  const [videoId, setVideoId] = useState<string>();
   const [frameUrl, setFrameUrl] = useState();
-  const [frameNum, setFrameNum] = useState<number | undefined>();
+  const [frameNum, setFrameNum] = useState<number | null | undefined>();
   const annotationRef = useRef({});
   const [frameAnnotation, setFrameAnnotation] = useState({}); 
-  const [activeAnnoObj, setActiveAnnoObj] = useState();
-  const [drawType, setDrawType] = useState();
-  const [skeletonLandmark, setSkeletonLandmark] = useState();
-  const [useEraser, setUseEraser] = useState();
-  const [brushThickness, setBrushThickness] = useState();
+  const [activeAnnoObj, setActiveAnnoObj] = useState({});
+  const [drawType, setDrawType] = useState<string | null>();
+  const [skeletonLandmark, setSkeletonLandmark] = useState<string | null>(); // unsure about type on this one
+  const [useEraser, setUseEraser] = useState(false);
+  const [brushThickness, setBrushThickness] = useState<number>();
   const [undo, setUndo] = useState(0);
-  const [annoIdToDraw, setAnnoIdToDraw] = useState();
-  const [annoIdToDelete, setAnnoIdToDelete] = useState();
+  const [annoIdToDraw, setAnnoIdToDraw] = useState<string>();
+  const [annoIdToDelete, setAnnoIdToDelete] = useState<string | null>();
   const [annoIdToShow, setAnnoIdToShow] = useState([]);
   const [btnConfigData, setBtnConfigData] = useState({});
-  const [btnGroups, setBtnGroups] = useState();
-  const [frameNumSignal, setFrameNumSignal] = useState();
-  const [uploader, setUploader] = useState();
-  const [confirmConfig, setConfirmConfig] = useState();
+  const [btnGroups, setBtnGroups] = useState([]); // needs better type
+  const [frameNumSignal, setFrameNumSignal] = useState<number>(); 
+  const [uploader, setUploader] = useState({});
+  const [confirmConfig, setConfirmConfig] = useState(false);
   const [downloadConfig, setDownloadConfig] = useState(false);
   const [downloadAnnotation, setDownloadAnnotation] = useState(false);
   const [modalInfoOpen, setModalInfoOpen] = useState(false);
   const [modalInfo, setModalInfo] = useState<string | null>();
   const [globalInfo, setGlobalInfo] = useState<string | null>();
   const [videoData, setVideoData] = useState({});
-  const [loadVideo, setLoadVideo] = useState();
+  const [loadVideo, setLoadVideo] = useState(false);
   const [resetVideoPlay, setResetVideoPlay] = useState(false);
   const [resetVideoDetails, setResetVideoDetails] = useState(false);
   const [resetChart, setResetChart] = useState(false);
   const [videoAdditionalFieldsConfig, setVideoAdditionalFieldsConfig] = useState({});
-  const [projectId, setProjectId] = useState(); 
-  const [projectData, setProjectData] = useState();
+  const [projectId, setProjectId] = useState<string>(); 
+  const [projectData, setProjectData] = useState({});
   const [getAdditionalDataSignal, setGetAdditionalDataSignal] = useState(false);
   const [additionalDataRange, setAdditionalDataRange] = useState({});
   const [additionalData, setAdditionalData] = useState({});
   const [additionalDataNameToRetrieve, setAdditionalDataNameToRetrieve] = useState([]);
   const videoMetaRef = useRef({});
   const [intervalAnno, setIntervalAnno] = useState({on: false, startFrame: null, videoId:null, label: null, color: null, annotatedFrames: new Set()});
-  const [annotationChartRange, setAnnotationChartRange] = useState();
+  const [annotationChartRange, setAnnotationChartRange] = useState<number>();
   const [categoryColors, setCategoryColors] = useState({});
   const [cancelIntervalAnno, setCancelIntervalAnno] = useState(false);
   const [updateAnnotationChart, setUpdateAnnotationChart] = useState(false);
   const [resetAnnotationChart, setResetAnnotationChart] = useState(false);
-  const lastFrameNumForIntervalAnnoRef = useRef();
+  const lastFrameNumForIntervalAnnoRef = useRef(-1);
   const [intervalErasing, setIntervalErasing] = useState({});
   const [cancelIntervalErasing, setCancelIntervalErasing] = useState(false);
-  const lastFrameNumForIntervalErasingRef = useRef();
+  const lastFrameNumForIntervalErasingRef = useRef(-1);
   const [mutualExclusiveCategory, setMutualExclusiveCategory] = useState([]);
   const additionalDataRef = useRef({});
   const [saveAnnotation, setSaveAnnotation] = useState(false);
@@ -346,7 +346,6 @@ export default function StatesProvider({children}: AppContextProps) {
         
         setBtnConfigData(obj.btnConfigData ? {...obj.btnConfigData} : {});
         setVideoData(obj.videos ? {...obj.videos} : {});
-    
     }
 
     async function confirmSaveUploadedAnnotationToDB(data) {
@@ -370,7 +369,6 @@ export default function StatesProvider({children}: AppContextProps) {
         }
     }
 
-
     useEffect(()=> {
       if (downloadConfig) {
         if (!projectId) {
@@ -390,6 +388,7 @@ export default function StatesProvider({children}: AppContextProps) {
       }
     }, [downloadConfig])
 
+    // TODO: change into an onClick() for downloadAnnotation? (creates more work for library user, but fewer useEffects)
     useEffect(()=> {
         if (downloadAnnotation) {
             if (projectId) {
@@ -420,7 +419,7 @@ export default function StatesProvider({children}: AppContextProps) {
         
     }, [downloadAnnotation])
 
-    async function downloadProjectAnnotation(projectId) {
+    async function downloadProjectAnnotation(projectId: string) {
         const res = await getProjectAnnotation(projectId)
         if (res['error']) {
             setGlobalInfo(res);
@@ -434,7 +433,6 @@ export default function StatesProvider({children}: AppContextProps) {
             URL.revokeObjectURL(a.href);
         }
     }
-
 
     useEffect(()=> {
         if (saveAnnotation) {
@@ -471,7 +469,6 @@ export default function StatesProvider({children}: AppContextProps) {
         }
     }, [btnConfigData])
 
-
     useEffect(() => {
         saveAnnotationAndUpdateStates(true);
         setFrameNum(null);
@@ -492,24 +489,23 @@ export default function StatesProvider({children}: AppContextProps) {
             setFrameAnnotation(() => {});
         }
 
-        if (intervalAnno.on && Number.isInteger(frameNum)) {
+        if (intervalAnno.on && typeof frameNum === 'number' && Number.isInteger(frameNum)) {
             lastFrameNumForIntervalAnnoRef.current = frameNum;
         }
 
-        if (Object.values(intervalErasing).some(value=>value.on) && Number.isInteger(frameNum)) {
+        if (Object.values(intervalErasing).some(value=>value.on) && typeof frameNum === 'number' && Number.isInteger(frameNum)) {
             lastFrameNumForIntervalErasingRef.current = frameNum;
         }
             
     }, [frameNum])
     
-
     function saveAnnotationAndUpdateStates(cancelInterval=false) {
         
         setActiveAnnoObj(null);
         setDrawType(null);
         setSkeletonLandmark(null);
         setUndo(0);
-        setUseEraser(null);
+        setUseEraser(false);
         setAnnoIdToDelete(null);
         saveFrameAnnotation(cancelInterval);
     }
@@ -534,11 +530,9 @@ export default function StatesProvider({children}: AppContextProps) {
           
     }
 
-
     function addAnnotationObj(idObj) {
         setFrameAnnotation({...frameAnnotation, [idObj.id]: idObj});
     }
-
 
     useEffect(() => {
         const btnConfigCopy = {...btnConfigData};
@@ -570,15 +564,11 @@ export default function StatesProvider({children}: AppContextProps) {
         setMutualExclusiveCategory(mutualExclusiveCategoryArr);
     }, [btnConfigData])
 
-    
-
     useEffect(() => {
         if (btnConfigData) {
             renderBtnGroup();
         }
-      }, [btnConfigData, frameNum, frameAnnotation, drawType, skeletonLandmark]
-    )
-
+    }, [btnConfigData, frameNum, frameAnnotation, drawType, skeletonLandmark])
 
     function renderBtnGroup() {
         const groupIndices = Object.keys(btnConfigData).sort((a, b) => Number(a)-Number(b));
@@ -610,7 +600,6 @@ export default function StatesProvider({children}: AppContextProps) {
         })
         setBtnGroups(groups);
     }
-
 
     function okClickHandler() {
         setModalInfo(null);
