@@ -5,168 +5,234 @@ import { getAdditionalData, editProject, postProjectBtn, postProjectVideo, postP
 import { clearUnfinishedAnnotation } from '@/utils/utils';
 import BtnGroup from './BtnGroup';
 import BrushTool from './BrushTool';
-import { Modal } from 'antd';
+import { Modal, UploadFile } from 'antd';
 
 
-const StatesContext = createContext({});
+type StatesType = {
+activeAnnoObj: {}, 
+additionalData: {},
+additionalDataNameToRetrieve: [],
+additionalDataRange: {},
+annoIdToDelete: string,
+annoIdToDraw: string,
+annoIdToShow: [],
+annotationChartRange: number,
+brushThickness: number,
+btnConfigData: {},
+btnGroups: [],
+cancelIntervalAnno: boolean,
+cancelIntervalErasing: boolean,
+categoryColors: {},
+confirmConfig: boolean,
+downloadAnnotation: boolean,
+downloadConfig: boolean,
+drawType: string,
+frameAnnotation: {},
+frameNum: number,
+frameNumSignal: number,
+frameUrl: string,
+getAdditionalDataSignal: boolean,
+globalInfo: string,
+intervalAnno: {}, // actual type provided; see below
+intervalErasing: {},
+isFetchingFrame: boolean,
+loadVideo: boolean,
+modalInfo: string,
+modalInfoOpen: boolean,
+mutualExclusiveCategory: [],
+projectData: {},
+projectId: string,
+resetAnnotationChart: boolean,
+resetChart: boolean,
+resetVideoDetails: boolean,
+resetVideoPlay: boolean,
+saveAnnotation: boolean,
+skeletonLandmark: string,
+undo: number,
+updateAnnotationChart: boolean,
+uploader: {},
+useEraser: boolean,
+videoAdditionalFieldsConfig: {},
+videoData: {},
+videoId: string,
+annotationRef: {},
+lastFrameNumForIntervalAnnoRef: number,
+lastFrameNumForIntervalErasingRef: number,
+realFpsRef: number,
+videoMetaRef: {},
+}
+
+const StatesContext = createContext<StatesType | undefined>(undefined);
 const StateSettersContext = createContext({});
 
 interface AppContextProps {
   children: React.ReactNode,
 }
 
+type uploaderType = {
+  type: string,
+  file: UploadFile<any>,
+}
+
+// Which of the states need to be accessible to the user-developer
+
 export default function StatesProvider({children}: AppContextProps) {
 
-  const [videoId, setVideoId] = useState<string>();
-  const [frameUrl, setFrameUrl] = useState();
-  const [frameNum, setFrameNum] = useState<number | null | undefined>();
-  const annotationRef = useRef({});
-  const [frameAnnotation, setFrameAnnotation] = useState({}); 
-  const [activeAnnoObj, setActiveAnnoObj] = useState({});
-  const [drawType, setDrawType] = useState<string | null>();
-  const [skeletonLandmark, setSkeletonLandmark] = useState<string | null>(); // unsure about type on this one
-  const [useEraser, setUseEraser] = useState(false);
-  const [brushThickness, setBrushThickness] = useState<number>();
-  const [undo, setUndo] = useState(0);
-  const [annoIdToDraw, setAnnoIdToDraw] = useState<string>();
+  const [activeAnnoObj, setActiveAnnoObj] = useState({}); // needs Type
+  const [additionalData, setAdditionalData] = useState({}); // needs Type
+  const [additionalDataNameToRetrieve, setAdditionalDataNameToRetrieve] = useState([]); // needs better type
+  const [additionalDataRange, setAdditionalDataRange] = useState({}); // needs Type
   const [annoIdToDelete, setAnnoIdToDelete] = useState<string | null>();
-  const [annoIdToShow, setAnnoIdToShow] = useState([]);
-  const [btnConfigData, setBtnConfigData] = useState({});
-  const [btnGroups, setBtnGroups] = useState([]); // needs better type
-  const [frameNumSignal, setFrameNumSignal] = useState<number>(); 
-  const [uploader, setUploader] = useState({});
-  const [confirmConfig, setConfirmConfig] = useState(false);
-  const [downloadConfig, setDownloadConfig] = useState(false);
-  const [downloadAnnotation, setDownloadAnnotation] = useState(false);
-  const [modalInfoOpen, setModalInfoOpen] = useState(false);
-  const [modalInfo, setModalInfo] = useState<string | null>();
-  const [globalInfo, setGlobalInfo] = useState<string | null>();
-  const [videoData, setVideoData] = useState({});
-  const [loadVideo, setLoadVideo] = useState(false);
-  const [resetVideoPlay, setResetVideoPlay] = useState(false);
-  const [resetVideoDetails, setResetVideoDetails] = useState(false);
-  const [resetChart, setResetChart] = useState(false);
-  const [videoAdditionalFieldsConfig, setVideoAdditionalFieldsConfig] = useState({});
-  const [projectId, setProjectId] = useState<string>(); 
-  const [projectData, setProjectData] = useState({});
-  const [getAdditionalDataSignal, setGetAdditionalDataSignal] = useState(false);
-  const [additionalDataRange, setAdditionalDataRange] = useState({});
-  const [additionalData, setAdditionalData] = useState({});
-  const [additionalDataNameToRetrieve, setAdditionalDataNameToRetrieve] = useState([]);
-  const videoMetaRef = useRef({});
-  const [intervalAnno, setIntervalAnno] = useState({on: false, startFrame: null, videoId:null, label: null, color: null, annotatedFrames: new Set()});
+  const [annoIdToDraw, setAnnoIdToDraw] = useState<string>();
+  const [annoIdToShow, setAnnoIdToShow] = useState([]); // unsure about type on this one
   const [annotationChartRange, setAnnotationChartRange] = useState<number>();
-  const [categoryColors, setCategoryColors] = useState({});
+  const [brushThickness, setBrushThickness] = useState<number>();
+  const [btnConfigData, setBtnConfigData] = useState({}); // needs Type
+  const [btnGroups, setBtnGroups] = useState([]); // needs Type
   const [cancelIntervalAnno, setCancelIntervalAnno] = useState(false);
-  const [updateAnnotationChart, setUpdateAnnotationChart] = useState(false);
-  const [resetAnnotationChart, setResetAnnotationChart] = useState(false);
-  const lastFrameNumForIntervalAnnoRef = useRef(-1);
-  const [intervalErasing, setIntervalErasing] = useState({});
   const [cancelIntervalErasing, setCancelIntervalErasing] = useState(false);
-  const lastFrameNumForIntervalErasingRef = useRef(-1);
-  const [mutualExclusiveCategory, setMutualExclusiveCategory] = useState([]);
-  const additionalDataRef = useRef({});
-  const [saveAnnotation, setSaveAnnotation] = useState(false);
-  const realFpsRef = useRef(25);
+  const [categoryColors, setCategoryColors] = useState({}); // needs Type
+  const [confirmConfig, setConfirmConfig] = useState(false);
+  const [downloadAnnotation, setDownloadAnnotation] = useState(false);
+  const [downloadConfig, setDownloadConfig] = useState(false);
+  const [drawType, setDrawType] = useState<string | null>();
+  const [frameAnnotation, setFrameAnnotation] = useState({}); // needs Type
+  const [frameNum, setFrameNum] = useState();
+  const [frameNumSignal, setFrameNumSignal] = useState<number>(); 
+  const [frameUrl, setFrameUrl] = useState<string>();
+  const [getAdditionalDataSignal, setGetAdditionalDataSignal] = useState(false);
+  const [globalInfo, setGlobalInfo] = useState<string | null>();
+  const [intervalAnno, setIntervalAnno] = useState({on: false, startFrame: null, videoId:null, label: null, color: null, annotatedFrames: new Set()});
+  const [intervalErasing, setIntervalErasing] = useState({}); // needs Type
   const [isFetchingFrame, setIsFetchingFrame] = useState(false);
+  const [loadVideo, setLoadVideo] = useState(false);
+  const [modalInfo, setModalInfo] = useState<string | null>();
+  const [modalInfoOpen, setModalInfoOpen] = useState(false);
+  const [mutualExclusiveCategory, setMutualExclusiveCategory] = useState([]);
+  const [projectData, setProjectData] = useState({}); // needs Type
+  const [projectId, setProjectId] = useState<string>(); 
+  const [resetAnnotationChart, setResetAnnotationChart] = useState(false);
+  const [resetChart, setResetChart] = useState(false);
+  const [resetVideoDetails, setResetVideoDetails] = useState(false);
+  const [resetVideoPlay, setResetVideoPlay] = useState(false);
+  const [saveAnnotation, setSaveAnnotation] = useState(false);
+  const [skeletonLandmark, setSkeletonLandmark] = useState<string | null>(); // unsure about type on this one
+  const [undo, setUndo] = useState(0); // any number? Or just certain ones? Seems like this would be boolean
+  const [updateAnnotationChart, setUpdateAnnotationChart] = useState(false);
+  const [uploader, setUploader] = useState<uploaderType>({}); // needs Type
+  const [useEraser, setUseEraser] = useState(false);
+  const [videoAdditionalFieldsConfig, setVideoAdditionalFieldsConfig] = useState({}); // needs Type
+  const [videoData, setVideoData] = useState({}); // needs Type
+  const [videoId, setVideoId] = useState<string>();
+  const additionalDataRef = useRef({});
+  const annotationRef = useRef({}); // needs Type
+  const lastFrameNumForIntervalAnnoRef = useRef(-1);
+  const lastFrameNumForIntervalErasingRef = useRef(-1);
+  const realFpsRef = useRef(25);
+  const videoMetaRef = useRef({}); // needs Type
 
   const states = {
-      videoId: videoId,
-      frameUrl: frameUrl,
-      frameNum: frameNum,
-      frameAnnotation: frameAnnotation,
-      activeAnnoObj: activeAnnoObj,
-      drawType: drawType,
-      skeletonLandmark: skeletonLandmark,
-      useEraser: useEraser,
-      brushThickness: brushThickness,
-      undo: undo,
-      annoIdToDraw: annoIdToDraw,
-      annoIdToDelete: annoIdToDelete,
-      annoIdToShow: annoIdToShow,
-      btnConfigData: btnConfigData,
-      btnGroups: btnGroups,
-      annotationRef: annotationRef,
-      frameNumSignal: frameNumSignal,
-      uploader: uploader,
-      confirmConfig: confirmConfig,
-      downloadConfig: downloadConfig,
-      downloadAnnotation: downloadAnnotation,
-      globalInfo: globalInfo,
-      modalInfo: modalInfo,
-      modalInfoOpen: modalInfoOpen,
-      videoData: videoData,
-      loadVideo: loadVideo,
-      resetVideoPlay: resetVideoPlay,
-      resetVideoDetails: resetVideoDetails,
-      videoAdditionalFieldsConfig: videoAdditionalFieldsConfig,
-      projectId: projectId,
-      projectData: projectData,
-      additionalDataRange: additionalDataRange,
-      additionalData: additionalData,
-      additionalDataNameToRetrieve: additionalDataNameToRetrieve,
-      videoMetaRef: videoMetaRef,
-      resetChart: resetChart,
-      annotationChartRange: annotationChartRange,
-      intervalAnno: intervalAnno,
-      categoryColors: categoryColors,
-      cancelIntervalAnno: cancelIntervalAnno,
-      updateAnnotationChart: updateAnnotationChart,
-      resetAnnotationChart: resetAnnotationChart,
-      lastFrameNumForIntervalAnnoRef: lastFrameNumForIntervalAnnoRef,
-      intervalErasing: intervalErasing,
-      cancelIntervalErasing: cancelIntervalErasing,
-      lastFrameNumForIntervalErasingRef: lastFrameNumForIntervalErasingRef,
-      mutualExclusiveCategory: mutualExclusiveCategory,
-      realFpsRef: realFpsRef,
-      isFetchingFrame: isFetchingFrame,
+    activeAnnoObj: activeAnnoObj,
+    additionalData: additionalData,
+    additionalDataNameToRetrieve: additionalDataNameToRetrieve,
+    additionalDataRange: additionalDataRange,
+    annoIdToDelete: annoIdToDelete,
+    annoIdToDraw: annoIdToDraw,
+    annoIdToShow: annoIdToShow,
+    annotationChartRange: annotationChartRange,
+    brushThickness: brushThickness,
+    btnConfigData: btnConfigData,
+    btnGroups: btnGroups,
+    cancelIntervalAnno: cancelIntervalAnno,
+    cancelIntervalErasing: cancelIntervalErasing,
+    categoryColors: categoryColors,
+    confirmConfig: confirmConfig,
+    downloadAnnotation: downloadAnnotation,
+    downloadConfig: downloadConfig,
+    drawType: drawType,
+    frameAnnotation: frameAnnotation,
+    frameNum: frameNum,
+    frameNumSignal: frameNumSignal,
+    frameUrl: frameUrl,
+    getAdditionalDataSignal: getAdditionalDataSignal,
+    globalInfo: globalInfo,
+    intervalAnno: intervalAnno,
+    intervalErasing: intervalErasing,
+    isFetchingFrame: isFetchingFrame,
+    loadVideo: loadVideo,
+    modalInfo: modalInfo,
+    modalInfoOpen: modalInfoOpen,
+    mutualExclusiveCategory: mutualExclusiveCategory,
+    projectData: projectData,
+    projectId: projectId,
+    resetAnnotationChart: resetAnnotationChart,
+    resetChart: resetChart,
+    resetVideoDetails: resetVideoDetails,
+    resetVideoPlay: resetVideoPlay,
+    saveAnnotation: saveAnnotation,
+    skeletonLandmark: skeletonLandmark,
+    undo: undo,
+    updateAnnotationChart: updateAnnotationChart,
+    uploader: uploader,
+    useEraser: useEraser,
+    videoAdditionalFieldsConfig: videoAdditionalFieldsConfig,
+    videoData: videoData,
+    videoId: videoId,
+    additionalDataRef: additionalDataRef, // Not a true state... does this matter?
+    annotationRef: annotationRef, 
+    lastFrameNumForIntervalAnnoRef: lastFrameNumForIntervalAnnoRef,
+    lastFrameNumForIntervalErasingRef: lastFrameNumForIntervalErasingRef,
+    realFpsRef: realFpsRef,
+    videoMetaRef: videoMetaRef,
   }
       
   const stateSetters = {
-      setVideoId: setVideoId,
-      setFrameUrl: setFrameUrl,
-      setFrameNum: setFrameNum,
-      setFrameAnnotation: setFrameAnnotation,
-      setActiveAnnoObj: setActiveAnnoObj,
-      setDrawType: setDrawType,
-      setSkeletonLandmark: setSkeletonLandmark,
-      setUseEraser: setUseEraser,
-      setUndo: setUndo,
-      setAnnoIdToDraw: setAnnoIdToDraw,
-      setAnnoIdToDelete: setAnnoIdToDelete,
-      setAnnoIdToShow: setAnnoIdToShow,
-      setBrushThickness: setBrushThickness,
-      setBtnConfigData: setBtnConfigData,
-      setBtnGroups: setBtnGroups,
-      setFrameNumSignal: setFrameNumSignal,
-      setUploader: setUploader,
-      setConfirmConfig: setConfirmConfig,
-      setDownloadConfig: setDownloadConfig,
-      setDownloadAnnotation: setDownloadAnnotation,
-      setGlobalInfo: setGlobalInfo,
-      setModalInfo: setModalInfo,
-      setModalInfoOpen: setModalInfoOpen,
-      setVideoData: setVideoData,
-      setLoadVideo: setLoadVideo,
-      setResetVideoPlay: setResetVideoPlay,
-      setResetVideoDetails: setResetVideoDetails,
-      setVideoAdditionalFieldsConfig: setVideoAdditionalFieldsConfig,
-      setProjectId: setProjectId,
-      setProjectData: setProjectData,
-      setGetAdditionalDataSignal: setGetAdditionalDataSignal,
-      setAdditionalDataRange: setAdditionalDataRange,
-      setAdditionalDataNameToRetrieve: setAdditionalDataNameToRetrieve,
-      setAdditionalData: setAdditionalData,
-      setResetChart: setResetChart,
-      setAnnotationChartRange: setAnnotationChartRange,
-      setIntervalAnno: setIntervalAnno,
-      setCancelIntervalAnno: setCancelIntervalAnno,
-      setUpdateAnnotationChart: setUpdateAnnotationChart,
-      setResetAnnotationChart: setResetAnnotationChart,
-      setIntervalErasing: setIntervalErasing,
-      setCancelIntervalErasing: setCancelIntervalErasing,
-      setSaveAnnotation: setSaveAnnotation,
-      setIsFetchingFrame: setIsFetchingFrame,
+    setActiveAnnoObj: setActiveAnnoObj,
+    setAdditionalData: setAdditionalData,
+    setAdditionalDataNameToRetrieve: setAdditionalDataNameToRetrieve,
+    setAdditionalDataRange: setAdditionalDataRange,
+    setAnnoIdToDelete: setAnnoIdToDelete,
+    setAnnoIdToDraw: setAnnoIdToDraw,
+    setAnnoIdToShow: setAnnoIdToShow,
+    setAnnotationChartRange: setAnnotationChartRange,
+    setBrushThickness: setBrushThickness,
+    setBtnConfigData: setBtnConfigData,
+    setBtnGroups: setBtnGroups,
+    setCancelIntervalAnno: setCancelIntervalAnno,
+    setCancelIntervalErasing: setCancelIntervalErasing,
+    setCategoryColors: setCategoryColors,
+    setConfirmConfig: setConfirmConfig,
+    setDownloadAnnotation: setDownloadAnnotation,
+    setDownloadConfig: setDownloadConfig,
+    setDrawType: setDrawType,
+    setFrameAnnotation: setFrameAnnotation,
+    setFrameNum: setFrameNum,
+    setFrameNumSignal: setFrameNumSignal,
+    setFrameUrl: setFrameUrl,
+    setGetAdditionalDataSignal: setGetAdditionalDataSignal,
+    setGlobalInfo: setGlobalInfo,
+    setIntervalAnno: setIntervalAnno,
+    setIntervalErasing: setIntervalErasing,
+    setIsFetchingFrame: setIsFetchingFrame,
+    setLoadVideo: setLoadVideo,
+    setModalInfo: setModalInfo,
+    setModalInfoOpen: setModalInfoOpen,
+    setMutualExclusiveCategory: setMutualExclusiveCategory,
+    setProjectData: setProjectData,
+    setProjectId: setProjectId,
+    setResetAnnotationChart: setResetAnnotationChart,
+    setResetChart: setResetChart,
+    setResetVideoDetails: setResetVideoDetails,
+    setResetVideoPlay: setResetVideoPlay,
+    setSaveAnnotation: setSaveAnnotation,
+    setSkeletonLandmark: setSkeletonLandmark,
+    setUndo: setUndo,
+    setUpdateAnnotationChart: setUpdateAnnotationChart,
+    setUploader: setUploader,
+    setUseEraser: setUseEraser,
+    setVideoAdditionalFieldsConfig: setVideoAdditionalFieldsConfig,
+    setVideoData: setVideoData,
+    setVideoId: setVideoId,
   }
 
     useEffect(() => {
@@ -223,7 +289,7 @@ export default function StatesProvider({children}: AppContextProps) {
             if (additionalDataNameToRetrieve?.length>0) {
                 additionalDataNameToRetrieve.map(name => {
                     const rangeNeeded = additionalDataRange[name];
-                    if (rangeNeeded >= 0) {
+                    if (rangeNeeded >= 0 && typeof frameNum === "number" && Number.isInteger(frameNum)) {
                         const rangeStartNeeded = ((frameNum-rangeNeeded)<0) ? 0 : (frameNum-rangeNeeded);
                         const rangeEndNeeded = ((frameNum+rangeNeeded)>(videoMetaRef.current.totalFrameCount-1)) ? (videoMetaRef.current.totalFrameCount-1) : (frameNum+rangeNeeded);
                         const dataNeeded = additionalDataRef.current[name].slice(rangeStartNeeded, rangeEndNeeded+1);
@@ -238,6 +304,7 @@ export default function StatesProvider({children}: AppContextProps) {
         }
     }        
 
+    // There's another useEffect for uploader inside AnnotationChart.  Should that be combined here?  Or not?  
     useEffect(() => {
         if (uploader?.type && uploader?.file) {
             saveAnnotationAndUpdateStates(true); 
@@ -245,10 +312,9 @@ export default function StatesProvider({children}: AppContextProps) {
             reader.onload = (e) => onReaderLoad(e, uploader.type);
             reader.readAsText(uploader.file.originFileObj);
         }
-
     }, [uploader])
 
-    function onReaderLoad(e, type){
+    function onReaderLoad(e, type: string){
         
         const obj = JSON.parse(e.target.result);
         if (type === 'annotation') {
