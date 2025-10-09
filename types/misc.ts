@@ -9,5 +9,5 @@ export type IntervalErasingValues = {
 
 export type UploaderType = {
   type: string,
-  file: UploadFile<any>,
+  file: UploadFile,
 }
