@@ -3,6 +3,7 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import styles from '../styles/Workspace.module.css';
 import { getAdditionalData, editProject, postProjectBtn, postProjectVideo, postProjectAnnotation, postVideoAnnotation, getProjectAnnotation } from '@/utils/requests';
 import { clearUnfinishedAnnotation } from '@/utils/utils';
+import { UploaderType } from '@/types/misc';
 import BtnGroup from './BtnGroup';
 import BrushTool from './BrushTool';
 import { Modal, UploadFile } from 'antd';
@@ -50,7 +51,7 @@ saveAnnotation: boolean,
 skeletonLandmark: string,
 undo: number,
 updateAnnotationChart: boolean,
-uploader: {},
+uploader: UploadFile,
 useEraser: boolean,
 videoAdditionalFieldsConfig: {},
 videoData: {},
@@ -69,10 +70,12 @@ interface AppContextProps {
   children: React.ReactNode,
 }
 
-type uploaderType = {
+/*
+type UploaderType = {
   type: string,
   file: UploadFile<any>,
 }
+  */
 
 // Which of the states need to be accessible to the user-developer
 
@@ -97,7 +100,7 @@ export default function StatesProvider({children}: AppContextProps) {
   const [downloadConfig, setDownloadConfig] = useState(false);
   const [drawType, setDrawType] = useState<string | null>();
   const [frameAnnotation, setFrameAnnotation] = useState({}); // needs Type
-  const [frameNum, setFrameNum] = useState();
+  const [frameNum, setFrameNum] = useState<number>();
   const [frameNumSignal, setFrameNumSignal] = useState<number>(); 
   const [frameUrl, setFrameUrl] = useState<string>();
   const [getAdditionalDataSignal, setGetAdditionalDataSignal] = useState(false);
@@ -119,7 +122,7 @@ export default function StatesProvider({children}: AppContextProps) {
   const [skeletonLandmark, setSkeletonLandmark] = useState<string | null>(); // unsure about type on this one
   const [undo, setUndo] = useState(0); // any number? Or just certain ones? Seems like this would be boolean
   const [updateAnnotationChart, setUpdateAnnotationChart] = useState(false);
-  const [uploader, setUploader] = useState<uploaderType>({}); // needs Type
+  const [uploader, setUploader] = useState<UploaderType>(); 
   const [useEraser, setUseEraser] = useState(false);
   const [videoAdditionalFieldsConfig, setVideoAdditionalFieldsConfig] = useState({}); // needs Type
   const [videoData, setVideoData] = useState({}); // needs Type
@@ -306,7 +309,7 @@ export default function StatesProvider({children}: AppContextProps) {
 
     // There's another useEffect for uploader inside AnnotationChart.  Should that be combined here?  Or not?  
     useEffect(() => {
-        if (uploader?.type && uploader?.file) {
+        if (uploader?.type && uploader?.file?.originFileObj) { //checking in case undefined
             saveAnnotationAndUpdateStates(true); 
             const reader = new FileReader();
             reader.onload = (e) => onReaderLoad(e, uploader.type);
@@ -537,7 +540,7 @@ export default function StatesProvider({children}: AppContextProps) {
 
     useEffect(() => {
         saveAnnotationAndUpdateStates(true);
-        setFrameNum(null);
+        setFrameNum(0);
         additionalDataRef.current = {};  
     }, [videoId])
 
