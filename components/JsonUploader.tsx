@@ -90,7 +90,7 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
   type annoObjType = {
     projectId: string,
     videos: string[],
-    annotations: []
+    annotations: [] // need better type here
   }
 
   type projObjType = {
@@ -98,7 +98,7 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
     description: string,
     projectId: string,
     projectName: string,
-    videos: {},
+    videos: VideosType,
     type: string //needed anymore?
   }
 
@@ -110,13 +110,14 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
     omitCrowdRadio: boolean
   }
 
-  type BtnDataType = {
-    [key: number]: BtnType
-  }
+  type BtnDataType = Record<number, BtnType>
 
-  type BtnConfigDataType = {
+  type BtnConfigDataType = Record< string, BtnGroupObjectType>
+
+  type BtnGroupObjectType = {
     btnNum: number,
     btnType: string,
+    btnGroupId?: string,
     childData: BtnDataType,
     length: number,
     edgeData: null, // need actual type for this
@@ -125,14 +126,20 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
     skeletonName: string,
   }
 
-  type videoListType = {
+  type VideosType = Record<string, VideoType>
 
+  type VideoType = {
+    additionalFields: any[],
+    name: string,
+    path: string,
+    projectId: string,
+    videoId?: string
   }
 
   function onReaderLoad(e: ProgressEvent<FileReader>, type: string){
     if (e.target && e.target.result){
       if (typeof e.target.result === 'string'){
-        const obj = JSON.parse(e.target.result);  // need better type on this object for use in typing other things below
+        const obj = JSON.parse(e.target.result);  
         if (type === 'annotation') {
           const annoObj: annoObjType = {... obj};
           /**
