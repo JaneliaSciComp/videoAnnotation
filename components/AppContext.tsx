@@ -7,6 +7,7 @@ import { UploaderType } from '@/types/misc';
 import BtnGroup from './BtnGroup';
 import BrushTool from './BrushTool';
 import { Modal, UploadFile } from 'antd';
+import type { Annotation } from '@/types/annotations';
 
 
 type StatesType = {
@@ -56,7 +57,7 @@ useEraser: boolean,
 videoAdditionalFieldsConfig: {},
 videoData: {},
 videoId: string,
-annotationRef: annoRefType,
+annotationRef: annoRefType, //Record<number, Record<string, Annotation>>
 lastFrameNumForIntervalAnnoRef: number,
 lastFrameNumForIntervalErasingRef: number,
 realFpsRef: number,
@@ -446,7 +447,7 @@ export default function StatesProvider({children}: AppContextProps) {
     
     function saveAnnotationAndUpdateStates(cancelInterval=false) {
         
-        setActiveAnnoObj(null);
+        setActiveAnnoObj({});
         setDrawType(null);
         setSkeletonLandmark(null);
         setUndo(0);

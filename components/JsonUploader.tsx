@@ -29,6 +29,7 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
   const uploader = useStates().uploader;
   const videoId = useStates().videoId;
   const setBtnConfigData = useStateSetters().setButtonConfigData;
+  const setFrameAnnotation = useStateSetters().setFrameAnnotation;
   const setGlobalInfo = useStateSetters().setGlobalInfo;
   const setModalInfo = useStateSetters().setModalInfo;
   const setModalInfoOpen = useStateSetters().setModalInfoOpen;
@@ -90,7 +91,7 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
   type annoObjType = {
     projectId: string,
     videos: string[],
-    annotations: [] // need better type here
+    annotations: Annotation[] // need better type here
   }
 
   type projObjType = {
@@ -250,17 +251,20 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
     if (res['error']) {
         setGlobalInfo('Saving annotation data to DB failed.');
     } else {
-      if ((data.videos.filter(v => v===videoId).length>0) && Number.isInteger(frameNum)) {
+      if ((data.videos.includes(videoId)) && Number.isInteger(frameNum)) {
         const videoAnnotations = data.annotations.filter(anno => anno.videoId === videoId);
-        const forAnnoRef = {};
+        const forAnnoRef: Record<number, Record<string, Annotation>> = {};
         videoAnnotations.forEach(anno => {
-          if (!forAnnoRef[anno.frameNum]) {
-              forAnnoRef[anno.frameNum] = {};
+          if (!forAnnoRef[anno.frameNum]){
+            forAnnoRef[anno.frameNum] = {};
           }
           forAnnoRef[anno.frameNum][anno.id] = anno;
         })
         annotationRef.current = forAnnoRef;
-        getFrameAnnotationFromRefAndSetState();
+        //getFrameAnnotationFromRefAndSetState();  Replaced by the next 2 lines
+        const frameAnno = annotationRef.current[frameNum]??{};
+        setFrameAnnotation({...frameAnno});
+
       } 
       setResetAnnotationChart(true);
     }
