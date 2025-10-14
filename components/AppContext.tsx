@@ -57,7 +57,7 @@ useEraser: boolean,
 videoAdditionalFieldsConfig: {},
 videoData: {},
 videoId: string,
-annotationRef: annoRefType, //Record<number, Record<string, Annotation>>
+annotationRef: React.RefObject<annoRefType | null>, //Record<number, Record<string, Annotation>>
 lastFrameNumForIntervalAnnoRef: number,
 lastFrameNumForIntervalErasingRef: number,
 realFpsRef: number,
@@ -65,8 +65,8 @@ videoMetaRef: {},
 }
 
 type annoRefType = {
-  current: {
-
+  [frameNum: number]: {
+    [id: string]: Annotation
   }
 }
 
@@ -135,7 +135,7 @@ export default function StatesProvider({children}: AppContextProps) {
   const [videoData, setVideoData] = useState({}); // needs Type
   const [videoId, setVideoId] = useState<string>();
   const additionalDataRef = useRef({});
-  const annotationRef = useRef({}); // needs Type
+  const annotationRef = useRef<annoRefType | null>(null); // needs Type
   const lastFrameNumForIntervalAnnoRef = useRef(-1);
   const lastFrameNumForIntervalErasingRef = useRef(-1);
   const realFpsRef = useRef(25);

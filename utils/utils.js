@@ -77,6 +77,18 @@ export const defaultFrameBufferSeconds = 3;
 export const defaultFrameFetchBatchSize = 15;
 
 
+export function saveAnnotationAndUpdateStates(cancelInterval=false) {
+    
+    setActiveAnnoObj({});
+    setDrawType(null);
+    setSkeletonLandmark(null);
+    setUndo(0);
+    setUseEraser(false);
+    setAnnoIdToDelete(null);
+    saveFrameAnnotation(cancelInterval);
+}
+
+
 export function clearUnfinishedAnnotation(frameAnnotationCopy) {
     let unfinished =[];
     if (Object.keys(frameAnnotationCopy).length > 0) {
