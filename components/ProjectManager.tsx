@@ -1,5 +1,5 @@
 import { ChangeEvent, useState, useEffect, SetStateAction, Dispatch } from 'react';
-import { useStateSetters, useStates } from './AppContext.tsx';
+import { useStateSetters, useStates } from './AppContext';
 import BtnConfiguration from './BtnConfiguration';
 import { Modal, Form, Input, Button } from 'antd';
 import { postProject, editProject } from '../utils/requests';
@@ -31,7 +31,7 @@ import { postProject, editProject } from '../utils/requests';
 
 type projectManagerProps = {
     open: boolean,
-    setOpen: Dispatch<SetStateAction<boolean>>,
+    setOpen: Dispatch<SetStateAction<boolean>>, //This should have already been typed elsewhere... how to deal with that?
     status: "new" | "edit",
     onSubmit?: (e: {data: any}) => void,  
     onProjectNameChange?: (e: {value: string}) => void,

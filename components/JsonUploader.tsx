@@ -29,7 +29,7 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
   const projectId = useStates().projectId;
   const uploader = useStates().uploader;
   const videoId = useStates().videoId;
-  const setBtnConfigData = useStateSetters().setButtonConfigData;
+  const setBtnConfigData = useStateSetters().setBtnConfigData;
   const setFrameAnnotation = useStateSetters().setFrameAnnotation;
   const setGlobalInfo = useStateSetters().setGlobalInfo;
   const setModalInfo = useStateSetters().setModalInfo;

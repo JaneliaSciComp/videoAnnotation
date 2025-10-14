@@ -1,8 +1,8 @@
-import { createContext, useContext, useState, useRef, useEffect } from 'react';
+import { createContext, Dispatch, useContext, useState, useRef, useEffect, SetStateAction } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import styles from '../styles/Workspace.module.css';
 import { getAdditionalData, postVideoAnnotation, getProjectAnnotation } from '@/utils/requests';
-import { clearUnfinishedAnnotation } from '@/utils/utils';
+import { clearUnfinishedAnnotation, saveAnnotationAndUpdateStates } from '@/utils/utils';
 import { UploaderType } from '@/types/misc';
 import BtnGroup from './BtnGroup';
 import BrushTool from './BrushTool';
@@ -11,57 +11,106 @@ import type { Annotation } from '@/types/annotations';
 
 
 type StatesType = {
-activeAnnoObj: {}, 
-additionalData: {},
-additionalDataNameToRetrieve: [],
-additionalDataRange: {},
-annoIdToDelete: string,
-annoIdToDraw: string,
-annoIdToShow: [],
-annotationChartRange: number,
-brushThickness: number,
-btnConfigData: {},
-btnGroups: [],
-cancelIntervalAnno: boolean,
-cancelIntervalErasing: boolean,
-categoryColors: {},
-confirmConfig: boolean,
-downloadAnnotation: boolean,
-downloadConfig: boolean,
-drawType: string,
-frameAnnotation: {},
-frameNum: number,
-frameNumSignal: number,
-frameUrl: string,
-getAdditionalDataSignal: boolean,
-globalInfo: string,
-intervalAnno: {}, // actual type provided; see below
-intervalErasing: {},
-isFetchingFrame: boolean,
-loadVideo: boolean,
-modalInfo: string,
-modalInfoOpen: boolean,
-mutualExclusiveCategory: [],
-projectData: {},
-projectId: string,
-resetAnnotationChart: boolean,
-resetChart: boolean,
-resetVideoDetails: boolean,
-resetVideoPlay: boolean,
-saveAnnotation: boolean,
-skeletonLandmark: string,
-undo: number,
-updateAnnotationChart: boolean,
-uploader: UploaderType,
-useEraser: boolean,
-videoAdditionalFieldsConfig: {},
-videoData: {},
-videoId: string,
-annotationRef: React.RefObject<annoRefType | null>, //Record<number, Record<string, Annotation>>
-lastFrameNumForIntervalAnnoRef: number,
-lastFrameNumForIntervalErasingRef: number,
-realFpsRef: number,
-videoMetaRef: {},
+  activeAnnoObj: {}, 
+  additionalData: {},
+  additionalDataNameToRetrieve: [],
+  additionalDataRange: {},
+  annoIdToDelete: string,
+  annoIdToDraw: string,
+  annoIdToShow: [],
+  annotationChartRange: number,
+  brushThickness: number,
+  btnConfigData: {},
+  btnGroups: [],
+  cancelIntervalAnno: boolean,
+  cancelIntervalErasing: boolean,
+  categoryColors: {},
+  confirmConfig: boolean,
+  downloadAnnotation: boolean,
+  downloadConfig: boolean,
+  drawType: string,
+  frameAnnotation: {},
+  frameNum: number,
+  frameNumSignal: number,
+  frameUrl: string,
+  getAdditionalDataSignal: boolean,
+  globalInfo: string,
+  intervalAnno: {}, // actual type provided; see below
+  intervalErasing: {},
+  isFetchingFrame: boolean,
+  loadVideo: boolean,
+  modalInfo: string,
+  modalInfoOpen: boolean,
+  mutualExclusiveCategory: [],
+  projectData: {},
+  projectId: string,
+  resetAnnotationChart: boolean,
+  resetChart: boolean,
+  resetVideoDetails: boolean,
+  resetVideoPlay: boolean,
+  saveAnnotation: boolean,
+  skeletonLandmark: string,
+  undo: number,
+  updateAnnotationChart: boolean,
+  uploader: UploaderType,
+  useEraser: boolean,
+  videoAdditionalFieldsConfig: {},
+  videoData: {},
+  videoId: string,
+  annotationRef: React.RefObject<annoRefType | null>, //Record<number, Record<string, Annotation>>
+  lastFrameNumForIntervalAnnoRef: number,
+  lastFrameNumForIntervalErasingRef: number,
+  realFpsRef: number,
+  videoMetaRef: {},
+}
+
+type SettersType = {
+  setActiveAnnoObj: Dispatch<SetStateAction<{}>>,
+  setAdditionalData: Dispatch<SetStateAction<{}>>,
+  setAdditionalDataNameToRetrieve: Dispatch<SetStateAction<[]>>,
+  setAdditionalDataRange: Dispatch<SetStateAction<{}>>,
+  setAnnoIdToDelete: Dispatch<SetStateAction<string>>,
+  setAnnoIdToDraw: Dispatch<SetStateAction<string>>,
+  setAnnoIdToShow: Dispatch<SetStateAction<[]>>,
+  setAnnotationChartRange: Dispatch<SetStateAction<number>>,
+  setBrushThickness: Dispatch<SetStateAction<number>>
+  setBtnConfigData: Dispatch<SetStateAction<{}>>,
+  setBtnGroups: Dispatch<SetStateAction<[]>>,
+  setCancelIntervalAnno: Dispatch<SetStateAction<boolean>>,
+  setCancelIntervalErasing: Dispatch<SetStateAction<boolean>>,
+  setCategoryColors: Dispatch<SetStateAction<{}>>,
+  setConfirmConfig: Dispatch<SetStateAction<boolean>>,
+  setDownloadAnnotation: Dispatch<SetStateAction<boolean>>,
+  setDownloadConfig: Dispatch<SetStateAction<boolean>>,
+  setDrawType: Dispatch<SetStateAction<string>>,
+  setFrameAnnotation: Dispatch<SetStateAction<{}>>,
+  setFrameNum: Dispatch<SetStateAction<number>>,
+  setFrameNumSignal: Dispatch<SetStateAction<number>>,
+  setFrameUrl: Dispatch<SetStateAction<string>>,
+  setGetAdditionalDataSignal: Dispatch<SetStateAction<boolean>>,
+  setGlobalInfo: Dispatch<SetStateAction<string>>,
+  setIntervalAnno: Dispatch<SetStateAction<{}>>,
+  setIntervalErasing: Dispatch<SetStateAction<{}>>,
+  setIsFetchingFrame: Dispatch<SetStateAction<boolean>>,
+  setLoadVideo: Dispatch<SetStateAction<boolean>>,
+  setModalInfo: Dispatch<SetStateAction<string>>,
+  setModalInfoOpen: Dispatch<SetStateAction<boolean>>,
+  setMutualExclusiveCategory: Dispatch<SetStateAction<[]>>,
+  setProjectData: Dispatch<SetStateAction<{}>>,
+  setProjectId: Dispatch<SetStateAction<string>>,
+  setResetAnnotationChart: Dispatch<SetStateAction<boolean>>,
+  setResetChart: Dispatch<SetStateAction<boolean>>,
+  setResetVideoDetails: Dispatch<SetStateAction<boolean>>,
+  setResetVideoPlay: Dispatch<SetStateAction<boolean>>,
+  setSaveAnnotation: Dispatch<SetStateAction<boolean>>,
+  setSkeletonLandmark: Dispatch<SetStateAction<string>>,
+  setUndo: Dispatch<SetStateAction<number>>,
+  setUpdateAnnotationChart: Dispatch<SetStateAction<boolean>>,
+  setUploader: Dispatch<SetStateAction<UploaderType>>,
+  setUseEraser: Dispatch<SetStateAction<boolean>>,
+  setVideoAdditionalFieldsConfig: Dispatch<SetStateAction<{}>>,
+  setVideoData: Dispatch<SetStateAction<{}>>,
+  setVideoId: Dispatch<SetStateAction<string>>,
 }
 
 type annoRefType = {
@@ -71,7 +120,7 @@ type annoRefType = {
 }
 
 const StatesContext = createContext<StatesType | undefined>(undefined);
-const StateSettersContext = createContext({});
+const StateSettersContext = createContext<SettersType | undefined>(undefined);
 
 interface AppContextProps {
   children: React.ReactNode,
@@ -444,17 +493,7 @@ export default function StatesProvider({children}: AppContextProps) {
         }
             
     }, [frameNum])
-    
-    function saveAnnotationAndUpdateStates(cancelInterval=false) {
-        
-        setActiveAnnoObj({});
-        setDrawType(null);
-        setSkeletonLandmark(null);
-        setUndo(0);
-        setUseEraser(false);
-        setAnnoIdToDelete(null);
-        saveFrameAnnotation(cancelInterval);
-    }
+
 
     function saveFrameAnnotation(cancelInterval=false, savePrevFrame=true) {
             if (!Number.isInteger(frameNum) || frameNum === 0) return;
