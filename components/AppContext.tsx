@@ -6,7 +6,7 @@ import { clearUnfinishedAnnotation, saveAnnotationAndUpdateStates } from '@/util
 import { UploaderType } from '@/types/misc';
 import BtnGroup from './BtnGroup';
 import BrushTool from './BrushTool';
-import { Modal, UploadFile } from 'antd';
+import { Modal } from 'antd';
 import type { Annotation } from '@/types/annotations';
 
 
@@ -29,7 +29,7 @@ type StatesType = {
   downloadAnnotation: boolean,
   downloadConfig: boolean,
   drawType: string,
-  frameAnnotation: {},
+  frameAnnotation: Annotation,
   frameNum: number,
   frameNumSignal: number,
   frameUrl: string,
@@ -61,7 +61,11 @@ type StatesType = {
   lastFrameNumForIntervalAnnoRef: number,
   lastFrameNumForIntervalErasingRef: number,
   realFpsRef: number,
-  videoMetaRef: {},
+  videoMetaRef: React.RefObject<videoMetaRefType | null>,
+}
+
+type videoMetaRefType = {
+  // Fill this out!
 }
 
 type SettersType = {
@@ -83,7 +87,7 @@ type SettersType = {
   setDownloadAnnotation: Dispatch<SetStateAction<boolean>>,
   setDownloadConfig: Dispatch<SetStateAction<boolean>>,
   setDrawType: Dispatch<SetStateAction<string>>,
-  setFrameAnnotation: Dispatch<SetStateAction<{}>>,
+  setFrameAnnotation: Dispatch<SetStateAction<Annotation>>,
   setFrameNum: Dispatch<SetStateAction<number>>,
   setFrameNumSignal: Dispatch<SetStateAction<number>>,
   setFrameUrl: Dispatch<SetStateAction<string>>,
@@ -126,12 +130,7 @@ interface AppContextProps {
   children: React.ReactNode,
 }
 
-/*
-type UploaderType = {
-  type: string,
-  file: UploadFile<any>,
-}
-  */
+// Next: change name 'uploader' and update imports.
 
 // Which of the states need to be accessible to the user-developer
 
@@ -155,7 +154,7 @@ export default function StatesProvider({children}: AppContextProps) {
   const [downloadAnnotation, setDownloadAnnotation] = useState(false);
   const [downloadConfig, setDownloadConfig] = useState(false);
   const [drawType, setDrawType] = useState<string | null>();
-  const [frameAnnotation, setFrameAnnotation] = useState({}); // needs Type
+  const [frameAnnotation, setFrameAnnotation] = useState<Annotation>(); // needs Type
   const [frameNum, setFrameNum] = useState<number>();
   const [frameNumSignal, setFrameNumSignal] = useState<number>(); 
   const [frameUrl, setFrameUrl] = useState<string>();
@@ -188,7 +187,7 @@ export default function StatesProvider({children}: AppContextProps) {
   const lastFrameNumForIntervalAnnoRef = useRef(-1);
   const lastFrameNumForIntervalErasingRef = useRef(-1);
   const realFpsRef = useRef(25);
-  const videoMetaRef = useRef({}); // needs Type
+  const videoMetaRef = useRef<videoMetaRefType>(null); // needs Type
 
   const states = {
     activeAnnoObj: activeAnnoObj,
@@ -294,52 +293,52 @@ export default function StatesProvider({children}: AppContextProps) {
     setVideoId: setVideoId,
   }
 
-    useEffect(() => {
-      setResetVideoPlay(true);
-      setResetVideoDetails(true);
-      setResetChart(true);
-      setAdditionalDataNameToRetrieve([]);
-      annotationRef.current = {};
-      additionalDataRef.current = {};
-    }, [projectId])
+  useEffect(() => {
+    setResetVideoPlay(true);
+    setResetVideoDetails(true);
+    setResetChart(true);
+    setAdditionalDataNameToRetrieve([]);
+    annotationRef.current = null;
+    additionalDataRef.current = {};
+  }, [projectId])
 
 
-    useEffect(() => {
-        if (getAdditionalDataSignal) {
-            getAdditionalDataFromRef();
-            setGetAdditionalDataSignal(false);
-            setGetAdditionalDataSignal(false); 
-        }
-    }, [getAdditionalDataSignal])
+  useEffect(() => {
+      if (getAdditionalDataSignal) {
+          getAdditionalDataFromRef();
+          setGetAdditionalDataSignal(false);
+          setGetAdditionalDataSignal(false); 
+      }
+  }, [getAdditionalDataSignal])
 
-    useEffect(() => {
-        getAdditionalDataFromRef();
-    }, [additionalDataRange])
+  useEffect(() => {
+      getAdditionalDataFromRef();
+  }, [additionalDataRange])
 
-    useEffect(() => {
-        if (videoId) {
-            setGlobalInfo(null);
-            setAdditionalData({});
-            additionalDataRef.current = {};
-            if (additionalDataNameToRetrieve?.length>0) {
-                getAdditionalData(videoId, additionalDataNameToRetrieve)
-                .then(res => {
-                    if (res.error) {
-                        setGlobalInfo(res.error);
-                    } else {
-                        additionalDataNameToRetrieve.forEach(name => {
-                            additionalDataRef.current[name] = res[name]??[];
-                        })
-                    }
-                    getAdditionalDataFromRef();
-                })
-            } else {
-                getAdditionalDataFromRef();
-            }
-            
-            
-        }
-    }, [additionalDataNameToRetrieve])
+  useEffect(() => {
+      if (videoId) {
+          setGlobalInfo(null);
+          setAdditionalData({});
+          additionalDataRef.current = {};
+          if (additionalDataNameToRetrieve?.length>0) {
+              getAdditionalData(videoId, additionalDataNameToRetrieve)
+              .then(res => {
+                  if (res.error) {
+                      setGlobalInfo(res.error);
+                  } else {
+                      additionalDataNameToRetrieve.forEach(name => {
+                          additionalDataRef.current[name] = res[name]??[];
+                      })
+                  }
+                  getAdditionalDataFromRef();
+              })
+          } else {
+              getAdditionalDataFromRef();
+          }
+          
+          
+      }
+  }, [additionalDataNameToRetrieve])
 
     function getAdditionalDataFromRef() {
         setGlobalInfo(null);
@@ -348,7 +347,7 @@ export default function StatesProvider({children}: AppContextProps) {
             if (additionalDataNameToRetrieve?.length>0) {
                 additionalDataNameToRetrieve.map(name => {
                     const rangeNeeded = additionalDataRange[name];
-                    if (rangeNeeded >= 0 && typeof frameNum === "number" && Number.isInteger(frameNum)) {
+                    if (rangeNeeded >= 0 && typeof frameNum === "number" && Number.isInteger(frameNum) && videoMetaRef.current!= null) {
                         const rangeStartNeeded = ((frameNum-rangeNeeded)<0) ? 0 : (frameNum-rangeNeeded);
                         const rangeEndNeeded = ((frameNum+rangeNeeded)>(videoMetaRef.current.totalFrameCount-1)) ? (videoMetaRef.current.totalFrameCount-1) : (frameNum+rangeNeeded);
                         const dataNeeded = additionalDataRef.current[name].slice(rangeStartNeeded, rangeEndNeeded+1);
@@ -362,7 +361,6 @@ export default function StatesProvider({children}: AppContextProps) {
             setAdditionalData(additionalDataForChart);
         }
     }        
- 
 
     useEffect(()=> {
       if (downloadConfig) {
@@ -515,6 +513,7 @@ export default function StatesProvider({children}: AppContextProps) {
           
     }
 
+    // seems unnecessary... why not just use the one line?
     function addAnnotationObj(idObj) {
         setFrameAnnotation({...frameAnnotation, [idObj.id]: idObj});
     }

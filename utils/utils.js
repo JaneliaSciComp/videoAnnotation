@@ -76,7 +76,7 @@ export const allowedCanvasShapes = new Set(['line', 'circle', 'rectangle']);
 export const defaultFrameBufferSeconds = 3;
 export const defaultFrameFetchBatchSize = 15;
 
-
+// Prob not the best place for this, as now it needs all the imports for these items.
 export function saveAnnotationAndUpdateStates(cancelInterval=false) {
     
     setActiveAnnoObj({});
