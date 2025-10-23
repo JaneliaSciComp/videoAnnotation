@@ -11,25 +11,25 @@ import type { Annotation } from '@/types/annotations';
 
 
 type StatesType = {
-  activeAnnoObj: {}, 
-  additionalData: {},
-  additionalDataNameToRetrieve: [],
-  additionalDataRange: {},
+  activeAnnoObj: ActiveAnnoObjType, 
+  additionalData: {}, // AdditionalDataChart not working; can't determine type for this until it works
+  additionalDataNameToRetrieve: string[],  // AdditionalDataChart not working; can't determine type for this until it works
+  additionalDataRange: {}, // AdditionalDataChart not working; can't determine type for this until it works
   annoIdToDelete: string,
   annoIdToDraw: string,
-  annoIdToShow: [],
+  annoIdToShow: string[],
   annotationChartRange: number,
   brushThickness: number,
-  btnConfigData: {},
+  btnConfigData: BtnConfigDataType,
   btnGroups: [],
   cancelIntervalAnno: boolean,
   cancelIntervalErasing: boolean,
-  categoryColors: {},
+  categoryColors: ColorsType,
   confirmConfig: boolean,
   downloadAnnotation: boolean,
   downloadConfig: boolean,
   drawType: string,
-  frameAnnotation: Annotation,
+  frameAnnotation: FrameAnnotation,
   frameNum: number,
   frameNumSignal: number,
   frameUrl: string,
@@ -57,37 +57,109 @@ type StatesType = {
   videoAdditionalFieldsConfig: {},
   videoData: {},
   videoId: string,
+  additionalDataRef: React.RefObject<AdditionalDataRefType>,
   annotationRef: React.RefObject<annoRefType | null>, //Record<number, Record<string, Annotation>>
   lastFrameNumForIntervalAnnoRef: number,
   lastFrameNumForIntervalErasingRef: number,
   realFpsRef: number,
-  videoMetaRef: React.RefObject<videoMetaRefType | null>,
+  videoMetaRef: React.RefObject<VideoMetaRefType | null>,
 }
 
-type videoMetaRefType = {
-  // Fill this out!
+
+type AdditionalDataRefType = Record<string, AdditionalData[]>;
+
+type AdditionalData = {
+
 }
+
+type ActiveAnnoObjType = {
+  color?: string,
+  data?: number[][],
+  groupIndex?: string,
+  frameNum: number,
+  id: string,
+  label: string,
+  type: string
+  videoId: string
+}
+
+type annoRefType = {
+  [frameNum: number]: {
+    [id: string]: Annotation
+  }
+}
+
+type BtnChildData = {
+  [key: number]: IndividualBtnType
+}
+
+type IndividualBtnType = {
+  btnType: string,
+  color: string,
+  index: number,
+  label: string
+}
+
+type BtnsType = {
+  btnNum: number,
+  btnType: string,
+  groupType: string,
+  groupIndex?: string,
+  projectId: string
+  childData: BtnChildData
+}
+
+type BtnConfigDataType = {
+  [key: string]: BtnsType
+}
+
+type BtnGroupType = {
+  data: BtnGroupDataType;
+  frameNum: number;
+  frameUrl: string;
+  addAnnotationObj: (obj: Annotation) => void;
+  setActiveAnnoObj: (obj: Annotation | null) => void;
+  drawType: string; // or union type
+  setDrawType: (type: string) => void;
+  skeletonLandmark: string | number | null;
+  setSkeletonLandmark: (val: string | number | null) => void;
+  frameAnnotation: Annotation | null; // Is there a difference between Annotation (eg, 1 anno) and frameAnnotation (all annos on a frame??)
+}
+
+type ColorsType = {
+  [key: string]: string
+}
+
+type FrameAnnotation = {
+    [id: string]: Annotation;
+}
+
+type VideoMetaRefType = {
+  fps: 30,
+  totalFrameCount: 4064,
+}
+
 
 type SettersType = {
-  setActiveAnnoObj: Dispatch<SetStateAction<{}>>,
+  setActiveAnnoObj: Dispatch<SetStateAction<ActiveAnnoObjType>>,
   setAdditionalData: Dispatch<SetStateAction<{}>>,
-  setAdditionalDataNameToRetrieve: Dispatch<SetStateAction<[]>>,
+  setAdditionalDataNameToRetrieve: Dispatch<SetStateAction<string[]>>,
   setAdditionalDataRange: Dispatch<SetStateAction<{}>>,
   setAnnoIdToDelete: Dispatch<SetStateAction<string>>,
   setAnnoIdToDraw: Dispatch<SetStateAction<string>>,
-  setAnnoIdToShow: Dispatch<SetStateAction<[]>>,
+  setAnnoIdToShow: Dispatch<SetStateAction<string[]>>,
   setAnnotationChartRange: Dispatch<SetStateAction<number>>,
   setBrushThickness: Dispatch<SetStateAction<number>>
-  setBtnConfigData: Dispatch<SetStateAction<{}>>,
+  setBtnConfigData: Dispatch<SetStateAction<BtnConfigDataType>>,
   setBtnGroups: Dispatch<SetStateAction<[]>>,
   setCancelIntervalAnno: Dispatch<SetStateAction<boolean>>,
   setCancelIntervalErasing: Dispatch<SetStateAction<boolean>>,
-  setCategoryColors: Dispatch<SetStateAction<{}>>,
+  setCategoryColors: Dispatch<SetStateAction<ColorsType>>,
   setConfirmConfig: Dispatch<SetStateAction<boolean>>,
   setDownloadAnnotation: Dispatch<SetStateAction<boolean>>,
   setDownloadConfig: Dispatch<SetStateAction<boolean>>,
   setDrawType: Dispatch<SetStateAction<string>>,
-  setFrameAnnotation: Dispatch<SetStateAction<Annotation>>,
+  setFrameAnnotation: Dispatch<SetStateAction<FrameAnnotation>>,
   setFrameNum: Dispatch<SetStateAction<number>>,
   setFrameNumSignal: Dispatch<SetStateAction<number>>,
   setFrameUrl: Dispatch<SetStateAction<string>>,
@@ -117,12 +189,6 @@ type SettersType = {
   setVideoId: Dispatch<SetStateAction<string>>,
 }
 
-type annoRefType = {
-  [frameNum: number]: {
-    [id: string]: Annotation
-  }
-}
-
 const StatesContext = createContext<StatesType | undefined>(undefined);
 const StateSettersContext = createContext<SettersType | undefined>(undefined);
 
@@ -136,25 +202,25 @@ interface AppContextProps {
 
 export default function StatesProvider({children}: AppContextProps) {
 
-  const [activeAnnoObj, setActiveAnnoObj] = useState({}); // needs Type
+  const [activeAnnoObj, setActiveAnnoObj] = useState<ActiveAnnoObjType>(); 
   const [additionalData, setAdditionalData] = useState({}); // needs Type
-  const [additionalDataNameToRetrieve, setAdditionalDataNameToRetrieve] = useState([]); // needs better type
+  const [additionalDataNameToRetrieve, setAdditionalDataNameToRetrieve] = useState<string[]>([]); // needs better type
   const [additionalDataRange, setAdditionalDataRange] = useState({}); // needs Type
   const [annoIdToDelete, setAnnoIdToDelete] = useState<string | null>();
   const [annoIdToDraw, setAnnoIdToDraw] = useState<string>();
-  const [annoIdToShow, setAnnoIdToShow] = useState([]); // unsure about type on this one
+  const [annoIdToShow, setAnnoIdToShow] = useState<string[]>([]);
   const [annotationChartRange, setAnnotationChartRange] = useState<number>();
   const [brushThickness, setBrushThickness] = useState<number>();
-  const [btnConfigData, setBtnConfigData] = useState({}); // needs Type
+  const [btnConfigData, setBtnConfigData] = useState<BtnConfigDataType>({});
   const [btnGroups, setBtnGroups] = useState([]); // needs Type
   const [cancelIntervalAnno, setCancelIntervalAnno] = useState(false);
   const [cancelIntervalErasing, setCancelIntervalErasing] = useState(false);
-  const [categoryColors, setCategoryColors] = useState({}); // needs Type
+  const [categoryColors, setCategoryColors] = useState<ColorsType>({}); // needs Type
   const [confirmConfig, setConfirmConfig] = useState(false);
   const [downloadAnnotation, setDownloadAnnotation] = useState(false);
   const [downloadConfig, setDownloadConfig] = useState(false);
   const [drawType, setDrawType] = useState<string | null>();
-  const [frameAnnotation, setFrameAnnotation] = useState<Annotation>(); // needs Type
+  const [frameAnnotation, setFrameAnnotation] = useState<FrameAnnotation>(); 
   const [frameNum, setFrameNum] = useState<number>();
   const [frameNumSignal, setFrameNumSignal] = useState<number>(); 
   const [frameUrl, setFrameUrl] = useState<string>();
@@ -182,12 +248,12 @@ export default function StatesProvider({children}: AppContextProps) {
   const [videoAdditionalFieldsConfig, setVideoAdditionalFieldsConfig] = useState({}); // needs Type
   const [videoData, setVideoData] = useState({}); // needs Type
   const [videoId, setVideoId] = useState<string>();
-  const additionalDataRef = useRef({});
+  const additionalDataRef = useRef<AdditionalDataRefType>({});
   const annotationRef = useRef<annoRefType | null>(null); // needs Type
   const lastFrameNumForIntervalAnnoRef = useRef(-1);
   const lastFrameNumForIntervalErasingRef = useRef(-1);
   const realFpsRef = useRef(25);
-  const videoMetaRef = useRef<videoMetaRefType>(null); // needs Type
+  const videoMetaRef = useRef<VideoMetaRefType>(null); // needs Type
 
   const states = {
     activeAnnoObj: activeAnnoObj,
@@ -556,7 +622,7 @@ export default function StatesProvider({children}: AppContextProps) {
 
     function renderBtnGroup() {
         const groupIndices = Object.keys(btnConfigData).sort((a, b) => Number(a)-Number(b));
-        const groups = []; 
+        const groups = []; // [key: number]: BtnGroupType
         let k = 0;
         let addedBrushTool = false;
         groupIndices.forEach(index => {
@@ -569,16 +635,16 @@ export default function StatesProvider({children}: AppContextProps) {
             groups.push(
               <BtnGroup 
                 key={k++}
+                addAnnotationObj={addAnnotationObj}
                 data={data}
+                drawType={drawType}
+                frameAnnotation={data.groupType==='skeleton' ? frameAnnotation : null}
                 frameNum={frameNum}
                 frameUrl={frameUrl}
-                addAnnotationObj={addAnnotationObj}
                 setActiveAnnoObj={setActiveAnnoObj}
-                drawType={drawType}
                 setDrawType={setDrawType}
                 skeletonLandmark={skeletonLandmark}
                 setSkeletonLandmark={setSkeletonLandmark}
-                frameAnnotation={data.groupType==='skeleton' ? frameAnnotation : null}
               />
             )
         })
