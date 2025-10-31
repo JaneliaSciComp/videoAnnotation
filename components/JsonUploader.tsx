@@ -28,8 +28,7 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
   const projectId = useStates().projectId;
   const uploader = useStates().uploader;
   const videoId = useStates().videoId;
-  const setBtnConfigData = useStateSetters().setBtnConfigData;
-  const setFrameAnnotation = useStateSetters().setFrameAnnotation;
+  const setBtnConfigData = useStateSetters().setButtonConfigData;
   const setGlobalInfo = useStateSetters().setGlobalInfo;
   const setModalInfo = useStateSetters().setModalInfo;
   const setModalInfoOpen = useStateSetters().setModalInfoOpen;
@@ -91,7 +90,7 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
   type annoObjType = {
     projectId: string,
     videos: string[],
-    annotations: Annotation[] // need better type here
+    annotations: []
   }
 
   type projObjType = {
@@ -99,7 +98,7 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
     description: string,
     projectId: string,
     projectName: string,
-    videos: VideosType,
+    videos: {},
     type: string //needed anymore?
   }
 
@@ -111,14 +110,13 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
     omitCrowdRadio: boolean
   }
 
-  type BtnDataType = Record<number, BtnType>
+  type BtnDataType = {
+    [key: number]: BtnType
+  }
 
-  type BtnConfigDataType = Record< string, BtnGroupObjectType>
-
-  type BtnGroupObjectType = {
+  type BtnConfigDataType = {
     btnNum: number,
     btnType: string,
-    btnGroupId?: string,
     childData: BtnDataType,
     length: number,
     edgeData: null, // need actual type for this
@@ -127,20 +125,14 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
     skeletonName: string,
   }
 
-  type VideosType = Record<string, VideoType>
+  type videoListType = {
 
-  type VideoType = {
-    additionalFields: any[],
-    name: string,
-    path: string,
-    projectId: string,
-    videoId?: string
   }
 
   function onReaderLoad(e: ProgressEvent<FileReader>, type: string){
     if (e.target && e.target.result){
       if (typeof e.target.result === 'string'){
-        const obj = JSON.parse(e.target.result);  
+        const obj = JSON.parse(e.target.result);  // need better type on this object for use in typing other things below
         if (type === 'annotation') {
           const annoObj: annoObjType = {... obj};
           /**
