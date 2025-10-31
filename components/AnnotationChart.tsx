@@ -3,6 +3,7 @@ import { staticVerticalLine, dynamicVerticalLine } from '../utils/utils';
 import { useStateSetters, useStates } from './AppContext'; 
 import { Bar } from 'react-chartjs-2';
 import type { Annotation } from '@/types/annotations';
+import type { uploaderType } from '@/types/misc';
 import {
     Chart as ChartJS,
     ChartData,

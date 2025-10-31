@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { InboxOutlined } from "@ant-design/icons";
-import { Modal, Upload, UploadFile } from "antd";
-import { useStates, useStateSetters } from "./AppContext";
+import { Upload, UploadFile } from "antd";
+import { useStateSetters } from "./AppContext.tsx";
 import { UploadChangeParam } from "antd/es/upload";
-import { editProject, postProjectBtn, postProjectVideo, postProjectAnnotation } from '@/utils/requests';
-import type { Annotation } from "@/types/annotations";
+
 
 // Required props
 interface JsonUploaderProps {
@@ -23,24 +22,10 @@ interface JsonUploaderProps {
 export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderProps) {
   const [info, setInfo] = useState("Click or drag file to this area to upload");
 
-  const annotationRef = useStates().annotationRef;
-  const frameNum = useStates().frameNum;
-  const projectId = useStates().projectId;
-  const uploader = useStates().uploader;
-  const videoId = useStates().videoId;
-  const setBtnConfigData = useStateSetters().setButtonConfigData;
-  const setGlobalInfo = useStateSetters().setGlobalInfo;
-  const setModalInfo = useStateSetters().setModalInfo;
-  const setModalInfoOpen = useStateSetters().setModalInfoOpen;
-  const setProjectData = useStateSetters().setProjectData;
-  const setProjectId = useStateSetters().setProjectId;
-  const setResetAnnotationChart = useStateSetters().setResetAnnotationChart;
   const setUploader = useStateSetters().setUploader;
-  const setVideoData = useStateSetters().setVideoData;
 
   const { Dragger } = Upload;
 
-  // This should just be a check: "if type != a or b, throw error" inside the uploadFile() function below
   useEffect(() => {
     if (
       !type ||
@@ -85,56 +70,11 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
     }
   }, [uploader])
   
-
-  //Todo: move all of these to one of the types documents
-  type annoObjType = {
-    projectId: string,
-    videos: string[],
-    annotations: []
-  }
-
-  type projObjType = {
-    btnConfigData: BtnConfigDataType,
-    description: string,
-    projectId: string,
-    projectName: string,
-    videos: {},
-    type: string //needed anymore?
-  }
-
-  type BtnType = {
-    index: number, 
-    btnType: string, 
-    label: string, 
-    color: string, 
-    omitCrowdRadio: boolean
-  }
-
-  type BtnDataType = {
-    [key: number]: BtnType
-  }
-
-  type BtnConfigDataType = {
-    btnNum: number,
-    btnType: string,
-    childData: BtnDataType,
-    length: number,
-    edgeData: null, // need actual type for this
-    groupType: string,
-    projectId: string,
-    skeletonName: string,
-  }
-
-  type videoListType = {
-
-  }
-
   function onReaderLoad(e: ProgressEvent<FileReader>, type: string){
     if (e.target && e.target.result){
       if (typeof e.target.result === 'string'){
         const obj = JSON.parse(e.target.result);  // need better type on this object for use in typing other things below
         if (type === 'annotation') {
-          const annoObj: annoObjType = {... obj};
           /**
            * {
            *      projectId: str,
@@ -146,19 +86,18 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
           if (!projectId) {
               setModalInfo('Please upload the project configuration data first');
               setModalInfoOpen(true);
-          } else if (annoObj.projectId !== projectId) {
+          } else if (obj.projectId !== projectId) {
               setModalInfo('The project id in the uploaded data does not match the current project id. Please upload the project configuration file first.')
               setModalInfoOpen(true);
           } else {
               Modal.confirm({
                   content: 'Upload and save/update the uploaded annotation data to database?\nThis will overwrite the data in database.',
-                  onOk: () => {confirmSaveUploadedAnnotationToDB(annoObj)},
+                  onOk: () => {confirmSaveUploadedAnnotationToDB(obj)},
               });
           }
         
         
-        } else if (type == 'configuration') {
-          const projObj: projObjType = {... obj}
+        } else {
           /**
            * {
            *      projectId: str,
@@ -172,24 +111,21 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
             Modal.confirm({
               title: 'Alert',
               content: 'The current project data will be replaced!\nThe uploaded configuration data will be saved to database. This may overwrite the existing data in database.',
-              onOk: ()=>{confirmUploadConfiguration(projObj)},
+              onOk: ()=>{confirmUploadConfiguration(obj)},
             });
           } else {
             Modal.confirm({
               title: 'Alert',
               content: 'The uploaded configuration data will be saved to database. This may overwrite the existing data in database.',
-              onOk: ()=>{confirmUploadConfiguration(projObj)},
+              onOk: ()=>{confirmUploadConfiguration(obj)},
             });
           }
-        }
-        else {
-          setModalInfo ('This type of JSON is not recognized.  Only annotation and configuration [project] are recognized at this time.')
         }
       }
     }
   }
 
-  async function confirmUploadConfiguration(obj: projObjType) {
+  async function confirmUploadConfiguration(obj) {
     const projectObj = {
         projectId: obj.projectId, 
         projectName: obj.projectName,
@@ -238,30 +174,29 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
     setVideoData(obj.videos ? {...obj.videos} : {});
   }
 
-  async function confirmSaveUploadedAnnotationToDB(data: annoObjType) {
+  async function confirmSaveUploadedAnnotationToDB(data) {
     const res = await postProjectAnnotation({...data});
     if (res['error']) {
         setGlobalInfo('Saving annotation data to DB failed.');
     } else {
-      if ((data.videos.includes(videoId)) && Number.isInteger(frameNum)) {
+      if ((data.videos.filter(v => v===videoId).length>0) && Number.isInteger(frameNum)) {
         const videoAnnotations = data.annotations.filter(anno => anno.videoId === videoId);
-        const forAnnoRef: Record<number, Record<string, Annotation>> = {};
+        const forAnnoRef = {};
         videoAnnotations.forEach(anno => {
-          if (!forAnnoRef[anno.frameNum]){
-            forAnnoRef[anno.frameNum] = {};
+          if (!forAnnoRef[anno.frameNum]) {
+              forAnnoRef[anno.frameNum] = {};
           }
           forAnnoRef[anno.frameNum][anno.id] = anno;
         })
         annotationRef.current = forAnnoRef;
-        //getFrameAnnotationFromRefAndSetState();  Replaced by the next 2 lines
-        const frameAnno = annotationRef.current[frameNum]??{};
-        setFrameAnnotation({...frameAnno});
-
+        getFrameAnnotationFromRefAndSetState();
       } 
       setResetAnnotationChart(true);
     }
   }
 
+=======
+>>>>>>> parent of b3dfda1 (Refactor: move JsonUploader logic from AppContext to JsonUploader.tsx)
   return (
     <div style={{ width: "100%" }}>
       <Dragger

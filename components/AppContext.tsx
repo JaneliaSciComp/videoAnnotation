@@ -1,8 +1,8 @@
 import { createContext, Dispatch, useContext, useState, useRef, useEffect, SetStateAction } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import styles from '../styles/Workspace.module.css';
-import { getAdditionalData, postVideoAnnotation, getProjectAnnotation } from '@/utils/requests';
-import { clearUnfinishedAnnotation} from '@/utils/utils';
+import { getAdditionalData, editProject, postProjectBtn, postProjectVideo, postProjectAnnotation, postVideoAnnotation, getProjectAnnotation } from '@/utils/requests';
+import { clearUnfinishedAnnotation } from '@/utils/utils';
 import { UploaderType } from '@/types/misc';
 import BtnGroup from './BtnGroup';
 import BrushTool from './BrushTool';
@@ -52,12 +52,12 @@ saveAnnotation: boolean,
 skeletonLandmark: string,
 undo: number,
 updateAnnotationChart: boolean,
-uploader: UploaderType,
+uploader: UploadFile,
 useEraser: boolean,
 videoAdditionalFieldsConfig: {},
 videoData: {},
 videoId: string,
-annotationRef: annoRefType, //Record<number, Record<string, Annotation>>
+annotationRef: {},
 lastFrameNumForIntervalAnnoRef: number,
 lastFrameNumForIntervalErasingRef: number,
 realFpsRef: number,
@@ -68,106 +68,6 @@ type annoRefType = {
   current: {
 
   }
-}
-
-type BtnChildData = {
-  [key: number]: IndividualBtnType
-}
-
-type IndividualBtnType = {
-  btnType: string,
-  color: string,
-  index: number,
-  label: string
-}
-
-type BtnsType = {
-  btnNum: number,
-  btnType: string,
-  groupType: string,
-  groupIndex?: string,
-  projectId: string
-  childData: BtnChildData
-}
-
-type BtnConfigDataType = {
-  [key: string]: BtnsType
-}
-
-type BtnGroupType = {
-  data: BtnGroupDataType;
-  frameNum: number;
-  frameUrl: string;
-  addAnnotationObj: (obj: Annotation) => void;
-  setActiveAnnoObj: (obj: Annotation | null) => void;
-  drawType: string; // or union type
-  setDrawType: (type: string) => void;
-  skeletonLandmark: string | number | null;
-  setSkeletonLandmark: (val: string | number | null) => void;
-  frameAnnotation: Annotation | null; // Is there a difference between Annotation (eg, 1 anno) and frameAnnotation (all annos on a frame??)
-}
-
-type ColorsType = {
-  [key: string]: string
-}
-
-type FrameAnnotation = {
-    [id: string]: Annotation;
-}
-
-type VideoMetaRefType = {
-  fps: 30,
-  totalFrameCount: 4064,
-}
-
-
-type SettersType = {
-  setActiveAnnoObj: Dispatch<SetStateAction<ActiveAnnoObjType>>,
-  setAdditionalData: Dispatch<SetStateAction<{}>>,
-  setAdditionalDataNameToRetrieve: Dispatch<SetStateAction<string[]>>,
-  setAdditionalDataRange: Dispatch<SetStateAction<{}>>,
-  setAnnoIdToDelete: Dispatch<SetStateAction<string>>,
-  setAnnoIdToDraw: Dispatch<SetStateAction<string>>,
-  setAnnoIdToShow: Dispatch<SetStateAction<string[]>>,
-  setAnnotationChartRange: Dispatch<SetStateAction<number>>,
-  setBrushThickness: Dispatch<SetStateAction<number>>
-  setBtnConfigData: Dispatch<SetStateAction<BtnConfigDataType>>,
-  setBtnGroups: Dispatch<SetStateAction<[]>>,
-  setCancelIntervalAnno: Dispatch<SetStateAction<boolean>>,
-  setCancelIntervalErasing: Dispatch<SetStateAction<boolean>>,
-  setCategoryColors: Dispatch<SetStateAction<ColorsType>>,
-  setConfirmConfig: Dispatch<SetStateAction<boolean>>,
-  setDownloadAnnotation: Dispatch<SetStateAction<boolean>>,
-  setDownloadConfig: Dispatch<SetStateAction<boolean>>,
-  setDrawType: Dispatch<SetStateAction<string>>,
-  setFrameAnnotation: Dispatch<SetStateAction<FrameAnnotation>>,
-  setFrameNum: Dispatch<SetStateAction<number>>,
-  setFrameNumSignal: Dispatch<SetStateAction<number>>,
-  setFrameUrl: Dispatch<SetStateAction<string>>,
-  setGetAdditionalDataSignal: Dispatch<SetStateAction<boolean>>,
-  setGlobalInfo: Dispatch<SetStateAction<string>>,
-  setIntervalAnno: Dispatch<SetStateAction<{}>>,
-  setIntervalErasing: Dispatch<SetStateAction<{}>>,
-  setIsFetchingFrame: Dispatch<SetStateAction<boolean>>,
-  setLoadVideo: Dispatch<SetStateAction<boolean>>,
-  setModalInfo: Dispatch<SetStateAction<string>>,
-  setModalInfoOpen: Dispatch<SetStateAction<boolean>>,
-  setMutualExclusiveCategory: Dispatch<SetStateAction<[]>>,
-  setProjectData: Dispatch<SetStateAction<{}>>,
-  setProjectId: Dispatch<SetStateAction<string>>,
-  setResetAnnotationChart: Dispatch<SetStateAction<boolean>>,
-  setResetChart: Dispatch<SetStateAction<boolean>>,
-  setResetVideoDetails: Dispatch<SetStateAction<boolean>>,
-  setResetVideoPlay: Dispatch<SetStateAction<boolean>>,
-  setSaveAnnotation: Dispatch<SetStateAction<boolean>>,
-  setSkeletonLandmark: Dispatch<SetStateAction<string>>,
-  setUndo: Dispatch<SetStateAction<number>>,
-  setUpdateAnnotationChart: Dispatch<SetStateAction<boolean>>,
-  setUploader: Dispatch<SetStateAction<UploaderType>>,
-  setUseEraser: Dispatch<SetStateAction<boolean>>,
-  setVideoAdditionalFieldsConfig: Dispatch<SetStateAction<{}>>,
-  setVideoData: Dispatch<SetStateAction<{}>>,
-  setVideoId: Dispatch<SetStateAction<string>>,
 }
 
 const StatesContext = createContext<StatesType | undefined>(undefined);
@@ -419,6 +319,7 @@ export default function StatesProvider({children}: AppContextProps) {
             setAdditionalData(additionalDataForChart);
         }
     }        
+ 
 
     useEffect(()=> {
       if (downloadConfig) {
@@ -561,12 +462,12 @@ export default function StatesProvider({children}: AppContextProps) {
             }
 
             if (Object.keys(newFrameAnno).length > 0) {
-              const firstAnno = Object.values(newFrameAnno)[0];
-              if (savePrevFrame && frameNum !== undefined && firstAnno.frameNum === frameNum-1) {
-                  annotationRef.current[frameNum-1] = newFrameAnno; 
-              } else if (!savePrevFrame && firstAnno.frameNum === frameNum && frameNum !== undefined) {
-                  annotationRef.current[frameNum] = newFrameAnno; 
-              }
+                const firstAnno = Object.values(newFrameAnno)[0];
+                if (savePrevFrame && firstAnno.frameNum === frameNum-1) {
+                    annotationRef.current[frameNum-1] = newFrameAnno; 
+                } else if (!savePrevFrame && firstAnno.frameNum === frameNum) {
+                    annotationRef.current[frameNum] = newFrameAnno; 
+                }
             } 
           
     }
@@ -654,10 +555,8 @@ export default function StatesProvider({children}: AppContextProps) {
     }
 
     function getFrameAnnotationFromRefAndSetState() {
-      if (frameNum !== undefined){
         const frameAnno = annotationRef.current[frameNum]??{};
         setFrameAnnotation({...frameAnno});
-      }
     }
   
     return (
