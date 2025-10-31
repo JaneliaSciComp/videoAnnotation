@@ -4,7 +4,6 @@ import { Modal, Upload, UploadFile } from "antd";
 import { useStates, useStateSetters } from "./AppContext";
 import { UploadChangeParam } from "antd/es/upload";
 import { editProject, postProjectBtn, postProjectVideo, postProjectAnnotation } from '@/utils/requests';
-import { saveAnnotationAndUpdateStates } from '@/utils/utils';
 import type { Annotation } from "@/types/annotations";
 
 // Required props

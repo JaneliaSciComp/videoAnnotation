@@ -2,7 +2,7 @@ import { createContext, Dispatch, useContext, useState, useRef, useEffect, SetSt
 import 'bootstrap/dist/css/bootstrap.min.css';
 import styles from '../styles/Workspace.module.css';
 import { getAdditionalData, postVideoAnnotation, getProjectAnnotation } from '@/utils/requests';
-import { clearUnfinishedAnnotation, saveAnnotationAndUpdateStates } from '@/utils/utils';
+import { clearUnfinishedAnnotation} from '@/utils/utils';
 import { UploaderType } from '@/types/misc';
 import BtnGroup from './BtnGroup';
 import BrushTool from './BrushTool';
@@ -11,81 +11,62 @@ import type { Annotation } from '@/types/annotations';
 
 
 type StatesType = {
-  activeAnnoObj: ActiveAnnoObjType, 
-  additionalData: {}, // AdditionalDataChart not working; can't determine type for this until it works
-  additionalDataNameToRetrieve: string[],  // AdditionalDataChart not working; can't determine type for this until it works
-  additionalDataRange: {}, // AdditionalDataChart not working; can't determine type for this until it works
-  annoIdToDelete: string,
-  annoIdToDraw: string,
-  annoIdToShow: string[],
-  annotationChartRange: number,
-  brushThickness: number,
-  btnConfigData: BtnConfigDataType,
-  btnGroups: [],
-  cancelIntervalAnno: boolean,
-  cancelIntervalErasing: boolean,
-  categoryColors: ColorsType,
-  confirmConfig: boolean,
-  downloadAnnotation: boolean,
-  downloadConfig: boolean,
-  drawType: string,
-  frameAnnotation: FrameAnnotation,
-  frameNum: number,
-  frameNumSignal: number,
-  frameUrl: string,
-  getAdditionalDataSignal: boolean,
-  globalInfo: string,
-  intervalAnno: {}, // actual type provided; see below
-  intervalErasing: {},
-  isFetchingFrame: boolean,
-  loadVideo: boolean,
-  modalInfo: string,
-  modalInfoOpen: boolean,
-  mutualExclusiveCategory: [],
-  projectData: {},
-  projectId: string,
-  resetAnnotationChart: boolean,
-  resetChart: boolean,
-  resetVideoDetails: boolean,
-  resetVideoPlay: boolean,
-  saveAnnotation: boolean,
-  skeletonLandmark: string,
-  undo: number,
-  updateAnnotationChart: boolean,
-  uploader: UploaderType,
-  useEraser: boolean,
-  videoAdditionalFieldsConfig: {},
-  videoData: {},
-  videoId: string,
-  additionalDataRef: React.RefObject<AdditionalDataRefType>,
-  annotationRef: React.RefObject<annoRefType | null>, //Record<number, Record<string, Annotation>>
-  lastFrameNumForIntervalAnnoRef: number,
-  lastFrameNumForIntervalErasingRef: number,
-  realFpsRef: number,
-  videoMetaRef: React.RefObject<VideoMetaRefType | null>,
-}
-
-
-type AdditionalDataRefType = Record<string, AdditionalData[]>;
-
-type AdditionalData = {
-
-}
-
-type ActiveAnnoObjType = {
-  color?: string,
-  data?: number[][],
-  groupIndex?: string,
-  frameNum: number,
-  id: string,
-  label: string,
-  type: string
-  videoId: string
+activeAnnoObj: {}, 
+additionalData: {},
+additionalDataNameToRetrieve: [],
+additionalDataRange: {},
+annoIdToDelete: string,
+annoIdToDraw: string,
+annoIdToShow: [],
+annotationChartRange: number,
+brushThickness: number,
+btnConfigData: {},
+btnGroups: [],
+cancelIntervalAnno: boolean,
+cancelIntervalErasing: boolean,
+categoryColors: {},
+confirmConfig: boolean,
+downloadAnnotation: boolean,
+downloadConfig: boolean,
+drawType: string,
+frameAnnotation: {},
+frameNum: number,
+frameNumSignal: number,
+frameUrl: string,
+getAdditionalDataSignal: boolean,
+globalInfo: string,
+intervalAnno: {}, // actual type provided; see below
+intervalErasing: {},
+isFetchingFrame: boolean,
+loadVideo: boolean,
+modalInfo: string,
+modalInfoOpen: boolean,
+mutualExclusiveCategory: [],
+projectData: {},
+projectId: string,
+resetAnnotationChart: boolean,
+resetChart: boolean,
+resetVideoDetails: boolean,
+resetVideoPlay: boolean,
+saveAnnotation: boolean,
+skeletonLandmark: string,
+undo: number,
+updateAnnotationChart: boolean,
+uploader: UploaderType,
+useEraser: boolean,
+videoAdditionalFieldsConfig: {},
+videoData: {},
+videoId: string,
+annotationRef: annoRefType, //Record<number, Record<string, Annotation>>
+lastFrameNumForIntervalAnnoRef: number,
+lastFrameNumForIntervalErasingRef: number,
+realFpsRef: number,
+videoMetaRef: {},
 }
 
 type annoRefType = {
-  [frameNum: number]: {
-    [id: string]: Annotation
+  current: {
+
   }
 }
 
@@ -248,8 +229,8 @@ export default function StatesProvider({children}: AppContextProps) {
   const [videoAdditionalFieldsConfig, setVideoAdditionalFieldsConfig] = useState({}); // needs Type
   const [videoData, setVideoData] = useState({}); // needs Type
   const [videoId, setVideoId] = useState<string>();
-  const additionalDataRef = useRef<AdditionalDataRefType>({});
-  const annotationRef = useRef<annoRefType | null>(null); // needs Type
+  const additionalDataRef = useRef({});
+  const annotationRef = useRef({}); // needs Type
   const lastFrameNumForIntervalAnnoRef = useRef(-1);
   const lastFrameNumForIntervalErasingRef = useRef(-1);
   const realFpsRef = useRef(25);
@@ -406,6 +387,17 @@ export default function StatesProvider({children}: AppContextProps) {
       }
   }, [additionalDataNameToRetrieve])
 
+
+// Prob not the best place for this, as now it needs all the imports for these items.
+    function saveAnnotationAndUpdateStates(cancelInterval=false) {
+      setActiveAnnoObj({});
+      setDrawType(null);
+      setSkeletonLandmark(null);
+      setUndo(0);
+      setUseEraser(false);
+      setAnnoIdToDelete(null);
+      saveFrameAnnotation(cancelInterval);
+}
     function getAdditionalDataFromRef() {
         setGlobalInfo(null);
         if (Number.isInteger(frameNum)) { 
