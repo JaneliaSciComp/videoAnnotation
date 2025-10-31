@@ -25,7 +25,7 @@ export type Annotation = {
     paths?: string,
     type: string,
     videoId: string
-};
+} | null | undefined;
 
    /*
     //Todo: include in types/annotations.ts?  Similar but different.
