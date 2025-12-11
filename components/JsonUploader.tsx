@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { InboxOutlined } from "@ant-design/icons";
 import { Modal, Upload, UploadFile } from "antd";
-import { useStates, useStateSetters } from "./AppContext";
+import { useStates, useStateSetters} from "./AppContext";
 import { UploadChangeParam } from "antd/es/upload";
 import { editProject, postProjectBtn, postProjectVideo, postProjectAnnotation } from '@/utils/requests';
-import { saveAnnotationAndUpdateStates } from '@/utils/utils';
+//import { saveAnnotationAndUpdateStates } from '@/utils/utils';  // TODO: in the future, locate function here?
 import type { Annotation } from "@/types/annotations";
 
 // Required props
@@ -27,7 +27,7 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
   const annotationRef = useStates().annotationRef;
   const frameNum = useStates().frameNum;
   const projectId = useStates().projectId;
-  const uploader = useStates().uploader;
+  const uploaderFile = useStates().uploaderFile;
   const videoId = useStates().videoId;
   const setBtnConfigData = useStateSetters().setButtonConfigData;
   const setFrameAnnotation = useStateSetters().setFrameAnnotation;
@@ -37,12 +37,20 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
   const setProjectData = useStateSetters().setProjectData;
   const setProjectId = useStateSetters().setProjectId;
   const setResetAnnotationChart = useStateSetters().setResetAnnotationChart;
-  const setUploader = useStateSetters().setUploader;
+  const setUploaderFile = useStateSetters().setUploaderFile;
   const setVideoData = useStateSetters().setVideoData;
+  
+  const setActiveAnnoObj = useStateSetters().setActiveAnnoObj;
+  const setDrawType = useStateSetters().setDrawType;
+  const setSkeletonLandmark =  useStateSetters().setSkeletonLandmark;
+  const setUndo =  useStateSetters().setUndo;
+  const setUseEraser =  useStateSetters().setUseEraser;
+  const setAnnoIdToDelete =  useStateSetters().setAnnoIdToDelete;
 
   const { Dragger } = Upload;
 
   // This should just be a check: "if type != a or b, throw error" inside the uploadFile() function below
+  // Also, this is called twice BEFORE anything is actually dragged to the uploader
   useEffect(() => {
     if (
       !type ||
@@ -54,6 +62,38 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
     }
   }, [type]);
   
+  // Todo: this is also in AppContext and is used by one other component.  Clean up how that works.
+  function saveAnnotationAndUpdateStates(cancelInterval=false) {
+    setActiveAnnoObj({});
+    setDrawType(null);
+    setSkeletonLandmark(null);
+    setUndo(0);
+    setUseEraser(false);
+    setAnnoIdToDelete(null);
+    saveFrameAnnotation(cancelInterval);
+  }
+
+  
+  function saveFrameAnnotation(cancelInterval=false, savePrevFrame=true) {
+          if (!Number.isInteger(frameNum) || frameNum === 0) return;
+
+          const newFrameAnno = clearUnfinishedAnnotation({...frameAnnotation});
+          if (cancelInterval && intervalAnno.on) {
+
+                  setCancelIntervalAnno(true);
+          }
+
+          if (Object.keys(newFrameAnno).length > 0) {
+              const firstAnno = Object.values(newFrameAnno)[0];
+              if (savePrevFrame && firstAnno.frameNum === frameNum-1) {
+                  annotationRef.current[frameNum-1] = newFrameAnno; 
+              } else if (!savePrevFrame && firstAnno.frameNum === frameNum) {
+                  annotationRef.current[frameNum] = newFrameAnno; 
+              }
+          } 
+        
+  }
+          
 
   function changeHandler(e: UploadChangeParam) {
     if (e.file.status === "done") {
@@ -68,7 +108,7 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
     if (setModalOpen) {
       setModalOpen(false);
     }
-    setUploader({
+    setUploaderFile({ // triggers useEffect below to run.  TODO: move useEffect code into here. (this is the only trigger)
       type,
       file: file,
     });
@@ -79,13 +119,13 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
   }
 
   useEffect(() => {
-    if (uploader?.type && uploader?.file?.originFileObj) {
+    if (uploaderFile?.type && uploaderFile?.file?.originFileObj) { // if 
         saveAnnotationAndUpdateStates(true); 
         const reader = new FileReader();
-        reader.onload = (e) => onReaderLoad(e, uploader.type);
-        reader.readAsText(uploader.file.originFileObj);
+        reader.onload = (e) => onReaderLoad(e, uploaderFile.type);
+        reader.readAsText(uploaderFile.file.originFileObj);
     }
-  }, [uploader])
+  }, [uploaderFile])
   
 
   //Todo: move all of these to one of the types documents

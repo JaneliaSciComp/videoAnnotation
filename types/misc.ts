@@ -7,7 +7,7 @@ export type IntervalErasingValues = {
     labels: string[]
 }
 
-export type UploaderType = {
+export type UploadFileType = {
   type: string,
   file: UploadFile,
 }

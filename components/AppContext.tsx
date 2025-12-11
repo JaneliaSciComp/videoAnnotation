@@ -3,33 +3,33 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import styles from '../styles/Workspace.module.css';
 import { getAdditionalData, postVideoAnnotation, getProjectAnnotation } from '@/utils/requests';
 import { clearUnfinishedAnnotation } from '@/utils/utils';
-import { UploaderType } from '@/types/misc';
+import { UploadFileType } from '@/types/misc';
 import BtnGroup from './BtnGroup';
 import BrushTool from './BrushTool';
-import { Modal, UploadFile } from 'antd';
+import { Modal } from 'antd';
 import type { Annotation } from '@/types/annotations';
 
 
 type StatesType = {
-activeAnnoObj: {}, 
-additionalData: {},
-additionalDataNameToRetrieve: [],
-additionalDataRange: {},
+activeAnnoObj: ActiveAnnoObjType, 
+additionalData: {}, // AdditionalDataChart not working; can't determine type for this until it works
+additionalDataNameToRetrieve: string[],  // AdditionalDataChart not working; can't determine type for this until it works
+additionalDataRange: {}, // AdditionalDataChart not working; can't determine type for this until it works
 annoIdToDelete: string,
 annoIdToDraw: string,
-annoIdToShow: [],
+annoIdToShow: string[],
 annotationChartRange: number,
 brushThickness: number,
-btnConfigData: {},
+btnConfigData: BtnConfigDataType,
 btnGroups: [],
 cancelIntervalAnno: boolean,
 cancelIntervalErasing: boolean,
-categoryColors: {},
+categoryColors: ColorsType,
 confirmConfig: boolean,
 downloadAnnotation: boolean,
 downloadConfig: boolean,
 drawType: string,
-frameAnnotation: {},
+frameAnnotation: FrameAnnotation,
 frameNum: number,
 frameNumSignal: number,
 frameUrl: string,
@@ -52,7 +52,7 @@ saveAnnotation: boolean,
 skeletonLandmark: string,
 undo: number,
 updateAnnotationChart: boolean,
-uploader: UploaderType,
+uploaderFile: UploadFileType, // for Projects and Annotations
 useEraser: boolean,
 videoAdditionalFieldsConfig: {},
 videoData: {},
@@ -61,7 +61,24 @@ annotationRef: React.RefObject<annoRefType | null>, //Record<number, Record<stri
 lastFrameNumForIntervalAnnoRef: number,
 lastFrameNumForIntervalErasingRef: number,
 realFpsRef: number,
-videoMetaRef: {},
+videoMetaRef: VideoMetaRefType,
+}
+
+type AdditionalDataRefType = Record<string, AdditionalData[]>;
+
+type AdditionalData = {
+
+}
+
+type ActiveAnnoObjType = {
+  color?: string,
+  data?: number[][],
+  groupIndex?: string,
+  frameNum: number,
+  id: string,
+  label: string,
+  type: string
+  videoId: string
 }
 
 type annoRefType = {
@@ -70,43 +87,89 @@ type annoRefType = {
   }
 }
 
+type BtnChildData = {
+  [key: number]: IndividualBtnType
+}
+
+type IndividualBtnType = {
+  btnType: string,
+  color: string,
+  index: number,
+  label: string
+}
+
+type BtnsType = {
+  btnNum: number,
+  btnType: string,
+  groupType: string,
+  groupIndex?: string,
+  projectId: string
+  childData: BtnChildData
+}
+
+type BtnConfigDataType = {
+  [key: string]: BtnsType
+}
+
+type BtnGroupType = {
+  data: BtnGroupDataType;
+  frameNum: number;
+  frameUrl: string;
+  addAnnotationObj: (obj: Annotation) => void;
+  setActiveAnnoObj: (obj: Annotation | null) => void;
+  drawType: string; // or union type
+  setDrawType: (type: string) => void;
+  skeletonLandmark: string | number | null;
+  setSkeletonLandmark: (val: string | number | null) => void;
+  frameAnnotation: Annotation | null; // Is there a difference between Annotation (eg, 1 anno) and frameAnnotation (all annos on a frame??)
+}
+
+type ColorsType = {
+  [key: string]: string
+}
+
+type FrameAnnotation = {
+    [id: string]: Annotation;
+}
+
+type VideoMetaRefType = {
+  fps: number,
+  totalFrameCount: number,
+}
+
 const StatesContext = createContext<StatesType | undefined>(undefined);
-const StateSettersContext = createContext({});
+const StateSettersContext = createContext<SettersType | undefined>(undefined);
+
 
 interface AppContextProps {
   children: React.ReactNode,
 }
 
-/*
-type UploaderType = {
-  type: string,
-  file: UploadFile<any>,
-}
-  */
+// Next: change name 'uploader' and update imports.
 
 // Which of the states need to be accessible to the user-developer
 
 export default function StatesProvider({children}: AppContextProps) {
 
-  const [activeAnnoObj, setActiveAnnoObj] = useState({}); // needs Type
+  const [activeAnnoObj, setActiveAnnoObj] = useState<ActiveAnnoObjType>(); 
   const [additionalData, setAdditionalData] = useState({}); // needs Type
-  const [additionalDataNameToRetrieve, setAdditionalDataNameToRetrieve] = useState([]); // needs better type
+  const [additionalDataNameToRetrieve, setAdditionalDataNameToRetrieve] = useState<string[]>([]); // needs better type
   const [additionalDataRange, setAdditionalDataRange] = useState({}); // needs Type
   const [annoIdToDelete, setAnnoIdToDelete] = useState<string | null>();
   const [annoIdToDraw, setAnnoIdToDraw] = useState<string>();
-  const [annoIdToShow, setAnnoIdToShow] = useState([]); // unsure about type on this one
+  const [annoIdToShow, setAnnoIdToShow] = useState<string[]>([]);
   const [annotationChartRange, setAnnotationChartRange] = useState<number>();
   const [brushThickness, setBrushThickness] = useState<number>();
-  const [btnConfigData, setBtnConfigData] = useState({}); // needs Type
+  const [btnConfigData, setBtnConfigData] = useState<BtnConfigDataType>({});
   const [btnGroups, setBtnGroups] = useState([]); // needs Type
   const [cancelIntervalAnno, setCancelIntervalAnno] = useState(false);
   const [cancelIntervalErasing, setCancelIntervalErasing] = useState(false);
-  const [categoryColors, setCategoryColors] = useState({}); // needs Type
+  const [categoryColors, setCategoryColors] = useState<ColorsType>({}); // needs Type
   const [confirmConfig, setConfirmConfig] = useState(false);
   const [downloadAnnotation, setDownloadAnnotation] = useState(false);
   const [downloadConfig, setDownloadConfig] = useState(false);
   const [drawType, setDrawType] = useState<string | null>();
-  const [frameAnnotation, setFrameAnnotation] = useState({}); // needs Type
+  const [frameAnnotation, setFrameAnnotation] = useState<FrameAnnotation>(); 
   const [frameNum, setFrameNum] = useState<number>();
   const [frameNumSignal, setFrameNumSignal] = useState<number>(); 
   const [frameUrl, setFrameUrl] = useState<string>();
@@ -129,17 +192,17 @@ export default function StatesProvider({children}: AppContextProps) {
   const [skeletonLandmark, setSkeletonLandmark] = useState<string | null>(); // unsure about type on this one
   const [undo, setUndo] = useState(0); // any number? Or just certain ones? Seems like this would be boolean
   const [updateAnnotationChart, setUpdateAnnotationChart] = useState(false);
-  const [uploader, setUploader] = useState<UploaderType>(); 
+  const [uploaderFile, setUploaderFile] = useState<UploadFileType>(); 
   const [useEraser, setUseEraser] = useState(false);
   const [videoAdditionalFieldsConfig, setVideoAdditionalFieldsConfig] = useState({}); // needs Type
   const [videoData, setVideoData] = useState({}); // needs Type
   const [videoId, setVideoId] = useState<string>();
   const additionalDataRef = useRef({});
-  const annotationRef = useRef<annoRefType | null>(null); // needs Type
+  const annotationRef = useRef({}); // needs Type
   const lastFrameNumForIntervalAnnoRef = useRef(-1);
   const lastFrameNumForIntervalErasingRef = useRef(-1);
   const realFpsRef = useRef(25);
-  const videoMetaRef = useRef({}); // needs Type
+  const videoMetaRef = useRef<VideoMetaRefType>( {fps: 0, totalFrameCount: 0}); // needs Type
 
   const states = {
     activeAnnoObj: activeAnnoObj,
@@ -183,7 +246,7 @@ export default function StatesProvider({children}: AppContextProps) {
     skeletonLandmark: skeletonLandmark,
     undo: undo,
     updateAnnotationChart: updateAnnotationChart,
-    uploader: uploader,
+    uploaderFile: uploaderFile,
     useEraser: useEraser,
     videoAdditionalFieldsConfig: videoAdditionalFieldsConfig,
     videoData: videoData,
@@ -238,60 +301,71 @@ export default function StatesProvider({children}: AppContextProps) {
     setSkeletonLandmark: setSkeletonLandmark,
     setUndo: setUndo,
     setUpdateAnnotationChart: setUpdateAnnotationChart,
-    setUploader: setUploader,
+    setUploaderFile: setUploaderFile,
     setUseEraser: setUseEraser,
     setVideoAdditionalFieldsConfig: setVideoAdditionalFieldsConfig,
     setVideoData: setVideoData,
     setVideoId: setVideoId,
   }
 
-    useEffect(() => {
-      setResetVideoPlay(true);
-      setResetVideoDetails(true);
-      setResetChart(true);
-      setAdditionalDataNameToRetrieve([]);
-      annotationRef.current = {};
-      additionalDataRef.current = {};
-    }, [projectId])
+  useEffect(() => {
+    setResetVideoPlay(true);
+    setResetVideoDetails(true);
+    setResetChart(true);
+    setAdditionalDataNameToRetrieve([]);
+    annotationRef.current = null;
+    additionalDataRef.current = {};
+  }, [projectId])
 
 
-    useEffect(() => {
-        if (getAdditionalDataSignal) {
-            getAdditionalDataFromRef();
-            setGetAdditionalDataSignal(false);
-            setGetAdditionalDataSignal(false); 
-        }
-    }, [getAdditionalDataSignal])
+  useEffect(() => {
+      if (getAdditionalDataSignal) {
+          getAdditionalDataFromRef();
+          setGetAdditionalDataSignal(false);
+          setGetAdditionalDataSignal(false); 
+      }
+  }, [getAdditionalDataSignal])
 
-    useEffect(() => {
-        getAdditionalDataFromRef();
-    }, [additionalDataRange])
+  useEffect(() => {
+      getAdditionalDataFromRef();
+  }, [additionalDataRange])
 
-    useEffect(() => {
-        if (videoId) {
-            setGlobalInfo(null);
-            setAdditionalData({});
-            additionalDataRef.current = {};
-            if (additionalDataNameToRetrieve?.length>0) {
-                getAdditionalData(videoId, additionalDataNameToRetrieve)
-                .then(res => {
-                    if (res.error) {
-                        setGlobalInfo(res.error);
-                    } else {
-                        additionalDataNameToRetrieve.forEach(name => {
-                            additionalDataRef.current[name] = res[name]??[];
-                        })
-                    }
-                    getAdditionalDataFromRef();
-                })
-            } else {
-                getAdditionalDataFromRef();
-            }
-            
-            
-        }
-    }, [additionalDataNameToRetrieve])
+  useEffect(() => {
+      if (videoId) {
+          setGlobalInfo(null);
+          setAdditionalData({});
+          additionalDataRef.current = {};
+          if (additionalDataNameToRetrieve?.length>0) {
+              getAdditionalData(videoId, additionalDataNameToRetrieve)
+              .then(res => {
+                  if (res.error) {
+                      setGlobalInfo(res.error);
+                  } else {
+                      additionalDataNameToRetrieve.forEach(name => {
+                          additionalDataRef.current[name] = res[name]??[];
+                      })
+                  }
+                  getAdditionalDataFromRef();
+              })
+          } else {
+              getAdditionalDataFromRef();
+          }
+          
+          
+      }
+  }, [additionalDataNameToRetrieve])
 
+
+// Prob not the best place for this, as now it needs all the imports for these items.
+    function saveAnnotationAndUpdateStates(cancelInterval=false) {
+      setActiveAnnoObj({});
+      setDrawType(null);
+      setSkeletonLandmark(null);
+      setUndo(0);
+      setUseEraser(false);
+      setAnnoIdToDelete(null);
+      saveFrameAnnotation(cancelInterval);
+}
     function getAdditionalDataFromRef() {
         setGlobalInfo(null);
         if (Number.isInteger(frameNum)) { 
@@ -299,7 +373,7 @@ export default function StatesProvider({children}: AppContextProps) {
             if (additionalDataNameToRetrieve?.length>0) {
                 additionalDataNameToRetrieve.map(name => {
                     const rangeNeeded = additionalDataRange[name];
-                    if (rangeNeeded >= 0 && typeof frameNum === "number" && Number.isInteger(frameNum)) {
+                    if (rangeNeeded >= 0 && typeof frameNum === "number" && Number.isInteger(frameNum) && videoMetaRef.current!= null) {
                         const rangeStartNeeded = ((frameNum-rangeNeeded)<0) ? 0 : (frameNum-rangeNeeded);
                         const rangeEndNeeded = ((frameNum+rangeNeeded)>(videoMetaRef.current.totalFrameCount-1)) ? (videoMetaRef.current.totalFrameCount-1) : (frameNum+rangeNeeded);
                         const dataNeeded = additionalDataRef.current[name].slice(rangeStartNeeded, rangeEndNeeded+1);
@@ -444,17 +518,7 @@ export default function StatesProvider({children}: AppContextProps) {
         }
             
     }, [frameNum])
-    
-    function saveAnnotationAndUpdateStates(cancelInterval=false) {
-        
-        setActiveAnnoObj({});
-        setDrawType(null);
-        setSkeletonLandmark(null);
-        setUndo(0);
-        setUseEraser(false);
-        setAnnoIdToDelete(null);
-        saveFrameAnnotation(cancelInterval);
-    }
+
 
     function saveFrameAnnotation(cancelInterval=false, savePrevFrame=true) {
             if (!Number.isInteger(frameNum) || frameNum === 0) return;
@@ -466,16 +530,17 @@ export default function StatesProvider({children}: AppContextProps) {
             }
 
             if (Object.keys(newFrameAnno).length > 0) {
-              const firstAnno = Object.values(newFrameAnno)[0];
-              if (savePrevFrame && frameNum !== undefined && firstAnno.frameNum === frameNum-1) {
-                  annotationRef.current[frameNum-1] = newFrameAnno; 
-              } else if (!savePrevFrame && firstAnno.frameNum === frameNum && frameNum !== undefined) {
-                  annotationRef.current[frameNum] = newFrameAnno; 
-              }
+                const firstAnno = Object.values(newFrameAnno)[0];
+                if (savePrevFrame && firstAnno.frameNum === frameNum-1) {
+                    annotationRef.current[frameNum-1] = newFrameAnno; 
+                } else if (!savePrevFrame && firstAnno.frameNum === frameNum) {
+                    annotationRef.current[frameNum] = newFrameAnno; 
+                }
             } 
           
     }
 
+    // seems unnecessary... why not just use the one line?
     function addAnnotationObj(idObj) {
         setFrameAnnotation({...frameAnnotation, [idObj.id]: idObj});
     }
@@ -518,7 +583,7 @@ export default function StatesProvider({children}: AppContextProps) {
 
     function renderBtnGroup() {
         const groupIndices = Object.keys(btnConfigData).sort((a, b) => Number(a)-Number(b));
-        const groups = []; 
+        const groups = []; // [key: number]: BtnGroupType
         let k = 0;
         let addedBrushTool = false;
         groupIndices.forEach(index => {
@@ -531,16 +596,16 @@ export default function StatesProvider({children}: AppContextProps) {
             groups.push(
               <BtnGroup 
                 key={k++}
+                addAnnotationObj={addAnnotationObj}
                 data={data}
+                drawType={drawType}
+                frameAnnotation={data.groupType==='skeleton' ? frameAnnotation : null}
                 frameNum={frameNum}
                 frameUrl={frameUrl}
-                addAnnotationObj={addAnnotationObj}
                 setActiveAnnoObj={setActiveAnnoObj}
-                drawType={drawType}
                 setDrawType={setDrawType}
                 skeletonLandmark={skeletonLandmark}
                 setSkeletonLandmark={setSkeletonLandmark}
-                frameAnnotation={data.groupType==='skeleton' ? frameAnnotation : null}
               />
             )
         })
@@ -558,10 +623,8 @@ export default function StatesProvider({children}: AppContextProps) {
     }
 
     function getFrameAnnotationFromRefAndSetState() {
-      if (frameNum !== undefined){
         const frameAnno = annotationRef.current[frameNum]??{};
         setFrameAnnotation({...frameAnno});
-      }
     }
   
     return (

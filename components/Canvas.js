@@ -56,7 +56,7 @@ export default function Canvas(props) {
     const setAnnoIdToDelete = useStateSetters().setAnnoIdToDelete;
     const annoIdToShow = useStates().annoIdToShow;
     const annotationRef = useStates().annotationRef;
-    const uploader = useStates().uploader;
+    const uploaderFile = useStates().uploaderFile;
     const setGetAdditionalDataSignal = useStateSetters().setGetAdditionalDataSignal;
     const additionalData = useStates().additionalData;
     const videoAdditionalFieldsConfig = useStates().videoAdditionalFieldsConfig;
