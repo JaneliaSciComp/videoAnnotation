@@ -4,7 +4,6 @@ import { Modal, Upload, UploadFile } from "antd";
 import { useStates, useStateSetters} from "./AppContext";
 import { UploadChangeParam } from "antd/es/upload";
 import { editProject, postProjectBtn, postProjectVideo, postProjectAnnotation } from '@/utils/requests';
-//import { saveAnnotationAndUpdateStates } from '@/utils/utils';  // TODO: in the future, locate function here?
 import type { Annotation } from "@/types/annotations";
 
 // Required props
@@ -13,6 +12,12 @@ interface JsonUploaderProps {
   setModalOpen: ((open: boolean)=>void) | null,
   onLoad?: (file: UploadFile) => void
 }
+
+// TODO: upload does not work with Project config file.  A new project is created (if projectID is altered)
+// but none of the settings carry over.  It appears to be looking in the database, not the file, for
+// the settings.  Fix this in the future.
+// Note: upload does work with Annotations.  Download a data file, make a change to annotations, 
+// re-upload and watch the change disappear as it reverts back to the data in the file.
 
 
 /**
@@ -39,13 +44,7 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
   const setResetAnnotationChart = useStateSetters().setResetAnnotationChart;
   const setUploaderFile = useStateSetters().setUploaderFile;
   const setVideoData = useStateSetters().setVideoData;
-  
-  const setActiveAnnoObj = useStateSetters().setActiveAnnoObj;
-  const setDrawType = useStateSetters().setDrawType;
-  const setSkeletonLandmark =  useStateSetters().setSkeletonLandmark;
-  const setUndo =  useStateSetters().setUndo;
-  const setUseEraser =  useStateSetters().setUseEraser;
-  const setAnnoIdToDelete =  useStateSetters().setAnnoIdToDelete;
+  const saveAnnotationAndUpdateStates = useStateSetters().saveAnnotationAndUpdateStates;
 
   const { Dragger } = Upload;
 
@@ -62,38 +61,6 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
     }
   }, [type]);
   
-  // Todo: this is also in AppContext and is used by one other component.  Clean up how that works.
-  function saveAnnotationAndUpdateStates(cancelInterval=false) {
-    setActiveAnnoObj({});
-    setDrawType(null);
-    setSkeletonLandmark(null);
-    setUndo(0);
-    setUseEraser(false);
-    setAnnoIdToDelete(null);
-    saveFrameAnnotation(cancelInterval);
-  }
-
-  
-  function saveFrameAnnotation(cancelInterval=false, savePrevFrame=true) {
-          if (!Number.isInteger(frameNum) || frameNum === 0) return;
-
-          const newFrameAnno = clearUnfinishedAnnotation({...frameAnnotation});
-          if (cancelInterval && intervalAnno.on) {
-
-                  setCancelIntervalAnno(true);
-          }
-
-          if (Object.keys(newFrameAnno).length > 0) {
-              const firstAnno = Object.values(newFrameAnno)[0];
-              if (savePrevFrame && firstAnno.frameNum === frameNum-1) {
-                  annotationRef.current[frameNum-1] = newFrameAnno; 
-              } else if (!savePrevFrame && firstAnno.frameNum === frameNum) {
-                  annotationRef.current[frameNum] = newFrameAnno; 
-              }
-          } 
-        
-  }
-          
 
   function changeHandler(e: UploadChangeParam) {
     if (e.file.status === "done") {
@@ -119,7 +86,7 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
   }
 
   useEffect(() => {
-    if (uploaderFile?.type && uploaderFile?.file?.originFileObj) { // if 
+    if (uploaderFile?.type && uploaderFile?.file?.originFileObj) { 
         saveAnnotationAndUpdateStates(true); 
         const reader = new FileReader();
         reader.onload = (e) => onReaderLoad(e, uploaderFile.type);

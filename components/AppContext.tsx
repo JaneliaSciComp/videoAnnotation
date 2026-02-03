@@ -143,11 +143,9 @@ const StateSettersContext = createContext<SettersType | undefined>(undefined);
 
 interface AppContextProps {
   children: React.ReactNode,
-}
+} 
 
-// Next: change name 'uploader' and update imports.
-
-// Which of the states need to be accessible to the user-developer
+// Which of the states need to be accessible to the user-developer?
 
 export default function StatesProvider({children}: AppContextProps) {
 
@@ -306,6 +304,8 @@ export default function StatesProvider({children}: AppContextProps) {
     setVideoAdditionalFieldsConfig: setVideoAdditionalFieldsConfig,
     setVideoData: setVideoData,
     setVideoId: setVideoId,
+    saveAnnotationAndUpdateStates: saveAnnotationAndUpdateStates, 
+    // if there are more of these non-setter functions, create an ActionsContext and move them to it
   }
 
   useEffect(() => {
@@ -356,7 +356,6 @@ export default function StatesProvider({children}: AppContextProps) {
   }, [additionalDataNameToRetrieve])
 
 
-// Prob not the best place for this, as now it needs all the imports for these items.
     function saveAnnotationAndUpdateStates(cancelInterval=false) {
       setActiveAnnoObj({});
       setDrawType(null);
@@ -672,4 +671,3 @@ export function useStateSetters() {
 
 
   
-
