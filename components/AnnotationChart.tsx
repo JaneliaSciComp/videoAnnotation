@@ -3,6 +3,7 @@ import { staticVerticalLine, dynamicVerticalLine } from '../utils/utils';
 import { useStateSetters, useStates } from './AppContext'; 
 import { Bar } from 'react-chartjs-2';
 import type { Annotation } from '@/types/annotations';
+//import { UploaderType } from '@/types/misc';
 import {
     Chart as ChartJS,
     ChartData,
@@ -118,7 +119,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
     const setCancelIntervalAnno = useStateSetters().setCancelIntervalAnno;  
     const updateAnnotationChart = useStates().updateAnnotationChart;
     const setUpdateAnnotationChart = useStateSetters().setUpdateAnnotationChart;
-    const uploader = useStates().uploader;
+    const uploaderFile = useStates().uploaderFile;
     const resetAnnotationChart = useStates().resetAnnotationChart;
     const setResetAnnotationChart = useStateSetters().setResetAnnotationChart; 
     const intervalErasing = useStates().intervalErasing;
@@ -127,10 +128,10 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
 
 
     useEffect(() => {
-        if (uploader?.type && uploader?.file) {
+        if (uploaderFile?.type && uploaderFile?.file) {
             setAnnotationForChart(oldValue => {return {frameNum: null, range: null, data: null}});
         }
-    }, [uploader])
+    }, [uploaderFile])
 
     useEffect(() => {
         getAnnotationData();

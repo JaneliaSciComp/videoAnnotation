@@ -24,7 +24,7 @@ import { defaultFrameBufferSeconds } from "../utils/utils.js";
  */
 export default function VideoUploader(props) {
   const [fps, setFps] = useState(0);
-  const [totalFrameCount, setTotalFrameCount] = useState(0);
+  const [totalFrameCount, setTotalFrameCount] = useState(0); // Why are we creating a new local state here?
   const [sliderValue, setSliderValue] = useState(0);
   const [playFps, setPlayFps] = useState(0);
   const [submitError, setSubmitError] = useState();

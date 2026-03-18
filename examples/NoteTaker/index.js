@@ -17,7 +17,7 @@ import VideoMenu from '@/components/VideoMenu.js';
 import { clearUnfinishedAnnotation, createId, addCategoryAnnoToFrameAnnotation } from '../utils/utils.js';
 
 //DELETE this after videoID is open in the API
-import { useStates, useStateSetters } from '../components/AppContext.js';
+import { useStates, useStateSetters } from '../components/AppContext';
 
 export default function Home() {
   // The ..open/set..Open states are to allow the child modal components to control the visibility of themselves when some interval UI events happen, such as clicking on cancel button.

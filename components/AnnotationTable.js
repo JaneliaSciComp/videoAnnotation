@@ -32,7 +32,7 @@ export default function AnnotationTable(props) {
     const setAnnoIdToDelete = useStateSetters().setAnnoIdToDelete;
     const setAnnoIdToShow = useStateSetters().setAnnoIdToShow;
     const annoIdToDraw = useStates().annoIdToDraw;
-    const uploader = useStates().uploader;
+    const uploaderFile = useStates().uploaderFile;
     const annotationRef = useStates().annotationRef;
     const setUpdateAnnotationChart = useStateSetters().setUpdateAnnotationChart;
 
@@ -42,7 +42,7 @@ export default function AnnotationTable(props) {
             return
         };
         let data;
-        if (frameUrl !== frameUrlRef.current || uploader !== prevUploaderRef.current) {
+        if (frameUrl !== frameUrlRef.current || uploaderFile !== prevUploaderRef.current) {
             data = Object.entries(frameAnnotation).map(
                 ([id, annoObj]) => {
                     return {
@@ -57,7 +57,7 @@ export default function AnnotationTable(props) {
             setKeysInTable(data.map(obj => obj.key));
 
             frameUrlRef.current = frameUrl;
-            prevUploaderRef.current = uploader;
+            prevUploaderRef.current = uploaderFile;
         
         } else {
             data = [...tableData];
@@ -68,7 +68,8 @@ export default function AnnotationTable(props) {
             let newSelectedKeys;
             let newKeysInTable;
             if (newFrameKeys.length > frameKeys.length) {
-                const idAdded = newFrameKeys.filter(key => !frameKeysSet.has(key))[0];
+                //const idAdded = newFrameKeys.filter(key => !frameKeysSet.has(key))[0];
+                const idAdded = newFrameKeys.find(key => !frameKeysSet.has(key))
                 data.push({
                     key: idAdded,
                     label: frameAnnotation[idAdded].label,
