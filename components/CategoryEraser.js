@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Button } from "react-bootstrap";
 import { ClearOutlined } from "@ant-design/icons";
 import styles from "../styles/Button.module.css";
-import { useStateSetters, useStates } from "./AppContext.tsx";
+import { useStateSetters, useStates } from "./AppContext";
 import { defaultColor } from "../utils/utils.js";
 
 /*

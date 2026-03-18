@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {Button} from 'react-bootstrap';
 import styles from '../styles/Button.module.css';
-import { useStates, useStateSetters } from './AppContext.tsx';
+import { useStates, useStateSetters } from './AppContext';
 import { clearUnfinishedAnnotation, createId } from '../utils/utils.js';
 
 

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useStateSetters, useStates } from "./AppContext.tsx";
+import { useStateSetters, useStates } from "./AppContext";
 import { Dropdown, Modal } from "antd";
 import ProjectManager from "./ProjectManager.js";
 import ModalJsonUploader from "./ModalJsonUploader.js";

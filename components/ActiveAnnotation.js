@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import styles from '../styles/Workspace.module.css';
 import { Descriptions } from 'antd';
-import { useStates } from './AppContext.tsx';
+import { useStates } from './AppContext';
 
 export default function ActiveAnnotation(props) {
     const emtpyInfo = [

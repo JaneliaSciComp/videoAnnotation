@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useRef} from 'react';
 import styles from '../styles/Canvas.module.css';
 import {fabric} from 'fabric-with-erasing';
-import { useStates, useStateSetters } from './AppContext.tsx';
+import { useStates, useStateSetters } from './AppContext';
 import { defaultAlpha, hexArr, hexMap } from '../utils/utils';
 
 const CANVAS_WIDTH = 600;

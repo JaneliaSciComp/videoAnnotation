@@ -1,6 +1,6 @@
 import { Button } from "react-bootstrap";
 import styles from "../styles/Button.module.css";
-import { useStates, useStateSetters } from "./AppContext.tsx";
+import { useStates, useStateSetters } from "./AppContext";
 import { type ReactNode } from "react";
 
 /*

@@ -3,7 +3,7 @@ import styles from "../styles/Video.module.css";
 import { InputNumber, Slider } from "antd";
 import { CaretRightOutlined, PauseOutlined } from "@ant-design/icons";
 import { Row, Col, Form, Button } from "react-bootstrap";
-import { useStates, useStateSetters } from "./AppContext.tsx";
+import { useStates, useStateSetters } from "./AppContext";
 import {
   getFrame,
   postVideo,
@@ -24,7 +24,7 @@ import { defaultFrameBufferSeconds } from "../utils/utils.js";
  */
 export default function VideoUploader(props) {
   const [fps, setFps] = useState(0);
-  const [totalFrameCount, setTotalFrameCount] = useState(0);
+  const [totalFrameCount, setTotalFrameCount] = useState(0); // Why are we creating a new local state here?
   const [sliderValue, setSliderValue] = useState(0);
   const [playFps, setPlayFps] = useState(0);
   const [submitError, setSubmitError] = useState();

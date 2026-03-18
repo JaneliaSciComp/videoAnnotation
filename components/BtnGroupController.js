@@ -4,7 +4,7 @@ import BtnController from './BtnController';
 import SkeletonEdgeController from './SkeletonEdgeController';
 import { Select, Input, InputNumber, Button, Space } from 'antd';
 import { DownOutlined, DeleteOutlined} from '@ant-design/icons';
-import { useStateSetters, useStates } from './AppContext.tsx';
+import { useStateSetters, useStates } from './AppContext';
 import { btnGroupTypeOptions, btnTypeOptions, createId } from '../utils/utils';
 import { postBtnGroup } from '../utils/requests';
 

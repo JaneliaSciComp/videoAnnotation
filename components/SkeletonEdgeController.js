@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import styles from "../styles/Controller.module.css";
 import { Checkbox, Tag, ColorPicker, Button, Row, Col } from "antd";
-import { useStates } from "./AppContext.tsx";
+import { useStates } from "./AppContext";
 import { predefinedColors } from "../utils/utils.js";
 
 /**

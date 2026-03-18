@@ -1,4 +1,4 @@
-import { useStates } from "./AppContext.tsx";
+import { useStates } from "./AppContext";
 
 /**
  * To display global info and custom info.

@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {Dropdown, InputNumber, Modal} from 'antd';
 import {Row, Col} from 'react-bootstrap';
-import { useStateSetters, useStates } from './AppContext.tsx'; 
+import { useStateSetters, useStates } from './AppContext'; 
 import {defaultAdditionalDataRange} from '../utils/utils';
 
 

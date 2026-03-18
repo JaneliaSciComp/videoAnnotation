@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useStateSetters, useStates } from "./AppContext.tsx";
+import { useStateSetters, useStates } from "./AppContext";
 import { Modal, List, Button } from "antd";
 import { PlayCircleOutlined, DeleteOutlined } from "@ant-design/icons";
 import {

@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Button } from "react-bootstrap";
 import { Radio, Space } from "antd";
 import styles from "../styles/Button.module.css";
-import { useStateSetters, useStates } from "./AppContext.tsx";
+import { useStateSetters, useStates } from "./AppContext";
 import { clearUnfinishedAnnotation, createId } from "../utils/utils.js";
 
 /**

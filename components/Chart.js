@@ -6,7 +6,7 @@ import {
   staticVerticalLine,
   dynamicVerticalLine,
 } from "../utils/utils";
-import { useStateSetters, useStates } from "./AppContext.tsx";
+import { useStateSetters, useStates } from "./AppContext";
 import Zoom from "chartjs-plugin-zoom";
 import { Line, Bar } from "react-chartjs-2";
 import {
