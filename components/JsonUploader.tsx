@@ -8,7 +8,7 @@ import type { Annotation } from "@/types/annotations";
 
 // Required props
 interface JsonUploaderProps {
-  type: string,
+  uploadType: string,
   setModalOpen: ((open: boolean)=>void) | null,
   onLoad?: (file: UploadFile) => void
 }
@@ -26,7 +26,7 @@ interface JsonUploaderProps {
  *      onLoad: called after the file is successfully loaded, with the file obj as argument. Will be called after inherent behavior.
  *      setModalOpen: only useful when put inside a modal window. setter of modalOpen.
  */
-export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderProps) {
+export default function JsonUploader({uploadType, setModalOpen, onLoad}: JsonUploaderProps) {
   const [info, setInfo] = useState("Click or drag file to this area to upload");
 
   const annotationRef = useStates().annotationRef;
@@ -52,14 +52,14 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
   // Also, this is called twice BEFORE anything is actually dragged to the uploader
   useEffect(() => {
     if (
-      !type ||
-      (type !== "annotation" && type !== "configuration")
+      !uploadType ||
+      (uploadType !== "annotation" && uploadType !== "configuration")
     ) {
       throw Error(
         "Type property is required, either annotation or configuration",
       );
     }
-  }, [type]);
+  }, [uploadType]);
   
 
   function changeHandler(e: UploadChangeParam) {
@@ -76,7 +76,7 @@ export default function JsonUploader({type, setModalOpen, onLoad}: JsonUploaderP
       setModalOpen(false);
     }
     setUploaderFile({ // triggers useEffect below to run.  TODO: move useEffect code into here. (this is the only trigger)
-      type,
+      uploadType,
       file: file,
     });
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Table, Button } from 'antd';
 import { DeleteOutlined} from '@ant-design/icons';
-import { useStates, useStateSetters } from './AppContext.tsx';
+import { useStates, useStateSetters } from './AppContext';
 
 
 /**
