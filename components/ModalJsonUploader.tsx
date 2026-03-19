@@ -3,7 +3,7 @@ import { Modal } from "antd";
 
 interface ModalJsonUploaderProps {
   setOpen: (open: boolean)=> void,
-  type: string,
+  uploadType: string,
   open: boolean,
   onCancel?: ()=> void
 }
@@ -14,7 +14,7 @@ interface ModalJsonUploaderProps {
  *      setOpen: setter of open. In order to give controll to ProjectManager's internal buttons.
  *      onCancel: function. Called when the modal is closed.
  */
-export default function ModalJsonUploader( {setOpen, type, open, onCancel}: ModalJsonUploaderProps ) {
+export default function ModalJsonUploader( {setOpen, uploadType, open, onCancel}: ModalJsonUploaderProps ) {
   function cancelClickHandler() {
     setOpen(false);
   
@@ -26,14 +26,14 @@ export default function ModalJsonUploader( {setOpen, type, open, onCancel}: Moda
 
   return (
     <Modal
-      title={`Upload ${type === "annotation" ? "annotation" : "project configuration"} file (.json)`}
+      title={`Upload ${uploadType === "annotation" ? "annotation" : "project configuration"} file (.json)`}
       open={open}
       onCancel={cancelClickHandler}
       footer={() => null}
     >
       <div className="my-4 d-flex justify-content-center">
         <div style={{ width: "50%" }}>
-          <JsonUploader type={type} setModalOpen={setOpen} />
+          <JsonUploader uploadType={uploadType} setModalOpen={setOpen} />
         </div>
       </div>
     </Modal>

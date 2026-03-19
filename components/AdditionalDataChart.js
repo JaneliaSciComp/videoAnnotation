@@ -50,8 +50,8 @@ export default function AdditionalDataChart(props) {
     const [data, setData] = useState({});
     const [hideController, setHideController] = useState(false);
 
-    const additionalData = useApp().additionalData;
-    const videoAdditionalFieldsConfig = useApp().videoAdditionalFieldsConfig;
+    const { additionalData, videoAdditionalFieldsConfig } = useApp();
+
     
     useEffect(() => {
             const additionalDataForChart = {};

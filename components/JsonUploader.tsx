@@ -91,10 +91,10 @@ export default function JsonUploader({uploadType, setModalOpen, onLoad}: JsonUpl
   }
 
   useEffect(() => {
-    if (uploaderFile?.type && uploaderFile?.file?.originFileObj) { 
+    if (uploaderFile?.uploadType && uploaderFile?.file?.originFileObj) { 
         saveAnnotationAndUpdateStates(true); 
         const reader = new FileReader();
-        reader.onload = (e) => onReaderLoad(e, uploaderFile.type);
+        reader.onload = (e) => onReaderLoad(e, uploaderFile.uploadType);
         reader.readAsText(uploaderFile.file.originFileObj);
     }
   }, [uploaderFile])

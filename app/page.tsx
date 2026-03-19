@@ -92,7 +92,7 @@ export default function Home() {
       component: (
         <ModalJsonUploader
           key="2"
-          type="configuration" // ModalJsonUploader has two types: 'configuration' and 'annotation'. 'configuration' is for uploading a configuration file, and 'annotation' is for uploading an annotation file.
+          uploadType="configuration" // ModalJsonUploader has two types: 'configuration' and 'annotation'. 'configuration' is for uploading a configuration file, and 'annotation' is for uploading an annotation file.
           open={configUploaderOpen}
           setOpen={setConfigUploaderOpen}
         />
@@ -227,7 +227,7 @@ export default function Home() {
       component: (
         <ModalJsonUploader
           key="2"
-          type="annotation"
+          uploadType="annotation"
           open={annotationUploaderOpen}
           setOpen={setAnnotationUploaderOpen}
         />
