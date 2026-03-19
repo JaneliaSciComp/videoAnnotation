@@ -50,13 +50,13 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 
 
-### Step 4: Modify `pages/index.js` 
+### Step 4: Modify `app/page.tsx` 
 You can start editing the page by modifying `pages/index.js`. The page auto-updates as you edit the file.
 
 For the web in the image above, the index.js file should look like this
 
 ```javascript
-import React, {useState} from 'react';
+import React, {AppContext} from 'react';
 import Head from 'next/head';
 import Workspace from '../components/Workspace.js';
 import Canvas from '../components/Canvas.js';
@@ -85,14 +85,14 @@ const AnnotationChart = dynamic(() => import('../components/AnnotationChart.js')
 
 export default function Home() {
   // The ..open/set..Open states are to allow the child modal components to control the visibility of themselves inside.
-  const [newProjectManagerOpen, setNewProjectManagerOpen] = useState(false);
-  const [editProjectManagerOpen, setEditProjectManagerOpen] = useState(false);
-  const [configUploaderOpen, setConfigUploaderOpen] = useState(false);
-  const [projectListOpen, setProjectListOpen] = useState(false);
-  const [videoManagerOpen, setVideoManagerOpen] = useState(false);
-  const [annotationUploaderOpen, setAnnotationUploaderOpen] = useState(false);
-  const [canvasAdditionalDataControllerOpen, setCanvasAdditionalDataControllerOpen] = useState(false);
-  const [info, setInfo] = useState(''); // To display feedback info
+  const [newProjectManagerOpen, setNewProjectManagerOpen] = AppContext(false);
+  const [editProjectManagerOpen, setEditProjectManagerOpen] = AppContext(false);
+  const [configUploaderOpen, setConfigUploaderOpen] = AppContext(false);
+  const [projectListOpen, setProjectListOpen] = AppContext(false);
+  const [videoManagerOpen, setVideoManagerOpen] = AppContext(false);
+  const [annotationUploaderOpen, setAnnotationUploaderOpen] = AppContext(false);
+  const [canvasAdditionalDataControllerOpen, setCanvasAdditionalDataControllerOpen] = AppContext(false);
+  const [info, setInfo] = AppContext(''); // To display feedback info
 
   const projectDropdownItems = [
     {
@@ -329,7 +329,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <Workspace > 
+      <AppProvider > 
         <Menu items={menubarItems} mode="horizontal"/>
         <div className='py-2'>
           {/* If state info is null, InfoBar will only display predefined information for events. Otherwise, will display both predefined and contents of the info state */}
@@ -362,7 +362,7 @@ export default function Home() {
               </div>
           </Col>
         </Row>
-      </Workspace>
+      </AppProvider>
     </div>
   )
 }
