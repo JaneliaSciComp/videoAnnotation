@@ -4,7 +4,7 @@ import '@ant-design/v5-patch-for-react-19';
 import React, { useState } from "react";
 import Head from "next/head";
 //import Workspace from "../components/Workspace.js";
-import StatesProvider from "../components/AppContext"
+import AppProvider from "../components/AppContext"
 import Canvas from "../components/Canvas.js";
 import VideoUploader from "../components/VideoUploader.js";
 import BtnContainer from "../components/BtnContainer.js";
@@ -269,7 +269,7 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <StatesProvider>
+      <AppProvider>
         <Menu items={menubarItems} mode="horizontal" />
         <div className="py-2">
           {/* If state info is null, InfoBar will only display predefined information for events. Otherwise, will display both predefined and contents of the info state */}
@@ -335,7 +335,7 @@ export default function Home() {
             </div>
           </Col>
         </Row>
-      </StatesProvider>
+      </AppProvider>
     </div>
   );
 }

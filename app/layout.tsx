@@ -1,8 +1,9 @@
 "use client";
 
+
 import '../styles/globals.css';
 //import Workspace from '../components/Workspace';
-import StatesProvider from '@/components/AppContext';
+import { AppProvider } from '@/components/AppContext';
 
 function App( {children,}: Readonly <{children: React.ReactNode;}>) {
   return (
@@ -13,12 +14,13 @@ function App( {children,}: Readonly <{children: React.ReactNode;}>) {
           </title>
         </head>
         <body>
-            <StatesProvider>
+            <AppProvider>
                 {children}
-            </StatesProvider>
+            </AppProvider>
         </body>
     </html>
   )
 }
 
 export default App
+

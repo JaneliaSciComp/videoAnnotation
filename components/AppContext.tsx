@@ -189,16 +189,17 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 //const StatesContext = createContext<StatesType | undefined>(undefined);
 //const StateSettersContext = createContext<StateSettersType | undefined>(undefined);
 
-
+/*
 interface AppContextProps {
   children: React.ReactNode,
 } 
+  */
 
 // Which of the states need to be accessible to the user-developer?
 
 //export default function StatesProvider({children}: AppContextProps) {
 
-export default function AppProvider({children}: {children: React.ReactNode}){
+export function AppProvider({children}: {children: React.ReactNode}){
   const [activeAnnoObj, setActiveAnnoObj] = useState<ActiveAnnoObjType>(); 
   const [additionalData, setAdditionalData] = useState({}); // needs Type
   const [additionalDataNameToRetrieve, setAdditionalDataNameToRetrieve] = useState<string[]>([]); // needs better type
