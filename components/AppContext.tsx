@@ -186,19 +186,8 @@ type VideoMetaRefType = {
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
-//const StatesContext = createContext<StatesType | undefined>(undefined);
-//const StateSettersContext = createContext<StateSettersType | undefined>(undefined);
-
-/*
-interface AppContextProps {
-  children: React.ReactNode,
-} 
-  */
 
 // Which of the states need to be accessible to the user-developer?
-
-//export default function StatesProvider({children}: AppContextProps) {
-
 export function AppProvider({children}: {children: React.ReactNode}){
   const [activeAnnoObj, setActiveAnnoObj] = useState<ActiveAnnoObjType>(); 
   const [additionalData, setAdditionalData] = useState({}); // needs Type
@@ -356,115 +345,8 @@ export function AppProvider({children}: {children: React.ReactNode}){
     setVideoAdditionalFieldsConfig,
     setVideoData,
     setVideoId,
-    saveAnnotationAndUpdateStates, 
+    saveAnnotationAndUpdateStates, // if there are more of these non-setter functions, create an ActionsContext and move them to it
   }
-    /*
-const states = {
-    activeAnnoObj: activeAnnoObj,
-    additionalData: additionalData,
-    additionalDataNameToRetrieve: additionalDataNameToRetrieve,
-    additionalDataRange: additionalDataRange,
-    annoIdToDelete: annoIdToDelete,
-    annoIdToDraw: annoIdToDraw,
-    annoIdToShow: annoIdToShow,
-    annotationChartRange: annotationChartRange,
-    brushThickness: brushThickness,
-    btnConfigData: btnConfigData,
-    btnGroups: btnGroups,
-    cancelIntervalAnno: cancelIntervalAnno,
-    cancelIntervalErasing: cancelIntervalErasing,
-    categoryColors: categoryColors,
-    confirmConfig: confirmConfig,
-    downloadAnnotation: downloadAnnotation,
-    downloadConfig: downloadConfig,
-    drawType: drawType,
-    frameAnnotation: frameAnnotation,
-    frameNum: frameNum,
-    frameNumSignal: frameNumSignal,
-    frameUrl: frameUrl,
-    getAdditionalDataSignal: getAdditionalDataSignal,
-    globalInfo: globalInfo,
-    intervalAnno: intervalAnno,
-    intervalErasing: intervalErasing,
-    isFetchingFrame: isFetchingFrame,
-    loadVideo: loadVideo,
-    modalInfo: modalInfo,
-    modalInfoOpen: modalInfoOpen,
-    mutualExclusiveCategory: mutualExclusiveCategory,
-    projectData: projectData,
-    projectId: projectId,
-    resetAnnotationChart: resetAnnotationChart,
-    resetChart: resetChart,
-    resetVideoDetails: resetVideoDetails,
-    resetVideoPlay: resetVideoPlay,
-    saveAnnotation: saveAnnotation,
-    skeletonLandmark: skeletonLandmark,
-    undo: undo,
-    updateAnnotationChart: updateAnnotationChart,
-    uploaderFile: uploaderFile,
-    useEraser: useEraser,
-    videoAdditionalFieldsConfig: videoAdditionalFieldsConfig,
-    videoData: videoData,
-    videoId: videoId,
-    additionalDataRef: additionalDataRef, // Not a true state... does this matter?
-    annotationRef: annotationRef, 
-    lastFrameNumForIntervalAnnoRef: lastFrameNumForIntervalAnnoRef,
-    lastFrameNumForIntervalErasingRef: lastFrameNumForIntervalErasingRef,
-    realFpsRef: realFpsRef,
-    videoMetaRef: videoMetaRef,
-  }
-      
-  const stateSetters = {
-    setActiveAnnoObj: setActiveAnnoObj,
-    setAdditionalData: setAdditionalData,
-    setAdditionalDataNameToRetrieve: setAdditionalDataNameToRetrieve,
-    setAdditionalDataRange: setAdditionalDataRange,
-    setAnnoIdToDelete: setAnnoIdToDelete,
-    setAnnoIdToDraw: setAnnoIdToDraw,
-    setAnnoIdToShow: setAnnoIdToShow,
-    setAnnotationChartRange: setAnnotationChartRange,
-    setBrushThickness: setBrushThickness,
-    setBtnConfigData: setBtnConfigData,
-    setBtnGroups: setBtnGroups,
-    setCancelIntervalAnno: setCancelIntervalAnno,
-    setCancelIntervalErasing: setCancelIntervalErasing,
-    setCategoryColors: setCategoryColors,
-    setConfirmConfig: setConfirmConfig,
-    setDownloadAnnotation: setDownloadAnnotation,
-    setDownloadConfig: setDownloadConfig,
-    setDrawType: setDrawType,
-    setFrameAnnotation: setFrameAnnotation,
-    setFrameNum: setFrameNum,
-    setFrameNumSignal: setFrameNumSignal,
-    setFrameUrl: setFrameUrl,
-    setGetAdditionalDataSignal: setGetAdditionalDataSignal,
-    setGlobalInfo: setGlobalInfo,
-    setIntervalAnno: setIntervalAnno,
-    setIntervalErasing: setIntervalErasing,
-    setIsFetchingFrame: setIsFetchingFrame,
-    setLoadVideo: setLoadVideo,
-    setModalInfo: setModalInfo,
-    setModalInfoOpen: setModalInfoOpen,
-    setMutualExclusiveCategory: setMutualExclusiveCategory,
-    setProjectData: setProjectData,
-    setProjectId: setProjectId,
-    setResetAnnotationChart: setResetAnnotationChart,
-    setResetChart: setResetChart,
-    setResetVideoDetails: setResetVideoDetails,
-    setResetVideoPlay: setResetVideoPlay,
-    setSaveAnnotation: setSaveAnnotation,
-    setSkeletonLandmark: setSkeletonLandmark,
-    setUndo: setUndo,
-    setUpdateAnnotationChart: setUpdateAnnotationChart,
-    setUploaderFile: setUploaderFile,
-    setUseEraser: setUseEraser,
-    setVideoAdditionalFieldsConfig: setVideoAdditionalFieldsConfig,
-    setVideoData: setVideoData,
-    setVideoId: setVideoId,
-    saveAnnotationAndUpdateStates: saveAnnotationAndUpdateStates, 
-    // if there are more of these non-setter functions, create an ActionsContext and move them to it
-  }
-    */
 
   useEffect(() => {
     setResetVideoPlay(true);
