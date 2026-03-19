@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { InboxOutlined } from "@ant-design/icons";
 import { Modal, Upload, UploadFile } from "antd";
-import { useStates, useStateSetters} from "./AppContext";
+import { useApp } from "./AppContext";
 import { UploadChangeParam } from "antd/es/upload";
 import { editProject, postProjectBtn, postProjectVideo, postProjectAnnotation } from '@/utils/requests';
 import type { Annotation } from "@/types/annotations";
@@ -29,6 +29,10 @@ interface JsonUploaderProps {
 export default function JsonUploader({uploadType, setModalOpen, onLoad}: JsonUploaderProps) {
   const [info, setInfo] = useState("Click or drag file to this area to upload");
 
+  const { annotationRef, frameNum, projectId, uploaderFile, videoId, saveAnnotationAndUpdateStates, 
+    setBtnConfigData, setFrameAnnotation, setGlobalInfo, setModalInfo, setModalInfoOpen, setProjectData, 
+    setProjectId, setResetAnnotationChart, setUploaderFile, setVideoData } = useApp();
+  /*
   const annotationRef = useStates().annotationRef;
   const frameNum = useStates().frameNum;
   const projectId = useStates().projectId;
@@ -45,6 +49,7 @@ export default function JsonUploader({uploadType, setModalOpen, onLoad}: JsonUpl
   const setUploaderFile = useStateSetters().setUploaderFile;
   const setVideoData = useStateSetters().setVideoData;
   const saveAnnotationAndUpdateStates = useStateSetters().saveAnnotationAndUpdateStates;
+*/
 
   const { Dragger } = Upload;
 

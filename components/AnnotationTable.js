@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import { Table, Button } from 'antd';
 import { DeleteOutlined} from '@ant-design/icons';
-import { useStates, useStateSetters } from './AppContext';
+import { useApp } from './AppContext';
 
 
 /**
@@ -26,15 +26,15 @@ export default function AnnotationTable(props) {
     const frameUrlRef = useRef();
     const prevUploaderRef = useRef();
 
-    const frameAnnotation = useStates().frameAnnotation;
-    const setFrameAnnotation = useStateSetters().setFrameAnnotation;
-    const frameUrl = useStates().frameUrl;
-    const setAnnoIdToDelete = useStateSetters().setAnnoIdToDelete;
-    const setAnnoIdToShow = useStateSetters().setAnnoIdToShow;
-    const annoIdToDraw = useStates().annoIdToDraw;
-    const uploaderFile = useStates().uploaderFile;
-    const annotationRef = useStates().annotationRef;
-    const setUpdateAnnotationChart = useStateSetters().setUpdateAnnotationChart;
+    const frameAnnotation = useApp().frameAnnotation;
+    const setFrameAnnotation = useApp().setFrameAnnotation;
+    const frameUrl = useApp().frameUrl;
+    const setAnnoIdToDelete = useApp().setAnnoIdToDelete;
+    const setAnnoIdToShow = useApp().setAnnoIdToShow;
+    const annoIdToDraw = useApp().annoIdToDraw;
+    const uploaderFile = useApp().uploaderFile;
+    const annotationRef = useApp().annotationRef;
+    const setUpdateAnnotationChart = useApp().setUpdateAnnotationChart;
 
     useEffect(() => {
         if (!frameAnnotation) {

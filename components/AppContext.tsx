@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useRef, useEffect } from 'react';
+import { createContext, Dispatch, useContext, useState, useRef, useEffect, SetStateAction } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import styles from '../styles/Workspace.module.css';
 import { getAdditionalData, postVideoAnnotation, getProjectAnnotation } from '@/utils/requests';
@@ -9,59 +9,107 @@ import BrushTool from './BrushTool';
 import { Modal } from 'antd';
 import type { Annotation } from '@/types/annotations';
 
+interface AppContextType {
+    // States
+    activeAnnoObj: ActiveAnnoObjType, 
+    additionalData: {}, // AdditionalDataChart not working; can't determine type for this until it works
+    additionalDataNameToRetrieve: string[],  // AdditionalDataChart not working; can't determine type for this until it works
+    additionalDataRange: {}, // AdditionalDataChart not working; can't determine type for this until it works
+    annoIdToDelete: string,
+    annoIdToDraw: string,
+    annoIdToShow: string[],
+    annotationChartRange: number,
+    brushThickness: number,
+    btnConfigData: BtnConfigDataType,
+    btnGroups: [],
+    cancelIntervalAnno: boolean,
+    cancelIntervalErasing: boolean,
+    categoryColors: ColorsType,
+    confirmConfig: boolean,
+    downloadAnnotation: boolean,
+    downloadConfig: boolean,
+    drawType: string,
+    frameAnnotation: FrameAnnotation,
+    frameNum: number,
+    frameNumSignal: number,
+    frameUrl: string,
+    getAdditionalDataSignal: boolean,
+    globalInfo: string,
+    intervalAnno: {}, // actual type provided; see below
+    intervalErasing: {},
+    isFetchingFrame: boolean,
+    loadVideo: boolean,
+    modalInfo: string,
+    modalInfoOpen: boolean,
+    mutualExclusiveCategory: [],
+    projectData: {},
+    projectId: string,
+    resetAnnotationChart: boolean,
+    resetChart: boolean,
+    resetVideoDetails: boolean,
+    resetVideoPlay: boolean,
+    saveAnnotation: boolean,
+    skeletonLandmark: string,
+    undo: number,
+    updateAnnotationChart: boolean,
+    uploaderFile: UploadFileType, // for Projects and Annotations
+    useEraser: boolean,
+    videoAdditionalFieldsConfig: {},
+    videoData: {},
+    videoId: string,
+    annotationRef: React.RefObject<annoRefType | null>, //Record<number, Record<string, Annotation>>
+    lastFrameNumForIntervalAnnoRef: number,
+    lastFrameNumForIntervalErasingRef: number,
+    realFpsRef: number,
+    videoMetaRef: VideoMetaRefType,
 
-type StatesType = {
-activeAnnoObj: ActiveAnnoObjType, 
-additionalData: {}, // AdditionalDataChart not working; can't determine type for this until it works
-additionalDataNameToRetrieve: string[],  // AdditionalDataChart not working; can't determine type for this until it works
-additionalDataRange: {}, // AdditionalDataChart not working; can't determine type for this until it works
-annoIdToDelete: string,
-annoIdToDraw: string,
-annoIdToShow: string[],
-annotationChartRange: number,
-brushThickness: number,
-btnConfigData: BtnConfigDataType,
-btnGroups: [],
-cancelIntervalAnno: boolean,
-cancelIntervalErasing: boolean,
-categoryColors: ColorsType,
-confirmConfig: boolean,
-downloadAnnotation: boolean,
-downloadConfig: boolean,
-drawType: string,
-frameAnnotation: FrameAnnotation,
-frameNum: number,
-frameNumSignal: number,
-frameUrl: string,
-getAdditionalDataSignal: boolean,
-globalInfo: string,
-intervalAnno: {}, // actual type provided; see below
-intervalErasing: {},
-isFetchingFrame: boolean,
-loadVideo: boolean,
-modalInfo: string,
-modalInfoOpen: boolean,
-mutualExclusiveCategory: [],
-projectData: {},
-projectId: string,
-resetAnnotationChart: boolean,
-resetChart: boolean,
-resetVideoDetails: boolean,
-resetVideoPlay: boolean,
-saveAnnotation: boolean,
-skeletonLandmark: string,
-undo: number,
-updateAnnotationChart: boolean,
-uploaderFile: UploadFileType, // for Projects and Annotations
-useEraser: boolean,
-videoAdditionalFieldsConfig: {},
-videoData: {},
-videoId: string,
-annotationRef: React.RefObject<annoRefType | null>, //Record<number, Record<string, Annotation>>
-lastFrameNumForIntervalAnnoRef: number,
-lastFrameNumForIntervalErasingRef: number,
-realFpsRef: number,
-videoMetaRef: VideoMetaRefType,
+    // Setters
+    setActiveAnnoObj: Dispatch<SetStateAction<ActiveAnnoObjType>>, 
+    setAdditionalData: Dispatch<SetStateAction<{}>>, // AdditionalDataChart not working; can't determine type for this until it works
+    setAdditionalDataNameToRetrieve: Dispatch<SetStateAction<string[]>>,  // AdditionalDataChart not working; can't determine type for this until it works
+    setAdditionalDataRange: Dispatch<SetStateAction<{}>>, // AdditionalDataChart not working; can't determine type for this until it works
+    setAnnoIdToDelete: Dispatch<SetStateAction<string>>,
+    setAnnoIdToDraw: Dispatch<SetStateAction<string>>,
+    setAnnoIdToShow: Dispatch<SetStateAction<string[]>>,
+    setAnnotationChartRange: Dispatch<SetStateAction<number>>,
+    setBrushThickness: Dispatch<SetStateAction<number>>,
+    setBtnConfigData: Dispatch<SetStateAction<BtnConfigDataType>>,
+    setBtnGroups: Dispatch<SetStateAction<[]>>,
+    setCancelIntervalAnno: Dispatch<SetStateAction<boolean>>,
+    setCancelIntervalErasing: Dispatch<SetStateAction<boolean>>,
+    setCategoryColors: Dispatch<SetStateAction<ColorsType>>,
+    setConfirmConfig: Dispatch<SetStateAction<boolean>>,
+    setDownloadAnnotation: Dispatch<SetStateAction<boolean>>,
+    setDownloadConfig: Dispatch<SetStateAction<boolean>>,
+    setDrawType: Dispatch<SetStateAction<string>>,
+    setFrameAnnotation: Dispatch<SetStateAction<FrameAnnotation>>,
+    setFrameNum: Dispatch<SetStateAction<number>>,
+    setFrameNumSignal: Dispatch<SetStateAction<number>>,
+    setFrameUrl: Dispatch<SetStateAction<string>>,
+    setGetAdditionalDataSignal: Dispatch<SetStateAction<boolean>>,
+    setGlobalInfo: Dispatch<SetStateAction<string>>,
+    setIntervalAnno: Dispatch<SetStateAction<{}>>, // actual type provided; see below
+    setIntervalErasing: Dispatch<SetStateAction<{}>>,
+    setIsFetchingFrame: Dispatch<SetStateAction<boolean>>,
+    setLoadVideo: Dispatch<SetStateAction<boolean>>,
+    setModalInfo: Dispatch<SetStateAction<string>>,
+    setModalInfoOpen: Dispatch<SetStateAction<boolean>>,
+    setMutualExclusiveCategory: Dispatch<SetStateAction<[]>>,
+    setProjectData: Dispatch<SetStateAction<{}>>,
+    setProjectId: Dispatch<SetStateAction<string>>,
+    setResetAnnotationChart: Dispatch<SetStateAction<boolean>>,
+    setResetChart: Dispatch<SetStateAction<boolean>>,
+    setResetVideoDetails: Dispatch<SetStateAction<boolean>>,
+    setResetVideoPlay: Dispatch<SetStateAction<boolean>>,
+    setSaveAnnotation: Dispatch<SetStateAction<boolean>>,
+    setSkeletonLandmark: Dispatch<SetStateAction<string>>,
+    setUndo: Dispatch<SetStateAction<number>>,
+    setUpdateAnnotationChart: Dispatch<SetStateAction<boolean>>,
+    setUploaderFile: Dispatch<SetStateAction<UploadFileType>>, // for Projects and Annotations
+    setUseEraser: Dispatch<SetStateAction<boolean>>,
+    setVideoAdditionalFieldsConfig: Dispatch<SetStateAction<{}>>,
+    setVideoData: Dispatch<SetStateAction<{}>>,
+    setVideoId: Dispatch<SetStateAction<string>>,
 }
 
 type AdditionalDataRefType = Record<string, AdditionalData[]>;
@@ -137,8 +185,9 @@ type VideoMetaRefType = {
   totalFrameCount: number,
 }
 
-const StatesContext = createContext<StatesType | undefined>(undefined);
-const StateSettersContext = createContext<SettersType | undefined>(undefined);
+const AppContext = createContext<AppContextType | undefined>(undefined);
+//const StatesContext = createContext<StatesType | undefined>(undefined);
+//const StateSettersContext = createContext<StateSettersType | undefined>(undefined);
 
 
 interface AppContextProps {
@@ -147,8 +196,9 @@ interface AppContextProps {
 
 // Which of the states need to be accessible to the user-developer?
 
-export default function StatesProvider({children}: AppContextProps) {
+//export default function StatesProvider({children}: AppContextProps) {
 
+export default function AppProvider({children}: {children: React.ReactNode}){
   const [activeAnnoObj, setActiveAnnoObj] = useState<ActiveAnnoObjType>(); 
   const [additionalData, setAdditionalData] = useState({}); // needs Type
   const [additionalDataNameToRetrieve, setAdditionalDataNameToRetrieve] = useState<string[]>([]); // needs better type
@@ -202,7 +252,113 @@ export default function StatesProvider({children}: AppContextProps) {
   const realFpsRef = useRef(25);
   const videoMetaRef = useRef<VideoMetaRefType>( {fps: 0, totalFrameCount: 0}); // needs Type
 
-  const states = {
+
+  const contextValue: AppContextType ={
+    // States
+    activeAnnoObj,
+    additionalData,
+    additionalDataNameToRetrieve,
+    additionalDataRange,
+    annoIdToDelete,
+    annoIdToDraw,
+    annoIdToShow,
+    annotationChartRange,
+    brushThickness,
+    btnConfigData,
+    btnGroups,
+    cancelIntervalAnno,
+    cancelIntervalErasing,
+    categoryColors,
+    confirmConfig,
+    downloadAnnotation,
+    downloadConfig,
+    drawType,
+    frameAnnotation,
+    frameNum,
+    frameNumSignal,
+    frameUrl,
+    getAdditionalDataSignal,
+    globalInfo,
+    intervalAnno,
+    intervalErasing,
+    isFetchingFrame,
+    loadVideo,
+    modalInfo,
+    modalInfoOpen,
+    mutualExclusiveCategory,
+    projectData,
+    projectId,
+    resetAnnotationChart,
+    resetChart,
+    resetVideoDetails,
+    resetVideoPlay,
+    saveAnnotation,
+    skeletonLandmark,
+    undo,
+    updateAnnotationChart,
+    uploaderFile,
+    useEraser,
+    videoAdditionalFieldsConfig,
+    videoData,
+    videoId,
+    additionalDataRef, // Not a true state... does this matter?
+    annotationRef, 
+    lastFrameNumForIntervalAnnoRef,
+    lastFrameNumForIntervalErasingRef,
+    realFpsRef,
+    videoMetaRef,
+ 
+    // Setters
+    setActiveAnnoObj,
+    setAdditionalData,
+    setAdditionalDataNameToRetrieve,
+    setAdditionalDataRange,
+    setAnnoIdToDelete,
+    setAnnoIdToDraw,
+    setAnnoIdToShow,
+    setAnnotationChartRange,
+    setBrushThickness,
+    setBtnConfigData,
+    setBtnGroups,
+    setCancelIntervalAnno,
+    setCancelIntervalErasing,
+    setCategoryColors,
+    setConfirmConfig,
+    setDownloadAnnotation,
+    setDownloadConfig,
+    setDrawType,
+    setFrameAnnotation,
+    setFrameNum,
+    setFrameNumSignal,
+    setFrameUrl,
+    setGetAdditionalDataSignal,
+    setGlobalInfo,
+    setIntervalAnno,
+    setIntervalErasing,
+    setIsFetchingFrame,
+    setLoadVideo,
+    setModalInfo,
+    setModalInfoOpen,
+    setMutualExclusiveCategory,
+    setProjectData,
+    setProjectId,
+    setResetAnnotationChart,
+    setResetChart,
+    setResetVideoDetails,
+    setResetVideoPlay,
+    setSaveAnnotation,
+    setSkeletonLandmark,
+    setUndo,
+    setUpdateAnnotationChart,
+    setUploaderFile,
+    setUseEraser,
+    setVideoAdditionalFieldsConfig,
+    setVideoData,
+    setVideoId,
+    saveAnnotationAndUpdateStates, 
+  }
+    /*
+const states = {
     activeAnnoObj: activeAnnoObj,
     additionalData: additionalData,
     additionalDataNameToRetrieve: additionalDataNameToRetrieve,
@@ -307,6 +463,7 @@ export default function StatesProvider({children}: AppContextProps) {
     saveAnnotationAndUpdateStates: saveAnnotationAndUpdateStates, 
     // if there are more of these non-setter functions, create an ActionsContext and move them to it
   }
+    */
 
   useEffect(() => {
     setResetVideoPlay(true);
@@ -629,11 +786,9 @@ export default function StatesProvider({children}: AppContextProps) {
     return (
       <div className={styles.container}>
         <main className={styles.main}>
-          <StatesContext.Provider value={states}>
-            <StateSettersContext.Provider value={stateSetters}>
-              {children}
-            </StateSettersContext.Provider>
-          </StatesContext.Provider>
+          <AppContext.Provider value={contextValue}>
+            {children}
+          </AppContext.Provider>
           <Modal
             title='Info'
             open={modalInfoOpen}
@@ -652,6 +807,15 @@ export default function StatesProvider({children}: AppContextProps) {
     );
 }
 
+export function useApp() {
+    const context = useContext(AppContext);
+    if (context==undefined){
+        throw new Error ("useApp must be used within an AppProvider");
+    }
+    return context;
+}
+
+/*
 export function useStates() {
     const context = useContext(StatesContext);
     if (context === undefined) {
@@ -667,6 +831,7 @@ export function useStateSetters() {
   }
   return context;
 }
+  */
 
 
 

@@ -4,7 +4,7 @@ import BtnController from './BtnController';
 import SkeletonEdgeController from './SkeletonEdgeController';
 import { Select, Input, InputNumber, Button, Space } from 'antd';
 import { DownOutlined, DeleteOutlined} from '@ant-design/icons';
-import { useStateSetters, useStates } from './AppContext';
+import { useApp } from './AppContext';
 import { btnGroupTypeOptions, btnTypeOptions, createId } from '../utils/utils';
 import { postBtnGroup } from '../utils/requests';
 
@@ -100,10 +100,10 @@ export default function BtnGroupController(props) {
     const [skeletonName, setSkeletonName] = useState();
     const [edgeData, setEdgeData] = useState();
 
-    const btnConfigData = useStates().btnConfigData;
-    const setBtnConfigData = useStateSetters().setBtnConfigData;
-    const projectId = useStates().projectId;
-    const setGlobalInfo = useStateSetters().setGlobalInfo;
+    const btnConfigData = useApp().btnConfigData;
+    const setBtnConfigData = useApp().setBtnConfigData;
+    const projectId = useApp().projectId;
+    const setGlobalInfo = useApp().setGlobalInfo;
 
     
     useEffect(()=>{

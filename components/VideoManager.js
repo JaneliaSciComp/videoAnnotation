@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useStateSetters, useStates } from "./AppContext";
+import { useApp } from "./AppContext";
 import { Modal, List, Button, Form, Input, Space } from "antd";
 import { PlayCircleOutlined, DeleteOutlined } from "@ant-design/icons";
 import { postVideo, editVideo, deleteVideo } from "../utils/requests";
@@ -63,20 +63,20 @@ export default function VideoManager(props) {
   const [btnDisable, setBtnDisable] = useState(true);
   const [info, setInfo] = useState();
 
-  const videoData = useStates().videoData;
-  const setVideoData = useStateSetters().setVideoData;
-  const videoId = useStates().videoId;
-  const setVideoId = useStateSetters().setVideoId;
-  const setLoadVideo = useStateSetters().setLoadVideo;
-  const setResetVideoPlay = useStateSetters().setResetVideoPlay;
-  const resetVideoDetails = useStates().resetVideoDetails;
-  const setResetVideoDetails = useStateSetters().setResetVideoDetails;
-  const setResetChart = useStateSetters().setResetChart;
-  const videoAdditionalFieldsConfig = useStates().videoAdditionalFieldsConfig;
+  const videoData = useApp().videoData;
+  const setVideoData = useApp().setVideoData;
+  const videoId = useApp().videoId;
+  const setVideoId = useApp().setVideoId;
+  const setLoadVideo = useApp().setLoadVideo;
+  const setResetVideoPlay = useApp().setResetVideoPlay;
+  const resetVideoDetails = useApp().resetVideoDetails;
+  const setResetVideoDetails = useApp().setResetVideoDetails;
+  const setResetChart = useApp().setResetChart;
+  const videoAdditionalFieldsConfig = useApp().videoAdditionalFieldsConfig;
   const setVideoAdditionalFieldsConfig =
-    useStateSetters().setVideoAdditionalFieldsConfig;
-  const projectId = useStates().projectId;
-  const setAdditionalDataRange = useStateSetters().setAdditionalDataRange;
+    useApp().setVideoAdditionalFieldsConfig;
+  const projectId = useApp().projectId;
+  const setAdditionalDataRange = useApp().setAdditionalDataRange;
 
   const [form] = Form.useForm();
 

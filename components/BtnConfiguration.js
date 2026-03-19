@@ -4,7 +4,7 @@ import BtnGroupController from './BtnGroupController';
 import { Button, Space } from 'antd';
 import { PlusOutlined } from '@ant-design/icons';
 import SkeletonEdgeController from './SkeletonEdgeController';
-import { useStateSetters, useStates } from './AppContext';
+import { useApp } from './AppContext';
 import { deleteBtnGroup } from '../utils/requests';
 import { createId } from '../utils/utils';
 
@@ -65,10 +65,10 @@ export default function BtnConfiguration(props) {
     const [getData, setGetData] = useState({});
     const [info, setInfo] = useState();
 
-    const btnConfigData = useStates().btnConfigData;
-    const setBtnConfigData = useStateSetters().setBtnConfigData;    
-    const confirmConfig = useStates().confirmConfig;
-    const setConfirmConfig = useStateSetters().setConfirmConfig;
+    const btnConfigData = useApp().btnConfigData;
+    const setBtnConfigData = useApp().setBtnConfigData;    
+    const confirmConfig = useApp().confirmConfig;
+    const setConfirmConfig = useApp().setConfirmConfig;
 
     
     useEffect(() => {

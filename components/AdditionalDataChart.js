@@ -3,7 +3,7 @@ import styles from '../styles/Chart.module.css';
 import Chart from './Chart';
 import ChartController from './ChartController';
 import {Row, Col} from 'react-bootstrap';
-import { useStates } from './AppContext'; 
+import { useApp } from './AppContext'; 
 import { DownOutlined } from '@ant-design/icons';
 
 
@@ -50,8 +50,8 @@ export default function AdditionalDataChart(props) {
     const [data, setData] = useState({});
     const [hideController, setHideController] = useState(false);
 
-    const additionalData = useStates().additionalData;
-    const videoAdditionalFieldsConfig = useStates().videoAdditionalFieldsConfig;
+    const additionalData = useApp().additionalData;
+    const videoAdditionalFieldsConfig = useApp().videoAdditionalFieldsConfig;
     
     useEffect(() => {
             const additionalDataForChart = {};

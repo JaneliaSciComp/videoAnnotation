@@ -6,7 +6,7 @@ import {
   staticVerticalLine,
   dynamicVerticalLine,
 } from "../utils/utils";
-import { useStateSetters, useStates } from "./AppContext";
+import { useApp } from "./AppContext";
 import Zoom from "chartjs-plugin-zoom";
 import { Line, Bar } from "react-chartjs-2";
 import {
@@ -94,10 +94,10 @@ export default function MyChart(props) {
     },
   });
 
-  const setFrameNumSignal = useStateSetters().setFrameNumSignal;
-  const frameNum = useStates().frameNum;
-  const totalFrameCount = useStates().videoMetaRef.current.totalFrameCount;
-  const additionalDataRange = useStates().additionalDataRange;
+  const setFrameNumSignal = useApp().setFrameNumSignal;
+  const frameNum = useApp().frameNum;
+  const totalFrameCount = useApp().videoMetaRef.current.totalFrameCount;
+  const additionalDataRange = useApp().additionalDataRange;
 
   useEffect(() => {
     let initialLables = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];

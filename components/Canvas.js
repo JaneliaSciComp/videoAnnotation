@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useRef} from 'react';
 import styles from '../styles/Canvas.module.css';
 import {fabric} from 'fabric-with-erasing';
-import { useStates, useStateSetters } from './AppContext';
+import { useApp } from './AppContext';
 import { defaultAlpha, hexArr, hexMap } from '../utils/utils';
 
 const CANVAS_WIDTH = 600;
@@ -36,36 +36,36 @@ export default function Canvas(props) {
     const frameLoadTimeRef = useRef();
     const frameRenderTimeRef = useRef();
 
-    const videoId = useStates().videoId;
-    const frameUrl = useStates().frameUrl;
-    const frameNum = useStates().frameNum;
-    const drawType = useStates().drawType;
-    const setDrawType = useStateSetters().setDrawType;
-    const skeletonLandmark = useStates().skeletonLandmark;
-    const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
-    const frameAnnotation = useStates().frameAnnotation;
-    const setFrameAnnotation = useStateSetters().setFrameAnnotation;
-    const btnConfigData = useStates().btnConfigData;
-    const setActiveAnnoObj = useStateSetters().setActiveAnnoObj;
-    const brushThickness = useStates().brushThickness;
-    const useEraser = useStates().useEraser;
-    const undo = useStates().undo;
-    const annoIdToDraw = useStates().annoIdToDraw;
-    const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
-    const annoIdToDelete = useStates().annoIdToDelete;
-    const setAnnoIdToDelete = useStateSetters().setAnnoIdToDelete;
-    const annoIdToShow = useStates().annoIdToShow;
-    const annotationRef = useStates().annotationRef;
-    const uploaderFile = useStates().uploaderFile;
-    const setGetAdditionalDataSignal = useStateSetters().setGetAdditionalDataSignal;
-    const additionalData = useStates().additionalData;
-    const videoAdditionalFieldsConfig = useStates().videoAdditionalFieldsConfig;
-    const additionalDataRange = useStates().additionalDataRange;
-    const additionalDataNameToRetrieve = useStates().additionalDataNameToRetrieve;
-    const videoMetaRef = useStates().videoMetaRef;
-    const setGlobalInfo = useStateSetters().setGlobalInfo;
-    const realFpsRef = useStates().realFpsRef;
-    const isFetchingFrame = useStates().isFetchingFrame;
+    const videoId = useApp().videoId;
+    const frameUrl = useApp().frameUrl;
+    const frameNum = useApp().frameNum;
+    const drawType = useApp().drawType;
+    const setDrawType = useApp().setDrawType;
+    const skeletonLandmark = useApp().skeletonLandmark;
+    const setSkeletonLandmark = useApp().setSkeletonLandmark;
+    const frameAnnotation = useApp().frameAnnotation;
+    const setFrameAnnotation = useApp().setFrameAnnotation;
+    const btnConfigData = useApp().btnConfigData;
+    const setActiveAnnoObj = useApp().setActiveAnnoObj;
+    const brushThickness = useApp().brushThickness;
+    const useEraser = useApp().useEraser;
+    const undo = useApp().undo;
+    const annoIdToDraw = useApp().annoIdToDraw;
+    const setAnnoIdToDraw = useApp().setAnnoIdToDraw;
+    const annoIdToDelete = useApp().annoIdToDelete;
+    const setAnnoIdToDelete = useApp().setAnnoIdToDelete;
+    const annoIdToShow = useApp().annoIdToShow;
+    const annotationRef = useApp().annotationRef;
+    const uploaderFile = useApp().uploaderFile;
+    const setGetAdditionalDataSignal = useApp().setGetAdditionalDataSignal;
+    const additionalData = useApp().additionalData;
+    const videoAdditionalFieldsConfig = useApp().videoAdditionalFieldsConfig;
+    const additionalDataRange = useApp().additionalDataRange;
+    const additionalDataNameToRetrieve = useApp().additionalDataNameToRetrieve;
+    const videoMetaRef = useApp().videoMetaRef;
+    const setGlobalInfo = useApp().setGlobalInfo;
+    const realFpsRef = useApp().realFpsRef;
+    const isFetchingFrame = useApp().isFetchingFrame;
 
 
     fabric.Object.prototype.erasable = false;
@@ -123,7 +123,7 @@ export default function Canvas(props) {
                 imgRef.current.removeEventListener("load", imageLoadHandler);
             }
         }
-      }, [useStates()]
+      }, [useApp()]
     )
 
 

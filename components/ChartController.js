@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Dropdown, InputNumber } from "antd";
 import { Row, Col } from "react-bootstrap";
-import { useStateSetters, useStates } from "./AppContext";
+import { useApp } from "./AppContext";
 import { defaultAdditionalDataRange } from "../utils/utils";
 
 /**
@@ -22,16 +22,16 @@ export default function ChartController(props) {
   const [menuProps, setMenuProps] = useState();
   const [selectedMetrics, setSelectedMetrics] = useState([]);
 
-  const totalFrameCount = useStates().videoMetaRef.current.totalFrameCount;
-  const additionalDataRange = useStates().additionalDataRange;
-  const setAdditionalDataRange = useStateSetters().setAdditionalDataRange;
-  const resetChart = useStates().resetChart;
-  const setResetChart = useStateSetters().setResetChart;
-  const additionalDataNameToRetrieve = useStates().additionalDataNameToRetrieve;
+  const totalFrameCount = useApp().videoMetaRef.current.totalFrameCount;
+  const additionalDataRange = useApp().additionalDataRange;
+  const setAdditionalDataRange = useApp().setAdditionalDataRange;
+  const resetChart = useApp().resetChart;
+  const setResetChart = useApp().setResetChart;
+  const additionalDataNameToRetrieve = useApp().additionalDataNameToRetrieve;
   const setAdditionalDataNameToRetrieve =
-    useStateSetters().setAdditionalDataNameToRetrieve;
-  const videoAdditionalFieldsConfig = useStates().videoAdditionalFieldsConfig;
-  const setAnnotationChartRange = useStateSetters().setAnnotationChartRange;
+    useApp().setAdditionalDataNameToRetrieve;
+  const videoAdditionalFieldsConfig = useApp().videoAdditionalFieldsConfig;
+  const setAnnotationChartRange = useApp().setAnnotationChartRange;
 
   useEffect(() => {
     if (resetChart) {

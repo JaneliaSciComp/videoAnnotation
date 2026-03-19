@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Button } from "react-bootstrap";
 import { ClearOutlined } from "@ant-design/icons";
 import styles from "../styles/Button.module.css";
-import { useStateSetters, useStates } from "./AppContext";
+import { useApp } from "./AppContext";
 import { defaultColor } from "../utils/utils.js";
 
 /*
@@ -13,21 +13,21 @@ import { defaultColor } from "../utils/utils.js";
 
 */
 export default function CategoryEraser(props) {
-  const intervalErasing = useStates().intervalErasing;
-  const setIntervalErasing = useStateSetters().setIntervalErasing;
-  const frameNum = useStates().frameNum;
-  const frameUrl = useStates().frameUrl;
-  const intervalAnno = useStates().intervalAnno;
-  const setIntervalAnno = useStateSetters().setIntervalAnno;
-  const videoId = useStates().videoId;
-  const cancelIntervalErasing = useStates().cancelIntervalErasing;
-  const setCancelIntervalErasing = useStateSetters().setCancelIntervalErasing;
+  const intervalErasing = useApp().intervalErasing;
+  const setIntervalErasing = useApp().setIntervalErasing;
+  const frameNum = useApp().frameNum;
+  const frameUrl = useApp().frameUrl;
+  const intervalAnno = useApp().intervalAnno;
+  const setIntervalAnno = useApp().setIntervalAnno;
+  const videoId = useApp().videoId;
+  const cancelIntervalErasing = useApp().cancelIntervalErasing;
+  const setCancelIntervalErasing = useApp().setCancelIntervalErasing;
   const lastFrameNumForIntervalErasingRef =
-    useStates().lastFrameNumForIntervalErasingRef;
-  const setGlobalInfo = useStateSetters().setGlobalInfo;
-  const annotationRef = useStates().annotationRef;
-  const frameAnnotation = useStates().frameAnnotation;
-  const setFrameAnnotation = useStateSetters().setFrameAnnotation;
+    useApp().lastFrameNumForIntervalErasingRef;
+  const setGlobalInfo = useApp().setGlobalInfo;
+  const annotationRef = useApp().annotationRef;
+  const frameAnnotation = useApp().frameAnnotation;
+  const setFrameAnnotation = useApp().setFrameAnnotation;
 
   useEffect(() => {
     if (cancelIntervalErasing) {

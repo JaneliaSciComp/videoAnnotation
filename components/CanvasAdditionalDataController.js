@@ -1,7 +1,7 @@
 import React, {useState, useEffect, useRef} from 'react';
 import {Dropdown, InputNumber, Modal} from 'antd';
 import {Row, Col} from 'react-bootstrap';
-import { useStateSetters, useStates } from './AppContext'; 
+import { useApp } from './AppContext'; 
 import {defaultAdditionalDataRange} from '../utils/utils';
 
 
@@ -19,14 +19,14 @@ export default function CanvasAdditionalDataController(props) {
     const [selectedMetrics, setSelectedMetrics] = useState([]);
     const [open, setOpen] = useState(false);
 
-    const totalFrameCount = useStates().videoMetaRef.current.totalFrameCount;
-    const additionalDataRange = useStates().additionalDataRange;
-    const setAdditionalDataRange = useStateSetters().setAdditionalDataRange;
-    const resetChart = useStates().resetChart;
-    const setResetChart = useStateSetters().setResetChart;
-    const additionalDataNameToRetrieve = useStates().additionalDataNameToRetrieve;
-    const setAdditionalDataNameToRetrieve = useStateSetters().setAdditionalDataNameToRetrieve;
-    const videoAdditionalFieldsConfig = useStates().videoAdditionalFieldsConfig;
+    const totalFrameCount = useApp().videoMetaRef.current.totalFrameCount;
+    const additionalDataRange = useApp().additionalDataRange;
+    const setAdditionalDataRange = useApp().setAdditionalDataRange;
+    const resetChart = useApp().resetChart;
+    const setResetChart = useApp().setResetChart;
+    const additionalDataNameToRetrieve = useApp().additionalDataNameToRetrieve;
+    const setAdditionalDataNameToRetrieve = useApp().setAdditionalDataNameToRetrieve;
+    const videoAdditionalFieldsConfig = useApp().videoAdditionalFieldsConfig;
 
 
     useEffect(() => {

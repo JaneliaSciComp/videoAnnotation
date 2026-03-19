@@ -1,8 +1,8 @@
 import React from 'react';
-import { useStates } from './AppContext';
+import { useApp } from './AppContext';
 
 export default function BtnContainer() {
-    const btns = useStates().btnGroups;
+    const btns = useApp().btnGroups;
 
     return (
         <div className='my-3'>

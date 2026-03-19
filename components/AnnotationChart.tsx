@@ -1,6 +1,6 @@
 import React, {useState, useEffect, useRef} from 'react';
 import { staticVerticalLine, dynamicVerticalLine } from '../utils/utils';
-import { useStateSetters, useStates } from './AppContext'; 
+import { useApp } from './AppContext'; 
 import { Bar } from 'react-chartjs-2';
 import type { Annotation } from '@/types/annotations';
 //import { UploaderType } from '@/types/misc';
@@ -108,23 +108,23 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
     });
     const [annotationForChart, setAnnotationForChart] = useState<AnnotationDataForChart>({frameNum:null, range: null, data: null});
 
-    const setFrameNumSignal = useStateSetters().setFrameNumSignal;
-    const frameNum = useStates().frameNum;
-    const totalFrameCount = useStates().videoMetaRef.current.totalFrameCount;
-    const annotationChartRange = useStates().annotationChartRange;
-    const videoId = useStates().videoId;
-    const intervalAnno = useStates().intervalAnno;
-    const categoryColors = useStates().categoryColors;
-    const videoMetaRef = useStates().videoMetaRef;
-    const setCancelIntervalAnno = useStateSetters().setCancelIntervalAnno;  
-    const updateAnnotationChart = useStates().updateAnnotationChart;
-    const setUpdateAnnotationChart = useStateSetters().setUpdateAnnotationChart;
-    const uploaderFile = useStates().uploaderFile;
-    const resetAnnotationChart = useStates().resetAnnotationChart;
-    const setResetAnnotationChart = useStateSetters().setResetAnnotationChart; 
-    const intervalErasing = useStates().intervalErasing;
-    const annotationRef = useStates().annotationRef;
-    const setGlobalInfo = useStateSetters().setGlobalInfo;
+    const setFrameNumSignal = useApp().setFrameNumSignal;
+    const frameNum = useApp().frameNum;
+    const totalFrameCount = useApp().videoMetaRef.current.totalFrameCount;
+    const annotationChartRange = useApp().annotationChartRange;
+    const videoId = useApp().videoId;
+    const intervalAnno = useApp().intervalAnno;
+    const categoryColors = useApp().categoryColors;
+    const videoMetaRef = useApp().videoMetaRef;
+    const setCancelIntervalAnno = useApp().setCancelIntervalAnno;  
+    const updateAnnotationChart = useApp().updateAnnotationChart;
+    const setUpdateAnnotationChart = useApp().setUpdateAnnotationChart;
+    const uploaderFile = useApp().uploaderFile;
+    const resetAnnotationChart = useApp().resetAnnotationChart;
+    const setResetAnnotationChart = useApp().setResetAnnotationChart; 
+    const intervalErasing = useApp().intervalErasing;
+    const annotationRef = useApp().annotationRef;
+    const setGlobalInfo = useApp().setGlobalInfo;
 
 
     useEffect(() => {

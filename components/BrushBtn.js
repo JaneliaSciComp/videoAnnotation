@@ -3,7 +3,7 @@ import { Button, Row, Col} from 'react-bootstrap';
 import { Space, Radio, Slider } from 'antd';
 import { ClearOutlined, RollbackOutlined } from '@ant-design/icons';
 import styles from '../styles/Button.module.css';
-import { useStateSetters, useStates } from './AppContext';
+import { useApp } from './AppContext';
 import BrushTool from './BrushTool';
 import {defaultColor} from '../utils/utils.js';
 import { clearUnfinishedAnnotation, createId } from '../utils/utils.js';
@@ -42,18 +42,18 @@ export default function BrushBtn(props) {
     const annotationIdRef = useRef();
     const prevFrameUrlRef = useRef();
 
-    const drawType = useStates().drawType;
-    const frameNum = useStates().frameNum;
-    const frameUrl = useStates().frameUrl;
-    const setDrawType = useStateSetters().setDrawType;
-    const frameAnnotation = useStates().frameAnnotation;
-    const setFrameAnnotation = useStateSetters().setFrameAnnotation;
-    const setUseEraser = useStateSetters().setUseEraser;
-    const annoIdToDraw = useStates().annoIdToDraw;
-    const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
-    const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
-    const setUndo = useStateSetters().setUndo;
-    const videoId = useStates().videoId; 
+    const drawType = useApp().drawType;
+    const frameNum = useApp().frameNum;
+    const frameUrl = useApp().frameUrl;
+    const setDrawType = useApp().setDrawType;
+    const frameAnnotation = useApp().frameAnnotation;
+    const setFrameAnnotation = useApp().setFrameAnnotation;
+    const setUseEraser = useApp().setUseEraser;
+    const annoIdToDraw = useApp().annoIdToDraw;
+    const setAnnoIdToDraw = useApp().setAnnoIdToDraw;
+    const setSkeletonLandmark = useApp().setSkeletonLandmark;
+    const setUndo = useApp().setUndo;
+    const videoId = useApp().videoId; 
 
     useEffect(()=>{
         if (!props.label) {

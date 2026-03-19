@@ -1,5 +1,5 @@
 import { ChangeEvent, useState, useEffect, SetStateAction, Dispatch } from 'react';
-import { useStateSetters, useStates } from './AppContext';
+import { useApp } from './AppContext';
 import BtnConfiguration from './BtnConfiguration';
 import { Modal, Form, Input, Button } from 'antd';
 import { postProject, editProject } from '../utils/requests';
@@ -58,13 +58,13 @@ export default function ProjectManager({open, setOpen, status, onSubmit, onProje
     const [info, setInfo] = useState<string | null>();
     const [noProject, setNoProject] = useState<boolean>(true);
 
-    const setConfirmConfig = useStateSetters().setConfirmConfig;
-    const projectId = useStates().projectId;
-    const setProjectId = useStateSetters().setProjectId;
-    const projectData = useStates().projectData;
-    const setProjectData = useStateSetters().setProjectData;
-    const setVideoData = useStateSetters().setVideoData;
-    const setVideoId = useStateSetters().setVideoId;
+    const setConfirmConfig = useApp().setConfirmConfig;
+    const projectId = useApp().projectId;
+    const setProjectId = useApp().setProjectId;
+    const projectData = useApp().projectData;
+    const setProjectData = useApp().setProjectData;
+    const setVideoData = useApp().setVideoData;
+    const setVideoId = useApp().setVideoId;
 
     const [form] = Form.useForm();
 

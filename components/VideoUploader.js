@@ -3,7 +3,7 @@ import styles from "../styles/Video.module.css";
 import { InputNumber, Slider } from "antd";
 import { CaretRightOutlined, PauseOutlined } from "@ant-design/icons";
 import { Row, Col, Form, Button } from "react-bootstrap";
-import { useStates, useStateSetters } from "./AppContext";
+import { useApp } from "./AppContext";
 import {
   getFrame,
   postVideo,
@@ -38,26 +38,26 @@ export default function VideoUploader(props) {
   const needToSetIntervalRef = useRef(false);
   const loadOneRequestedRef = useRef(false);
 
-  const setFrameUrl = useStateSetters().setFrameUrl;
-  const setFrameNum = useStateSetters().setFrameNum;
-  const setVideoId = useStateSetters().setVideoId;
-  const frameNumSignal = useStates().frameNumSignal;
-  const loadVideo = useStates().loadVideo;
-  const setLoadVideo = useStateSetters().setLoadVideo;
-  const resetVideoPlay = useStates().resetVideoPlay;
-  const setResetVideoPlay = useStateSetters().setResetVideoPlay;
-  const videoData = useStates().videoData;
-  const setVideoData = useStateSetters().setVideoData;
-  const projectId = useStates().projectId;
-  const additionalDataNameToRetrieve = useStates().additionalDataNameToRetrieve;
-  const setAdditionalData = useStateSetters().setAdditionalData;
-  const videoMetaRef = useStates().videoMetaRef;
-  const setGlobalInfo = useStateSetters().setGlobalInfo;
-  const annotationRef = useStates().annotationRef;
-  const additionalDataRef = useStates().additionalDataRef;
-  const realFpsRef = useStates().realFpsRef;
-  const isFetchingFrame = useStates().isFetchingFrame;
-  const setIsFetchingFrame = useStateSetters().setIsFetchingFrame;
+  const setFrameUrl = useApp().setFrameUrl;
+  const setFrameNum = useApp().setFrameNum;
+  const setVideoId = useApp().setVideoId;
+  const frameNumSignal = useApp().frameNumSignal;
+  const loadVideo = useApp().loadVideo;
+  const setLoadVideo = useApp().setLoadVideo;
+  const resetVideoPlay = useApp().resetVideoPlay;
+  const setResetVideoPlay = useApp().setResetVideoPlay;
+  const videoData = useApp().videoData;
+  const setVideoData = useApp().setVideoData;
+  const projectId = useApp().projectId;
+  const additionalDataNameToRetrieve = useApp().additionalDataNameToRetrieve;
+  const setAdditionalData = useApp().setAdditionalData;
+  const videoMetaRef = useApp().videoMetaRef;
+  const setGlobalInfo = useApp().setGlobalInfo;
+  const annotationRef = useApp().annotationRef;
+  const additionalDataRef = useApp().additionalDataRef;
+  const realFpsRef = useApp().realFpsRef;
+  const isFetchingFrame = useApp().isFetchingFrame;
+  const setIsFetchingFrame = useApp().setIsFetchingFrame;
 
   const frameBufferSeconds =
     props.frameBufferSeconds ?? defaultFrameBufferSeconds;

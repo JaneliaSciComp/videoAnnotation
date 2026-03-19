@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Button } from "react-bootstrap";
 import { Radio, Space } from "antd";
 import styles from "../styles/Button.module.css";
-import { useStateSetters, useStates } from "./AppContext";
+import { useApp } from "./AppContext";
 import { clearUnfinishedAnnotation, createId } from "../utils/utils.js";
 
 /**
@@ -47,19 +47,19 @@ export default function SkeletonBtn(props) {
   const [radioValue, setRadioValue] = useState(2);
   const annotationIdRef = useRef();
 
-  const drawType = useStates().drawType;
-  const frameNum = useStates().frameNum;
-  const frameUrl = useStates().frameUrl;
-  const setDrawType = useStateSetters().setDrawType;
-  const frameAnnotation = useStates().frameAnnotation;
-  const setFrameAnnotation = useStateSetters().setFrameAnnotation;
-  const skeletonLandmark = useStates().skeletonLandmark;
-  const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
-  const annoIdToDraw = useStates().annoIdToDraw;
-  const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
-  const setUndo = useStateSetters().setUndo;
-  const setUseEraser = useStateSetters().setUseEraser;
-  const videoId = useStates().videoId;
+  const drawType = useApp().drawType;
+  const frameNum = useApp().frameNum;
+  const frameUrl = useApp().frameUrl;
+  const setDrawType = useApp().setDrawType;
+  const frameAnnotation = useApp().frameAnnotation;
+  const setFrameAnnotation = useApp().setFrameAnnotation;
+  const skeletonLandmark = useApp().skeletonLandmark;
+  const setSkeletonLandmark = useApp().setSkeletonLandmark;
+  const annoIdToDraw = useApp().annoIdToDraw;
+  const setAnnoIdToDraw = useApp().setAnnoIdToDraw;
+  const setUndo = useApp().setUndo;
+  const setUseEraser = useApp().setUseEraser;
+  const videoId = useApp().videoId;
 
   useEffect(() => {
     if (
