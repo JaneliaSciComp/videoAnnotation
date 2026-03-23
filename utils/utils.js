@@ -89,7 +89,7 @@ export function saveAnnotationAndUpdateStates(cancelInterval=false) {
 }
 
 
-export function clearUnfinishedAnnotation(frameAnnotationCopy) {
+export function clearUnfinishedAnnotation(frameAnnotationCopy) { // frameAnnotationCopy type = frameAnnotation (from types/annotations.ts)
     let unfinished =[];
     if (Object.keys(frameAnnotationCopy).length > 0) {
         unfinished = Object.keys(frameAnnotationCopy).filter(id=>{

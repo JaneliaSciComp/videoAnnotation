@@ -3,7 +3,6 @@
 import '@ant-design/v5-patch-for-react-19';
 import React, { useState } from "react";
 import Head from "next/head";
-//import Workspace from "../components/Workspace.js";
 import { AppProvider } from "../components/AppContext"
 import Canvas from "../components/Canvas.js";
 import VideoUploader from "../components/VideoUploader.js";

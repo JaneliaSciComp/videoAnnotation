@@ -1,4 +1,4 @@
-import { createContext, Dispatch, useContext, useState, useRef, useEffect, SetStateAction } from 'react';
+import { createContext, Dispatch, JSX, useContext, useState, useRef, useEffect, SetStateAction } from 'react';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import styles from '../styles/Workspace.module.css';
 import { getAdditionalData, postVideoAnnotation, getProjectAnnotation } from '@/utils/requests';
@@ -11,105 +11,105 @@ import type { Annotation } from '@/types/annotations';
 
 interface AppContextType {
     // States
-    activeAnnoObj: ActiveAnnoObjType, 
+    activeAnnoObj: ActiveAnnoObjType | undefined, 
     additionalData: {}, // AdditionalDataChart not working; can't determine type for this until it works
     additionalDataNameToRetrieve: string[],  // AdditionalDataChart not working; can't determine type for this until it works
     additionalDataRange: {}, // AdditionalDataChart not working; can't determine type for this until it works
-    annoIdToDelete: string,
-    annoIdToDraw: string,
-    annoIdToShow: string[],
-    annotationChartRange: number,
-    brushThickness: number,
+    annoIdToDelete: string | undefined,
+    annoIdToDraw: string | undefined,
+    annoIdToShow: string[] | undefined,
+    annotationChartRange: number | undefined,
+    brushThickness: number | undefined,
     btnConfigData: BtnConfigDataType,
-    btnGroups: [],
+    btnGroups: BtnGroupType[],
     cancelIntervalAnno: boolean,
     cancelIntervalErasing: boolean,
     categoryColors: ColorsType,
     confirmConfig: boolean,
     downloadAnnotation: boolean,
     downloadConfig: boolean,
-    drawType: string,
-    frameAnnotation: FrameAnnotation,
-    frameNum: number,
-    frameNumSignal: number,
-    frameUrl: string,
+    drawType: string | null | undefined,
+    frameAnnotation: FrameAnnotation | undefined,
+    frameNum: number | undefined,
+    frameNumSignal: number | undefined,
+    frameUrl: string | undefined,
     getAdditionalDataSignal: boolean,
-    globalInfo: string,
+    globalInfo: string | null | undefined, 
     intervalAnno: {}, // actual type provided; see below
     intervalErasing: {},
     isFetchingFrame: boolean,
     loadVideo: boolean,
-    modalInfo: string,
+    modalInfo: string | null | undefined,
     modalInfoOpen: boolean,
-    mutualExclusiveCategory: [],
+    mutualExclusiveCategory: [] | undefined,
     projectData: {},
-    projectId: string,
+    projectId: string | undefined,
     resetAnnotationChart: boolean,
     resetChart: boolean,
     resetVideoDetails: boolean,
     resetVideoPlay: boolean,
     saveAnnotation: boolean,
-    skeletonLandmark: string,
+    skeletonLandmark: string | null | undefined,
     undo: number,
     updateAnnotationChart: boolean,
-    uploaderFile: UploadFileType, // for Projects and Annotations
+    uploaderFile: UploadFileType | undefined, // for Projects and Annotations
     useEraser: boolean,
     videoAdditionalFieldsConfig: {},
     videoData: {},
-    videoId: string,
-    annotationRef: React.RefObject<annoRefType | null>, //Record<number, Record<string, Annotation>>
-    lastFrameNumForIntervalAnnoRef: number,
-    lastFrameNumForIntervalErasingRef: number,
-    realFpsRef: number,
-    videoMetaRef: VideoMetaRefType,
+    videoId: string | undefined,
+    annotationRef: React.RefObject<AnnoRefType | null>, //Record<number, Record<string, Annotation>>
+    lastFrameNumForIntervalAnnoRef: React.RefObject<number | undefined>,
+    lastFrameNumForIntervalErasingRef: React.RefObject<number | undefined>,
+    realFpsRef: React.RefObject<number | undefined>,
+    videoMetaRef: React.RefObject<VideoMetaRefType | undefined>,
 
     // Setters
-    setActiveAnnoObj: Dispatch<SetStateAction<ActiveAnnoObjType>>, 
+    setActiveAnnoObj: Dispatch<SetStateAction<ActiveAnnoObjType | undefined>>, 
     setAdditionalData: Dispatch<SetStateAction<{}>>, // AdditionalDataChart not working; can't determine type for this until it works
     setAdditionalDataNameToRetrieve: Dispatch<SetStateAction<string[]>>,  // AdditionalDataChart not working; can't determine type for this until it works
     setAdditionalDataRange: Dispatch<SetStateAction<{}>>, // AdditionalDataChart not working; can't determine type for this until it works
-    setAnnoIdToDelete: Dispatch<SetStateAction<string>>,
-    setAnnoIdToDraw: Dispatch<SetStateAction<string>>,
+    setAnnoIdToDelete: Dispatch<SetStateAction<string | undefined> >,
+    setAnnoIdToDraw: Dispatch<SetStateAction<string | undefined>>,
     setAnnoIdToShow: Dispatch<SetStateAction<string[]>>,
-    setAnnotationChartRange: Dispatch<SetStateAction<number>>,
-    setBrushThickness: Dispatch<SetStateAction<number>>,
+    setAnnotationChartRange: Dispatch<SetStateAction<number | undefined>>,
+    setBrushThickness: Dispatch<SetStateAction<number | undefined>>,
     setBtnConfigData: Dispatch<SetStateAction<BtnConfigDataType>>,
-    setBtnGroups: Dispatch<SetStateAction<[]>>,
+    setBtnGroups: Dispatch<SetStateAction<BtnGroupType[]>>,
     setCancelIntervalAnno: Dispatch<SetStateAction<boolean>>,
     setCancelIntervalErasing: Dispatch<SetStateAction<boolean>>,
     setCategoryColors: Dispatch<SetStateAction<ColorsType>>,
     setConfirmConfig: Dispatch<SetStateAction<boolean>>,
     setDownloadAnnotation: Dispatch<SetStateAction<boolean>>,
     setDownloadConfig: Dispatch<SetStateAction<boolean>>,
-    setDrawType: Dispatch<SetStateAction<string>>,
-    setFrameAnnotation: Dispatch<SetStateAction<FrameAnnotation>>,
-    setFrameNum: Dispatch<SetStateAction<number>>,
-    setFrameNumSignal: Dispatch<SetStateAction<number>>,
-    setFrameUrl: Dispatch<SetStateAction<string>>,
+    setDrawType: Dispatch<SetStateAction<string | null | undefined>>,
+    setFrameAnnotation: Dispatch<SetStateAction<FrameAnnotation | undefined>>,
+    setFrameNum: Dispatch<SetStateAction<number | undefined>>,
+    setFrameNumSignal: Dispatch<SetStateAction<number | undefined>>,
+    setFrameUrl: Dispatch<SetStateAction<string | undefined>>,
     setGetAdditionalDataSignal: Dispatch<SetStateAction<boolean>>,
-    setGlobalInfo: Dispatch<SetStateAction<string>>,
+    setGlobalInfo: Dispatch<SetStateAction<string | null | undefined>>,
     setIntervalAnno: Dispatch<SetStateAction<{}>>, // actual type provided; see below
     setIntervalErasing: Dispatch<SetStateAction<{}>>,
     setIsFetchingFrame: Dispatch<SetStateAction<boolean>>,
     setLoadVideo: Dispatch<SetStateAction<boolean>>,
-    setModalInfo: Dispatch<SetStateAction<string>>,
+    setModalInfo: Dispatch<SetStateAction<string | null | undefined>>,
     setModalInfoOpen: Dispatch<SetStateAction<boolean>>,
     setMutualExclusiveCategory: Dispatch<SetStateAction<[]>>,
     setProjectData: Dispatch<SetStateAction<{}>>,
-    setProjectId: Dispatch<SetStateAction<string>>,
+    setProjectId: Dispatch<SetStateAction<string | undefined>>,
     setResetAnnotationChart: Dispatch<SetStateAction<boolean>>,
     setResetChart: Dispatch<SetStateAction<boolean>>,
     setResetVideoDetails: Dispatch<SetStateAction<boolean>>,
     setResetVideoPlay: Dispatch<SetStateAction<boolean>>,
     setSaveAnnotation: Dispatch<SetStateAction<boolean>>,
-    setSkeletonLandmark: Dispatch<SetStateAction<string>>,
+    setSkeletonLandmark: Dispatch<SetStateAction<string | null | undefined>>,
     setUndo: Dispatch<SetStateAction<number>>,
     setUpdateAnnotationChart: Dispatch<SetStateAction<boolean>>,
-    setUploaderFile: Dispatch<SetStateAction<UploadFileType>>, // for Projects and Annotations
+    setUploaderFile: Dispatch<SetStateAction<UploadFileType | undefined>>, // for Projects and Annotations
     setUseEraser: Dispatch<SetStateAction<boolean>>,
     setVideoAdditionalFieldsConfig: Dispatch<SetStateAction<{}>>,
     setVideoData: Dispatch<SetStateAction<{}>>,
-    setVideoId: Dispatch<SetStateAction<string>>,
+    setVideoId: Dispatch<SetStateAction<string | undefined>>,
 }
 
 type AdditionalDataRefType = Record<string, AdditionalData[]>;
@@ -129,10 +129,14 @@ type ActiveAnnoObjType = {
   videoId: string
 }
 
-type annoRefType = {
+type AnnoRefType = {
   [frameNum: number]: {
     [id: string]: Annotation
   }
+}
+
+type FrameAnnotation = {
+    [id: string]: Annotation;
 }
 
 type BtnChildData = {
@@ -172,12 +176,12 @@ type BtnGroupType = {
   frameAnnotation: Annotation | null; // Is there a difference between Annotation (eg, 1 anno) and frameAnnotation (all annos on a frame??)
 }
 
-type ColorsType = {
-  [key: string]: string
+type BtnGroupDataType = {
+
 }
 
-type FrameAnnotation = {
-    [id: string]: Annotation;
+type ColorsType = {
+  [key: string]: string
 }
 
 type VideoMetaRefType = {
@@ -189,35 +193,35 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 // Which of the states need to be accessible to the user-developer?
 export function AppProvider({children}: {children: React.ReactNode}){
-  const [activeAnnoObj, setActiveAnnoObj] = useState<ActiveAnnoObjType>(); 
+  const [activeAnnoObj, setActiveAnnoObj] = useState<ActiveAnnoObjType | undefined>(); 
   const [additionalData, setAdditionalData] = useState({}); // needs Type
   const [additionalDataNameToRetrieve, setAdditionalDataNameToRetrieve] = useState<string[]>([]); // needs better type
   const [additionalDataRange, setAdditionalDataRange] = useState({}); // needs Type
-  const [annoIdToDelete, setAnnoIdToDelete] = useState<string | null>();
-  const [annoIdToDraw, setAnnoIdToDraw] = useState<string>();
+  const [annoIdToDelete, setAnnoIdToDelete] = useState<string | undefined>();
+  const [annoIdToDraw, setAnnoIdToDraw] = useState<string | undefined>();
   const [annoIdToShow, setAnnoIdToShow] = useState<string[]>([]);
-  const [annotationChartRange, setAnnotationChartRange] = useState<number>();
-  const [brushThickness, setBrushThickness] = useState<number>();
+  const [annotationChartRange, setAnnotationChartRange] = useState<number | undefined>();
+  const [brushThickness, setBrushThickness] = useState<number | undefined>();
   const [btnConfigData, setBtnConfigData] = useState<BtnConfigDataType>({});
-  const [btnGroups, setBtnGroups] = useState([]); // needs Type
+  const [btnGroups, setBtnGroups] = useState<JSX.Element[]>([]); // needs Type
   const [cancelIntervalAnno, setCancelIntervalAnno] = useState(false);
   const [cancelIntervalErasing, setCancelIntervalErasing] = useState(false);
   const [categoryColors, setCategoryColors] = useState<ColorsType>({}); // needs Type
   const [confirmConfig, setConfirmConfig] = useState(false);
   const [downloadAnnotation, setDownloadAnnotation] = useState(false);
   const [downloadConfig, setDownloadConfig] = useState(false);
-  const [drawType, setDrawType] = useState<string | null>();
-  const [frameAnnotation, setFrameAnnotation] = useState<FrameAnnotation>(); 
+  const [drawType, setDrawType] = useState<string | null | undefined>();
+  const [frameAnnotation, setFrameAnnotation] = useState<FrameAnnotation>(); // should this be frameAnnotations (plural)?
   const [frameNum, setFrameNum] = useState<number>();
   const [frameNumSignal, setFrameNumSignal] = useState<number>(); 
   const [frameUrl, setFrameUrl] = useState<string>();
   const [getAdditionalDataSignal, setGetAdditionalDataSignal] = useState(false);
-  const [globalInfo, setGlobalInfo] = useState<string | null>();
+  const [globalInfo, setGlobalInfo] = useState<string | null | undefined>();
   const [intervalAnno, setIntervalAnno] = useState({on: false, startFrame: null, videoId:null, label: null, color: null, annotatedFrames: new Set()});
   const [intervalErasing, setIntervalErasing] = useState({}); // needs Type
   const [isFetchingFrame, setIsFetchingFrame] = useState(false);
   const [loadVideo, setLoadVideo] = useState(false);
-  const [modalInfo, setModalInfo] = useState<string | null>();
+  const [modalInfo, setModalInfo] = useState<string | null | undefined>();
   const [modalInfoOpen, setModalInfoOpen] = useState(false);
   const [mutualExclusiveCategory, setMutualExclusiveCategory] = useState([]);
   const [projectData, setProjectData] = useState({}); // needs Type
@@ -227,7 +231,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
   const [resetVideoDetails, setResetVideoDetails] = useState(false);
   const [resetVideoPlay, setResetVideoPlay] = useState(false);
   const [saveAnnotation, setSaveAnnotation] = useState(false);
-  const [skeletonLandmark, setSkeletonLandmark] = useState<string | null>(); // unsure about type on this one
+  const [skeletonLandmark, setSkeletonLandmark] = useState<string | null | undefined>(); // unsure about type on this one
   const [undo, setUndo] = useState(0); // any number? Or just certain ones? Seems like this would be boolean
   const [updateAnnotationChart, setUpdateAnnotationChart] = useState(false);
   const [uploaderFile, setUploaderFile] = useState<UploadFileType>(); 
@@ -236,7 +240,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
   const [videoData, setVideoData] = useState({}); // needs Type
   const [videoId, setVideoId] = useState<string>();
   const additionalDataRef = useRef({});
-  const annotationRef = useRef({}); // needs Type
+  const annotationRef = useRef<AnnoRefType | null>({}); // needs Type
   const lastFrameNumForIntervalAnnoRef = useRef(-1);
   const lastFrameNumForIntervalErasingRef = useRef(-1);
   const realFpsRef = useRef(25);
@@ -272,7 +276,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
     intervalAnno,
     intervalErasing,
     isFetchingFrame,
-    loadVideo,
+    loadVideo, 
     modalInfo,
     modalInfoOpen,
     mutualExclusiveCategory,
@@ -453,7 +457,8 @@ export function AppProvider({children}: {children: React.ReactNode}){
             if (projectId) {
                 if (videoId || frameUrl) {
                     saveFrameAnnotation(true, false)
-                    const annotations = Object.values(annotationRef.current).map(frameAnno => Object.values(frameAnno))
+                    //const annotations = Object.values(annotationRef.current).map(frameAnno => Object.values(frameAnno))
+                    const annotations = Object.values(annotationRef.current ?? {}).map(frameAnno =>Object.values(frameAnno));
                     const data = {
                         annotations: annotations.flat(),
                         videoId: videoId,
@@ -498,7 +503,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
             if (projectId) {
                 if (videoId || frameUrl) {
                     saveFrameAnnotation(true, false);
-                    const annotations = Object.values(annotationRef.current).map(frameAnno => Object.values(frameAnno))
+                    const annotations = Object.values(annotationRef.current ?? {}).map(frameAnno => Object.values(frameAnno))
                     const data = {
                         annotations: annotations.flat(),
                         videoId: videoId,
@@ -562,7 +567,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
     function saveFrameAnnotation(cancelInterval=false, savePrevFrame=true) {
             if (!Number.isInteger(frameNum) || frameNum === 0) return;
 
-            const newFrameAnno = clearUnfinishedAnnotation({...frameAnnotation});
+            const newFrameAnno: FrameAnnotation = clearUnfinishedAnnotation({...frameAnnotation});
             if (cancelInterval && intervalAnno.on) {
 
                     setCancelIntervalAnno(true);
@@ -570,7 +575,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
 
             if (Object.keys(newFrameAnno).length > 0) {
                 const firstAnno = Object.values(newFrameAnno)[0];
-                if (savePrevFrame && firstAnno.frameNum === frameNum-1) {
+                if (savePrevFrame && frameNum && firstAnno.frameNum === frameNum-1) {
                     annotationRef.current[frameNum-1] = newFrameAnno; 
                 } else if (!savePrevFrame && firstAnno.frameNum === frameNum) {
                     annotationRef.current[frameNum] = newFrameAnno; 
@@ -618,7 +623,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
         if (btnConfigData) {
             renderBtnGroup();
         }
-    }, [btnConfigData, frameNum, frameAnnotation, drawType, skeletonLandmark])
+    }, [btnConfigData, frameNum, frameAnnotation, drawType, skeletonLandmark]) // do you need to re-render BtnGroup each frame change?
 
     function renderBtnGroup() {
         const groupIndices = Object.keys(btnConfigData).sort((a, b) => Number(a)-Number(b));
