@@ -21,7 +21,7 @@ interface AppContextType {
     annotationChartRange: number | undefined,
     brushThickness: number | undefined,
     btnConfigData: BtnConfigDataType,
-    btnGroups: BtnGroupType[],
+    btnGroups: JSX.Element[],
     cancelIntervalAnno: boolean,
     cancelIntervalErasing: boolean,
     categoryColors: ColorsType,
@@ -74,7 +74,7 @@ interface AppContextType {
     setAnnotationChartRange: Dispatch<SetStateAction<number | undefined>>,
     setBrushThickness: Dispatch<SetStateAction<number | undefined>>,
     setBtnConfigData: Dispatch<SetStateAction<BtnConfigDataType>>,
-    setBtnGroups: Dispatch<SetStateAction<BtnGroupType[]>>,
+    setBtnGroups: Dispatch<SetStateAction<JSX.Element[]>>,
     setCancelIntervalAnno: Dispatch<SetStateAction<boolean>>,
     setCancelIntervalErasing: Dispatch<SetStateAction<boolean>>,
     setCategoryColors: Dispatch<SetStateAction<ColorsType>>,
@@ -163,6 +163,7 @@ type BtnConfigDataType = {
   [key: string]: BtnsType
 }
 
+/*
 type BtnGroupType = {
   data: BtnGroupDataType;
   frameNum: number;
@@ -179,6 +180,7 @@ type BtnGroupType = {
 type BtnGroupDataType = {
 
 }
+*/
 
 type ColorsType = {
   [key: string]: string
@@ -627,7 +629,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
 
     function renderBtnGroup() {
         const groupIndices = Object.keys(btnConfigData).sort((a, b) => Number(a)-Number(b));
-        const groups = []; // [key: number]: BtnGroupType
+        const groups: JSX.Element[] = []; 
         let k = 0;
         let addedBrushTool = false;
         groupIndices.forEach(index => {
