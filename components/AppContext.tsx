@@ -41,7 +41,7 @@ interface AppContextType {
     loadVideo: boolean,
     modalInfo: string | null | undefined,
     modalInfoOpen: boolean,
-    mutualExclusiveCategory: [] | undefined,
+    mutualExclusiveCategory: string[][] | undefined,
     projectData: {},
     projectId: string | undefined,
     resetAnnotationChart: boolean,
@@ -94,7 +94,7 @@ interface AppContextType {
     setLoadVideo: Dispatch<SetStateAction<boolean>>,
     setModalInfo: Dispatch<SetStateAction<string | null | undefined>>,
     setModalInfoOpen: Dispatch<SetStateAction<boolean>>,
-    setMutualExclusiveCategory: Dispatch<SetStateAction<[]>>,
+    setMutualExclusiveCategory: Dispatch<SetStateAction<string[][]>>,
     setProjectData: Dispatch<SetStateAction<{}>>,
     setProjectId: Dispatch<SetStateAction<string | undefined>>,
     setResetAnnotationChart: Dispatch<SetStateAction<boolean>>,
@@ -225,7 +225,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
   const [loadVideo, setLoadVideo] = useState(false);
   const [modalInfo, setModalInfo] = useState<string | null | undefined>();
   const [modalInfoOpen, setModalInfoOpen] = useState(false);
-  const [mutualExclusiveCategory, setMutualExclusiveCategory] = useState([]);
+  const [mutualExclusiveCategory, setMutualExclusiveCategory] = useState<string[][]>([]);
   const [projectData, setProjectData] = useState({}); // needs Type
   const [projectId, setProjectId] = useState<string>(); 
   const [resetAnnotationChart, setResetAnnotationChart] = useState(false);
@@ -591,11 +591,19 @@ export function AppProvider({children}: {children: React.ReactNode}){
         setFrameAnnotation({...frameAnnotation, [idObj.id]: idObj});
     }
 
+    type IntervalErasingItem = {
+        on: boolean,
+        startFrame: number | null,
+        videoId: number | null,
+
+    }
+
     useEffect(() => {
         const btnConfigCopy = {...btnConfigData};
         const colors = {};
-        const intervalErasingData = {};
-        const mutualExclusiveCategoryArr = [];
+        const intervalErasingData: {[key: string]: IntervalErasingItem} = {};
+        const mutualExclusiveCategoryArr: string[][] = []; // assumes that a frame cannot have 'chase' and 'follow' at the same time
+        // this is because annotation is by FRAME, not by animal.
         Object.entries(btnConfigCopy).forEach(([id, groupData]) => {
             if (groupData?.edgeData && groupData.edgeData.edges.length) {
                 const edgesArr = groupData.edgeData.edges.map(neighborSet => neighborSet?[...neighborSet]:null);
@@ -603,13 +611,13 @@ export function AppProvider({children}: {children: React.ReactNode}){
             }
             
             if (groupData.groupType === 'category') {
-                const mutualExclusive = [];
+                const mutualExclusive: string[]  = [];
                 groupData.childData.forEach(child => {
                     if (!Object.keys(colors).some(label => label === child.label)) {
                         colors[child.label] = child.color;
                     }
 
-                    mutualExclusive.push(child.label);
+                    mutualExclusive.push(child.label); 
                 })
                 mutualExclusiveCategoryArr.push(mutualExclusive);
 
