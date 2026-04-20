@@ -35,7 +35,7 @@ interface AppContextType {
     frameUrl: string | undefined,
     getAdditionalDataSignal: boolean,
     globalInfo: string | null | undefined, 
-    intervalAnno: {}, // actual type provided; see below
+    intervalAnno: IntervalAnno | null | undefined, // actual type provided; see below
     intervalErasing: {},
     isFetchingFrame: boolean,
     loadVideo: boolean,
@@ -88,7 +88,7 @@ interface AppContextType {
     setFrameUrl: Dispatch<SetStateAction<string | undefined>>,
     setGetAdditionalDataSignal: Dispatch<SetStateAction<boolean>>,
     setGlobalInfo: Dispatch<SetStateAction<string | null | undefined>>,
-    setIntervalAnno: Dispatch<SetStateAction<{}>>, // actual type provided; see below
+    setIntervalAnno: Dispatch<SetStateAction<IntervalAnno>>, // actual type provided; see below
     setIntervalErasing: Dispatch<SetStateAction<{}>>,
     setIsFetchingFrame: Dispatch<SetStateAction<boolean>>,
     setLoadVideo: Dispatch<SetStateAction<boolean>>,
@@ -125,7 +125,7 @@ type ActiveAnnoObjType = {
   frameNum: number,
   id: string,
   label: string,
-  type: string
+  type: string,
   videoId: string
 }
 
@@ -148,6 +148,15 @@ type IndividualBtnType = {
   color: string,
   index: number,
   label: string
+}
+
+type IntervalAnno = {
+    on: boolean, 
+    startFrame: number | null, 
+    videoId: string | null, 
+    label: string | null, 
+    color: string | null, 
+    annotatedFrames: Set<string>
 }
 
 type BtnsType = {
@@ -219,7 +228,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
   const [frameUrl, setFrameUrl] = useState<string>();
   const [getAdditionalDataSignal, setGetAdditionalDataSignal] = useState(false);
   const [globalInfo, setGlobalInfo] = useState<string | null | undefined>();
-  const [intervalAnno, setIntervalAnno] = useState({on: false, startFrame: null, videoId:null, label: null, color: null, annotatedFrames: new Set()});
+  const [intervalAnno, setIntervalAnno] = useState<IntervalAnno>({on: false, startFrame: null, videoId:null, label: null, color: null, annotatedFrames: new Set()});
   const [intervalErasing, setIntervalErasing] = useState({}); // needs Type
   const [isFetchingFrame, setIsFetchingFrame] = useState(false);
   const [loadVideo, setLoadVideo] = useState(false);
