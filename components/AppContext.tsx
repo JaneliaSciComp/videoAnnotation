@@ -11,7 +11,7 @@ import type { Annotation } from '@/types/annotations';
 
 interface AppContextType {
     // States
-    activeAnnoObj: ActiveAnnoObjType | undefined, 
+    activeAnnoObj: ActiveAnnoObjType | null, 
     additionalData: {}, // AdditionalDataChart not working; can't determine type for this until it works
     additionalDataNameToRetrieve: string[],  // AdditionalDataChart not working; can't determine type for this until it works
     additionalDataRange: {}, // AdditionalDataChart not working; can't determine type for this until it works
@@ -64,7 +64,7 @@ interface AppContextType {
     videoMetaRef: React.RefObject<VideoMetaRefType | undefined>,
 
     // Setters
-    setActiveAnnoObj: Dispatch<SetStateAction<ActiveAnnoObjType | undefined>>, 
+    setActiveAnnoObj: Dispatch<SetStateAction<ActiveAnnoObjType | null>>, 
     setAdditionalData: Dispatch<SetStateAction<{}>>, // AdditionalDataChart not working; can't determine type for this until it works
     setAdditionalDataNameToRetrieve: Dispatch<SetStateAction<string[]>>,  // AdditionalDataChart not working; can't determine type for this until it works
     setAdditionalDataRange: Dispatch<SetStateAction<{}>>, // AdditionalDataChart not working; can't determine type for this until it works
@@ -204,7 +204,7 @@ const AppContext = createContext<AppContextType | undefined>(undefined);
 
 // Which of the states need to be accessible to the user-developer?
 export function AppProvider({children}: {children: React.ReactNode}){
-  const [activeAnnoObj, setActiveAnnoObj] = useState<ActiveAnnoObjType | undefined>(); 
+  const [activeAnnoObj, setActiveAnnoObj] = useState<ActiveAnnoObjType | null>(null); 
   const [additionalData, setAdditionalData] = useState({}); // needs Type
   const [additionalDataNameToRetrieve, setAdditionalDataNameToRetrieve] = useState<string[]>([]); // needs better type
   const [additionalDataRange, setAdditionalDataRange] = useState({}); // needs Type
@@ -412,12 +412,12 @@ export function AppProvider({children}: {children: React.ReactNode}){
 
 
     function saveAnnotationAndUpdateStates(cancelInterval=false) {
-      setActiveAnnoObj({});
+      setActiveAnnoObj(null);
       setDrawType(null);
       setSkeletonLandmark(null);
       setUndo(0);
       setUseEraser(false);
-      setAnnoIdToDelete(null);
+      setAnnoIdToDelete(undefined);
       saveFrameAnnotation(cancelInterval);
 }
     function getAdditionalDataFromRef() {
