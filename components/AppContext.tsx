@@ -144,9 +144,12 @@ type FrameAnnotation = {
     [id: string]: Annotation;
 }
 
+/*
 type BtnChildData = {
   [key: number]: IndividualBtnType
 }
+  */
+type BtnChildData = IndividualBtnType[];
 
 type IndividualBtnType = {
   btnType: string,
@@ -167,7 +170,7 @@ type IntervalAnno = {
 type BtnsType = {
   btnNum: number,
   btnType: string,
-  edgeData?: {[key:string]:{[key:string]:number}},
+  edgeData?: {edges: (Set<number> | null)[] | (number[] | null) []}, // is null needed?
   groupType: string,
   groupIndex?: string,
   projectId: string
@@ -615,13 +618,13 @@ export function AppProvider({children}: {children: React.ReactNode}){
 
     useEffect(() => {
         const btnConfigCopy = {...btnConfigData};
-        const colors = {};
+        const colors: {[key: string]: string} = {};
         const intervalErasingData: {[key: string]: IntervalErasingItem} = {};
         const mutualExclusiveCategoryArr: string[][] = []; // assumes that a frame cannot have 'chase' and 'follow' at the same time
         // this is because annotation is by FRAME, not by animal.
         Object.entries(btnConfigCopy).forEach(([id, groupData]) => {
             if (groupData?.edgeData && groupData.edgeData.edges.length) {
-                const edgesArr = groupData.edgeData.edges.map(neighborSet => neighborSet?[...neighborSet]:null);
+                const edgesArr = groupData.edgeData.edges.map(neighborSet => neighborSet?[...neighborSet] : null);
                 groupData.edgeData.edges = edgesArr;
             }
             
