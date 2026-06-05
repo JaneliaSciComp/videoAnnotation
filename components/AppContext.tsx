@@ -118,6 +118,11 @@ type AdditionalData = {
 
 }
 
+type AdditionalDataForChartType = {
+    range: [number, number],
+    data: string
+}
+
 type ActiveAnnoObjType = {
   color?: string,
   data?: number[][],
@@ -162,6 +167,7 @@ type IntervalAnno = {
 type BtnsType = {
   btnNum: number,
   btnType: string,
+  edgeData?: {[key:string]:{[key:string]:number}},
   groupType: string,
   groupIndex?: string,
   projectId: string
@@ -207,7 +213,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
   const [activeAnnoObj, setActiveAnnoObj] = useState<ActiveAnnoObjType | null>(null); 
   const [additionalData, setAdditionalData] = useState({}); // needs Type
   const [additionalDataNameToRetrieve, setAdditionalDataNameToRetrieve] = useState<string[]>([]); // needs better type
-  const [additionalDataRange, setAdditionalDataRange] = useState({}); // needs Type
+  const [additionalDataRange, setAdditionalDataRange] = useState<{[key:string]:number}>({}); 
   const [annoIdToDelete, setAnnoIdToDelete] = useState<string | undefined>();
   const [annoIdToDraw, setAnnoIdToDraw] = useState<string | undefined>();
   const [annoIdToShow, setAnnoIdToShow] = useState<string[]>([]);
@@ -235,7 +241,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
   const [modalInfo, setModalInfo] = useState<string | null | undefined>();
   const [modalInfoOpen, setModalInfoOpen] = useState(false);
   const [mutualExclusiveCategory, setMutualExclusiveCategory] = useState<string[][]>([]);
-  const [projectData, setProjectData] = useState({}); // needs Type
+  const [projectData, setProjectData] = useState<{[key:string]:string}>({}); // does anything exist on this besides projectName?
   const [projectId, setProjectId] = useState<string>(); 
   const [resetAnnotationChart, setResetAnnotationChart] = useState(false);
   const [resetChart, setResetChart] = useState(false);
@@ -423,7 +429,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
     function getAdditionalDataFromRef() {
         setGlobalInfo(null);
         if (Number.isInteger(frameNum)) { 
-            let additionalDataForChart={};
+            let additionalDataForChart: {[key:string]:AdditionalDataForChartType} = {};
             if (additionalDataNameToRetrieve?.length>0) {
                 additionalDataNameToRetrieve.map(name => {
                     const rangeNeeded = additionalDataRange[name];
@@ -596,7 +602,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
     }
 
     // seems unnecessary... why not just use the one line?
-    function addAnnotationObj(idObj) {
+    function addAnnotationObj(idObj:Annotation) {
         setFrameAnnotation({...frameAnnotation, [idObj.id]: idObj});
     }
 
