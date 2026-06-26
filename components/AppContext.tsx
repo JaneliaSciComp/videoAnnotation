@@ -36,7 +36,7 @@ interface AppContextType {
     getAdditionalDataSignal: boolean,
     globalInfo: string | null | undefined, 
     intervalAnno: IntervalAnno | null | undefined, // actual type provided; see below
-    intervalErasing: {},
+    intervalErasing: {[key:string]: IntervalErasingItem},
     isFetchingFrame: boolean,
     loadVideo: boolean,
     modalInfo: string | null | undefined,
@@ -57,6 +57,7 @@ interface AppContextType {
     videoAdditionalFieldsConfig: {},
     videoData: {},
     videoId: string | undefined,
+    additionalDataRef: React.RefObject<AdditionalDataRefType | undefined>,
     annotationRef: React.RefObject<AnnoRefType | null>, //Record<number, Record<string, Annotation>>
     lastFrameNumForIntervalAnnoRef: React.RefObject<number | undefined>,
     lastFrameNumForIntervalErasingRef: React.RefObject<number | undefined>,
@@ -89,7 +90,7 @@ interface AppContextType {
     setGetAdditionalDataSignal: Dispatch<SetStateAction<boolean>>,
     setGlobalInfo: Dispatch<SetStateAction<string | null | undefined>>,
     setIntervalAnno: Dispatch<SetStateAction<IntervalAnno>>, // actual type provided; see below
-    setIntervalErasing: Dispatch<SetStateAction<{}>>,
+    setIntervalErasing: Dispatch<SetStateAction<{[key:string]:IntervalErasingItem}>>,
     setIsFetchingFrame: Dispatch<SetStateAction<boolean>>,
     setLoadVideo: Dispatch<SetStateAction<boolean>>,
     setModalInfo: Dispatch<SetStateAction<string | null | undefined>>,
@@ -110,17 +111,18 @@ interface AppContextType {
     setVideoAdditionalFieldsConfig: Dispatch<SetStateAction<{}>>,
     setVideoData: Dispatch<SetStateAction<{}>>,
     setVideoId: Dispatch<SetStateAction<string | undefined>>,
+    saveAnnotationAndUpdateStates: (cancelInterval?: boolean) => void
 }
 
 type AdditionalDataRefType = Record<string, AdditionalData[]>;
 
 type AdditionalData = {
-
+    // Not sure what this is meant to look like
 }
 
 type AdditionalDataForChartType = {
     range: [number, number],
-    data: string
+    data: AdditionalData
 }
 
 type ActiveAnnoObjType = {
@@ -165,6 +167,13 @@ type IntervalAnno = {
     label: string | null, 
     color: string | null, 
     annotatedFrames: Set<string>
+}
+
+type IntervalErasingItem = {
+    on: boolean,
+    startFrame: number | null,
+    videoId: number | null,
+    labels: string[],
 }
 
 type BtnsType = {
@@ -238,7 +247,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
   const [getAdditionalDataSignal, setGetAdditionalDataSignal] = useState(false);
   const [globalInfo, setGlobalInfo] = useState<string | null | undefined>();
   const [intervalAnno, setIntervalAnno] = useState<IntervalAnno>({on: false, startFrame: null, videoId:null, label: null, color: null, annotatedFrames: new Set()});
-  const [intervalErasing, setIntervalErasing] = useState({}); // needs Type
+  const [intervalErasing, setIntervalErasing] = useState<{[key:string]: IntervalErasingItem}>({}); // needs Type
   const [isFetchingFrame, setIsFetchingFrame] = useState(false);
   const [loadVideo, setLoadVideo] = useState(false);
   const [modalInfo, setModalInfo] = useState<string | null | undefined>();
@@ -259,7 +268,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
   const [videoAdditionalFieldsConfig, setVideoAdditionalFieldsConfig] = useState({}); // needs Type
   const [videoData, setVideoData] = useState({}); // needs Type
   const [videoId, setVideoId] = useState<string>();
-  const additionalDataRef = useRef({});
+  const additionalDataRef = useRef<AdditionalDataRefType>({});
   const annotationRef = useRef<AnnoRefType | null>({}); // needs Type
   const lastFrameNumForIntervalAnnoRef = useRef(-1);
   const lastFrameNumForIntervalErasingRef = useRef(-1);
@@ -593,7 +602,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
                     setCancelIntervalAnno(true);
             }
 
-            if (Object.keys(newFrameAnno).length > 0) {
+            if (Object.keys(newFrameAnno).length > 0 && annotationRef.current) {
                 const firstAnno = Object.values(newFrameAnno)[0];
                 if (savePrevFrame && frameNum && firstAnno.frameNum === frameNum-1) {
                     annotationRef.current[frameNum-1] = newFrameAnno; 
@@ -607,13 +616,6 @@ export function AppProvider({children}: {children: React.ReactNode}){
     // seems unnecessary... why not just use the one line?
     function addAnnotationObj(idObj:Annotation) {
         setFrameAnnotation({...frameAnnotation, [idObj.id]: idObj});
-    }
-
-    type IntervalErasingItem = {
-        on: boolean,
-        startFrame: number | null,
-        videoId: number | null,
-
     }
 
     useEffect(() => {
@@ -639,11 +641,11 @@ export function AppProvider({children}: {children: React.ReactNode}){
                 })
                 mutualExclusiveCategoryArr.push(mutualExclusive);
 
-                intervalErasingData[id] = {on: false, startFrame:null, videoId:null, labels: groupData.childData.map(child => child.label)};
+                intervalErasingData[id] = {on: false, startFrame:null, videoId:null, labels:groupData.childData.map(child => child.label)};
             }
         })
         setCategoryColors(colors);
-        setIntervalErasing(() => intervalErasingData);
+        setIntervalErasing(intervalErasingData);
         setMutualExclusiveCategory(mutualExclusiveCategoryArr);
     }, [btnConfigData])
 
@@ -695,8 +697,10 @@ export function AppProvider({children}: {children: React.ReactNode}){
     }
 
     function getFrameAnnotationFromRefAndSetState() {
-        const frameAnno = annotationRef.current[frameNum]??{};
-        setFrameAnnotation({...frameAnno});
+        if (annotationRef.current && frameNum){
+            const frameAnno = annotationRef.current[frameNum]??{};
+            setFrameAnnotation({...frameAnno});
+        }
     }
   
     return (
