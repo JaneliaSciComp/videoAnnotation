@@ -8,6 +8,9 @@ import BtnGroup from './BtnGroup';
 import BrushTool from './BrushTool';
 import { Modal } from 'antd';
 import type { Annotation } from '@/types/annotations';
+import type { ActiveAnnoObjType, AdditionalDataForChartType, AdditionalDataRefType, AnnoRefType, 
+    BtnConfigDataType, ColorsType, FrameAnnotation, IntervalAnno, IntervalErasingItem, VideoMetaRefType,
+    } from '@/types/states';
 
 interface AppContextType {
     // States
@@ -35,14 +38,14 @@ interface AppContextType {
     frameUrl: string | undefined,
     getAdditionalDataSignal: boolean,
     globalInfo: string | null | undefined, 
-    intervalAnno: IntervalAnno | null | undefined, // actual type provided; see below
+    intervalAnno: IntervalAnno | null | undefined,
     intervalErasing: {[key:string]: IntervalErasingItem},
     isFetchingFrame: boolean,
     loadVideo: boolean,
     modalInfo: string | null | undefined,
     modalInfoOpen: boolean,
     mutualExclusiveCategory: string[][] | undefined,
-    projectData: {},
+    projectData: {}, // need actual type
     projectId: string | undefined,
     resetAnnotationChart: boolean,
     resetChart: boolean,
@@ -54,8 +57,8 @@ interface AppContextType {
     updateAnnotationChart: boolean,
     uploaderFile: UploadFileType | undefined, // for Projects and Annotations
     useEraser: boolean,
-    videoAdditionalFieldsConfig: {},
-    videoData: {},
+    videoAdditionalFieldsConfig: {}, // need actual type
+    videoData: {}, // need actual type
     videoId: string | undefined,
     additionalDataRef: React.RefObject<AdditionalDataRefType | undefined>,
     annotationRef: React.RefObject<AnnoRefType | null>, //Record<number, Record<string, Annotation>>
@@ -89,7 +92,7 @@ interface AppContextType {
     setFrameUrl: Dispatch<SetStateAction<string | undefined>>,
     setGetAdditionalDataSignal: Dispatch<SetStateAction<boolean>>,
     setGlobalInfo: Dispatch<SetStateAction<string | null | undefined>>,
-    setIntervalAnno: Dispatch<SetStateAction<IntervalAnno>>, // actual type provided; see below
+    setIntervalAnno: Dispatch<SetStateAction<IntervalAnno>>, 
     setIntervalErasing: Dispatch<SetStateAction<{[key:string]:IntervalErasingItem}>>,
     setIsFetchingFrame: Dispatch<SetStateAction<boolean>>,
     setLoadVideo: Dispatch<SetStateAction<boolean>>,
@@ -114,109 +117,7 @@ interface AppContextType {
     saveAnnotationAndUpdateStates: (cancelInterval?: boolean) => void
 }
 
-type AdditionalDataRefType = Record<string, AdditionalData[]>;
 
-type AdditionalData = {
-    // Not sure what this is meant to look like
-}
-
-type AdditionalDataForChartType = {
-    range: [number, number],
-    data: AdditionalData
-}
-
-type ActiveAnnoObjType = {
-  color?: string,
-  data?: number[][],
-  groupIndex?: string,
-  frameNum: number,
-  id: string,
-  label: string,
-  type: string,
-  videoId: string
-}
-
-type AnnoRefType = {
-  [frameNum: number]: {
-    [id: string]: Annotation
-  }
-}
-
-type FrameAnnotation = {
-    [id: string]: Annotation;
-}
-
-/*
-type BtnChildData = {
-  [key: number]: IndividualBtnType
-}
-  */
-type BtnChildData = IndividualBtnType[];
-
-type IndividualBtnType = {
-  btnType: string,
-  color: string,
-  index: number,
-  label: string
-}
-
-type IntervalAnno = {
-    on: boolean, 
-    startFrame: number | null, 
-    videoId: string | null, 
-    label: string | null, 
-    color: string | null, 
-    annotatedFrames: Set<string>
-}
-
-type IntervalErasingItem = {
-    on: boolean,
-    startFrame: number | null,
-    videoId: number | null,
-    labels: string[],
-}
-
-type BtnsType = {
-  btnNum: number,
-  btnType: string,
-  edgeData?: {edges: (Set<number> | null)[] | (number[] | null) []}, // is null needed?
-  groupType: string,
-  groupIndex?: string,
-  projectId: string
-  childData: BtnChildData
-}
-
-type BtnConfigDataType = {
-  [key: string]: BtnsType
-}
-
-/*
-type BtnGroupType = {
-  data: BtnGroupDataType;
-  frameNum: number;
-  frameUrl: string;
-  addAnnotationObj: (obj: Annotation) => void;
-  setActiveAnnoObj: (obj: Annotation | null) => void;
-  drawType: string; // or union type
-  setDrawType: (type: string) => void;
-  skeletonLandmark: string | number | null;
-  setSkeletonLandmark: (val: string | number | null) => void;
-  frameAnnotation: Annotation | null; // Is there a difference between Annotation (eg, 1 anno) and frameAnnotation (all annos on a frame??)
-}
-
-type BtnGroupDataType = {
-
-}
-*/
-
-type ColorsType = {
-  [key: string]: string
-}
-
-type VideoMetaRefType = {
-  fps: number,
-  totalFrameCount: number,
-}
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
@@ -232,10 +133,10 @@ export function AppProvider({children}: {children: React.ReactNode}){
   const [annotationChartRange, setAnnotationChartRange] = useState<number | undefined>();
   const [brushThickness, setBrushThickness] = useState<number | undefined>();
   const [btnConfigData, setBtnConfigData] = useState<BtnConfigDataType>({});
-  const [btnGroups, setBtnGroups] = useState<JSX.Element[]>([]); // needs Type
+  const [btnGroups, setBtnGroups] = useState<JSX.Element[]>([]); 
   const [cancelIntervalAnno, setCancelIntervalAnno] = useState(false);
   const [cancelIntervalErasing, setCancelIntervalErasing] = useState(false);
-  const [categoryColors, setCategoryColors] = useState<ColorsType>({}); // needs Type
+  const [categoryColors, setCategoryColors] = useState<ColorsType>({}); 
   const [confirmConfig, setConfirmConfig] = useState(false);
   const [downloadAnnotation, setDownloadAnnotation] = useState(false);
   const [downloadConfig, setDownloadConfig] = useState(false);
@@ -247,7 +148,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
   const [getAdditionalDataSignal, setGetAdditionalDataSignal] = useState(false);
   const [globalInfo, setGlobalInfo] = useState<string | null | undefined>();
   const [intervalAnno, setIntervalAnno] = useState<IntervalAnno>({on: false, startFrame: null, videoId:null, label: null, color: null, annotatedFrames: new Set()});
-  const [intervalErasing, setIntervalErasing] = useState<{[key:string]: IntervalErasingItem}>({}); // needs Type
+  const [intervalErasing, setIntervalErasing] = useState<{[key:string]: IntervalErasingItem}>({}); 
   const [isFetchingFrame, setIsFetchingFrame] = useState(false);
   const [loadVideo, setLoadVideo] = useState(false);
   const [modalInfo, setModalInfo] = useState<string | null | undefined>();
@@ -273,7 +174,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
   const lastFrameNumForIntervalAnnoRef = useRef(-1);
   const lastFrameNumForIntervalErasingRef = useRef(-1);
   const realFpsRef = useRef(25);
-  const videoMetaRef = useRef<VideoMetaRefType>( {fps: 0, totalFrameCount: 0}); // needs Type
+  const videoMetaRef = useRef<VideoMetaRefType>( {fps: 0, totalFrameCount: 0}); 
 
 
   const contextValue: AppContextType ={
@@ -734,24 +635,6 @@ export function useApp() {
     }
     return context;
 }
-
-/*
-export function useStates() {
-    const context = useContext(StatesContext);
-    if (context === undefined) {
-      throw new Error("useStates must be used within a StatesProvider");
-    }
-    return context;
-}
-
-export function useStateSetters() {
-  const context = useContext(StateSettersContext);
-  if (context === undefined) {
-    throw new Error("useStateSetters must be used within a StateSettersProvider");
-  }
-  return context;
-}
-  */
 
 
 
