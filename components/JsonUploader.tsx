@@ -5,10 +5,11 @@ import { useApp } from "./AppContext";
 import { UploadChangeParam } from "antd/es/upload";
 import { editProject, postProjectBtn, postProjectVideo, postProjectAnnotation } from '@/utils/requests';
 import type { Annotation } from "@/types/annotations";
+import type { UploaderType } from "@/types/misc";
 
 // Required props
 interface JsonUploaderProps {
-  uploadType: string,
+  uploadType: UploaderType,
   setModalOpen: ((open: boolean)=>void) | null,
   onLoad?: (file: UploadFile) => void
 }

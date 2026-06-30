@@ -325,7 +325,7 @@ export default function Canvas(props) {
         canvas.isDrawingSkeleton = null;
         
 
-        if ((uploaderFile?.type==='annotation') && (uploaderFile !== prevUploaderRef.current)) {
+      if ((uploaderFile?.uploadType === 'annotation') && (uploaderFile !== prevUploaderRef.current)) {
             removeAllObjFromCanvas();
             fabricObjListRef.current = {};
             createPaths();

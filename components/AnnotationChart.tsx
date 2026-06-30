@@ -128,7 +128,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
 
 
     useEffect(() => {
-        if (uploaderFile?.type && uploaderFile?.file) {
+        if (uploaderFile?.uploadType && uploaderFile?.file) {
             setAnnotationForChart(oldValue => {return {frameNum: null, range: null, data: null}});
         }
     }, [uploaderFile])

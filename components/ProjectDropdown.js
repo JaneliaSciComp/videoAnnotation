@@ -140,7 +140,7 @@ export default function ProjectDropdown(props) {
       <ProjectList open={projectListOpen} setOpen={setProjectListOpen} />
 
       <ModalJsonUploader
-        type="configuration"
+        uploadType="configuration"
         open={uploaderOpen}
         setOpen={setUploaderOpen}
       />

@@ -1,15 +1,16 @@
 import JsonUploader from "./JsonUploader";
 import { Modal } from "antd";
+import type { UploaderType } from "@/types/misc";
 
 interface ModalJsonUploaderProps {
   setOpen: (open: boolean)=> void,
-  uploadType: string,
+  uploadType: UploaderType,
   open: boolean,
   onCancel?: ()=> void
 }
 /**
  *  props:
- *      type: required, 'annotation' or 'configuration'
+ *      uploadType: required, 'annotation' or 'configuration'
  *      open: boolean. Whether to open the modal window
  *      setOpen: setter of open. In order to give controll to ProjectManager's internal buttons.
  *      onCancel: function. Called when the modal is closed.
@@ -17,11 +18,11 @@ interface ModalJsonUploaderProps {
 export default function ModalJsonUploader( {setOpen, uploadType, open, onCancel}: ModalJsonUploaderProps ) {
   function cancelClickHandler() {
     setOpen(false);
-  
+
     if (onCancel) {
       onCancel();
     }
-  
+
   }
 
   return (
