@@ -56,7 +56,7 @@ You can start editing the page by modifying `pages/index.js`. The page auto-upda
 For the web in the image above, the index.js file should look like this
 
 ```javascript
-import React, {AppContext} from 'react';
+import React, {useState} from 'react';
 import Head from 'next/head';
 import Workspace from '../components/Workspace.js';
 import Canvas from '../components/Canvas.js';

@@ -20,10 +20,13 @@ interface saveAnnotationBtnTypes {
 
 
 export default function SaveAnnotationBtn({ mode, children }: saveAnnotationBtnTypes) {
-  const frameUrl = useApp().frameUrl;
-  const videoId = useApp().videoId;
-  const setGlobalInfo = useApp().setGlobalInfo;
-  const setSaveAnnotation = useApp().setSaveAnnotation;
+
+  const {
+    frameUrl,
+    videoId,
+    setGlobalInfo,
+    setSaveAnnotation
+  } = useApp();
 
   async function clickHandler() {
     if (videoId || frameUrl) {

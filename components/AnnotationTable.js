@@ -26,15 +26,17 @@ export default function AnnotationTable(props) {
     const frameUrlRef = useRef();
     const prevUploaderRef = useRef();
 
-    const frameAnnotation = useApp().frameAnnotation;
-    const setFrameAnnotation = useApp().setFrameAnnotation;
-    const frameUrl = useApp().frameUrl;
-    const setAnnoIdToDelete = useApp().setAnnoIdToDelete;
-    const setAnnoIdToShow = useApp().setAnnoIdToShow;
-    const annoIdToDraw = useApp().annoIdToDraw;
-    const uploaderFile = useApp().uploaderFile;
-    const annotationRef = useApp().annotationRef;
-    const setUpdateAnnotationChart = useApp().setUpdateAnnotationChart;
+    const {
+        frameAnnotation,
+        setFrameAnnotation,
+        frameUrl,
+        setAnnoIdToDelete,
+        setAnnoIdToShow,
+        annoIdToDraw,
+        uploaderFile,
+        annotationRef,
+        setUpdateAnnotationChart
+    } = useApp();
 
     useEffect(() => {
         if (!frameAnnotation) {

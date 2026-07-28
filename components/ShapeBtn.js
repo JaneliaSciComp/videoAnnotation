@@ -21,18 +21,21 @@ export default function ShapeBtn(props) {
     */
     const [clicked, setClicked] = useState(false);
     
-    const drawType = useApp().drawType;
-    const frameNum = useApp().frameNum;
-    const frameUrl = useApp().frameUrl;
-    const setDrawType = useApp().setDrawType;
-    const frameAnnotation = useApp().frameAnnotation;
-    const setFrameAnnotation = useApp().setFrameAnnotation;
-    const annoIdToDraw = useApp().annoIdToDraw;
-    const setAnnoIdToDraw = useApp().setAnnoIdToDraw;
-    const setSkeletonLandmark = useApp().setSkeletonLandmark;
-    const setUndo = useApp().setUndo;
-    const setUseEraser = useApp().setUseEraser;
-    const videoId = useApp().videoId; 
+
+    const {
+        annoIdToDraw,
+        drawType,
+        frameAnnotation,
+        frameNum,
+        frameUrl,
+        videoId,
+        setAnnoIdToDraw,
+        setDrawType,
+        setFrameAnnotation,
+        setSkeletonLandmark,
+        setUndo,
+        setUseEraser
+    } = useApp();
 
 
 

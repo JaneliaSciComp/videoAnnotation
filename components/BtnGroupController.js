@@ -100,10 +100,12 @@ export default function BtnGroupController(props) {
     const [skeletonName, setSkeletonName] = useState();
     const [edgeData, setEdgeData] = useState();
 
-    const btnConfigData = useApp().btnConfigData;
-    const setBtnConfigData = useApp().setBtnConfigData;
-    const projectId = useApp().projectId;
-    const setGlobalInfo = useApp().setGlobalInfo;
+    const {
+        btnConfigData,
+        setBtnConfigData,
+        projectId,
+        setGlobalInfo
+    } = useApp();
 
     
     useEffect(()=>{

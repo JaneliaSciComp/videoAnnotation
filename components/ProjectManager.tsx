@@ -58,13 +58,15 @@ export default function ProjectManager({open, setOpen, status, onSubmit, onProje
     const [info, setInfo] = useState<string | null>();
     const [noProject, setNoProject] = useState<boolean>(true);
 
-    const setConfirmConfig = useApp().setConfirmConfig;
-    const projectId = useApp().projectId;
-    const setProjectId = useApp().setProjectId;
-    const projectData = useApp().projectData;
-    const setProjectData = useApp().setProjectData;
-    const setVideoData = useApp().setVideoData;
-    const setVideoId = useApp().setVideoId;
+    const{
+        projectData,
+        projectId,
+        setConfirmConfig,
+        setProjectId,
+        setProjectData,
+        setVideoData,
+        setVideoId
+    } = useApp();
 
     const [form] = Form.useForm();
 
@@ -76,7 +78,7 @@ export default function ProjectManager({open, setOpen, status, onSubmit, onProje
                 setProjectId(id);
                 setProjectData({});
                 setVideoData({});
-                setVideoId(null);
+                setVideoId(undefined);
                 form.resetFields();
                 setOkDisable(true);
                 setBtnConfigStatus('new');

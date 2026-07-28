@@ -21,13 +21,16 @@ import { Dropdown, Modal } from "antd";
  *    onClick: (e) => {}. It will be called after the default behavior of each child if preventDefault is not set. Otherwise, it will be called directly. e is the event object, which contains a key property corresponding to the index (integer) of each child in the menu prop. Note: This key property may differ from the key prop of the component passed to each child."
  */
 export default function DropdownMenu({menu, name, ...props}) {
-  const projectId = useApp().projectId;
-  const videoId = useApp().videoId;
-  const setDownloadConfig = useApp().setDownloadConfig;
-  const setDownloadAnnotation = useApp().setDownloadAnnotation;
-  const setGlobalInfo = useApp().setGlobalInfo;
-  const frameUrl = useApp().frameUrl;
-  const setSaveAnnotation = useApp().setSaveAnnotation;
+
+  const {
+    frameUrl,
+    projectId,
+    videoId,
+    setDownloadAnnotation,
+    setDownloadConfig,
+    setGlobalInfo,
+    setSaveAnnotation
+  } = useApp();
 
   const items = menu.map((item, i) => {
     return {

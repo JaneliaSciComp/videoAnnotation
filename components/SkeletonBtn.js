@@ -47,19 +47,21 @@ export default function SkeletonBtn(props) {
   const [radioValue, setRadioValue] = useState(2);
   const annotationIdRef = useRef();
 
-  const drawType = useApp().drawType;
-  const frameNum = useApp().frameNum;
-  const frameUrl = useApp().frameUrl;
-  const setDrawType = useApp().setDrawType;
-  const frameAnnotation = useApp().frameAnnotation;
-  const setFrameAnnotation = useApp().setFrameAnnotation;
-  const skeletonLandmark = useApp().skeletonLandmark;
-  const setSkeletonLandmark = useApp().setSkeletonLandmark;
-  const annoIdToDraw = useApp().annoIdToDraw;
-  const setAnnoIdToDraw = useApp().setAnnoIdToDraw;
-  const setUndo = useApp().setUndo;
-  const setUseEraser = useApp().setUseEraser;
-  const videoId = useApp().videoId;
+  const {
+    annoIdToDraw,
+    drawType,
+    frameAnnotation,
+    frameNum,
+    frameUrl,
+    skeletonLandmark,
+    videoId,
+    setAnnoIdToDraw,
+    setDrawType,
+    setFrameAnnotation,
+    setSkeletonLandmark,
+    setUndo,
+    setUseEraser
+  } = useApp();
 
   useEffect(() => {
     if (

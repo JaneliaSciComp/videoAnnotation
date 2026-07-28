@@ -63,20 +63,21 @@ export default function VideoManager(props) {
   const [btnDisable, setBtnDisable] = useState(true);
   const [info, setInfo] = useState();
 
-  const videoData = useApp().videoData;
-  const setVideoData = useApp().setVideoData;
-  const videoId = useApp().videoId;
-  const setVideoId = useApp().setVideoId;
-  const setLoadVideo = useApp().setLoadVideo;
-  const setResetVideoPlay = useApp().setResetVideoPlay;
-  const resetVideoDetails = useApp().resetVideoDetails;
-  const setResetVideoDetails = useApp().setResetVideoDetails;
-  const setResetChart = useApp().setResetChart;
-  const videoAdditionalFieldsConfig = useApp().videoAdditionalFieldsConfig;
-  const setVideoAdditionalFieldsConfig =
-    useApp().setVideoAdditionalFieldsConfig;
-  const projectId = useApp().projectId;
-  const setAdditionalDataRange = useApp().setAdditionalDataRange;
+
+  const {
+    projectId,
+    resetVideoDetails,
+    videoAdditionalFieldsConfig,
+    videoData,
+    videoId,
+    setAdditionalDataRange,
+    setLoadVideo,
+    setResetChart,
+    setResetVideoDetails,
+    setResetVideoPlay,
+    setVideoAdditionalFieldsConfig,
+    setVideoData
+  } = useApp();
 
   const [form] = Form.useForm();
 

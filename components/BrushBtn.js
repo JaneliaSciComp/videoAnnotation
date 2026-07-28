@@ -42,18 +42,22 @@ export default function BrushBtn(props) {
     const annotationIdRef = useRef();
     const prevFrameUrlRef = useRef();
 
-    const drawType = useApp().drawType;
-    const frameNum = useApp().frameNum;
-    const frameUrl = useApp().frameUrl;
-    const setDrawType = useApp().setDrawType;
-    const frameAnnotation = useApp().frameAnnotation;
-    const setFrameAnnotation = useApp().setFrameAnnotation;
-    const setUseEraser = useApp().setUseEraser;
-    const annoIdToDraw = useApp().annoIdToDraw;
-    const setAnnoIdToDraw = useApp().setAnnoIdToDraw;
-    const setSkeletonLandmark = useApp().setSkeletonLandmark;
-    const setUndo = useApp().setUndo;
-    const videoId = useApp().videoId; 
+
+    const {
+        annoIdToDraw,
+        drawType,
+        frameAnnotation,
+        frameNum,
+        frameUrl,
+        videoId,
+        setAnnoIdToDraw,
+        setDrawType,
+        setFrameAnnotation,
+        setSkeletonLandmark,
+        setUndo,
+        setUseEraser
+    } = useApp();
+    
 
     useEffect(()=>{
         if (!props.label) {

@@ -16,10 +16,13 @@ interface DownloadBtnProps{
 }
 
 export default function DownloadBtn({type, mode, children}: DownloadBtnProps) {
-  const frameUrl = useApp().frameUrl;
-  const setDownloadConfig = useApp().setDownloadConfig;
-  const setDownloadAnnotation = useApp().setDownloadAnnotation;
-  const projectId = useApp().projectId;
+
+  const {
+    frameUrl,
+    projectId,
+    setDownloadAnnotation,
+    setDownloadConfig
+  } = useApp();
 
   function clickHandler() {
     if (type === "configuration") {

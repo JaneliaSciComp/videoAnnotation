@@ -52,6 +52,7 @@ interface AppContextType {
     resetVideoDetails: boolean,
     resetVideoPlay: boolean,
     saveAnnotation: boolean,
+    saveConfig: {},
     skeletonLandmark: string | null | undefined,
     undo: number,
     updateAnnotationChart: boolean,
@@ -106,6 +107,7 @@ interface AppContextType {
     setResetVideoDetails: Dispatch<SetStateAction<boolean>>,
     setResetVideoPlay: Dispatch<SetStateAction<boolean>>,
     setSaveAnnotation: Dispatch<SetStateAction<boolean>>,
+    setSaveConfig: Dispatch<SetStateAction<{}>>,
     setSkeletonLandmark: Dispatch<SetStateAction<string | null | undefined>>,
     setUndo: Dispatch<SetStateAction<number>>,
     setUpdateAnnotationChart: Dispatch<SetStateAction<boolean>>,
@@ -161,6 +163,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
   const [resetVideoDetails, setResetVideoDetails] = useState(false);
   const [resetVideoPlay, setResetVideoPlay] = useState(false);
   const [saveAnnotation, setSaveAnnotation] = useState(false);
+  const [saveConfig, setSaveConfig] = useState({});
   const [skeletonLandmark, setSkeletonLandmark] = useState<string | null | undefined>(); // unsure about type on this one
   const [undo, setUndo] = useState(0); // any number? Or just certain ones? Seems like this would be boolean
   const [updateAnnotationChart, setUpdateAnnotationChart] = useState(false);
@@ -217,6 +220,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
     resetVideoDetails,
     resetVideoPlay,
     saveAnnotation,
+    saveConfig,
     skeletonLandmark,
     undo,
     updateAnnotationChart,
@@ -271,6 +275,7 @@ export function AppProvider({children}: {children: React.ReactNode}){
     setResetVideoDetails,
     setResetVideoPlay,
     setSaveAnnotation,
+    setSaveConfig,
     setSkeletonLandmark,
     setUndo,
     setUpdateAnnotationChart,

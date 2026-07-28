@@ -17,17 +17,19 @@ export default function CanvasAdditionalDataController(props) {
     const [metrics, setMetrics] = useState([]);
     const [menuProps, setMenuProps] = useState();
     const [selectedMetrics, setSelectedMetrics] = useState([]);
-    const [open, setOpen] = useState(false);
+    //const [open, setOpen] = useState(false);
 
-    const totalFrameCount = useApp().videoMetaRef.current.totalFrameCount;
-    const additionalDataRange = useApp().additionalDataRange;
-    const setAdditionalDataRange = useApp().setAdditionalDataRange;
-    const resetChart = useApp().resetChart;
-    const setResetChart = useApp().setResetChart;
-    const additionalDataNameToRetrieve = useApp().additionalDataNameToRetrieve;
-    const setAdditionalDataNameToRetrieve = useApp().setAdditionalDataNameToRetrieve;
-    const videoAdditionalFieldsConfig = useApp().videoAdditionalFieldsConfig;
 
+    const {
+        additionalDataRange,
+        additionalDataNameToRetrieve,
+        resetChart,
+        setAdditionalDataRange,
+        setAdditionalDataNameToRetrieve,
+        setResetChart,
+        totalFrameCount,
+        videoAdditionalFieldsConfig
+    } = useApp();
 
     useEffect(() => {
         if (resetChart) { 

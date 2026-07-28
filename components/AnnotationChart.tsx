@@ -1,8 +1,8 @@
 import React, {useState, useEffect, useRef} from 'react';
-import { staticVerticalLine, dynamicVerticalLine } from '../utils/utils';
-import { useApp } from './AppContext'; 
+import { staticVerticalLine, dynamicVerticalLine } from '../utils/utils.js';
+import { useApp } from './AppContext.tsx'; 
 import { Bar } from 'react-chartjs-2';
-import type { Annotation } from '@/types/annotations';
+import type { Annotation } from '../types/annotations.js';
 //import { UploaderType } from '@/types/misc';
 import {
     Chart as ChartJS,
@@ -109,22 +109,27 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
     const [annotationForChart, setAnnotationForChart] = useState<AnnotationDataForChart>({frameNum:null, range: null, data: null});
 
     const setFrameNumSignal = useApp().setFrameNumSignal;
-    const frameNum = useApp().frameNum;
-    const totalFrameCount = useApp().videoMetaRef.current.totalFrameCount;
-    const annotationChartRange = useApp().annotationChartRange;
-    const videoId = useApp().videoId;
-    const intervalAnno = useApp().intervalAnno;
-    const categoryColors = useApp().categoryColors;
+    const totalFrameCount = useApp().videoMetaRef.current?.totalFrameCount;
     const videoMetaRef = useApp().videoMetaRef;
     const setCancelIntervalAnno = useApp().setCancelIntervalAnno;  
-    const updateAnnotationChart = useApp().updateAnnotationChart;
-    const setUpdateAnnotationChart = useApp().setUpdateAnnotationChart;
-    const uploaderFile = useApp().uploaderFile;
-    const resetAnnotationChart = useApp().resetAnnotationChart;
-    const setResetAnnotationChart = useApp().setResetAnnotationChart; 
-    const intervalErasing = useApp().intervalErasing;
-    const annotationRef = useApp().annotationRef;
-    const setGlobalInfo = useApp().setGlobalInfo;
+
+
+    const {
+        frameNum,
+        annotationChartRange,
+        videoId,
+        intervalAnno,
+        categoryColors,
+        updateAnnotationChart,
+        setUpdateAnnotationChart,
+        uploaderFile,
+        resetAnnotationChart,
+        setResetAnnotationChart,
+        intervalErasing,
+        annotationRef,
+        setGlobalInfo
+    } = useApp();
+
 
 
     useEffect(() => {
@@ -184,7 +189,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
         let initialLables = [1,2,3,4,5,6,7,8,9,10];
         let data: ChartData<"bar"> = {labels: initialLables, datasets: []};
         let startNeeded=0, endNeeded=0, start=0, end=0;
-        if (labels?.length>0 && annotationForChart.range ) {
+        if (frameNum && annotationChartRange && labels?.length>0 && annotationForChart.range ) {
             const frameNums = [];
             startNeeded = (frameNum-annotationChartRange>0) ? (frameNum-annotationChartRange) : 0;
             endNeeded = (frameNum+annotationChartRange<totalFrameCount-1) ? (frameNum+annotationChartRange) : (totalFrameCount-1);
@@ -319,7 +324,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
         if (labels?.length>0 && Number.isInteger(frameNum)) { 
             let annoDataForChart: AnnotationDataForChart;
             const rangeNeeded = annotationChartRange;
-            if (rangeNeeded >= 0) {
+            if (frameNum && rangeNeeded && rangeNeeded >= 0) {
                 const rangeStartNeeded = ((frameNum-rangeNeeded)<0) ? 0 : (frameNum-rangeNeeded);
                 const rangeEndNeeded = ((frameNum+rangeNeeded)>(totalFrameCount-1)) ? (totalFrameCount-1) : (frameNum+rangeNeeded);
                 const annoData = filterAnnotation(rangeStartNeeded, rangeEndNeeded, labels);

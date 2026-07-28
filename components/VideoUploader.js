@@ -38,26 +38,28 @@ export default function VideoUploader(props) {
   const needToSetIntervalRef = useRef(false);
   const loadOneRequestedRef = useRef(false);
 
-  const setFrameUrl = useApp().setFrameUrl;
-  const setFrameNum = useApp().setFrameNum;
-  const setVideoId = useApp().setVideoId;
-  const frameNumSignal = useApp().frameNumSignal;
-  const loadVideo = useApp().loadVideo;
-  const setLoadVideo = useApp().setLoadVideo;
-  const resetVideoPlay = useApp().resetVideoPlay;
-  const setResetVideoPlay = useApp().setResetVideoPlay;
-  const videoData = useApp().videoData;
-  const setVideoData = useApp().setVideoData;
-  const projectId = useApp().projectId;
-  const additionalDataNameToRetrieve = useApp().additionalDataNameToRetrieve;
-  const setAdditionalData = useApp().setAdditionalData;
-  const videoMetaRef = useApp().videoMetaRef;
-  const setGlobalInfo = useApp().setGlobalInfo;
-  const annotationRef = useApp().annotationRef;
-  const additionalDataRef = useApp().additionalDataRef;
-  const realFpsRef = useApp().realFpsRef;
-  const isFetchingFrame = useApp().isFetchingFrame;
-  const setIsFetchingFrame = useApp().setIsFetchingFrame;
+  const {
+    additionalDataNameToRetrieve,
+    additionalDataRef,
+    annotationRef,
+    frameNumSignal,
+    isFetchingFrame,
+    loadVideo,
+    projectId,
+    realFpsRef,
+    resetVideoPlay,
+    videoData,
+    videoMetaRef,
+    setAdditionalData,
+    setFrameNum,
+    setFrameUrl,
+    setIsFetchingFrame,
+    setGlobalInfo,
+    setLoadVideo,
+    setResetVideoPlay,
+    setVideoData,
+    setVideoId
+  } = useApp();
 
   const frameBufferSeconds =
     props.frameBufferSeconds ?? defaultFrameBufferSeconds;

@@ -34,6 +34,11 @@ export default function ProjectDropdown(props) {
   const setSaveConfig = useApp().setSaveConfig;
   const projectId = useApp().projectId;
 
+  const {
+    projectId,
+    setSaveConfig
+  } = useApp();
+
   const items = [
     {
       label: "New Project",
@@ -78,7 +83,7 @@ export default function ProjectDropdown(props) {
         setManagerStatus("edit");
         setManagerOpen(true);
         break;
-      case "Save Config":
+      case "Save Config": // This should probably be "Download config" as "Save config" is confusing
         setSaveConfig(true);
         break;
     }

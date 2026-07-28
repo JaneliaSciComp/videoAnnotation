@@ -22,16 +22,17 @@ export default function ChartController(props) {
   const [menuProps, setMenuProps] = useState();
   const [selectedMetrics, setSelectedMetrics] = useState([]);
 
-  const totalFrameCount = useApp().videoMetaRef.current.totalFrameCount;
-  const additionalDataRange = useApp().additionalDataRange;
-  const setAdditionalDataRange = useApp().setAdditionalDataRange;
-  const resetChart = useApp().resetChart;
-  const setResetChart = useApp().setResetChart;
-  const additionalDataNameToRetrieve = useApp().additionalDataNameToRetrieve;
-  const setAdditionalDataNameToRetrieve =
-    useApp().setAdditionalDataNameToRetrieve;
-  const videoAdditionalFieldsConfig = useApp().videoAdditionalFieldsConfig;
-  const setAnnotationChartRange = useApp().setAnnotationChartRange;
+  const {
+    additionalDataRange,
+    additionalDataNameToRetrieve,
+    resetChart,
+    totalFrameCount,
+    videoAdditionalFieldsConfig,
+    setAdditionalDataRange,
+    setAdditionalDataNameToRetrieve,
+    setAnnotationChartRange,
+    setResetChart,
+  } = useApp();
 
   useEffect(() => {
     if (resetChart) {

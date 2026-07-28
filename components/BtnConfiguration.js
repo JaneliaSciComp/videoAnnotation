@@ -65,10 +65,12 @@ export default function BtnConfiguration(props) {
     const [getData, setGetData] = useState({});
     const [info, setInfo] = useState();
 
-    const btnConfigData = useApp().btnConfigData;
-    const setBtnConfigData = useApp().setBtnConfigData;    
-    const confirmConfig = useApp().confirmConfig;
-    const setConfirmConfig = useApp().setConfirmConfig;
+    const {
+        btnConfigData,
+        setBtnConfigData,
+        confirmConfig,
+        setConfirmConfig
+    } = useApp();
 
     
     useEffect(() => {

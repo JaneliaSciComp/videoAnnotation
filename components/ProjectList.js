@@ -30,13 +30,15 @@ export default function ProjectList(props) {
   const [projectIds, setProjectIds] = useState([]);
   const [info, setInfo] = useState();
 
-  const projectId = useApp().projectId;
-  const setProjectId = useApp().setProjectId;
-  const setProjectData = useApp().setProjectData;
-  const setBtnConfigData = useApp().setBtnConfigData;
-  const setVideoData = useApp().setVideoData;
-  const setResetVideoDetails = useApp().setResetVideoDetails;
-  const setVideoId = useApp().setVideoId;
+  const {
+    projectId,
+    setBtnConfigData,
+    setProjectData,
+    setProjectId,
+    setResetVideoDetails,
+    setVideoData,
+    setVideoId
+  } = useApp();
 
   useEffect(() => {
     if (props.open) {

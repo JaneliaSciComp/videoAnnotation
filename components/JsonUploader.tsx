@@ -30,27 +30,25 @@ interface JsonUploaderProps {
 export default function JsonUploader({uploadType, setModalOpen, onLoad}: JsonUploaderProps) {
   const [info, setInfo] = useState("Click or drag file to this area to upload");
 
-  const { annotationRef, frameNum, projectId, uploaderFile, videoId, saveAnnotationAndUpdateStates, 
-    setBtnConfigData, setFrameAnnotation, setGlobalInfo, setModalInfo, setModalInfoOpen, setProjectData, 
-    setProjectId, setResetAnnotationChart, setUploaderFile, setVideoData } = useApp();
-  /*
-  const annotationRef = useStates().annotationRef;
-  const frameNum = useStates().frameNum;
-  const projectId = useStates().projectId;
-  const uploaderFile = useStates().uploaderFile;
-  const videoId = useStates().videoId;
-  const setBtnConfigData = useStateSetters().setButtonConfigData;
-  const setFrameAnnotation = useStateSetters().setFrameAnnotation;
-  const setGlobalInfo = useStateSetters().setGlobalInfo;
-  const setModalInfo = useStateSetters().setModalInfo;
-  const setModalInfoOpen = useStateSetters().setModalInfoOpen;
-  const setProjectData = useStateSetters().setProjectData;
-  const setProjectId = useStateSetters().setProjectId;
-  const setResetAnnotationChart = useStateSetters().setResetAnnotationChart;
-  const setUploaderFile = useStateSetters().setUploaderFile;
-  const setVideoData = useStateSetters().setVideoData;
-  const saveAnnotationAndUpdateStates = useStateSetters().saveAnnotationAndUpdateStates;
-*/
+  const { 
+    annotationRef, 
+    frameNum, 
+    projectId, 
+    uploaderFile, 
+    videoId, 
+    saveAnnotationAndUpdateStates, 
+    setBtnConfigData, 
+    setFrameAnnotation, 
+    setGlobalInfo, 
+    setModalInfo, 
+    setModalInfoOpen, 
+    setProjectData, 
+    setProjectId, 
+    setResetAnnotationChart, 
+    setUploaderFile, 
+    setVideoData 
+  } = useApp();
+
 
   const { Dragger } = Upload;
 
@@ -265,7 +263,7 @@ export default function JsonUploader({uploadType, setModalOpen, onLoad}: JsonUpl
     if (res['error']) {
         setGlobalInfo('Saving annotation data to DB failed.');
     } else {
-      if ((data.videos.includes(videoId)) && Number.isInteger(frameNum)) {
+      if (videoId && (data.videos.includes(videoId)) && Number.isInteger(frameNum)) {
         const videoAnnotations = data.annotations.filter(anno => anno.videoId === videoId);
         const forAnnoRef: Record<number, Record<string, Annotation>> = {};
         videoAnnotations.forEach(anno => {

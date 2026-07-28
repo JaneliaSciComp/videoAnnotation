@@ -17,13 +17,15 @@ const MAX_THICKNESS = 100;
 */
 export default function BrushTool(props) {
 
-    const drawType = useApp().drawType;
-    const brushThickness = useApp().brushThickness;
-    const setBrushThickness = useApp().setBrushThickness;
-    const useEraser = useApp().useEraser;
-    const setUseEraser = useApp().setUseEraser;
-    const undo = useApp().undo;
-    const setUndo = useApp().setUndo;
+    const {
+        drawType,
+        brushThickness,
+        setBrushThickness,
+        useEraser,
+        setUseEraser,
+        undo,
+        setUndo,
+    } = useApp();
 
     function undoClickHandler() {
         if (drawType==='brush') {

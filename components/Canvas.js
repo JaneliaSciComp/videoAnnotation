@@ -36,36 +36,41 @@ export default function Canvas(props) {
     const frameLoadTimeRef = useRef();
     const frameRenderTimeRef = useRef();
 
-    const videoId = useApp().videoId;
-    const frameUrl = useApp().frameUrl;
-    const frameNum = useApp().frameNum;
-    const drawType = useApp().drawType;
-    const setDrawType = useApp().setDrawType;
-    const skeletonLandmark = useApp().skeletonLandmark;
-    const setSkeletonLandmark = useApp().setSkeletonLandmark;
-    const frameAnnotation = useApp().frameAnnotation;
-    const setFrameAnnotation = useApp().setFrameAnnotation;
-    const btnConfigData = useApp().btnConfigData;
-    const setActiveAnnoObj = useApp().setActiveAnnoObj;
-    const brushThickness = useApp().brushThickness;
-    const useEraser = useApp().useEraser;
-    const undo = useApp().undo;
-    const annoIdToDraw = useApp().annoIdToDraw;
-    const setAnnoIdToDraw = useApp().setAnnoIdToDraw;
-    const annoIdToDelete = useApp().annoIdToDelete;
-    const setAnnoIdToDelete = useApp().setAnnoIdToDelete;
-    const annoIdToShow = useApp().annoIdToShow;
-    const annotationRef = useApp().annotationRef;
-    const uploaderFile = useApp().uploaderFile;
-    const setGetAdditionalDataSignal = useApp().setGetAdditionalDataSignal;
-    const additionalData = useApp().additionalData;
-    const videoAdditionalFieldsConfig = useApp().videoAdditionalFieldsConfig;
-    const additionalDataRange = useApp().additionalDataRange;
-    const additionalDataNameToRetrieve = useApp().additionalDataNameToRetrieve;
-    const videoMetaRef = useApp().videoMetaRef;
-    const setGlobalInfo = useApp().setGlobalInfo;
-    const realFpsRef = useApp().realFpsRef;
-    const isFetchingFrame = useApp().isFetchingFrame;
+
+    //const additionalDataRange = useApp().additionalDataRange;
+    //const additionalDataNameToRetrieve = useApp().additionalDataNameToRetrieve;
+    //const videoMetaRef = useApp().videoMetaRef;
+
+
+    const {
+        additionalData,
+        annoIdToDraw,
+        setAnnoIdToDraw,
+        annoIdToDelete,
+        setAnnoIdToDelete,
+        annoIdToShow,
+        annotationRef,
+        brushThickness,
+        btnConfigData,
+        drawType,
+        setDrawType,
+        frameAnnotation,
+        setFrameAnnotation,
+        frameUrl,
+        frameNum,
+        isFetchingFrame,
+        realFpsRef,
+        setActiveAnnoObj,
+        setGlobalInfo,
+        skeletonLandmark,
+        setSkeletonLandmark,
+        setGetAdditionalDataSignal,
+        undo,
+        useEraser,
+        uploaderFile,
+        videoId,
+        videoAdditionalFieldsConfig
+    } = useApp();
 
 
     fabric.Object.prototype.erasable = false;

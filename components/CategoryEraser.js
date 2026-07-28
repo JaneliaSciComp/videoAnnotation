@@ -13,21 +13,23 @@ import { defaultColor } from "../utils/utils.js";
 
 */
 export default function CategoryEraser(props) {
-  const intervalErasing = useApp().intervalErasing;
-  const setIntervalErasing = useApp().setIntervalErasing;
-  const frameNum = useApp().frameNum;
-  const frameUrl = useApp().frameUrl;
-  const intervalAnno = useApp().intervalAnno;
-  const setIntervalAnno = useApp().setIntervalAnno;
-  const videoId = useApp().videoId;
-  const cancelIntervalErasing = useApp().cancelIntervalErasing;
-  const setCancelIntervalErasing = useApp().setCancelIntervalErasing;
-  const lastFrameNumForIntervalErasingRef =
-    useApp().lastFrameNumForIntervalErasingRef;
-  const setGlobalInfo = useApp().setGlobalInfo;
-  const annotationRef = useApp().annotationRef;
-  const frameAnnotation = useApp().frameAnnotation;
-  const setFrameAnnotation = useApp().setFrameAnnotation;
+
+  const{
+    annotationRef,
+    cancelIntervalErasing,
+    frameAnnotation,
+    frameNum,
+    frameUrl,
+    intervalAnno,
+    intervalErasing,
+    lastFrameNumForIntervalErasingRef,
+    videoId,
+    setCancelIntervalErasing,
+    setFrameAnnotation,
+    setGlobalInfo,
+    setIntervalAnno,
+    setIntervalErasing,
+  } = useApp();
 
   useEffect(() => {
     if (cancelIntervalErasing) {

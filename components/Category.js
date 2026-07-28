@@ -22,26 +22,28 @@ export default function Category(props) {
   const [color, setColor] = useState("black");
   const [info, setInfo] = useState(null);
 
-  const frameNum = useApp().frameNum;
-  const frameUrl = useApp().frameUrl;
-  const frameAnnotation = useApp().frameAnnotation;
-  const setFrameAnnotation = useApp().setFrameAnnotation;
-  const setActiveAnnoObj = useApp().setActiveAnnoObj;
-  const setDrawType = useApp().setDrawType;
-  const setSkeletonLandmark = useApp().setSkeletonLandmark;
-  const setUndo = useApp().setUndo;
-  const setUseEraser = useApp().setUseEraser;
-  const videoId = useApp().videoId;
-  const intervalAnno = useApp().intervalAnno;
-  const setIntervalAnno = useApp().setIntervalAnno;
-  const cancelIntervalAnno = useApp().cancelIntervalAnno;
-  const setCancelIntervalAnno = useApp().setCancelIntervalAnno;
-  const setUpdateAnnotationChart = useApp().setUpdateAnnotationChart;
-  const lastFrameNumForIntervalAnnoRef =
-    useApp().lastFrameNumForIntervalAnnoRef;
-  const intervalErasing = useApp().intervalErasing;
-  const annotationRef = useApp().annotationRef;
-  const mutualExclusiveCategory = useApp().mutualExclusiveCategory;
+
+  const {
+    annotationRef,
+    cancelIntervalAnno,
+    frameNum,
+    frameUrl,
+    frameAnnotation,
+    intervalAnno,
+    intervalErasing,
+    lastFrameNumForIntervalAnnoRef,
+    mutualExclusiveCategory,
+    videoId,
+    setActiveAnnoObj,
+    setCancelIntervalAnno,
+    setDrawType,
+    setFrameAnnotation,
+    setIntervalAnno,
+    setSkeletonLandmark,
+    setUndo,
+    setUseEraser,
+    setUpdateAnnotationChart
+  } = useApp();
 
   useEffect(() => {
     if (cancelIntervalAnno) {
