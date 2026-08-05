@@ -1,8 +1,8 @@
 import React, {useState, useEffect, useRef} from 'react';
-import { staticVerticalLine, dynamicVerticalLine } from '../utils/utils.js';
-import { useApp } from './AppContext.tsx'; 
+import { staticVerticalLine, dynamicVerticalLine } from '../utils/utils';
+import { useApp } from './AppContext'; 
 import { Bar } from 'react-chartjs-2';
-import type { Annotation } from '../types/annotations.js';
+import type { Annotation } from '../types/annotations';
 //import { UploaderType } from '@/types/misc';
 import {
     Chart as ChartJS,
