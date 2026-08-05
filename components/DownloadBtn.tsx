@@ -1,6 +1,6 @@
 import { Button } from "react-bootstrap";
 import styles from "../styles/Button.module.css";
-import { useStates, useStateSetters } from "./AppContext";
+import { useApp } from "./AppContext";
 
 /*
     Props: 
@@ -16,10 +16,13 @@ interface DownloadBtnProps{
 }
 
 export default function DownloadBtn({type, mode, children}: DownloadBtnProps) {
-  const frameUrl = useStates().frameUrl;
-  const setDownloadConfig = useStateSetters().setDownloadConfig;
-  const setDownloadAnnotation = useStateSetters().setDownloadAnnotation;
-  const projectId = useStates().projectId;
+
+  const {
+    frameUrl,
+    projectId,
+    setDownloadAnnotation,
+    setDownloadConfig
+  } = useApp();
 
   function clickHandler() {
     if (type === "configuration") {

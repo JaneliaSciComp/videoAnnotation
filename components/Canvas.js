@@ -1,7 +1,7 @@
 import React, {useEffect, useState, useRef} from 'react';
 import styles from '../styles/Canvas.module.css';
 import {fabric} from 'fabric-with-erasing';
-import { useStates, useStateSetters } from './AppContext';
+import { useApp } from './AppContext';
 import { defaultAlpha, hexArr, hexMap } from '../utils/utils';
 
 const CANVAS_WIDTH = 600;
@@ -36,36 +36,41 @@ export default function Canvas(props) {
     const frameLoadTimeRef = useRef();
     const frameRenderTimeRef = useRef();
 
-    const videoId = useStates().videoId;
-    const frameUrl = useStates().frameUrl;
-    const frameNum = useStates().frameNum;
-    const drawType = useStates().drawType;
-    const setDrawType = useStateSetters().setDrawType;
-    const skeletonLandmark = useStates().skeletonLandmark;
-    const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
-    const frameAnnotation = useStates().frameAnnotation;
-    const setFrameAnnotation = useStateSetters().setFrameAnnotation;
-    const btnConfigData = useStates().btnConfigData;
-    const setActiveAnnoObj = useStateSetters().setActiveAnnoObj;
-    const brushThickness = useStates().brushThickness;
-    const useEraser = useStates().useEraser;
-    const undo = useStates().undo;
-    const annoIdToDraw = useStates().annoIdToDraw;
-    const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
-    const annoIdToDelete = useStates().annoIdToDelete;
-    const setAnnoIdToDelete = useStateSetters().setAnnoIdToDelete;
-    const annoIdToShow = useStates().annoIdToShow;
-    const annotationRef = useStates().annotationRef;
-    const uploaderFile = useStates().uploaderFile;
-    const setGetAdditionalDataSignal = useStateSetters().setGetAdditionalDataSignal;
-    const additionalData = useStates().additionalData;
-    const videoAdditionalFieldsConfig = useStates().videoAdditionalFieldsConfig;
-    const additionalDataRange = useStates().additionalDataRange;
-    const additionalDataNameToRetrieve = useStates().additionalDataNameToRetrieve;
-    const videoMetaRef = useStates().videoMetaRef;
-    const setGlobalInfo = useStateSetters().setGlobalInfo;
-    const realFpsRef = useStates().realFpsRef;
-    const isFetchingFrame = useStates().isFetchingFrame;
+
+    //const additionalDataRange = useApp().additionalDataRange;
+    //const additionalDataNameToRetrieve = useApp().additionalDataNameToRetrieve;
+    //const videoMetaRef = useApp().videoMetaRef;
+
+
+    const {
+        additionalData,
+        annoIdToDraw,
+        setAnnoIdToDraw,
+        annoIdToDelete,
+        setAnnoIdToDelete,
+        annoIdToShow,
+        annotationRef,
+        brushThickness,
+        btnConfigData,
+        drawType,
+        setDrawType,
+        frameAnnotation,
+        setFrameAnnotation,
+        frameUrl,
+        frameNum,
+        isFetchingFrame,
+        realFpsRef,
+        setActiveAnnoObj,
+        setGlobalInfo,
+        skeletonLandmark,
+        setSkeletonLandmark,
+        setGetAdditionalDataSignal,
+        undo,
+        useEraser,
+        uploaderFile,
+        videoId,
+        videoAdditionalFieldsConfig
+    } = useApp();
 
 
     fabric.Object.prototype.erasable = false;
@@ -123,7 +128,7 @@ export default function Canvas(props) {
                 imgRef.current.removeEventListener("load", imageLoadHandler);
             }
         }
-      }, [useStates()]
+      }, [useApp()]
     )
 
 
@@ -325,7 +330,7 @@ export default function Canvas(props) {
         canvas.isDrawingSkeleton = null;
         
 
-        if ((uploaderFile?.type==='annotation') && (uploaderFile !== prevUploaderRef.current)) {
+      if ((uploaderFile?.uploadType === 'annotation') && (uploaderFile !== prevUploaderRef.current)) {
             removeAllObjFromCanvas();
             fabricObjListRef.current = {};
             createPaths();

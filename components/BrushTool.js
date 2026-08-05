@@ -3,7 +3,7 @@ import { Button, Row, Col} from 'react-bootstrap';
 import { Space, Radio, Slider } from 'antd';
 import { ClearOutlined, RollbackOutlined } from '@ant-design/icons';
 import styles from '../styles/Button.module.css';
-import { useStateSetters, useStates } from './AppContext';
+import { useApp } from './AppContext';
 import {defaultColor} from '../utils/utils.js';
 
 const MIN_THICKNESS = 1;
@@ -17,13 +17,15 @@ const MAX_THICKNESS = 100;
 */
 export default function BrushTool(props) {
 
-    const drawType = useStates().drawType;
-    const brushThickness = useStates().brushThickness;
-    const setBrushThickness = useStateSetters().setBrushThickness;
-    const useEraser = useStates().useEraser;
-    const setUseEraser = useStateSetters().setUseEraser;
-    const undo = useStates().undo;
-    const setUndo = useStateSetters().setUndo;
+    const {
+        drawType,
+        brushThickness,
+        setBrushThickness,
+        useEraser,
+        setUseEraser,
+        undo,
+        setUndo,
+    } = useApp();
 
     function undoClickHandler() {
         if (drawType==='brush') {

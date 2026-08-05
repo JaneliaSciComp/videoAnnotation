@@ -1,4 +1,4 @@
-import { useStateSetters, useStates } from "./AppContext";
+import { useApp } from "./AppContext";
 import { Dropdown, Modal } from "antd";
 
 /**
@@ -21,13 +21,16 @@ import { Dropdown, Modal } from "antd";
  *    onClick: (e) => {}. It will be called after the default behavior of each child if preventDefault is not set. Otherwise, it will be called directly. e is the event object, which contains a key property corresponding to the index (integer) of each child in the menu prop. Note: This key property may differ from the key prop of the component passed to each child."
  */
 export default function DropdownMenu({menu, name, ...props}) {
-  const projectId = useStates().projectId;
-  const videoId = useStates().videoId;
-  const setDownloadConfig = useStateSetters().setDownloadConfig;
-  const setDownloadAnnotation = useStateSetters().setDownloadAnnotation;
-  const setGlobalInfo = useStateSetters().setGlobalInfo;
-  const frameUrl = useStates().frameUrl;
-  const setSaveAnnotation = useStateSetters().setSaveAnnotation;
+
+  const {
+    frameUrl,
+    projectId,
+    videoId,
+    setDownloadAnnotation,
+    setDownloadConfig,
+    setGlobalInfo,
+    setSaveAnnotation
+  } = useApp();
 
   const items = menu.map((item, i) => {
     return {

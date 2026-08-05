@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "react-bootstrap";
 import styles from "../styles/Button.module.css";
-import { useStates, useStateSetters } from "./AppContext";
+import { useApp } from "./AppContext";
 import {
   clearUnfinishedAnnotation,
   createId,
@@ -22,26 +22,28 @@ export default function Category(props) {
   const [color, setColor] = useState("black");
   const [info, setInfo] = useState(null);
 
-  const frameNum = useStates().frameNum;
-  const frameUrl = useStates().frameUrl;
-  const frameAnnotation = useStates().frameAnnotation;
-  const setFrameAnnotation = useStateSetters().setFrameAnnotation;
-  const setActiveAnnoObj = useStateSetters().setActiveAnnoObj;
-  const setDrawType = useStateSetters().setDrawType;
-  const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
-  const setUndo = useStateSetters().setUndo;
-  const setUseEraser = useStateSetters().setUseEraser;
-  const videoId = useStates().videoId;
-  const intervalAnno = useStates().intervalAnno;
-  const setIntervalAnno = useStateSetters().setIntervalAnno;
-  const cancelIntervalAnno = useStates().cancelIntervalAnno;
-  const setCancelIntervalAnno = useStateSetters().setCancelIntervalAnno;
-  const setUpdateAnnotationChart = useStateSetters().setUpdateAnnotationChart;
-  const lastFrameNumForIntervalAnnoRef =
-    useStates().lastFrameNumForIntervalAnnoRef;
-  const intervalErasing = useStates().intervalErasing;
-  const annotationRef = useStates().annotationRef;
-  const mutualExclusiveCategory = useStates().mutualExclusiveCategory;
+
+  const {
+    annotationRef,
+    cancelIntervalAnno,
+    frameNum,
+    frameUrl,
+    frameAnnotation,
+    intervalAnno,
+    intervalErasing,
+    lastFrameNumForIntervalAnnoRef,
+    mutualExclusiveCategory,
+    videoId,
+    setActiveAnnoObj,
+    setCancelIntervalAnno,
+    setDrawType,
+    setFrameAnnotation,
+    setIntervalAnno,
+    setSkeletonLandmark,
+    setUndo,
+    setUseEraser,
+    setUpdateAnnotationChart
+  } = useApp();
 
   useEffect(() => {
     if (cancelIntervalAnno) {

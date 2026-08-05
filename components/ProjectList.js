@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useStateSetters, useStates } from "./AppContext";
+import { useApp } from "./AppContext";
 import { Modal, List, Button } from "antd";
 import { PlayCircleOutlined, DeleteOutlined } from "@ant-design/icons";
 import {
@@ -30,13 +30,15 @@ export default function ProjectList(props) {
   const [projectIds, setProjectIds] = useState([]);
   const [info, setInfo] = useState();
 
-  const projectId = useStates().projectId;
-  const setProjectId = useStateSetters().setProjectId;
-  const setProjectData = useStateSetters().setProjectData;
-  const setBtnConfigData = useStateSetters().setBtnConfigData;
-  const setVideoData = useStateSetters().setVideoData;
-  const setResetVideoDetails = useStateSetters().setResetVideoDetails;
-  const setVideoId = useStateSetters().setVideoId;
+  const {
+    projectId,
+    setBtnConfigData,
+    setProjectData,
+    setProjectId,
+    setResetVideoDetails,
+    setVideoData,
+    setVideoId
+  } = useApp();
 
   useEffect(() => {
     if (props.open) {

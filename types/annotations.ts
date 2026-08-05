@@ -27,6 +27,15 @@ export type Annotation = {
     videoId: string
 };
 
+// These 2 are the same; consolidate and remove from AppContext
+export type FrameAnnotation = {
+    [id: string]: Annotation;
+}
+
+export type AnnotationObject = {
+    [key: string]: Annotation;
+};
+
    /*
     //Todo: include in types/annotations.ts?  Similar but different.
     type Annotation = {
@@ -60,6 +69,3 @@ export type Annotation = {
   }
 */
 
-export type AnnotationObject = {
-    [key: string]: Annotation;
-};

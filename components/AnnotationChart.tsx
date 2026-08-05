@@ -1,8 +1,8 @@
 import React, {useState, useEffect, useRef} from 'react';
 import { staticVerticalLine, dynamicVerticalLine } from '../utils/utils';
-import { useStateSetters, useStates } from './AppContext'; 
+import { useApp } from './AppContext'; 
 import { Bar } from 'react-chartjs-2';
-import type { Annotation } from '@/types/annotations';
+import type { Annotation } from '../types/annotations';
 //import { UploaderType } from '@/types/misc';
 import {
     Chart as ChartJS,
@@ -108,27 +108,32 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
     });
     const [annotationForChart, setAnnotationForChart] = useState<AnnotationDataForChart>({frameNum:null, range: null, data: null});
 
-    const setFrameNumSignal = useStateSetters().setFrameNumSignal;
-    const frameNum = useStates().frameNum;
-    const totalFrameCount = useStates().videoMetaRef.current.totalFrameCount;
-    const annotationChartRange = useStates().annotationChartRange;
-    const videoId = useStates().videoId;
-    const intervalAnno = useStates().intervalAnno;
-    const categoryColors = useStates().categoryColors;
-    const videoMetaRef = useStates().videoMetaRef;
-    const setCancelIntervalAnno = useStateSetters().setCancelIntervalAnno;  
-    const updateAnnotationChart = useStates().updateAnnotationChart;
-    const setUpdateAnnotationChart = useStateSetters().setUpdateAnnotationChart;
-    const uploaderFile = useStates().uploaderFile;
-    const resetAnnotationChart = useStates().resetAnnotationChart;
-    const setResetAnnotationChart = useStateSetters().setResetAnnotationChart; 
-    const intervalErasing = useStates().intervalErasing;
-    const annotationRef = useStates().annotationRef;
-    const setGlobalInfo = useStateSetters().setGlobalInfo;
+    const setFrameNumSignal = useApp().setFrameNumSignal;
+    const totalFrameCount = useApp().videoMetaRef.current?.totalFrameCount;
+    const videoMetaRef = useApp().videoMetaRef;
+    const setCancelIntervalAnno = useApp().setCancelIntervalAnno;  
+
+
+    const {
+        frameNum,
+        annotationChartRange,
+        videoId,
+        intervalAnno,
+        categoryColors,
+        updateAnnotationChart,
+        setUpdateAnnotationChart,
+        uploaderFile,
+        resetAnnotationChart,
+        setResetAnnotationChart,
+        intervalErasing,
+        annotationRef,
+        setGlobalInfo
+    } = useApp();
+
 
 
     useEffect(() => {
-        if (uploaderFile?.type && uploaderFile?.file) {
+        if (uploaderFile?.uploadType && uploaderFile?.file) {
             setAnnotationForChart(oldValue => {return {frameNum: null, range: null, data: null}});
         }
     }, [uploaderFile])
@@ -184,7 +189,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
         let initialLables = [1,2,3,4,5,6,7,8,9,10];
         let data: ChartData<"bar"> = {labels: initialLables, datasets: []};
         let startNeeded=0, endNeeded=0, start=0, end=0;
-        if (labels?.length>0 && annotationForChart.range ) {
+        if (frameNum && annotationChartRange && labels?.length>0 && annotationForChart.range ) {
             const frameNums = [];
             startNeeded = (frameNum-annotationChartRange>0) ? (frameNum-annotationChartRange) : 0;
             endNeeded = (frameNum+annotationChartRange<totalFrameCount-1) ? (frameNum+annotationChartRange) : (totalFrameCount-1);
@@ -319,7 +324,7 @@ export default function AnnotationChart({labels, width, height, staticVerticalLi
         if (labels?.length>0 && Number.isInteger(frameNum)) { 
             let annoDataForChart: AnnotationDataForChart;
             const rangeNeeded = annotationChartRange;
-            if (rangeNeeded >= 0) {
+            if (frameNum && rangeNeeded && rangeNeeded >= 0) {
                 const rangeStartNeeded = ((frameNum-rangeNeeded)<0) ? 0 : (frameNum-rangeNeeded);
                 const rangeEndNeeded = ((frameNum+rangeNeeded)>(totalFrameCount-1)) ? (totalFrameCount-1) : (frameNum+rangeNeeded);
                 const annoData = filterAnnotation(rangeStartNeeded, rangeEndNeeded, labels);

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useStateSetters, useStates } from "./AppContext";
+import { useApp } from "./AppContext";
 import { Dropdown, Modal } from "antd";
 import ProjectManager from "./ProjectManager.js";
 import ModalJsonUploader from "./ModalJsonUploader.js";
@@ -31,8 +31,13 @@ export default function ProjectDropdown(props) {
   const [uploaderOpen, setUploaderOpen] = useState(false);
   const [projectListOpen, setProjectListOpen] = useState(false);
 
-  const setSaveConfig = useStateSetters().setSaveConfig;
-  const projectId = useStates().projectId;
+  const setSaveConfig = useApp().setSaveConfig;
+  const projectId = useApp().projectId;
+
+  const {
+    projectId,
+    setSaveConfig
+  } = useApp();
 
   const items = [
     {
@@ -78,7 +83,7 @@ export default function ProjectDropdown(props) {
         setManagerStatus("edit");
         setManagerOpen(true);
         break;
-      case "Save Config":
+      case "Save Config": // This should probably be "Download config" as "Save config" is confusing
         setSaveConfig(true);
         break;
     }
@@ -140,7 +145,7 @@ export default function ProjectDropdown(props) {
       <ProjectList open={projectListOpen} setOpen={setProjectListOpen} />
 
       <ModalJsonUploader
-        type="configuration"
+        uploadType="configuration"
         open={uploaderOpen}
         setOpen={setUploaderOpen}
       />

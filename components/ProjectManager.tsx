@@ -1,5 +1,5 @@
 import { ChangeEvent, useState, useEffect, SetStateAction, Dispatch } from 'react';
-import { useStateSetters, useStates } from './AppContext';
+import { useApp } from './AppContext';
 import BtnConfiguration from './BtnConfiguration';
 import { Modal, Form, Input, Button } from 'antd';
 import { postProject, editProject } from '../utils/requests';
@@ -58,13 +58,15 @@ export default function ProjectManager({open, setOpen, status, onSubmit, onProje
     const [info, setInfo] = useState<string | null>();
     const [noProject, setNoProject] = useState<boolean>(true);
 
-    const setConfirmConfig = useStateSetters().setConfirmConfig;
-    const projectId = useStates().projectId;
-    const setProjectId = useStateSetters().setProjectId;
-    const projectData = useStates().projectData;
-    const setProjectData = useStateSetters().setProjectData;
-    const setVideoData = useStateSetters().setVideoData;
-    const setVideoId = useStateSetters().setVideoId;
+    const{
+        projectData,
+        projectId,
+        setConfirmConfig,
+        setProjectId,
+        setProjectData,
+        setVideoData,
+        setVideoId
+    } = useApp();
 
     const [form] = Form.useForm();
 
@@ -76,7 +78,7 @@ export default function ProjectManager({open, setOpen, status, onSubmit, onProje
                 setProjectId(id);
                 setProjectData({});
                 setVideoData({});
-                setVideoId(null);
+                setVideoId(undefined);
                 form.resetFields();
                 setOkDisable(true);
                 setBtnConfigStatus('new');

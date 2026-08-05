@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import styles from "../styles/Controller.module.css";
 import { Checkbox, Tag, ColorPicker, Button, Row, Col } from "antd";
-import { useStates } from "./AppContext";
+import { useApp } from "./AppContext";
 import { predefinedColors } from "../utils/utils.js";
 
 /**
@@ -58,7 +58,7 @@ export default function SkeletonEdgeController({index, vertices, ...props}) {
   const [color, setColor] = useState();
   const [info, setInfo] = useState();
 
-  const btnConfigData = useStates().btnConfigData;
+  const btnConfigData = useApp().btnConfigData;
 
   useEffect(() => {
     if (props.status === "edit") {

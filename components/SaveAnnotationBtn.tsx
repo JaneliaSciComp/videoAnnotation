@@ -1,6 +1,6 @@
 import { Button } from "react-bootstrap";
 import styles from "../styles/Button.module.css";
-import { useStates, useStateSetters } from "./AppContext";
+import { useApp } from "./AppContext";
 import { type ReactNode } from "react";
 
 /*
@@ -20,10 +20,13 @@ interface saveAnnotationBtnTypes {
 
 
 export default function SaveAnnotationBtn({ mode, children }: saveAnnotationBtnTypes) {
-  const frameUrl = useStates().frameUrl;
-  const videoId = useStates().videoId;
-  const setGlobalInfo = useStateSetters().setGlobalInfo;
-  const setSaveAnnotation = useStateSetters().setSaveAnnotation;
+
+  const {
+    frameUrl,
+    videoId,
+    setGlobalInfo,
+    setSaveAnnotation
+  } = useApp();
 
   async function clickHandler() {
     if (videoId || frameUrl) {

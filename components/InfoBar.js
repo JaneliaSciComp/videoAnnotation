@@ -1,4 +1,4 @@
-import { useStates } from "./AppContext";
+import { useApp } from "./AppContext";
 
 /**
  * To display global info and custom info.
@@ -7,7 +7,7 @@ import { useStates } from "./AppContext";
  *     customInfo: string. If not null, will be displayed with system info.
  */
 export default function InfoBar({ customInfo }) {
-  const {globalInfo: info} = useStates();
+  const {globalInfo: info} = useApp();
 
   return (
     <>

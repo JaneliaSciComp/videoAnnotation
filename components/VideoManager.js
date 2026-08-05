@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useStateSetters, useStates } from "./AppContext";
+import { useApp } from "./AppContext";
 import { Modal, List, Button, Form, Input, Space } from "antd";
 import { PlayCircleOutlined, DeleteOutlined } from "@ant-design/icons";
 import { postVideo, editVideo, deleteVideo } from "../utils/requests";
@@ -63,20 +63,21 @@ export default function VideoManager(props) {
   const [btnDisable, setBtnDisable] = useState(true);
   const [info, setInfo] = useState();
 
-  const videoData = useStates().videoData;
-  const setVideoData = useStateSetters().setVideoData;
-  const videoId = useStates().videoId;
-  const setVideoId = useStateSetters().setVideoId;
-  const setLoadVideo = useStateSetters().setLoadVideo;
-  const setResetVideoPlay = useStateSetters().setResetVideoPlay;
-  const resetVideoDetails = useStates().resetVideoDetails;
-  const setResetVideoDetails = useStateSetters().setResetVideoDetails;
-  const setResetChart = useStateSetters().setResetChart;
-  const videoAdditionalFieldsConfig = useStates().videoAdditionalFieldsConfig;
-  const setVideoAdditionalFieldsConfig =
-    useStateSetters().setVideoAdditionalFieldsConfig;
-  const projectId = useStates().projectId;
-  const setAdditionalDataRange = useStateSetters().setAdditionalDataRange;
+
+  const {
+    projectId,
+    resetVideoDetails,
+    videoAdditionalFieldsConfig,
+    videoData,
+    videoId,
+    setAdditionalDataRange,
+    setLoadVideo,
+    setResetChart,
+    setResetVideoDetails,
+    setResetVideoPlay,
+    setVideoAdditionalFieldsConfig,
+    setVideoData
+  } = useApp();
 
   const [form] = Form.useForm();
 

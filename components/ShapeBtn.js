@@ -1,7 +1,7 @@
 import React, {useState, useEffect} from 'react';
 import {Button} from 'react-bootstrap';
 import styles from '../styles/Button.module.css';
-import { useStates, useStateSetters } from './AppContext';
+import { useApp } from './AppContext';
 import { clearUnfinishedAnnotation, createId } from '../utils/utils.js';
 
 
@@ -21,18 +21,21 @@ export default function ShapeBtn(props) {
     */
     const [clicked, setClicked] = useState(false);
     
-    const drawType = useStates().drawType;
-    const frameNum = useStates().frameNum;
-    const frameUrl = useStates().frameUrl;
-    const setDrawType = useStateSetters().setDrawType;
-    const frameAnnotation = useStates().frameAnnotation;
-    const setFrameAnnotation = useStateSetters().setFrameAnnotation;
-    const annoIdToDraw = useStates().annoIdToDraw;
-    const setAnnoIdToDraw = useStateSetters().setAnnoIdToDraw;
-    const setSkeletonLandmark = useStateSetters().setSkeletonLandmark;
-    const setUndo = useStateSetters().setUndo;
-    const setUseEraser = useStateSetters().setUseEraser;
-    const videoId = useStates().videoId; 
+
+    const {
+        annoIdToDraw,
+        drawType,
+        frameAnnotation,
+        frameNum,
+        frameUrl,
+        videoId,
+        setAnnoIdToDraw,
+        setDrawType,
+        setFrameAnnotation,
+        setSkeletonLandmark,
+        setUndo,
+        setUseEraser
+    } = useApp();
 
 
 
